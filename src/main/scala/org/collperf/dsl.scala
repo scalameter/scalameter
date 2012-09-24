@@ -8,7 +8,7 @@ import scala.util.DynamicVariable
 
 trait DSL {
 
-  private class DynamicContext extends DynamicVariable(Context.empty) {
+  private class DynamicContext extends DynamicVariable(Context.topLevel) {
     def withAttribute[T](name: String, v: Any)(block: =>T) = withValue(value + (name -> v))(block)
   }
 

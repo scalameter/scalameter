@@ -17,6 +17,13 @@ package collperf {
   object Key {
     val module = "module"
     val method = "method"
+    val jvmVersion = "jvm-version"
+    val jvmVendor = "jvm-vendor"
+    val jvmName = "jvm-name"
+    val osName = "os-name"
+    val osArch = "os-arch"
+    val cores = "cores"
+    val hostname = "hostname"
   }
 
   case class Context(properties: immutable.Map[String, Any]) {
@@ -25,6 +32,18 @@ package collperf {
 
   object Context {
     val empty = Context(immutable.Map())
+
+    val topLevel = machine
+
+    def machine = Context(immutable.Map(
+      Key.jvmVersion -> sys.props("java.vm.version"),
+      Key.jvmVendor -> sys.props("java.vm.vendor"),
+      Key.jvmName -> sys.props("java.vm.name"),
+      Key.osName -> sys.props("os.name"),
+      Key.osArch -> sys.props("os.arch"),
+      Key.cores -> Runtime.getRuntime.availableProcessors,
+      Key.hostname -> java.net.InetAddress.getLocalHost.getHostName
+    ))
   }
 
   case class Parameters(axisData: immutable.Map[String, Any]) {

@@ -13,10 +13,8 @@ object Main {
     // prepare top-level context
     // identify test objects
     // create reporters and persistors
-    val toplevel: Context = null
-    val benches: Seq[String] = null
-    val reporters: Seq[Reporter] = null
-    val persistor: Persistor = null
+    val configuration = new Configuration(args)
+    import configuration._
 
     // schedule benchmarks
     for (bench <- benches) {
@@ -33,6 +31,18 @@ object Main {
     }
   }
 
-  case class Configuration(toplevel: Context)
+  class Configuration(args: Array[String]) {
+    val benches: Seq[String] = {
+      null
+    }
+
+    val reporters: Seq[Reporter] = {
+      null
+    }
+
+    val persistor: Persistor = {
+      null
+    }
+  }
 
 }
