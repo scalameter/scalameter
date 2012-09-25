@@ -3,6 +3,7 @@ package org.collperf
 
 
 import collection._
+import util.parsing.combinator.Parsers
 
 
 
@@ -13,7 +14,7 @@ object Main {
     // prepare top-level context
     // identify test objects
     // create reporters and persistors
-    val configuration = new Configuration(args)
+    val configuration = Configuration.fromCommandLineArgs(args)
     import configuration._
 
     // schedule benchmarks
@@ -31,17 +32,11 @@ object Main {
     }
   }
 
-  class Configuration(args: Array[String]) {
-    val benches: Seq[String] = {
-      null
-    }
+  case class Configuration(benches: Seq[String], reporters: Seq[Reporter], persistor: Persistor)
 
-    val reporters: Seq[Reporter] = {
-      null
-    }
-
-    val persistor: Persistor = {
-      null
+  object Configuration extends Parsers {
+    def fromCommandLineArgs(args: Array[String]) = {
+      new Configuration(null, null, null)
     }
   }
 
