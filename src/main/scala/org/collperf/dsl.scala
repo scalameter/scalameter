@@ -44,7 +44,7 @@ trait DSL {
 }
 
 
-object TestDSL extends DSL {
+class TestDSL extends DSL {
 
   performance of "ParRange" in {
 

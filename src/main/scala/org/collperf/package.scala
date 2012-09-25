@@ -63,17 +63,34 @@ package collperf {
   case class Benchmark[T](context: Context, gen: Gen[T], setup: Option[T => Any], teardown: Option[T => Any], customwarmup: Option[() => Any], snippet: T => Any)
 
   trait Reporter {
-
     def report(result: Result, persistor: Persistor): Unit
+  }
 
+  object Reporter {
+    object None extends Reporter {
+      def report(result: Result, persistor: Persistor) {}
+    }
   }
 
   trait Persistor {
-
     def load(context: Context): History
-
     def save(result: Result): Unit
+  }
 
+  object Persistor {
+    object None extends Persistor {
+      def load(context: Context): History = History(Nil)
+      def save(result: Result) {}
+    }
   }
 
 }
+
+
+
+
+
+
+
+
+
