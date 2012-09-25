@@ -49,8 +49,8 @@ class TestDSL extends DSL {
   performance of "ParRange" in {
 
     val ranges = for {
-      size <- Gen.range("size")(100, 10000, 250)
       parlevel <- Gen.enumeration("parallelism")(1, 2, 4, 8)
+      size <- Gen.range("size")(100, 1000, 250)
     } yield {
       val pr = (0 until size).par
       pr.tasksupport = new collection.parallel.ForkJoinTaskSupport(new scala.concurrent.forkjoin.ForkJoinPool(parlevel))

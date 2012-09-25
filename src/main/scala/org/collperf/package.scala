@@ -46,12 +46,12 @@ package collperf {
     ))
   }
 
-  case class Parameters(axisData: immutable.Map[String, Any]) {
+  case class Parameters(axisData: immutable.ListMap[String, Any]) {
     def ++(that: Parameters) = Parameters(this.axisData ++ that.axisData)
   }
 
   object Parameters {
-    def apply(xs: (String, Any)*) = new Parameters(immutable.Map(xs: _*))
+    def apply(xs: (String, Any)*) = new Parameters(immutable.ListMap(xs: _*))
   }
 
   case class Measurement(time: Long, params: Parameters)

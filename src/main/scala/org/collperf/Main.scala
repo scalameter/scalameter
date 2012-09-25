@@ -34,6 +34,7 @@ object Main {
 
   object Configuration extends JavaTokenParsers {
     private def reporterFor(name: String) = name match {
+      case "Console" => new reporters.ConsoleReporter
       case "None" => Reporter.None
     }
 
