@@ -4,10 +4,37 @@ package org
 
 import java.util.Date
 import collection._
+import scala.util.DynamicVariable
 
 
 
 package object collperf {
+
+  private[collperf] class DynamicContext extends DynamicVariable(Context.topLevel) {
+    def withAttribute[T](name: String, v: Any)(block: =>T) = withValue(value + (name -> v))(block)
+  }
+
+  private[collperf] val currentContext = new DynamicContext
+
+  private val scheduled = mutable.ArrayBuffer[Benchmark[_]]()
+
+  def scheduleBenchmark[T](benchmark: Benchmark[T]) {
+    scheduled += benchmark
+  }
+
+  def flushBenchmarkSchedule(): Seq[Benchmark[_]] = {
+    val result = scheduled.toVector
+    scheduled.clear()
+    result
+  }
+
+  /* logging */
+
+  object log {
+    def verbose(msg: =>Any) {
+      if (currentContext.value.getOrElse("verbose", false)) println(msg)
+    }
+  }
 
 }
 
@@ -17,6 +44,7 @@ package collperf {
   object Key {
     val module = "module"
     val method = "method"
+
     val jvmVersion = "jvm-version"
     val jvmVendor = "jvm-vendor"
     val jvmName = "jvm-name"
@@ -24,14 +52,23 @@ package collperf {
     val osArch = "os-arch"
     val cores = "cores"
     val hostname = "hostname"
+
+    val benchRuns = "runs"
+    val warmupRuns = "warmups"
+    val verbose = "verbose"
   }
 
   case class Context(properties: immutable.Map[String, Any]) {
     def +(t: (String, Any)) = Context(properties + t)
+    def ++(that: Context) = Context(this.properties ++ that.properties)
+    def get[T](key: String) = properties.get(key).asInstanceOf[Option[T]]
+    def getOrElse[T](key: String, v: T) = properties.getOrElse(key, v).asInstanceOf[T]
   }
 
   object Context {
-    val empty = Context(immutable.Map())
+    def apply(xs: (String, Any)*) = new Context(immutable.Map(xs: _*))
+
+    val empty = new Context(immutable.Map())
 
     val topLevel = machine
 
@@ -60,7 +97,9 @@ package collperf {
 
   case class History(results: Seq[(Date, Result)])
 
-  case class Benchmark[T](context: Context, gen: Gen[T], setup: Option[T => Any], teardown: Option[T => Any], customwarmup: Option[() => Any], snippet: T => Any)
+  case class Benchmark[T](executor: Executor, context: Context, gen: Gen[T], setup: Option[T => Any], teardown: Option[T => Any], customwarmup: Option[() => Any], snippet: T => Any) {
+    def run() = executor.run(this)
+  }
 
   trait Reporter {
     def report(result: Result, persistor: Persistor): Unit
@@ -82,6 +121,10 @@ package collperf {
       def load(context: Context): History = History(Nil)
       def save(result: Result) {}
     }
+  }
+
+  trait HasExecutor {
+    def executor: Executor
   }
 
 }

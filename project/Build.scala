@@ -22,7 +22,7 @@ object CollPerfBuild extends Build {
     packageBin in Test
   ) map {
     (dp, jar, testjar, pbc, pbt) => // -XX:+UseConcMarkSweepGC  -XX:-DoEscapeAnalysis -XX:MaxTenuringThreshold=12 -verbose:gc -XX:+PrintGCDetails 
-    val javacommand = "java -Xmx2048m -Xms2048m -XX:+UseCondCardMark -server -cp %s:%s:%s".format(
+    val javacommand = "java -Xmx2048m -Xms2048m -XX:+UseCondCardMark -verbose:gc -server -cp %s:%s:%s".format(
       dp.map(_.data).mkString(":"),
       jar,
       testjar

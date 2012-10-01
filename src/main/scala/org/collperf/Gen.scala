@@ -6,7 +6,7 @@ import collection._
 
 
 
-trait Gen[T] {
+trait Gen[T] extends Serializable {
   self =>
 
   def map[S](f: T => S): Gen[S] = new Gen[S] {

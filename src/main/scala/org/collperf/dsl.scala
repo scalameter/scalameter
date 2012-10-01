@@ -2,17 +2,10 @@ package org.collperf
 
 
 
-import scala.util.DynamicVariable
 
 
 
-trait DSL {
-
-  private class DynamicContext extends DynamicVariable(Context.topLevel) {
-    def withAttribute[T](name: String, v: Any)(block: =>T) = withValue(value + (name -> v))(block)
-  }
-
-  private val currentContext = new DynamicContext
+trait DSL extends HasExecutor {
 
   object performance {
     def of(modulename: String) = new {
@@ -35,22 +28,22 @@ trait DSL {
     def tearDown(block: T => Any) = Using(benchmark.copy(teardown = Some(block)))
     def warmUp(block: =>Any) = Using(benchmark.copy(customwarmup = Some(() => block)))
     def apply(block: T => Any) {
-      Runner.schedule(benchmark.copy(snippet = block))
+      scheduleBenchmark(benchmark.copy(snippet = block))
     }
   }
 
-  def using[T](gen: Gen[T]) = Using(Benchmark(currentContext.value, gen, None, None, None, null))
+  def using[T](gen: Gen[T]) = Using(Benchmark(executor, currentContext.value, gen, None, None, None, null))
 
 }
 
 
-class TestDSL extends DSL {
+class TestDSL extends PerformanceTest.Default {
 
   performance of "ParRange" in {
 
     val ranges = for {
       parlevel <- Gen.enumeration("parallelism")(1, 2, 4, 8)
-      size <- Gen.range("size")(100, 1000, 250)
+      size <- Gen.range("size")(2000000, 2500000, 100000)
     } yield {
       val pr = (0 until size).par
       pr.tasksupport = new collection.parallel.ForkJoinTaskSupport(new scala.concurrent.forkjoin.ForkJoinPool(parlevel))
@@ -83,6 +76,23 @@ class TestDSL extends DSL {
 }
 
 
+class TestList extends PerformanceTest.Default {
+
+  performance of "List" in {
+
+    val lists = for {
+      size <- Gen.range("size")(1000000, 5000000, 500000)
+    } yield (0 until size).toList
+
+    measure method "filter" in {
+      using(lists) {
+        _.filter(_ % 2 == 0)
+      }
+    }
+
+  }
+
+}
 
 
 

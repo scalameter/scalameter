@@ -15,22 +15,23 @@ object Main {
     // identify test objects
     // create reporters and persistors
     val configuration = Configuration.fromCommandLineArgs(args)
+    currentContext.value ++= configuration.context
     import configuration._
 
     // schedule benchmarks
     for (bench <- benches) Class.forName(bench).newInstance
 
     // execute all benchmark objects
-    for (benchmark <- Runner.flushSchedule()) {
+    for (benchmark <- flushBenchmarkSchedule()) {
       // execute tests
-      val result: Result = Runner.run(benchmark)
+      val result: Result = benchmark.run()
 
       // generate reports
       for (r <- reporters) r.report(result, persistor)
     }
   }
 
-  case class Configuration(benches: Seq[String], reporters: Seq[Reporter], persistor: Persistor)
+  case class Configuration(benches: Seq[String], reporters: Seq[Reporter], persistor: Persistor, context: Context)
 
   object Configuration extends JavaTokenParsers {
     private def reporterFor(name: String) = name match {
@@ -44,26 +45,31 @@ object Main {
 
     def fromCommandLineArgs(args: Array[String]) = {
       def arguments: Parser[Configuration] = rep(arg) ^^ {
-        case configs => configs.foldLeft(Configuration(Nil, Nil, Persistor.None)) {
-          case (acc, x) => Configuration(acc.benches ++ x.benches, acc.reporters ++ x.reporters, x.persistor)
+        case configs => configs.foldLeft(Configuration(Nil, Nil, Persistor.None, Context.empty)) {
+          case (acc, x) => Configuration(acc.benches ++ x.benches, acc.reporters ++ x.reporters, x.persistor, acc.context ++ x.context)
         }
       }
-      def arg: Parser[Configuration] = benches | reporters | persistor | flag
+      def arg: Parser[Configuration] = benches | reporters | persistor | intsetting | flag
       def listOf(flagname: String, shorthand: String): Parser[Seq[String]] = "-" ~ (flagname | shorthand) ~ classnames ^^ {
         case _ ~ _ ~ classnames => classnames
       }
       def classnames: Parser[Seq[String]] = repsep(classname, ":")
       def classname: Parser[String] = repsep(ident, ".") ^^ { _.mkString(".") }
       def benches: Parser[Configuration] = listOf("benches", "b") ^^ {
-        case names => Configuration(names, Nil, Persistor.None)
+        case names => Configuration(names, Nil, Persistor.None, Context.empty)
       }
       def reporters: Parser[Configuration] = listOf("reporters", "r") ^^ {
-        case names => Configuration(Nil, names map reporterFor, Persistor.None)
+        case names => Configuration(Nil, names map reporterFor, Persistor.None, Context.empty)
       }
       def persistor: Parser[Configuration] = "-" ~ ("persistor" | "p") ~ ident ^^ {
-        case _ ~ _ ~ name => Configuration(Nil, Nil, persistorFor(name))
+        case _ ~ _ ~ name => Configuration(Nil, Nil, persistorFor(name), Context.empty)
+      }
+      def intsetting: Parser[Configuration] = "-" ~ ident ~ decimalNumber ^^ {
+        case _ ~ "Cwarmups" ~ num => Configuration(Nil, Nil, Persistor.None, Context(Key.warmupRuns -> num.toInt))
+        case _ ~ "Cruns" ~ num => Configuration(Nil, Nil, Persistor.None, Context(Key.benchRuns -> num.toInt))
       }
       def flag: Parser[Configuration] = "-" ~ ident ^^ {
+        case _ ~ "verbose" => Configuration(Nil, Nil, Persistor.None, Context(Key.verbose -> true))
         case _ ~ unknownFlag => sys.error(s"Unknown flag '$unknownFlag'")
       }
 
