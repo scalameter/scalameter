@@ -10,11 +10,13 @@ import scala.util.DynamicVariable
 
 package object collperf {
 
-  private[collperf] class DynamicContext extends DynamicVariable(Context.topLevel) {
+  class DynamicContext extends DynamicVariable(Context.topLevel) {
     def withAttribute[T](name: String, v: Any)(block: =>T) = withValue(value + (name -> v))(block)
   }
 
-  private[collperf] val currentContext = new DynamicContext
+  val currentContext = new DynamicContext
+
+  var configurationContext = Context.machine
 
   private val scheduled = mutable.ArrayBuffer[Benchmark[_]]()
 
@@ -32,7 +34,9 @@ package object collperf {
 
   object log {
     def verbose(msg: =>Any) {
-      if (currentContext.value.getOrElse("verbose", false)) println(msg)
+      if (configurationContext.getOrElse("verbose", false)) log synchronized {
+        println(msg)
+      }
     }
   }
 

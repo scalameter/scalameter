@@ -15,7 +15,8 @@ object Main {
     // identify test objects
     // create reporters and persistors
     val configuration = Configuration.fromCommandLineArgs(args)
-    currentContext.value ++= configuration.context
+    configurationContext ++= configuration.context
+    currentContext.value = configurationContext
     import configuration._
 
     // schedule benchmarks

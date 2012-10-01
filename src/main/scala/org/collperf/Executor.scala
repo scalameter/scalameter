@@ -14,7 +14,57 @@ trait Executor {
 }
 
 
+/** Runs warmups until the maximum number of warmups is done,
+ *  or the running times have stabilized. After that, it runs
+ *  the tests the specified number of times and collects
+ *  the results using an `aggregate` function.
+ * 
+ *  Stabilization is detected by tracking the running times
+ *  for which there may have been and those for which there
+ *  was no garbage collection.
+ *  When either of the two running times stabilizes, we consider
+ *  the JVM warmed up for the snippet.
+ * 
+ *  We do this by registering on GC events instead of invoking
+ *  `Platform.collectGarbage`, since usually the time to invoke
+ *  the snippet is less than the time to perform full GC, and
+ *  most triggered GC cycles are fast because they collect only
+ *  the young generation.
+ */
 class LocalExecutor(aggregate: Seq[Long] => Long) extends Executor {
+
+  case class Warmer(warmups: Int) {
+    def foreach[U](f: Int => U): Unit = {
+      val withgc = new utils.SlidingWindow(10)
+      val withoutgc = new utils.SlidingWindow(10)
+      @volatile var nogc = true
+
+      utils.withGCNotification { n =>
+        log.verbose("Garbage collection detected.")
+        nogc = false
+      } {
+        var i = 0
+        while (i < warmups) {
+          val start = Platform.currentTime
+          f(i)
+          val end = Platform.currentTime
+          val runningtime = end - start
+          if (nogc) withoutgc.add(runningtime)
+          withgc.add(runningtime)
+
+          val cov1 = withoutgc.cov
+          val cov2 = withgc.cov
+
+          nogc = true
+          log.verbose(s"$i. warmup run running time: $runningtime (cov1: $cov1, cov2: $cov2)")
+          if (cov1 < 0.1 || cov2 < 0.1) {
+            log.verbose(s"Steady-state detected.")
+            i = warmups
+          } else i += 1
+        }
+      }
+    }
+  }
 
   def run[T](benchmark: Benchmark[T]): Result = {
     import benchmark._
@@ -26,12 +76,7 @@ class LocalExecutor(aggregate: Seq[Long] => Long) extends Executor {
         for (i <- 0 until warmups) warmup()
       case _ =>
         for (x <- gen.warmupset) {
-          for (i <- 0 until warmups) {
-            val start = Platform.currentTime
-            snippet(x)
-            val end = Platform.currentTime
-            log.verbose(i + ". warmup run running time: " + (end - start))
-          }
+          for (i <- Warmer(warmups)) snippet(x)
         }
     }
 
