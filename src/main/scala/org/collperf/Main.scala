@@ -11,11 +11,15 @@ object Main {
 
   def main(args: Array[String]) {
     // initialize
+    val configuration = Configuration.fromCommandLineArgs(args)
+    run(configuration)
+  }
+
+  def run(configuration: Configuration) {
     // prepare top-level context
     // identify test objects
     // create reporters and persistors
-    val configuration = Configuration.fromCommandLineArgs(args)
-    configurationContext ++= configuration.context
+    configurationContext = Context.machine ++ configuration.context
     currentContext.value = configurationContext
     import configuration._
 
@@ -30,6 +34,9 @@ object Main {
       // generate reports
       for (r <- reporters) r.report(result, persistor)
     }
+
+    // flush reporter data
+    for (r <- reporters) r.flush()
   }
 
   case class Configuration(benches: Seq[String], reporters: Seq[Reporter], persistor: Persistor, context: Context)
@@ -37,6 +44,7 @@ object Main {
   object Configuration extends JavaTokenParsers {
     private def reporterFor(name: String) = name match {
       case "Console" => new reporters.ConsoleReporter
+      case "XYChart" => new reporters.XYChartReporter
       case "None" => Reporter.None
     }
 

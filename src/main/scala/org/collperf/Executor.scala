@@ -33,7 +33,7 @@ trait Executor {
  */
 class LocalExecutor(aggregate: Seq[Long] => Long) extends Executor {
 
-  case class Warmer(warmups: Int) {
+  case class Warmer(warmups: Int, set: () => Any, tear: () => Any) {
     def foreach[U](f: Int => U): Unit = {
       val withgc = new utils.SlidingWindow(10)
       val withoutgc = new utils.SlidingWindow(10)
@@ -42,22 +42,26 @@ class LocalExecutor(aggregate: Seq[Long] => Long) extends Executor {
       utils.withGCNotification { n =>
         log.verbose("Garbage collection detected.")
         nogc = false
-      } {
+      } apply {
+        set()
         var i = 0
         while (i < warmups) {
+          nogc = true
           val start = Platform.currentTime
           f(i)
           val end = Platform.currentTime
           val runningtime = end - start
           if (nogc) withoutgc.add(runningtime)
           withgc.add(runningtime)
+          tear()
+          set()
 
-          val cov1 = withoutgc.cov
-          val cov2 = withgc.cov
+          val covNoGC = withoutgc.cov
+          val covGC = withgc.cov
 
           nogc = true
-          log.verbose(s"$i. warmup run running time: $runningtime (cov1: $cov1, cov2: $cov2)")
-          if (cov1 < 0.1 || cov2 < 0.1) {
+          log.verbose(s"$i. warmup run running time: $runningtime (covNoGC: $covNoGC, covGC: $covGC)")
+          if ((withoutgc.size >= 10 && covNoGC < 0.1) || (withgc.size >= 10 && covGC < 0.1)) {
             log.verbose(s"Steady-state detected.")
             i = warmups
           } else i += 1
@@ -69,6 +73,9 @@ class LocalExecutor(aggregate: Seq[Long] => Long) extends Executor {
   def run[T](benchmark: Benchmark[T]): Result = {
     import benchmark._
 
+    val set = setup.orNull
+    val tear = teardown.orNull
+
     // run warm up
     val warmups = context.getOrElse[Int](Key.warmupRuns, 1)
     customwarmup match {
@@ -76,7 +83,9 @@ class LocalExecutor(aggregate: Seq[Long] => Long) extends Executor {
         for (i <- 0 until warmups) warmup()
       case _ =>
         for (x <- gen.warmupset) {
-          for (i <- Warmer(warmups)) snippet(x)
+          val s = () => if (set != null) set(x)
+          val t = () => if (tear != null) tear(x)
+          for (i <- Warmer(warmups, s, t)) snippet(x)
         }
     }
 
@@ -84,20 +93,20 @@ class LocalExecutor(aggregate: Seq[Long] => Long) extends Executor {
     Platform.collectGarbage()
 
     // run tests
-    val set = setup.orNull
-    val tear = teardown.orNull
     val measurements = new mutable.ArrayBuffer[Measurement]()
     val repetitions = context.getOrElse[Int](Key.benchRuns, 1)
     for ((x, params) <- gen.dataset) {
-      if (set != null) set(x)
-
       var iteration = 0
       var times = List[Long]()
       while (iteration < repetitions) {
+        if (set != null) set(x)
+
         val start = Platform.currentTime
         snippet(x)
         val end = Platform.currentTime
         val time = end - start
+
+        if (tear != null) tear(x)
 
         times ::= time
         iteration += 1
@@ -105,8 +114,6 @@ class LocalExecutor(aggregate: Seq[Long] => Long) extends Executor {
 
       val processedTime = aggregate(times)
       measurements += Measurement(processedTime, params)
-
-      if (tear != null) tear(x)
     }
 
     Result(measurements, context)

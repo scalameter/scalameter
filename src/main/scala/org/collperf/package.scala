@@ -48,6 +48,7 @@ package collperf {
   object Key {
     val module = "module"
     val method = "method"
+    val curve = "curve"
 
     val jvmVersion = "jvm-version"
     val jvmVendor = "jvm-vendor"
@@ -67,6 +68,8 @@ package collperf {
     def ++(that: Context) = Context(this.properties ++ that.properties)
     def get[T](key: String) = properties.get(key).asInstanceOf[Option[T]]
     def getOrElse[T](key: String, v: T) = properties.getOrElse(key, v).asInstanceOf[T]
+
+    def scopeName = s"${properties.getOrElse(Key.module, "")}-${properties.getOrElse(Key.method, "")}"
   }
 
   object Context {
@@ -107,11 +110,13 @@ package collperf {
 
   trait Reporter {
     def report(result: Result, persistor: Persistor): Unit
+    def flush(): Unit
   }
 
   object Reporter {
     object None extends Reporter {
       def report(result: Result, persistor: Persistor) {}
+      def flush() {}
     }
   }
 

@@ -21,7 +21,10 @@ class ConsoleReporter extends Reporter {
     }
 
     // add a new line
-    println
+    println()
+  }
+
+  def flush() {
   }
 
 }

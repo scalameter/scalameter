@@ -12,7 +12,7 @@ trait PerformanceTest extends DSL with HasExecutor {
 
 object PerformanceTest {
 
-  trait Default extends PerformanceTest {
+  trait LeastTime extends PerformanceTest {
     val executor = LocalExecutor.min
   }
 
