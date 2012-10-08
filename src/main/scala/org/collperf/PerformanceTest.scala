@@ -5,19 +5,39 @@ package org.collperf
 
 
 
-trait PerformanceTest extends DSL with HasExecutor {
+trait PerformanceTest extends DSL {
+
+  def executor: Executor
+
+  def reporter: Reporter
 
 }
 
 
 object PerformanceTest {
 
-  trait LeastTime extends PerformanceTest {
-    val executor = LocalExecutor.min
+  object Executor {
+
+    trait MinTime extends PerformanceTest {
+      val executor = LocalExecutor(Aggregator.min)
+    }
+
+    trait MinTimeStatistic extends PerformanceTest {
+      val executor = LocalExecutor(Aggregator.statistic(Aggregator.min))
+    }
+
+    trait NewJVM extends PerformanceTest {
+      val executor = NewJVMExecutor
+    }
+
   }
 
-  trait NewJVM extends PerformanceTest {
-    val executor = NewJVMExecutor
+  object Reporter {
+
+    trait Html extends PerformanceTest {
+      val reporter = new reporters.HtmlReporter
+    }
+
   }
 
 }

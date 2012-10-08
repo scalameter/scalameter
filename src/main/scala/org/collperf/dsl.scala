@@ -2,10 +2,15 @@ package org.collperf
 
 
 
+import collection._
 
 
 
-trait DSL extends HasExecutor {
+trait DSL {
+
+  def executor: Executor
+
+  def reporter: Reporter
 
   object performance {
     def of(modulename: String) = new {
@@ -23,66 +28,21 @@ trait DSL extends HasExecutor {
     }
   }
 
-  protected case class Using[T](benchmark: Benchmark[T]) {
+  protected case class Using[T](benchmark: BenchmarkSetup[T]) {
     def setUp(block: T => Any) = Using(benchmark.copy(setup = Some(block)))
     def tearDown(block: T => Any) = Using(benchmark.copy(teardown = Some(block)))
     def warmUp(block: =>Any) = Using(benchmark.copy(customwarmup = Some(() => block)))
     def curve(name: String) = Using(benchmark.copy(context = benchmark.context + (Key.curve -> name)))
     def apply(block: T => Any) {
-      scheduleBenchmark(benchmark.copy(snippet = block))
+      val result = benchmark.copy(snippet = block).run()
+      val persistor = benchmark.context.goe(Key.persistor, Persistor.None)
+      benchmark.reporter.report(result, persistor)
     }
   }
 
-  def using[T](gen: Gen[T]) = Using(Benchmark(executor, currentContext.value, gen, None, None, None, null))
+  def using[T](gen: Gen[T]) = Using(BenchmarkSetup(executor, reporter, currentContext.value, gen, None, None, None, null))
 
 }
-
-
-class TestSeq extends PerformanceTest.LeastTime {
-
-  performance of "Seq" in {
-
-    val lists = for {
-      size <- Gen.range("size")(500000, 5000000, 200000)
-    } yield (0 until size).toList
-
-    val arrays = for {
-      size <- Gen.range("size")(500000, 5000000, 200000)
-    } yield (0 until size).toArray
-
-    val vectors = for {
-      size <- Gen.range("size")(500000, 5000000, 200000)
-    } yield (0 until size).toVector
-
-    measure method "filter" in {
-      using(lists) curve("List") apply {
-        _.filter(_ % 2 == 0)
-      }
-
-      using(arrays) curve("Array") apply {
-        _.filter(_ % 2 == 0)
-      }
-
-      using(vectors) curve("Vector") apply {
-        _.filter(_ % 2 == 0)
-      }
-    }
-
-  }
-
-}
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

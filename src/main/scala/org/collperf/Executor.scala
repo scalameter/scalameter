@@ -9,7 +9,7 @@ import compat.Platform
 
 trait Executor {
 
-  def run[T](benchmark: Benchmark[T]): Result
+  def run[T](benchmark: BenchmarkSetup[T]): Result
 
 }
 
@@ -31,7 +31,7 @@ trait Executor {
  *  most triggered GC cycles are fast because they collect only
  *  the young generation.
  */
-class LocalExecutor(aggregate: Seq[Long] => Long) extends Executor {
+class LocalExecutor(val aggregator: Aggregator) extends Executor {
 
   case class Warmer(warmups: Int, set: () => Any, tear: () => Any) {
     def foreach[U](f: Int => U): Unit = {
@@ -70,14 +70,14 @@ class LocalExecutor(aggregate: Seq[Long] => Long) extends Executor {
     }
   }
 
-  def run[T](benchmark: Benchmark[T]): Result = {
+  def run[T](benchmark: BenchmarkSetup[T]): Result = {
     import benchmark._
 
     val set = setup.orNull
     val tear = teardown.orNull
 
     // run warm up
-    val warmups = context.getOrElse[Int](Key.warmupRuns, 1)
+    val warmups = context.goe(Key.warmupRuns, 1)
     customwarmup match {
       case Some(warmup) =>
         for (i <- 0 until warmups) warmup()
@@ -94,7 +94,7 @@ class LocalExecutor(aggregate: Seq[Long] => Long) extends Executor {
 
     // run tests
     val measurements = new mutable.ArrayBuffer[Measurement]()
-    val repetitions = context.getOrElse[Int](Key.benchRuns, 1)
+    val repetitions = context.goe(Key.benchRuns, 1)
     for ((x, params) <- gen.dataset) {
       var iteration = 0
       var times = List[Long]()
@@ -112,11 +112,12 @@ class LocalExecutor(aggregate: Seq[Long] => Long) extends Executor {
         iteration += 1
       }
 
-      val processedTime = aggregate(times)
-      measurements += Measurement(processedTime, params)
+      val processedTime = aggregator(times)
+      val data = aggregator.data(times)
+      measurements += Measurement(processedTime, params, data)
     }
 
-    Result(measurements, context)
+    Result(measurements, Map.empty, context + (Key.aggregator -> aggregator.name))
   }
 
 }
@@ -124,22 +125,14 @@ class LocalExecutor(aggregate: Seq[Long] => Long) extends Executor {
 
 object LocalExecutor {
 
-  def min = new LocalExecutor(_.min)
-
-  def median = new LocalExecutor({
-    xs =>
-    val sorted = xs.sorted
-    sorted(sorted.size / 2)
-  })
-
-  def average = new LocalExecutor(xs => xs.sum / xs.size)
+  def apply(a: Aggregator) = new LocalExecutor(a)
 
 }
 
 
 object NewJVMExecutor extends Executor {
 
-  def run[T](benchmark: Benchmark[T]): Result = {
+  def run[T](benchmark: BenchmarkSetup[T]): Result = {
     // TODO
 
     null

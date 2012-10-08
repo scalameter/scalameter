@@ -34,6 +34,8 @@ trait Gen[T] extends Serializable {
 
 object Gen {
 
+  def single[T](axisName: String)(v: T): Gen[T] = enumeration(axisName)(v)
+
   def range(axisName: String)(from: Int, until: Int, step: Int): Gen[Int] = new Gen[Int] {
     def warmupset = Iterator.single(until)
     def dataset = Iterator.range(from, until, step).map(x => (x, Parameters(axisName -> x)))

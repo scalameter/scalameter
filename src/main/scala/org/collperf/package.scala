@@ -18,23 +18,31 @@ package object collperf {
 
   var configurationContext = Context.machine
 
-  private val scheduled = mutable.ArrayBuffer[Benchmark[_]]()
-
-  def scheduleBenchmark[T](benchmark: Benchmark[T]) {
-    scheduled += benchmark
+  implicit def fun2ops(f: Seq[Long] => Long) = new {
+    def toAggregator(n: String) = new Aggregator {
+      def name = n
+      def apply(times: Seq[Long]) = f(times)
+      def data(times: Seq[Long]) = None
+    }
   }
 
-  def flushBenchmarkSchedule(): Seq[Benchmark[_]] = {
-    val result = scheduled.toVector
-    scheduled.clear()
-    result
+  implicit final class SeqLongOps(val sq: Seq[Long]) extends AnyVal {
+    def stdev: Double = {
+      val m = 1.0 * sq.sum / sq.size
+      var s = 0.0
+      for (v <- sq) {
+        val diff = v - m
+        s += diff * diff
+      }
+      math.sqrt(s / (sq.size - 1))
+    }
   }
 
   /* logging */
 
   object log {
     def verbose(msg: =>Any) {
-      if (configurationContext.getOrElse("verbose", false)) log synchronized {
+      if (configurationContext.goe("verbose", false)) log synchronized {
         println(msg)
       }
     }
@@ -61,13 +69,17 @@ package collperf {
     val benchRuns = "runs"
     val warmupRuns = "warmups"
     val verbose = "verbose"
+
+    val persistor = "persistor"
+    val aggregator = "aggregator"
+    val bigO = "big-o"
   }
 
   case class Context(properties: immutable.Map[String, Any]) {
     def +(t: (String, Any)) = Context(properties + t)
     def ++(that: Context) = Context(this.properties ++ that.properties)
     def get[T](key: String) = properties.get(key).asInstanceOf[Option[T]]
-    def getOrElse[T](key: String, v: T) = properties.getOrElse(key, v).asInstanceOf[T]
+    def goe[T](key: String, v: T) = properties.getOrElse(key, v).asInstanceOf[T]
 
     def scopeName = s"${properties.getOrElse(Key.module, "")}-${properties.getOrElse(Key.method, "")}"
   }
@@ -98,25 +110,61 @@ package collperf {
     def apply(xs: (String, Any)*) = new Parameters(immutable.ListMap(xs: _*))
   }
 
-  case class Measurement(time: Long, params: Parameters)
+  case class Measurement(time: Long, params: Parameters, data: Option[Any])
 
-  case class Result(measurements: Seq[Measurement], context: Context)
+  case class Result(measurements: Seq[Measurement], info: Map[String, Any], context: Context)
 
   case class History(results: Seq[(Date, Result)])
 
-  case class Benchmark[T](executor: Executor, context: Context, gen: Gen[T], setup: Option[T => Any], teardown: Option[T => Any], customwarmup: Option[() => Any], snippet: T => Any) {
-    def run() = executor.run(this)
+  case class BenchmarkSetup[T](executor: Executor, reporter: Reporter, context: Context, gen: Gen[T], setup: Option[T => Any], teardown: Option[T => Any], customwarmup: Option[() => Any], snippet: T => Any) {
+    def run(): Result = executor.run(this)
   }
 
-  trait Reporter {
-    def report(result: Result, persistor: Persistor): Unit
-    def flush(): Unit
+  case class Statistic(min: Long, max: Long, average: Long, stdev: Long, median: Long)
+
+  trait Aggregator extends (Seq[Long] => Long) {
+    def name: String
+    def apply(times: Seq[Long]): Long
+    def data(times: Seq[Long]): Option[Any]
   }
 
-  object Reporter {
-    object None extends Reporter {
-      def report(result: Result, persistor: Persistor) {}
-      def flush() {}
+  object Aggregator {
+    def min = {
+      xs: Seq[Long] => xs.min
+    } toAggregator "min"
+
+    def max = {
+      xs: Seq[Long] => xs.max
+    } toAggregator "max"
+
+    def median = {
+      xs: Seq[Long] =>
+      val sorted = xs.sorted
+      sorted(sorted.size / 2)
+    } toAggregator "median"
+
+    def average = { xs: Seq[Long] => xs.sum / xs.size } toAggregator "average"
+
+    def stdev = { xs: Seq[Long] => xs.stdev.toLong } toAggregator "stdev"
+
+    def statistic(a: Aggregator) = new Aggregator {
+      def name = a.name
+      def apply(times: Seq[Long]) = a(times)
+      def data(times: Seq[Long]) = Some(Statistic(
+        min = Aggregator.min(times),
+        max = Aggregator.max(times),
+        average = Aggregator.average(times),
+        stdev = Aggregator.stdev(times),
+        median = Aggregator.median(times)
+      ))
+    }
+
+    def withData(a: Aggregator)(as: Aggregator*) = new Aggregator {
+      def name = a.name
+      def apply(times: Seq[Long]) = a(times)
+      def data(times: Seq[Long]) = Some((for (a <- as) yield {
+        (a.name, a.apply(times))
+      }).toMap)
     }
   }
 
@@ -130,10 +178,6 @@ package collperf {
       def load(context: Context): History = History(Nil)
       def save(result: Result) {}
     }
-  }
-
-  trait HasExecutor {
-    def executor: Executor
   }
 
 }
