@@ -8,6 +8,8 @@ import collection._
 
 trait DSL {
 
+  private val results = new scala.util.DynamicVariable(List[Result]())
+
   def executor: Executor
 
   def reporter: Reporter
@@ -16,6 +18,10 @@ trait DSL {
     def of(modulename: String) = new {
       def in(block: =>Unit): Unit = currentContext.withAttribute(Key.module, modulename) {
         block
+
+        val persistor = currentContext.value.goe(Key.persistor, Persistor.None)
+        reporter.report(results.value, persistor)
+        results.value = Nil
       }
     }
   }
@@ -35,8 +41,7 @@ trait DSL {
     def curve(name: String) = Using(benchmark.copy(context = benchmark.context + (Key.curve -> name)))
     def apply(block: T => Any) {
       val result = benchmark.copy(snippet = block).run()
-      val persistor = benchmark.context.goe(Key.persistor, Persistor.None)
-      benchmark.reporter.report(result, persistor)
+      results.value ::= result
     }
   }
 

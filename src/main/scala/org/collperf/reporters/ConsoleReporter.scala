@@ -24,7 +24,14 @@ class ConsoleReporter extends Reporter {
     println()
   }
 
-  def flush() {
-  }
+  def report(result: Seq[Result], persistor: Persistor) = for (res <- result) report(res, persistor)
 
 }
+
+
+
+
+
+
+
+

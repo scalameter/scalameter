@@ -8,7 +8,7 @@ import collection._
 
 class SeqTest extends PerformanceTest.Executor.MinTime with PerformanceTest.Reporter.Html {
 
-  val largesizes = Gen.range("size")(500000, 5000000, 500000)
+  val largesizes = Gen.range("size")(500000, 5000000, 125000)
 
   val lists = for {
     size <- largesizes

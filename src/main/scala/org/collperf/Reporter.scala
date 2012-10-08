@@ -7,20 +7,17 @@ import collection._
 
 
 trait Reporter extends Serializable {
-  def report(result: Result, persistor: Persistor): Unit
-  def flush(): Unit
+  def report(result: Seq[Result], persistor: Persistor): Unit
 }
 
 
 object Reporter {
   object None extends Reporter {
-    def report(result: Result, persistor: Persistor) {}
-    def flush() {}
+    def report(result: Seq[Result], persistor: Persistor) {}
   }
 
   case class Composite(rs: Reporter*) {
-    def report(result: Result, persistor: Persistor) = for (r <- rs) r.report(result, persistor)
-    def flush() = for (r <- rs) r.flush()
+    def report(result: Seq[Result], persistor: Persistor) = for (r <- rs) r.report(result, persistor)
   }
 }
 
