@@ -9,7 +9,7 @@ import collection._
 
 object NewJVMExecutor extends Executor {
 
-  def run[T](benchmark: Setup[T]): CurveData = {
+  def run[T](benchmark: Seq[Setup[T]]): Seq[CurveData] = {
     // TODO
 
     null

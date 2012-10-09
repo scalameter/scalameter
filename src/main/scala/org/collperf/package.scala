@@ -137,8 +137,9 @@ package collperf {
 
   case class History(results: Seq[(Date, ResultData)])
 
-  case class Setup[T](executor: Executor, reporter: Reporter, context: Context, gen: Gen[T], setup: Option[T => Any], teardown: Option[T => Any], customwarmup: Option[() => Any], snippet: T => Any) {
-    def run(): CurveData = executor.run(this)
+  case class Setup[T](context: Context, gen: Gen[T], setup: Option[T => Any], teardown: Option[T => Any], customwarmup: Option[() => Any], snippet: T => Any) {
+    def setupFor(v: T) = if (setup.isEmpty) { () => } else { () => setup.get(v) }
+    def teardownFor(v: T) = if (teardown.isEmpty) { () => } else { () => teardown.get(v) }
   }
 
   case class Statistic(min: Long, max: Long, average: Long, stdev: Long, median: Long)
@@ -178,6 +179,12 @@ package collperf {
         stdev = Aggregator.stdev(times),
         median = Aggregator.median(times)
       ))
+    }
+
+    def complete(a: Aggregator) = new Aggregator {
+      def name = a.name
+      def apply(times: Seq[Long]) = a(times)
+      def data(times: Seq[Long]) = Some(times)
     }
 
     def withData(a: Aggregator)(as: Aggregator*) = new Aggregator {

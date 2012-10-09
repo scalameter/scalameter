@@ -9,7 +9,7 @@ import compat.Platform
 
 trait Executor {
 
-  def run[T](benchmark: Setup[T]): CurveData
+  def run[T](setups: Seq[Setup[T]]): Seq[CurveData]
 
 }
 

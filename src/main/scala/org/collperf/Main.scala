@@ -19,7 +19,7 @@ object Main {
     // prepare top-level context
     // identify test objects
     // create reporters and persistors
-    configurationContext = Context.machine ++ configuration.context + (Key.persistor -> configuration.persistor)
+    configurationContext = Context.machine ++ configuration.context
     currentContext.value = configurationContext
     import configuration._
 
@@ -29,18 +29,19 @@ object Main {
     }
   }
 
-  case class Configuration(benches: Seq[String], persistor: Persistor, context: Context)
+  case class Configuration(benches: Seq[String], context: Context)
 
   object Configuration extends JavaTokenParsers {
 
     private def persistorFor(name: String) = name match {
       case "None" => Persistor.None
+      case "Serialization" => new persistance.SerializationPersistor
     }
 
     def fromCommandLineArgs(args: Array[String]) = {
       def arguments: Parser[Configuration] = rep(arg) ^^ {
-        case configs => configs.foldLeft(Configuration(Nil, Persistor.None, Context.empty)) {
-          case (acc, x) => Configuration(acc.benches ++ x.benches, x.persistor, acc.context ++ x.context)
+        case configs => configs.foldLeft(Configuration(Nil, Context.empty)) {
+          case (acc, x) => Configuration(acc.benches ++ x.benches, acc.context ++ x.context)
         }
       }
       def arg: Parser[Configuration] = benches | persistor | intsetting | stringsetting | flag
@@ -50,20 +51,20 @@ object Main {
       def classnames: Parser[Seq[String]] = repsep(classname, ":")
       def classname: Parser[String] = repsep(ident, ".") ^^ { _.mkString(".") }
       def benches: Parser[Configuration] = listOf("benches", "b") ^^ {
-        case names => Configuration(names, Persistor.None, Context.empty)
+        case names => Configuration(names, Context.empty)
       }
       def persistor: Parser[Configuration] = "-" ~ ("persistor" | "p") ~ ident ^^ {
-        case _ ~ _ ~ name => Configuration(Nil, persistorFor(name), Context.empty)
+        case _ ~ _ ~ name => Configuration(Nil, Context(Key.persistor -> persistorFor(name)))
       }
       def intsetting: Parser[Configuration] = "-" ~ ident ~ decimalNumber ^^ {
-        case _ ~ "Cwarmups" ~ num => Configuration(Nil, Persistor.None, Context(Key.warmupRuns -> num.toInt))
-        case _ ~ "Cruns" ~ num => Configuration(Nil, Persistor.None, Context(Key.benchRuns -> num.toInt))
+        case _ ~ "Cwarmups" ~ num => Configuration(Nil, Context(Key.warmupRuns -> num.toInt))
+        case _ ~ "Cruns" ~ num => Configuration(Nil, Context(Key.benchRuns -> num.toInt))
       }
       def stringsetting: Parser[Configuration] = "-" ~ ident ~ ident ^^ {
-        case _ ~ "Cresultdir" ~ s => Configuration(Nil, Persistor.None, Context(Key.resultDir -> s))
+        case _ ~ "Cresultdir" ~ s => Configuration(Nil, Context(Key.resultDir -> s))
       }
       def flag: Parser[Configuration] = "-" ~ ident ^^ {
-        case _ ~ "verbose" => Configuration(Nil, Persistor.None, Context(Key.verbose -> true))
+        case _ ~ "verbose" => Configuration(Nil, Context(Key.verbose -> true))
         case _ ~ unknownFlag => sys.error(s"Unknown flag '$unknownFlag'")
       }
 

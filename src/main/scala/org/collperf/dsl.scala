@@ -6,9 +6,10 @@ import collection._
 
 
 
-trait DSL {
+trait DSL extends DelayedInit {
 
-  private val curves = new scala.util.DynamicVariable(List[CurveData]())
+  private val curves = new scala.util.DynamicVariable(mutable.ArrayBuffer[CurveData]())
+  private val setups = new scala.util.DynamicVariable(mutable.ArrayBuffer[Setup[_]]())
 
   def executor: Executor
 
@@ -20,17 +21,22 @@ trait DSL {
         block
 
         val persistor = currentContext.value.goe(Key.persistor, Persistor.None)
-        val cs = curves.value.reverse
+        val cs = curves.value
         reporter.report(ResultData(cs, cs.head.context), persistor)
-        curves.value = Nil
+        curves.value.clear()
       }
     }
   }
+
+  type SameType
 
   object measure {
     def method(methodname: String) = new {
       def in(block: =>Unit): Unit = currentContext.withAttribute(Key.method, methodname) {
         block
+
+        curves.value ++= executor.run(setups.value.asInstanceOf[Seq[Setup[SameType]]])
+        setups.value.clear()
       }
     }
   }
@@ -41,12 +47,16 @@ trait DSL {
     def warmUp(block: =>Any) = Using(benchmark.copy(customwarmup = Some(() => block)))
     def curve(name: String) = Using(benchmark.copy(context = benchmark.context + (Key.curve -> name)))
     def apply(block: T => Any) {
-      val curve = benchmark.copy(snippet = block).run()
-      curves.value ::= curve
+      setups.value += benchmark.copy(snippet = block)
     }
   }
 
-  def using[T](gen: Gen[T]) = Using(Setup(executor, reporter, currentContext.value, gen, None, None, None, null))
+  def using[T](gen: Gen[T]) = Using(Setup(currentContext.value, gen, None, None, None, null))
+
+  def delayedInit(body: =>Unit) {
+    // TODO refactor dsl to make a tree, run all warmups
+    body
+  }
 
 }
 

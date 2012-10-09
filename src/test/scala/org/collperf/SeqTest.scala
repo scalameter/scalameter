@@ -8,7 +8,7 @@ import collection._
 
 class SeqTest extends PerformanceTest.Executor.MinTime with PerformanceTest.Reporter.Html {
 
-  val largesizes = Gen.range("size")(500000, 5000000, 500000)
+  val largesizes = Gen.range("size")(500000, 5000000, 100000)
 
   val lists = for {
     size <- largesizes
@@ -35,34 +35,39 @@ class SeqTest extends PerformanceTest.Executor.MinTime with PerformanceTest.Repo
 
   performance of "Large-Seq" in {
 
-    measure method "filter" in {
-      using(lists) curve("List") apply {
-        _.filter(_ % 2 == 0)
+    measure method "foreach" in {
+      using(arrays) curve("Array") apply { xs =>
+        var sum = 0
+        xs.foreach(sum += _)
       }
 
-      using(arrays) curve("Array") apply {
-        _.filter(_ % 2 == 0)
+      using(arraybuffers) curve("ArrayBuffer") apply { xs =>
+        var sum = 0
+        xs.foreach(sum += _)
+      }
+      
+      using(vectors) curve("Vector") apply { xs =>
+        var sum = 0
+        xs.foreach(sum += _)
       }
 
-      using(vectors) curve("Vector") apply {
-        _.filter(_ % 2 == 0)
+      using(lists) curve("List") apply { xs =>
+        var sum = 0
+        xs.foreach(sum += _)
       }
 
-      using(mutablelists) curve("LinkedList") apply {
-        _.filter(_ % 2 == 0)
-      }
-
-      using(arraybuffers) curve("ArrayBuffer") apply {
-        _.filter(_ % 2 == 0)
+      using(mutablelists) curve("LinkedList") apply { xs =>
+        var sum = 0
+        xs.foreach(sum += _)
       }
     }
 
     measure method "reduce" in {
-      using(lists) curve("List") apply {
+      using(arrays) curve("Array") apply {
         _.reduce(_ + _)
       }
 
-      using(arrays) curve("Array") apply {
+      using(arraybuffers) curve("ArrayBuffer") apply {
         _.reduce(_ + _)
       }
 
@@ -70,21 +75,43 @@ class SeqTest extends PerformanceTest.Executor.MinTime with PerformanceTest.Repo
         _.reduce(_ + _)
       }
 
-      using(mutablelists) curve("LinkedList") apply {
+      using(lists) curve("List") apply {
         _.reduce(_ + _)
       }
 
-      using(arraybuffers) curve("ArrayBuffer") apply {
+      using(mutablelists) curve("LinkedList") apply {
         _.reduce(_ + _)
       }
     }
 
-    measure method "groupBy" in {
+    measure method "filter" in {
+      using(arrays) curve("Array") apply {
+        _.filter(_ % 2 == 0)
+      }
+
+      using(arraybuffers) curve("ArrayBuffer") apply {
+        _.filter(_ % 2 == 0)
+      }
+      
+      using(vectors) curve("Vector") apply {
+        _.filter(_ % 2 == 0)
+      }
+
       using(lists) curve("List") apply {
+        _.filter(_ % 2 == 0)
+      }
+
+      using(mutablelists) curve("LinkedList") apply {
+        _.filter(_ % 2 == 0)
+      }
+    }
+
+    measure method "groupBy" in {
+      using(arrays) curve("Array") apply {
         _.groupBy(_ % 10)
       }
 
-      using(arrays) curve("Array") apply {
+      using(arraybuffers) curve("ArrayBuffer") apply {
         _.groupBy(_ % 10)
       }
 
@@ -92,11 +119,11 @@ class SeqTest extends PerformanceTest.Executor.MinTime with PerformanceTest.Repo
         _.groupBy(_ % 10)
       }
 
-      using(mutablelists) curve("LinkedList") apply {
+      using(lists) curve("List") apply {
         _.groupBy(_ % 10)
       }
 
-      using(arraybuffers) curve("ArrayBuffer") apply {
+      using(mutablelists) curve("LinkedList") apply {
         _.groupBy(_ % 10)
       }
     }
