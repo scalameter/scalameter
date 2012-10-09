@@ -1,5 +1,5 @@
 package org.collperf
-package reporters
+package reporting
 
 
 
@@ -18,15 +18,15 @@ case class HtmlReporter(val renderers: HtmlReporter.Renderer*) extends Reporter 
     <link type="text/css" media="screen" rel="stylesheet" href="lib/index.css"/>
   </head>
 
-  def body(results: Seq[Result], persistor: Persistor) =
+  def body(result: ResultData, persistor: Persistor) =
   <body>
   {machineInformation}
   <h1>Performance test charts</h1>
   {
-    for ((module, moduleresults) <- results.groupBy(_.context.scopeName)) yield <div>
+    for ((module, moduleresults) <- result.curves.orderedGroupBy(_.context.module)) yield <div>
     <h2>Performance test group: {module}</h2>
     {
-      for ((method, methodresults) <- moduleresults.groupBy(_.context.goe(Key.method, ""))) yield <p><div>
+      for ((method, methodresults) <- moduleresults.orderedGroupBy(_.context.goe(Key.method, ""))) yield <p><div>
         <h3>Method: {method}</h3>
         {
           for (r <- renderers) yield r.render(methodresults)
@@ -42,23 +42,25 @@ case class HtmlReporter(val renderers: HtmlReporter.Renderer*) extends Reporter 
   <h1>Machine information</h1>
   <p><ul>
   {
-    for ((k, v) <- Context.machine.properties) yield <li>
+    for ((k, v) <- Context.machine.properties.toList.sortBy(_._1)) yield <li>
     {k + ": " + v}
     </li>
   }
   </ul></p>
   </div>
 
-  def report(results: Seq[Result], persistor: Persistor) {
-    new File("tmp/report/images").mkdir()
-    new File("tmp/report/lib").mkdir()
+  def report(results: ResultData, persistor: Persistor) {
+    val resultdir = results.context.goe(Key.resultDir, "tmp")
+
+    new File(s"$resultdir/report/images").mkdir()
+    new File(s"$resultdir/report/lib").mkdir()
 
     val report = <html>{head ++ body(results, persistor)}</html>
 
     val css = getClass.getClassLoader.getResourceAsStream("css/index.css")
     try {
       val reader = new BufferedReader(new InputStreamReader(css))
-      printToFile(new File("tmp/report/lib/index.css")) { p =>
+      printToFile(new File(s"$resultdir/report/lib/index.css")) { p =>
         var line = ""
         while (line != null) {
           p.println(line)
@@ -69,7 +71,7 @@ case class HtmlReporter(val renderers: HtmlReporter.Renderer*) extends Reporter 
       css.close()
     }
 
-    printToFile(new File("tmp/report/index.html")) {
+    printToFile(new File(s"$resultdir/report/index.html")) {
       _.println(report.toString)
     }
   }
@@ -85,29 +87,29 @@ case class HtmlReporter(val renderers: HtmlReporter.Renderer*) extends Reporter 
 object HtmlReporter {
 
   trait Renderer {
-    def render(result: Seq[Result]): Node
+    def render(curves: Seq[CurveData]): Node
   }
 
   object Renderer {
     def all = Seq(Info(), BigO(), Chart(ChartReporter.ChartFactory.XYLine()))
 
     case class Info() extends Renderer {
-      def render(results: Seq[Result]): Node = 
+      def render(curves: Seq[CurveData]): Node = 
       <div>Info:
       <ul>
-      <li>Number of runs: {results.head.context.goe(Key.benchRuns, "")}</li>
-      <li>Aggregator: {results.head.context.goe(Key.aggregator, "")}</li>
+      <li>Number of runs: {curves.head.context.goe(Key.benchRuns, "")}</li>
+      <li>Aggregator: {curves.head.context.goe(Key.aggregator, "")}</li>
       </ul>
       </div>
     }
 
     case class BigO() extends Renderer {
-      def render(results: Seq[Result]): Node = 
+      def render(curves: Seq[CurveData]): Node = 
       <div>Big O analysis:
       <ul>
       {
-        for (r <- results) yield <li>
-        {r.context.goe(Key.curve, "")}: {r.context.goe(Key.bigO, "(no data)")}
+        for (cd <- curves) yield <li>
+        {cd.context.goe(Key.curve, "")}: {cd.context.goe(Key.bigO, "(no data)")}
         </li>
       }
       </ul>
@@ -115,10 +117,11 @@ object HtmlReporter {
     }
 
     case class Chart(factory: ChartReporter.ChartFactory) extends Renderer {
-      def render(results: Seq[Result]): Node = {
-        val scopename = results.head.context.scopeName
-        val chart = factory.createChart(scopename, results)
-        val chartfile = new File(s"tmp/report/images/$scopename.png")
+      def render(curves: Seq[CurveData]): Node = {
+        val resultdir = curves.head.context.goe(Key.resultDir, "tmp")
+        val scopename = curves.head.context.scopeName
+        val chart = factory.createChart(scopename, curves)
+        val chartfile = new File(s"$resultdir/report/images/$scopename.png")
         ChartUtilities.saveChartAsPNG(chartfile, chart, 1600, 1200)
 
         <div>

@@ -38,6 +38,22 @@ package object collperf {
     }
   }
 
+  implicit final class SeqOps[T](val sq: Seq[T]) extends AnyVal {
+    def orderedGroupBy[K](f: T => K): Map[K, Seq[T]] = {
+      val map = mutable.LinkedHashMap[K, mutable.ArrayBuffer[T]]()
+
+      for (elem <- sq) {
+        val key = f(elem)
+        map.get(key) match {
+          case Some(b) => b += elem
+          case None => map(key) = mutable.ArrayBuffer(elem)
+        }
+      }
+
+      map
+    }
+  }
+
   /* logging */
 
   object log {
@@ -69,6 +85,7 @@ package collperf {
     val benchRuns = "runs"
     val warmupRuns = "warmups"
     val verbose = "verbose"
+    val resultDir = "result-dir"
 
     val persistor = "persistor"
     val aggregator = "aggregator"
@@ -82,6 +99,8 @@ package collperf {
     def goe[T](key: String, v: T) = properties.getOrElse(key, v).asInstanceOf[T]
 
     def scopeName = s"${properties.getOrElse(Key.module, "")}-${properties.getOrElse(Key.method, "")}"
+    def module = properties.getOrElse(Key.module, "")
+    def method = properties.getOrElse(Key.method, "")
   }
 
   object Context {
@@ -112,12 +131,14 @@ package collperf {
 
   case class Measurement(time: Long, params: Parameters, data: Option[Any])
 
-  case class Result(measurements: Seq[Measurement], info: Map[String, Any], context: Context)
+  case class CurveData(measurements: Seq[Measurement], info: Map[String, Any], context: Context)
 
-  case class History(results: Seq[(Date, Result)])
+  case class ResultData(curves: Seq[CurveData], context: Context)
 
-  case class BenchmarkSetup[T](executor: Executor, reporter: Reporter, context: Context, gen: Gen[T], setup: Option[T => Any], teardown: Option[T => Any], customwarmup: Option[() => Any], snippet: T => Any) {
-    def run(): Result = executor.run(this)
+  case class History(results: Seq[(Date, ResultData)])
+
+  case class Setup[T](executor: Executor, reporter: Reporter, context: Context, gen: Gen[T], setup: Option[T => Any], teardown: Option[T => Any], customwarmup: Option[() => Any], snippet: T => Any) {
+    def run(): CurveData = executor.run(this)
   }
 
   case class Statistic(min: Long, max: Long, average: Long, stdev: Long, median: Long)
@@ -170,17 +191,31 @@ package collperf {
 
   trait Persistor {
     def load(context: Context): History
-    def save(result: Result): Unit
+    def save(result: ResultData): Unit
   }
 
   object Persistor {
     object None extends Persistor {
       def load(context: Context): History = History(Nil)
-      def save(result: Result) {}
+      def save(result: ResultData) {}
     }
   }
 
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

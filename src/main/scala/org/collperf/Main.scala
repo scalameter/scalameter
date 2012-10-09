@@ -43,7 +43,7 @@ object Main {
           case (acc, x) => Configuration(acc.benches ++ x.benches, x.persistor, acc.context ++ x.context)
         }
       }
-      def arg: Parser[Configuration] = benches | persistor | intsetting | flag
+      def arg: Parser[Configuration] = benches | persistor | intsetting | stringsetting | flag
       def listOf(flagname: String, shorthand: String): Parser[Seq[String]] = "-" ~ (flagname | shorthand) ~ classnames ^^ {
         case _ ~ _ ~ classnames => classnames
       }
@@ -58,6 +58,9 @@ object Main {
       def intsetting: Parser[Configuration] = "-" ~ ident ~ decimalNumber ^^ {
         case _ ~ "Cwarmups" ~ num => Configuration(Nil, Persistor.None, Context(Key.warmupRuns -> num.toInt))
         case _ ~ "Cruns" ~ num => Configuration(Nil, Persistor.None, Context(Key.benchRuns -> num.toInt))
+      }
+      def stringsetting: Parser[Configuration] = "-" ~ ident ~ ident ^^ {
+        case _ ~ "Cresultdir" ~ s => Configuration(Nil, Persistor.None, Context(Key.resultDir -> s))
       }
       def flag: Parser[Configuration] = "-" ~ ident ^^ {
         case _ ~ "verbose" => Configuration(Nil, Persistor.None, Context(Key.verbose -> true))

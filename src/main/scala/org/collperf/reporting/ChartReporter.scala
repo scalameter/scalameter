@@ -1,5 +1,5 @@
 package org.collperf
-package reporters
+package reporting
 
 
 
@@ -15,14 +15,15 @@ import collection._
 
 case class ChartReporter(fileNamePrefix: String, drawer: ChartReporter.ChartFactory) extends Reporter {
 
-  private[reporters] val defaultChartWidth = 1600
-  private[reporters] val defaultChartHeight = 1200
+  private[reporting] val defaultChartWidth = 1600
+  private[reporting] val defaultChartHeight = 1200
 
-  def report(results: Seq[Result], persistor: Persistor) = {
-    val scopename = results.head.context.scopeName
-    val chart = drawer.createChart(scopename, results)
-    new File("tmp").mkdir()
-    val chartfile = new File(s"tmp/$fileNamePrefix$scopename.png")
+  def report(result: ResultData, persistor: Persistor) = {
+    val scopename = result.curves.head.context.scopeName
+    val chart = drawer.createChart(scopename, result.curves)
+    val dir = result.context.goe(Key.resultDir, "tmp")
+    new File(dir).mkdir()
+    val chartfile = new File(s"$dir/$fileNamePrefix$scopename.png")
     ChartUtilities.saveChartAsPNG(chartfile, chart, defaultChartWidth, defaultChartHeight)
   } 
 
@@ -32,19 +33,19 @@ case class ChartReporter(fileNamePrefix: String, drawer: ChartReporter.ChartFact
 object ChartReporter {
 
   trait ChartFactory {
-    def createChart(scopename: String, rs: Seq[Result]): JFreeChart
+    def createChart(scopename: String, cs: Seq[CurveData]): JFreeChart
   }
 
   object ChartFactory {
     case class XYLine() extends ChartFactory {
-      def createChart(scopename: String, rs: Seq[Result]): JFreeChart = {
+      def createChart(scopename: String, cs: Seq[CurveData]): JFreeChart = {
         val seriesCollection = new XYSeriesCollection
         val chartName = scopename
-        val xAxisName = rs.head.measurements.head.params.axisData.head._1
+        val xAxisName = cs.head.measurements.head.params.axisData.head._1
 
-        for ((result, idx) <- rs.zipWithIndex) {
-          val series = new XYSeries(result.context.goe(Key.curve, idx.toString), true, true)
-          for (measurement <- result.measurements) {
+        for ((curve, idx) <- cs.zipWithIndex) {
+          val series = new XYSeries(curve.context.goe(Key.curve, idx.toString), true, true)
+          for (measurement <- curve.measurements) {
             series.add(measurement.params.axisData.head._2.asInstanceOf[Int], measurement.time)
           }
           seriesCollection.addSeries(series)

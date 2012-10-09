@@ -19,11 +19,11 @@ object PerformanceTest {
   object Executor {
 
     trait MinTime extends PerformanceTest {
-      val executor = LocalExecutor(Aggregator.min)
+      val executor = execution.LocalExecutor(Aggregator.min)
     }
 
     trait NewJVM extends PerformanceTest {
-      val executor = NewJVMExecutor
+      val executor = execution.NewJVMExecutor
     }
 
   }
@@ -31,15 +31,15 @@ object PerformanceTest {
   object Reporter {
 
     trait Console extends PerformanceTest {
-      val reporter = new reporters.ConsoleReporter
+      val reporter = new reporting.ConsoleReporter
     }
 
     trait Chart extends PerformanceTest {
-      val reporter = new reporters.ChartReporter("", reporters.ChartReporter.ChartFactory.XYLine())
+      val reporter = new reporting.ChartReporter("", reporting.ChartReporter.ChartFactory.XYLine())
     }
 
     trait Html extends PerformanceTest {
-      val reporter = new reporters.HtmlReporter(reporters.HtmlReporter.Renderer.all: _*)
+      val reporter = new reporting.HtmlReporter(reporting.HtmlReporter.Renderer.all: _*)
     }
 
   }

@@ -8,7 +8,7 @@ import collection._
 
 trait DSL {
 
-  private val results = new scala.util.DynamicVariable(List[Result]())
+  private val curves = new scala.util.DynamicVariable(List[CurveData]())
 
   def executor: Executor
 
@@ -20,8 +20,9 @@ trait DSL {
         block
 
         val persistor = currentContext.value.goe(Key.persistor, Persistor.None)
-        reporter.report(results.value, persistor)
-        results.value = Nil
+        val cs = curves.value.reverse
+        reporter.report(ResultData(cs, cs.head.context), persistor)
+        curves.value = Nil
       }
     }
   }
@@ -34,18 +35,18 @@ trait DSL {
     }
   }
 
-  protected case class Using[T](benchmark: BenchmarkSetup[T]) {
+  protected case class Using[T](benchmark: Setup[T]) {
     def setUp(block: T => Any) = Using(benchmark.copy(setup = Some(block)))
     def tearDown(block: T => Any) = Using(benchmark.copy(teardown = Some(block)))
     def warmUp(block: =>Any) = Using(benchmark.copy(customwarmup = Some(() => block)))
     def curve(name: String) = Using(benchmark.copy(context = benchmark.context + (Key.curve -> name)))
     def apply(block: T => Any) {
-      val result = benchmark.copy(snippet = block).run()
-      results.value ::= result
+      val curve = benchmark.copy(snippet = block).run()
+      curves.value ::= curve
     }
   }
 
-  def using[T](gen: Gen[T]) = Using(BenchmarkSetup(executor, reporter, currentContext.value, gen, None, None, None, null))
+  def using[T](gen: Gen[T]) = Using(Setup(executor, reporter, currentContext.value, gen, None, None, None, null))
 
 }
 

@@ -1,5 +1,5 @@
 package org.collperf
-package reporters
+package reporting
 
 
 
@@ -8,7 +8,7 @@ package reporters
 
 class ConsoleReporter extends Reporter {
 
-  def report(result: Result, persistor: Persistor) {
+  def report(result: CurveData, persistor: Persistor) {
     // output context
     println(s"...:::Benchmark ${result.context.properties(Key.module)}.${result.context.properties(Key.method)}:::...")
     for ((key, value) <- result.context.properties.filterKeys(Context.machine.properties.keySet.contains).toSeq.sortBy(_._1)) {
@@ -24,7 +24,7 @@ class ConsoleReporter extends Reporter {
     println()
   }
 
-  def report(result: Seq[Result], persistor: Persistor) = for (res <- result) report(res, persistor)
+  def report(result: ResultData, persistor: Persistor) = for (res <- result.curves) report(res, persistor)
 
 }
 
