@@ -26,7 +26,7 @@ case class HtmlReporter(val renderers: HtmlReporter.Renderer*) extends Reporter 
       {machineInformation}
       <h1>Performance test charts</h1>
       {
-        for ((ctx, scoperesults) <- result.scopes) yield <p><div>
+        for ((ctx, scoperesults) <- result.scopes; if scoperesults.nonEmpty) yield <p><div>
           <h2>Performance test group: {ctx.scope}</h2>
           {
             val history = persistor.load(ctx)
@@ -101,6 +101,7 @@ object HtmlReporter {
       <ul>
       <li>Number of runs: {context.goe(Key.benchRuns, "")}</li>
       <li>Aggregator: {context.goe(Key.aggregator, "")}</li>
+      <li>Executor: {context.goe(Key.executor, "")}</li>
       </ul>
       </div>
     }

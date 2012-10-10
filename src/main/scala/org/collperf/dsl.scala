@@ -51,7 +51,7 @@ trait DSL extends DelayedInit {
     }
   }
 
-  def using[T](gen: Gen[T]) = Using(Setup(setupzipper.value.current.context, gen, None, None, None, null))
+  def using[T](gen: Gen[T]) = Using(Setup(setupzipper.value.current.context + (Key.executor -> executor.getClass.getSimpleName), gen, None, None, None, null))
 
   def delayedInit(body: =>Unit) {
     body

@@ -72,6 +72,7 @@ package collperf {
   object Key {
     val curve = "curve"
     val scope = "scope"
+    val executor = "executor"
 
     val jvmVersion = "jvm-version"
     val jvmVendor = "jvm-vendor"
@@ -130,9 +131,7 @@ package collperf {
 
   case class CurveData(measurements: Seq[Measurement], info: Map[String, Any], context: Context)
 
-  case class ResultData(curves: Seq[CurveData], context: Context)
-
-  case class History(results: Seq[(Date, ResultData)])
+  case class History(results: Seq[(Date, Context, Seq[CurveData])])
 
   case class Setup[T](context: Context, gen: Gen[T], setup: Option[T => Any], teardown: Option[T => Any], customwarmup: Option[() => Any], snippet: T => Any) {
     def setupFor(v: T) = if (setup.isEmpty) { () => } else { () => setup.get(v) }

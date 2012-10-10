@@ -7,14 +7,14 @@ package org.collperf
 
 trait Persistor {
   def load(context: Context): History
-  def save(result: ResultData): Unit
+  def save(context: Context, result: Seq[CurveData]): Unit
 }
 
 
 object Persistor {
   object None extends Persistor {
     def load(context: Context): History = History(Nil)
-    def save(result: ResultData) {}
+    def save(context: Context, result: Seq[CurveData]) {}
   }
 }
 

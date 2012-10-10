@@ -22,7 +22,7 @@ case class Tree[T](context: Context, items: Seq[T], children: Seq[Tree[T]]) {
   def scopes = new Traversable[(Context, Seq[T])] {
     private def recurse[U](f: ((Context, Seq[T])) => U, tree: Tree[T]) {
       f(tree.context -> tree.items)
-      for (n <- children) recurse(f, n)
+      for (n <- tree.children) recurse(f, n)
     }
     def foreach[U](f: ((Context, Seq[T])) => U) {
       recurse(f, Tree.this)
