@@ -5,6 +5,7 @@ package execution
 
 import collection._
 import compat.Platform
+import utils.Tree
 
 
 
@@ -68,7 +69,7 @@ class LocalExecutor(val aggregator: Aggregator) extends Executor {
     }
   }
 
-  def run[T](setups: Seq[Setup[T]]) = {
+  def run[T](setups: Tree[Setup[T]]) = {
     // run all warmups for classloading purposes
     for (bench <- setups) {
       import bench._

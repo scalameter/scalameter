@@ -16,11 +16,9 @@ object Main {
   }
 
   def run(configuration: Configuration) {
-    // prepare top-level context
+    // prepare initial context
     // identify test objects
-    // create reporters and persistors
-    configurationContext = Context.machine ++ configuration.context
-    currentContext.value = configurationContext
+    initialContext.value = Context.topLevel ++ configuration.context
     import configuration._
 
     // schedule benchmarks

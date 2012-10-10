@@ -3,13 +3,13 @@ package org.collperf
 
 
 import collection._
-import compat.Platform
+import utils.Tree
 
 
 
 trait Executor {
 
-  def run[T](setups: Seq[Setup[T]]): Seq[CurveData]
+  def run[T](setups: Tree[Setup[T]]): Tree[CurveData]
 
 }
 

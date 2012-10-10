@@ -10,6 +10,7 @@ import org.jfree.chart.plot.PlotOrientation
 import org.jfree.chart._
 import java.io._
 import collection._
+import utils.Tree
 
 
 
@@ -18,9 +19,9 @@ case class ChartReporter(fileNamePrefix: String, drawer: ChartReporter.ChartFact
   private[reporting] val defaultChartWidth = 1600
   private[reporting] val defaultChartHeight = 1200
 
-  def report(result: ResultData, persistor: Persistor) = {
-    val scopename = result.curves.head.context.scopeName
-    val chart = drawer.createChart(scopename, result.curves)
+  def report(result: Tree[CurveData], persistor: Persistor) = for ((ctx, curves) <- result.scopes) {
+    val scopename = ctx.scope
+    val chart = drawer.createChart(scopename, curves)
     val dir = result.context.goe(Key.resultDir, "tmp")
     new File(dir).mkdir()
     val chartfile = new File(s"$dir/$fileNamePrefix$scopename.png")

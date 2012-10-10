@@ -14,9 +14,9 @@ package object collperf {
     def withAttribute[T](name: String, v: Any)(block: =>T) = withValue(value + (name -> v))(block)
   }
 
-  val currentContext = new DynamicContext
+  val initialContext = new DynamicContext
 
-  var configurationContext = Context.machine
+  /* decorators */
 
   implicit def fun2ops(f: Seq[Long] => Long) = new {
     def toAggregator(n: String) = new Aggregator {
@@ -58,7 +58,7 @@ package object collperf {
 
   object log {
     def verbose(msg: =>Any) {
-      if (configurationContext.goe("verbose", false)) log synchronized {
+      if (initialContext.value.goe("verbose", false)) log synchronized {
         println(msg)
       }
     }
@@ -70,9 +70,8 @@ package object collperf {
 package collperf {
 
   object Key {
-    val module = "module"
-    val method = "method"
     val curve = "curve"
+    val scope = "scope"
 
     val jvmVersion = "jvm-version"
     val jvmVendor = "jvm-vendor"
@@ -98,9 +97,7 @@ package collperf {
     def get[T](key: String) = properties.get(key).asInstanceOf[Option[T]]
     def goe[T](key: String, v: T) = properties.getOrElse(key, v).asInstanceOf[T]
 
-    def scopeName = s"${properties.getOrElse(Key.module, "")}-${properties.getOrElse(Key.method, "")}"
-    def module = properties.getOrElse(Key.module, "")
-    def method = properties.getOrElse(Key.method, "")
+    def scope = properties(Key.scope).asInstanceOf[List[String]].reverse.mkString(".")
   }
 
   object Context {
@@ -108,7 +105,7 @@ package collperf {
 
     val empty = new Context(immutable.Map())
 
-    val topLevel = machine
+    val topLevel = machine + (Key.scope -> Nil)
 
     def machine = Context(immutable.Map(
       Key.jvmVersion -> sys.props("java.vm.version"),
@@ -193,18 +190,6 @@ package collperf {
       def data(times: Seq[Long]) = Some((for (a <- as) yield {
         (a.name, a.apply(times))
       }).toMap)
-    }
-  }
-
-  trait Persistor {
-    def load(context: Context): History
-    def save(result: ResultData): Unit
-  }
-
-  object Persistor {
-    object None extends Persistor {
-      def load(context: Context): History = History(Nil)
-      def save(result: ResultData) {}
     }
   }
 

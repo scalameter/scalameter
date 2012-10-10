@@ -7,6 +7,7 @@ import org.jfree.chart._
 import java.io._
 import collection._
 import xml._
+import utils.Tree
 
 
 
@@ -15,44 +16,40 @@ case class HtmlReporter(val renderers: HtmlReporter.Renderer*) extends Reporter 
   val sep = File.separator
 
   def head = 
-  <head>
-    <title>Performance report</title>
-    <link type="text/css" media="screen" rel="stylesheet" href="lib/index.css"/>
-  </head>
+    <head>
+      <title>Performance report</title>
+      <link type="text/css" media="screen" rel="stylesheet" href="lib/index.css"/>
+    </head>
 
-  def body(result: ResultData, persistor: Persistor) =
-  <body>
-  {machineInformation}
-  <h1>Performance test charts</h1>
-  {
-    for ((module, moduleresults) <- result.curves.orderedGroupBy(_.context.module)) yield <div>
-    <h2>Performance test group: {module}</h2>
-    {
-      for ((method, methodresults) <- moduleresults.orderedGroupBy(_.context.goe(Key.method, ""))) yield <p><div>
-        <h3>Method: {method}</h3>
-        {
-          val history = persistor.load(methodresults.head.context)
-          for (r <- renderers) yield r.render(methodresults, history)
-        }
-      </div></p>
-    }
-    </div>
+  def body(result: Tree[CurveData], persistor: Persistor) = {
+    <body>
+      {machineInformation}
+      <h1>Performance test charts</h1>
+      {
+        for ((ctx, scoperesults) <- result.scopes) yield <p><div>
+          <h2>Performance test group: {ctx.scope}</h2>
+          {
+            val history = persistor.load(ctx)
+            for (r <- renderers) yield r.render(ctx, scoperesults, history)
+          }
+        </div></p>
+      }
+    </body>
   }
-  </body>
 
   def machineInformation =
-  <div>
-  <h1>Machine information</h1>
-  <p><ul>
-  {
-    for ((k, v) <- Context.machine.properties.toList.sortBy(_._1)) yield <li>
-    {k + ": " + v}
-    </li>
-  }
-  </ul></p>
-  </div>
+    <div>
+      <h1>Machine information</h1>
+      <p><ul>
+      {
+        for ((k, v) <- Context.machine.properties.toList.sortBy(_._1)) yield <li>
+        {k + ": " + v}
+        </li>
+      }
+      </ul></p>
+    </div>
 
-  def report(results: ResultData, persistor: Persistor) {
+  def report(results: Tree[CurveData], persistor: Persistor) {
     val resultdir = results.context.goe(Key.resultDir, "tmp")
 
     new File(s"$resultdir").mkdir()
@@ -92,24 +89,24 @@ case class HtmlReporter(val renderers: HtmlReporter.Renderer*) extends Reporter 
 object HtmlReporter {
 
   trait Renderer {
-    def render(curves: Seq[CurveData], h: History): Node
+    def render(context: Context, curves: Seq[CurveData], h: History): Node
   }
 
   object Renderer {
     def all = Seq(Info(), BigO(), Chart(ChartReporter.ChartFactory.XYLine()))
 
     case class Info() extends Renderer {
-      def render(curves: Seq[CurveData], h: History): Node = 
+      def render(context: Context, curves: Seq[CurveData], h: History): Node = 
       <div>Info:
       <ul>
-      <li>Number of runs: {curves.head.context.goe(Key.benchRuns, "")}</li>
-      <li>Aggregator: {curves.head.context.goe(Key.aggregator, "")}</li>
+      <li>Number of runs: {context.goe(Key.benchRuns, "")}</li>
+      <li>Aggregator: {context.goe(Key.aggregator, "")}</li>
       </ul>
       </div>
     }
 
     case class BigO() extends Renderer {
-      def render(curves: Seq[CurveData], h: History): Node = 
+      def render(context: Context, curves: Seq[CurveData], h: History): Node = 
       <div>Big O analysis:
       <ul>
       {
@@ -122,9 +119,9 @@ object HtmlReporter {
     }
 
     case class Chart(factory: ChartReporter.ChartFactory) extends Renderer {
-      def render(curves: Seq[CurveData], h: History): Node = {
-        val resultdir = curves.head.context.goe(Key.resultDir, "tmp")
-        val scopename = curves.head.context.scopeName
+      def render(context: Context, curves: Seq[CurveData], h: History): Node = {
+        val resultdir = context.goe(Key.resultDir, "tmp")
+        val scopename = context.scope
         val chart = factory.createChart(scopename, curves)
         val chartfile = new File(s"$resultdir${File.separator}report${File.separator}images${File.separator}$scopename.png")
         ChartUtilities.saveChartAsPNG(chartfile, chart, 1600, 1200)
@@ -138,7 +135,7 @@ object HtmlReporter {
     }
 
     case class Regression() extends Renderer {
-      def render(curves: Seq[CurveData], h: History): Node = {
+      def render(context: Context, curves: Seq[CurveData], h: History): Node = {
         // TODO
 
         <div>History:

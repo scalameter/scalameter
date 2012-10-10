@@ -3,27 +3,30 @@ package org.collperf
 
 
 import collection._
+import utils.Tree
 
 
 
 trait DSL extends DelayedInit {
 
-  private val curves = new scala.util.DynamicVariable(mutable.ArrayBuffer[CurveData]())
-  private val setups = new scala.util.DynamicVariable(mutable.ArrayBuffer[Setup[_]]())
-
   def executor: Executor
 
   def reporter: Reporter
 
+  private val setupzipper = new scala.util.DynamicVariable(Tree.Zipper.root[Setup[_]])
+
+  private def descendInScope(name: String)(body: =>Unit) {
+    setupzipper.value = setupzipper.value.descend.transformContext(Key.scope, {
+      scope: List[String] => name :: scope
+    })
+    body
+    setupzipper.value = setupzipper.value.ascend
+  }
+
   object performance {
     def of(modulename: String) = new {
-      def in(block: =>Unit): Unit = currentContext.withAttribute(Key.module, modulename) {
+      def in(block: =>Unit): Unit = descendInScope(modulename) {
         block
-
-        val persistor = currentContext.value.goe(Key.persistor, Persistor.None)
-        val cs = curves.value
-        reporter.report(ResultData(cs, cs.head.context), persistor)
-        curves.value.clear()
       }
     }
   }
@@ -32,11 +35,8 @@ trait DSL extends DelayedInit {
 
   object measure {
     def method(methodname: String) = new {
-      def in(block: =>Unit): Unit = currentContext.withAttribute(Key.method, methodname) {
+      def in(block: =>Unit): Unit = descendInScope(methodname) {
         block
-
-        curves.value ++= executor.run(setups.value.asInstanceOf[Seq[Setup[SameType]]])
-        setups.value.clear()
       }
     }
   }
@@ -47,15 +47,19 @@ trait DSL extends DelayedInit {
     def warmUp(block: =>Any) = Using(benchmark.copy(customwarmup = Some(() => block)))
     def curve(name: String) = Using(benchmark.copy(context = benchmark.context + (Key.curve -> name)))
     def apply(block: T => Any) {
-      setups.value += benchmark.copy(snippet = block)
+      setupzipper.value = setupzipper.value.addItem(benchmark.copy(snippet = block))
     }
   }
 
-  def using[T](gen: Gen[T]) = Using(Setup(currentContext.value, gen, None, None, None, null))
+  def using[T](gen: Gen[T]) = Using(Setup(setupzipper.value.current.context, gen, None, None, None, null))
 
   def delayedInit(body: =>Unit) {
-    // TODO refactor dsl to make a tree, run all warmups
     body
+
+    val persistor = initialContext.value.goe(Key.persistor, Persistor.None)
+    val setuptree = setupzipper.value.result
+    val resulttree = executor.run(setuptree.asInstanceOf[Tree[Setup[SameType]]])
+    reporter.report(resulttree, persistor)
   }
 
 }

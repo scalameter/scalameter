@@ -3,6 +3,7 @@ package reporting
 
 
 
+import utils.Tree
 
 
 
@@ -10,7 +11,7 @@ class ConsoleReporter extends Reporter {
 
   def report(result: CurveData, persistor: Persistor) {
     // output context
-    println(s"...:::Benchmark ${result.context.properties(Key.module)}.${result.context.properties(Key.method)}:::...")
+    println(s"...:::Benchmark ${result.context.scope}:::...")
     for ((key, value) <- result.context.properties.filterKeys(Context.machine.properties.keySet.contains).toSeq.sortBy(_._1)) {
       println(s"$key: $value")
     }
@@ -24,7 +25,7 @@ class ConsoleReporter extends Reporter {
     println()
   }
 
-  def report(result: ResultData, persistor: Persistor) = for (res <- result.curves) report(res, persistor)
+  def report(result: Tree[CurveData], persistor: Persistor) = for (res <- result) report(res, persistor)
 
 }
 
