@@ -6,7 +6,13 @@ import collection._
 
 
 
-class SeqTest extends PerformanceTest.Executor.MinTime with PerformanceTest.Reporter.Html {
+class LocalSeqTest extends SeqTesting with PerformanceTest.Executor.LocalMin with PerformanceTest.Reporter.Html
+
+
+class NewJvmSeqTest extends SeqTesting with PerformanceTest.Executor.NewJvmMedian with PerformanceTest.Reporter.Html
+
+
+abstract class SeqTesting extends PerformanceTest {
 
   val largesizes = Gen.range("size")(500000, 5000000, 100000)
 

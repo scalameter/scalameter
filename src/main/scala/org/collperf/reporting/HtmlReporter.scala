@@ -100,7 +100,6 @@ object HtmlReporter {
       <div>Info:
       <ul>
       <li>Number of runs: {context.goe(Key.benchRuns, "")}</li>
-      <li>Aggregator: {context.goe(Key.aggregator, "")}</li>
       <li>Executor: {context.goe(Key.executor, "")}</li>
       </ul>
       </div>

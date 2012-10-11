@@ -51,15 +51,25 @@ trait DSL extends DelayedInit {
     }
   }
 
-  def using[T](gen: Gen[T]) = Using(Setup(setupzipper.value.current.context + (Key.executor -> executor.getClass.getSimpleName), gen, None, None, None, null))
+  def using[T](gen: Gen[T]) = Using(Setup(setupzipper.value.current.context, gen, None, None, None, null))
 
-  def delayedInit(body: =>Unit) {
-    body
+  /* initialization */
+  
+  protected def initSetupTree() {
+    setupzipper.value = setupzipper.value.addContext(Key.executor -> executor.toString)
+  }
 
-    val persistor = initialContext.value.goe(Key.persistor, Persistor.None)
+  protected def executeTests() {
+    val persistor = initialContext.goe(Key.persistor, Persistor.None)
     val setuptree = setupzipper.value.result
     val resulttree = executor.run(setuptree.asInstanceOf[Tree[Setup[SameType]]])
     reporter.report(resulttree, persistor)
+  }
+
+  def delayedInit(body: =>Unit) {
+    initSetupTree()
+    body
+    executeTests()
   }
 
 }

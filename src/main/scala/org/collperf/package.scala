@@ -10,19 +10,18 @@ import scala.util.DynamicVariable
 
 package object collperf {
 
-  class DynamicContext extends DynamicVariable(Context.topLevel) {
-    def withAttribute[T](name: String, v: Any)(block: =>T) = withValue(value + (name -> v))(block)
-  }
-
-  val initialContext = new DynamicContext
+  @volatile var initialContext = Context.topLevel
 
   /* decorators */
 
   implicit def fun2ops(f: Seq[Long] => Long) = new {
-    def toAggregator(n: String) = new Aggregator {
-      def name = n
-      def apply(times: Seq[Long]) = f(times)
-      def data(times: Seq[Long]) = None
+    def toAggregator(n: String) = {
+      val function = f
+      new Aggregator {
+        def name = n
+        def apply(times: Seq[Long]) = function(times)
+        def data(times: Seq[Long]) = None
+      }
     }
   }
 
@@ -58,7 +57,7 @@ package object collperf {
 
   object log {
     def verbose(msg: =>Any) {
-      if (initialContext.value.goe("verbose", false)) log synchronized {
+      if (initialContext.goe(Key.verbose, false)) log synchronized {
         println(msg)
       }
     }
@@ -88,7 +87,6 @@ package collperf {
     val resultDir = "result-dir"
 
     val persistor = "persistor"
-    val aggregator = "aggregator"
     val bigO = "big-o"
   }
 
@@ -140,7 +138,7 @@ package collperf {
 
   case class Statistic(min: Long, max: Long, average: Long, stdev: Long, median: Long)
 
-  trait Aggregator extends (Seq[Long] => Long) {
+  trait Aggregator extends (Seq[Long] => Long) with Serializable {
     def name: String
     def apply(times: Seq[Long]): Long
     def data(times: Seq[Long]): Option[Any]

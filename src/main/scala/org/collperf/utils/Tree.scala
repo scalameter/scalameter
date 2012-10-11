@@ -44,7 +44,7 @@ object Tree {
     }
     def setContext(ctx: Context) = Zipper(current.copy(context = ctx), path)
     def addItem(x: T) = Zipper(current.copy(items = current.items :+ x), path)
-    def descend = Zipper(Tree(initialContext.value, Seq(), Seq()), Node(current.context, current.items, current.children, path))
+    def descend = Zipper(Tree(initialContext, Seq(), Seq()), Node(current.context, current.items, current.children, path))
     def ascend = path match {
       case Node(ctx, its: Seq[T], left: Seq[Tree[T]], up: Path[T]) => Zipper(Tree(ctx, its, left :+ current), up)
     }
@@ -56,7 +56,7 @@ object Tree {
     case object Top extends Path[Nothing]
     case class Node[T](context: Context, items: Seq[T], left: Seq[Tree[T]], up: Path[T]) extends Path[T]
 
-    def root[T]: Zipper[T] = Zipper(Tree(initialContext.value, Seq(), Seq()), Top)
+    def root[T]: Zipper[T] = Zipper(Tree(initialContext, Seq(), Seq()), Top)
   }
 
 }
