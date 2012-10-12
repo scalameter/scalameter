@@ -67,7 +67,7 @@ abstract class SeqTesting extends PerformanceTest {
         xs.foreach(sum += _)
       }
     }
-
+  /*
     measure method "reduce" in {
       using(arrays) curve("Array") apply {
         _.reduce(_ + _)
@@ -132,7 +132,7 @@ abstract class SeqTesting extends PerformanceTest {
       using(mutablelists) curve("LinkedList") apply {
         _.groupBy(_ % 10)
       }
-    }
+    }*/
 
   }
 

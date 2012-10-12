@@ -29,7 +29,7 @@ case class Tree[T](context: Context, items: Seq[T], children: Seq[Tree[T]]) {
     }
   }
 
-  override def toString = s"Tree(${context.get(Key.scope)}, $items, $children)"
+  override def toString = s"Tree(${context.get(Key.executor)}, $items, $children)"
 }
 
 
@@ -44,7 +44,7 @@ object Tree {
     }
     def setContext(ctx: Context) = Zipper(current.copy(context = ctx), path)
     def addItem(x: T) = Zipper(current.copy(items = current.items :+ x), path)
-    def descend = Zipper(Tree(initialContext, Seq(), Seq()), Node(current.context, current.items, current.children, path))
+    def descend = Zipper(Tree(current.context, Seq(), Seq()), Node(current.context, current.items, current.children, path))
     def ascend = path match {
       case Node(ctx, its: Seq[T], left: Seq[Tree[T]], up: Path[T]) => Zipper(Tree(ctx, its, left :+ current), up)
     }

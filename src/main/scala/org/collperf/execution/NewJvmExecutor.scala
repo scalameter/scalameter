@@ -44,8 +44,8 @@ class NewJvmExecutor(val aggregator: Aggregator) extends Executor {
   }
 
   private def runJvm() {
-    val flags = ""//if (initialContext.goe(Key.verbose, false)) "-verbose:gc" else ""
-    val command = s"java $flags -cp ${sys.props("java.class.path")} ${classOf[NewJvmExecutor].getName} ${tmpfile.getPath}"
+    val flags = if (initialContext.goe(Key.verbose, false)) "-verbose:gc" else ""
+    val command = s"java -server $flags -cp ${sys.props("java.class.path")} ${classOf[NewJvmExecutor].getName} ${tmpfile.getPath}"
     log.verbose(s"Starting new JVM: $command")
     command !;
   }
@@ -61,7 +61,7 @@ class NewJvmExecutor(val aggregator: Aggregator) extends Executor {
     }
   }
 
-  override def toString = s"NewJvmExecutor"
+  override def toString = s"NewJvmExecutor(${aggregator.name})"
 
 }
 

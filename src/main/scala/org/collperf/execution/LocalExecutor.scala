@@ -72,12 +72,17 @@ class LocalExecutor(val aggregator: Aggregator) extends Executor {
       while (iteration < repetitions) {
         set()
 
+        log.verbose("Snippet started.")
+
         val start = Platform.currentTime
         snippet(x)
         val end = Platform.currentTime
         val time = end - start
 
+        log.verbose("Snippet ended.")
+
         tear()
+
 
         times ::= time
         iteration += 1
