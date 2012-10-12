@@ -19,11 +19,11 @@ object PerformanceTest {
   object Executor {
 
     trait LocalMin extends PerformanceTest {
-      lazy val executor = execution.LocalExecutor(Aggregator.min)
+      lazy val executor = execution.LocalExecutor(Aggregator.min, new org.collperf.Executor.Measurer.Default())
     }
 
     trait NewJvmMedian extends PerformanceTest {
-      lazy val executor = execution.NewJvmExecutor(Aggregator.average)
+      lazy val executor = execution.NewJvmExecutor(Aggregator.average, new org.collperf.Executor.Measurer.Default())
     }
 
   }
