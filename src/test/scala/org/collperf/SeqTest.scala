@@ -41,6 +41,7 @@ abstract class SeqTesting extends PerformanceTest {
 
   performance of "Large-Seq" in {
 
+    /*
     measure method "foreach" in {
       using(arrays) curve("Array") apply { xs =>
         var sum = 0
@@ -67,9 +68,10 @@ abstract class SeqTesting extends PerformanceTest {
         xs.foreach(sum += _)
       }
     }
-  /*
+    */
+  
     measure method "reduce" in {
-      using(arrays) curve("Array") apply {
+      /*using(arrays) curve("Array") apply {
         _.reduce(_ + _)
       }
 
@@ -79,17 +81,17 @@ abstract class SeqTesting extends PerformanceTest {
 
       using(vectors) curve("Vector") apply {
         _.reduce(_ + _)
-      }
+      }*/
 
       using(lists) curve("List") apply {
         _.reduce(_ + _)
       }
 
-      using(mutablelists) curve("LinkedList") apply {
+      /*using(mutablelists) curve("LinkedList") apply {
         _.reduce(_ + _)
-      }
+      }*/
     }
-
+    /*
     measure method "filter" in {
       using(arrays) curve("Array") apply {
         _.filter(_ % 2 == 0)

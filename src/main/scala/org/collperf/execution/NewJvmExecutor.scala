@@ -10,7 +10,7 @@ import utils.Tree
 
 
 
-class NewJvmExecutor(val aggregator: Aggregator) extends Executor {
+class NewJvmExecutor(val aggregator: Aggregator, val measurer: Executor.Measurer) extends Executor {
 
   private val tmpfile = File.createTempFile("newjvm-", "-io")
   tmpfile.deleteOnExit()
@@ -21,7 +21,7 @@ class NewJvmExecutor(val aggregator: Aggregator) extends Executor {
 
   private def run[T](setup: Setup[T]): CurveData = {
     // serialize setup to tmp file
-    serializeInput(NewJvmExecutor.Config(initialContext, aggregator, setup))
+    serializeInput(NewJvmExecutor.Config(initialContext, aggregator, measurer, setup))
 
     // run separate JVM
     runJvm()
@@ -68,14 +68,14 @@ class NewJvmExecutor(val aggregator: Aggregator) extends Executor {
 
 object NewJvmExecutor extends Executor.Factory[NewJvmExecutor] {
 
-  def apply(agg: Aggregator) = new NewJvmExecutor(agg)
+  def apply(agg: Aggregator, m: Executor.Measurer) = new NewJvmExecutor(agg, m)
 
   def main(args: Array[String]) {
     val tmpfile = new File(args(0))
     Main.main(tmpfile)
   }
 
-  case class Config[T](initial: Context, aggregator: Aggregator, setup: Setup[T])
+  case class Config[T](initial: Context, aggregator: Aggregator, measurer: Executor.Measurer, setup: Setup[T])
 
   object Main {
     def main(tmpfile: File) {
@@ -97,7 +97,7 @@ object NewJvmExecutor extends Executor.Factory[NewJvmExecutor] {
 
     private def run[T](config: Config[T]): CurveData = {
       initialContext = config.initial
-      val delegate = new LocalExecutor(config.aggregator)
+      val delegate = new LocalExecutor(config.aggregator, config.measurer)
       delegate.runSingle(config.setup)
     }
 

@@ -26,7 +26,7 @@ import utils.Tree
  *  most triggered GC cycles are fast because they collect only
  *  the young generation.
  */
-class LocalExecutor(val aggregator: Aggregator) extends Executor {
+class LocalExecutor(val aggregator: Aggregator, val measurer: Executor.Measurer) extends Executor {
 
   def run[T](setups: Tree[Setup[T]]) = {
     // run all warmups for classloading purposes
@@ -67,26 +67,10 @@ class LocalExecutor(val aggregator: Aggregator) extends Executor {
     for ((x, params) <- gen.dataset) {
       val set = setupFor(x)
       val tear = teardownFor(x)
-      var iteration = 0
-      var times = List[Long]()
-      while (iteration < repetitions) {
-        set()
 
-        log.verbose("Snippet started.")
-
-        val start = Platform.currentTime
-        snippet(x)
-        val end = Platform.currentTime
-        val time = end - start
-
-        log.verbose("Snippet ended.")
-
-        tear()
-
-
-        times ::= time
-        iteration += 1
-      }
+      log.verbose(s"$repetitions repetitions of the snippet starting.")
+      val times = measurer.measure(repetitions, set, tear, snippet(x))
+      log.verbose("Repetitions ended.")
 
       val processedTime = aggregator(times)
       val data = aggregator.data(times)
@@ -103,7 +87,7 @@ class LocalExecutor(val aggregator: Aggregator) extends Executor {
 
 object LocalExecutor extends Executor.Factory[LocalExecutor] {
 
-  def apply(a: Aggregator) = new LocalExecutor(a)
+  def apply(a: Aggregator, m: Executor.Measurer) = new LocalExecutor(a, m)
 
 }
 
