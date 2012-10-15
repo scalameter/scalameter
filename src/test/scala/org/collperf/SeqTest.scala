@@ -12,6 +12,30 @@ class LocalSeqTest extends SeqTesting with PerformanceTest.Executor.LocalMin wit
 class NewJvmSeqTest extends SeqTesting with PerformanceTest.Executor.NewJvmMedian with PerformanceTest.Reporter.Html
 
 
+class NewJvmNoGcSeqTest extends SeqTesting with PerformanceTest with PerformanceTest.Reporter.Html {
+
+  lazy val executor = new execution.NewJvmExecutor(Aggregator.median, new Executor.Measurer.IgnoringGC)
+
+}
+
+
+class NewJvmMinNoGcSeqTest extends SeqTesting with PerformanceTest with PerformanceTest.Reporter.Html {
+
+  lazy val executor = new execution.NewJvmExecutor(Aggregator.min, new Executor.Measurer.IgnoringGC)
+
+}
+
+
+class NewJvmMinNoGcReinstSeqTest extends SeqTesting with PerformanceTest with PerformanceTest.Reporter.Html {
+
+  lazy val executor = new execution.NewJvmExecutor(Aggregator.median, new Executor.Measurer.IgnoringGC with Executor.Measurer.Reinstantiation {
+    def frequency = 18
+    def fullGC = true
+  })
+
+}
+
+
 abstract class SeqTesting extends PerformanceTest {
 
   val largesizes = Gen.range("size")(500000, 5000000, 100000)

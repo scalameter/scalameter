@@ -23,7 +23,7 @@ object PerformanceTest {
     }
 
     trait NewJvmMedian extends PerformanceTest {
-      lazy val executor = execution.NewJvmExecutor(Aggregator.average, new org.collperf.Executor.Measurer.Default())
+      lazy val executor = execution.NewJvmExecutor(Aggregator.median, new org.collperf.Executor.Measurer.Default())
     }
 
   }

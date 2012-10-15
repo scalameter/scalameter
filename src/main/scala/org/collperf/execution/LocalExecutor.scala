@@ -44,6 +44,8 @@ class LocalExecutor(val aggregator: Aggregator, val measurer: Executor.Measurer)
     }
   }
 
+  private def regenerateFor[T](gen: Gen[T], params: Parameters): () => T = () => gen.regenerate(params)
+
   private[execution] def runSingle[T](benchmark: Setup[T]): CurveData = {
     import benchmark._
 
@@ -65,11 +67,12 @@ class LocalExecutor(val aggregator: Aggregator, val measurer: Executor.Measurer)
     val measurements = new mutable.ArrayBuffer[Measurement]()
     val repetitions = context.goe(Key.benchRuns, 1)
     for ((x, params) <- gen.dataset) {
-      val set = setupFor(x)
-      val tear = teardownFor(x)
+      val set = setupFor()
+      val tear = teardownFor()
+      val regen = regenerateFor(gen, params)
 
       log.verbose(s"$repetitions repetitions of the snippet starting.")
-      val times = measurer.measure(repetitions, set, tear, snippet(x))
+      val times = measurer.measure(repetitions, set, tear, x, regen, snippet)
       log.verbose("Repetitions ended.")
 
       val processedTime = aggregator(times)
@@ -80,7 +83,7 @@ class LocalExecutor(val aggregator: Aggregator, val measurer: Executor.Measurer)
     CurveData(measurements, Map.empty, context)
   }
 
-  override def toString = s"LocalExecutor(${aggregator.name})"
+  override def toString = s"LocalExecutor(${aggregator.name}, ${measurer.name})"
 
 }
 

@@ -119,6 +119,7 @@ package collperf {
 
   case class Parameters(axisData: immutable.ListMap[String, Any]) {
     def ++(that: Parameters) = Parameters(this.axisData ++ that.axisData)
+    def apply[T](key: String) = axisData.apply(key).asInstanceOf[T]
   }
 
   object Parameters {
@@ -134,6 +135,8 @@ package collperf {
   case class Setup[T](context: Context, gen: Gen[T], setup: Option[T => Any], teardown: Option[T => Any], customwarmup: Option[() => Any], snippet: T => Any) {
     def setupFor(v: T) = if (setup.isEmpty) { () => } else { () => setup.get(v) }
     def teardownFor(v: T) = if (teardown.isEmpty) { () => } else { () => teardown.get(v) }
+    def setupFor() = if (setup.isEmpty) { v: T => } else { v: T => setup.get(v) }
+    def teardownFor() = if (teardown.isEmpty) { v: T => } else { v: T => teardown.get(v) }
   }
 
   case class Statistic(min: Long, max: Long, average: Long, stdev: Long, median: Long)

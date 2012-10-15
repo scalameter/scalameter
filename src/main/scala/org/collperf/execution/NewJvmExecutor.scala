@@ -61,7 +61,7 @@ class NewJvmExecutor(val aggregator: Aggregator, val measurer: Executor.Measurer
     }
   }
 
-  override def toString = s"NewJvmExecutor(${aggregator.name})"
+  override def toString = s"NewJvmExecutor(${aggregator.name}, ${measurer.name})"
 
 }
 

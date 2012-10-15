@@ -4,7 +4,7 @@ package org.collperf
 
 import collection._
 import compat._
-import utils.Tree
+import utils.{withGCNotification, Tree}
 
 
 
@@ -32,34 +32,127 @@ object Executor {
   }
 
   trait Measurer extends Serializable {
-    def measure[U](measurements: Long, setup: () => Any, tear: () => Any, body: =>U): Seq[Long]
+    def name: String
+    def measure[T, U](measurements: Long, setup: T => Any, tear: T => Any, x: T, regen: () => T, snippet: T => Any): Seq[Long]
   }
 
   object Measurer {
 
-    final class Default extends Measurer {
-      def measure[U](measurements: Long, setup: () => Any, tear: () => Any, body: =>U): Seq[Long] = {
+    /** A default measurer executes the test as many times as specified and returns the sequence of measured times. */
+    class Default extends Measurer {
+      def name = "Measurer.Default"
+
+      /** Returns the value used for the benchmark at `iteration`.
+       *  May optionally call `regen` to obtain a new value for the benchmark.
+       *  
+       *  By default, the value `v` is always returned and the value for the
+       *  benchmark is never regenerated.
+       */
+      protected def valueAt[T](iteration: Int, regen: () => T, v: T): T = v
+
+      def measure[T, U](measurements: Long, setup: T => Any, tear: T => Any, x: T, regen: () => T, snippet: T => Any): Seq[Long] = {
         var iteration = 0
         var times = List[Long]()
+        var value = x
+
         while (iteration < measurements) {
-          setup()
+          value = valueAt(iteration, regen, value)
+          setup(value)
 
           val start = Platform.currentTime
-          body
+          snippet(value)
           val end = Platform.currentTime
           val time = end - start
 
-          tear()
+          tear(value)
 
           times ::= time
           iteration += 1
         }
+
+        log.verbose(s"measurements: ${times.mkString(", ")}")
+
         times
+      }
+    }
+
+    /** A measurer that discards measurements for which it detects that GC cycles occurred.
+     *  
+     *  Assume that `M` measurements are requested.
+     *  To prevent looping forever, after the number of measurement failed due to GC exceeds the number of successful
+     *  measurements by more than `M`, the subsequent measurements are accepted irregardless of whether GC cycles occur.
+     */
+    class IgnoringGC extends Default {
+      override def name = "Measurer.IgnoringGC"
+
+      override def measure[T, U](measurements: Long, setup: T => Any, tear: T => Any, x: T, regen: () => T, snippet: T => Any): Seq[Long] = {
+        var times = List[Long]()
+        var okcount = 0
+        var gccount = 0
+        var ignoring = true
+        var value = x
+
+        while (okcount < measurements) {
+          value = valueAt(okcount + gccount, regen, value)
+          setup(value)
+
+          @volatile var gc = false
+          val time = withGCNotification { n =>
+            gc = true
+            log.verbose("GC detected.")
+          } apply {
+            val start = Platform.currentTime
+            snippet(value)
+            val end = Platform.currentTime
+            end - start
+          }
+
+          tear(value)
+
+          if (ignoring && gc) {
+            gccount += 1
+            if (gccount - okcount > measurements) ignoring = false
+          } else {
+            okcount += 1
+            times ::= time
+          }
+        }
+
+        log.verbose(s"${if (ignoring) "All GC time ignored" else "Some GC time recorded"}, accepted: $okcount, ignored: $gccount")
+        log.verbose(s"measurements: ${times.mkString(", ")}")
+
+        times
+      }
+    }
+
+    /** A mixin measurer which causes the value for the benchmark to be reinstantiated
+     *  every `frequency` measurements.
+     *  After the new value has been instantiated, a full GC cycle is invoked if `fullGC` is `true`.
+     */
+    trait Reinstantiation extends Default {
+      def frequency: Int
+      def fullGC: Boolean
+
+      protected override def valueAt[T](iteration: Int, regen: () => T, v: T) = {
+        if ((iteration + 1) % frequency == 0) {
+          val nv = regen()
+          if (fullGC) Platform.collectGarbage()
+          nv
+        } else v
       }
     }
 
   }
 
 }
+
+
+
+
+
+
+
+
+
 
 

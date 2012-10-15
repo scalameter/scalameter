@@ -3,7 +3,7 @@ package org.collperf
 
 
 import compat.Platform
-import utils._
+import utils.withGCNotification
 
 
 
@@ -17,9 +17,9 @@ package object execution {
 
       log.verbose(s"Starting warmup.")
 
-      utils.withGCNotification { n =>
+      withGCNotification { n =>
         nogc = false
-        log.verbose("Garbage collection detected.")
+        log.verbose("GC detected.")
       } apply {
         setup()
         var i = 0
