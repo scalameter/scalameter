@@ -15,6 +15,14 @@ class NewJvmExecutor(val aggregator: Aggregator, val measurer: Executor.Measurer
   private val tmpfile = File.createTempFile("newjvm-", "-io")
   tmpfile.deleteOnExit()
 
+  def maxHeap = 1024
+
+  def startHeap = 1024
+
+  final def flags: String = {
+    s"${if (initialContext.goe(Key.verbose, false)) "-verbose:gc" else ""} -Xmx${maxHeap}m -Xms${startHeap}m"
+  }
+
   def run[T](setuptree: Tree[Setup[T]]): Tree[CurveData] = {
     for (setup <- setuptree) yield run(setup)
   }
@@ -44,7 +52,6 @@ class NewJvmExecutor(val aggregator: Aggregator, val measurer: Executor.Measurer
   }
 
   private def runJvm() {
-    val flags = if (initialContext.goe(Key.verbose, false)) "-verbose:gc" else ""
     val command = s"java -server $flags -cp ${sys.props("java.class.path")} ${classOf[NewJvmExecutor].getName} ${tmpfile.getPath}"
     log.verbose(s"Starting new JVM: $command")
     command !;

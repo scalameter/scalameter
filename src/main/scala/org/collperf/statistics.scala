@@ -28,30 +28,31 @@ object Statistics {
 				xbar + qt(1 - alpha / 2, n - 1) * S / sqrt(n))
 		} else {
 			(xbar - qsnorm(1 - alpha / 2) * S / sqrt(n),
-				xbar + qsnorm(1 - alpha / 2) * S / sqrt(n))
+			xbar + qsnorm(1 - alpha / 2) * S / sqrt(n))
 		}
 	}
 
 	// For two alternatives
 	def CITest(alt1: Seq[Long], alt2: Seq[Long]): Boolean = {
-		val diffM = mean(alt1) - mean(alt2)
+		/*val diffM = mean(alt1) - mean(alt2)
 		val S1 = sampleStandardDeviation(alt1)
 		val S2 = sampleStandardDeviation(alt2)
 		val n1 = alt1.length
 		val n2 = alt2.length
 		val diffS = sqrt(S1 * S1 / n1 + S2 * S2 / n2)
-			var CI = (0.0, 0.0)
-			if (n1 >= 30 && n2 >= 30) {
-				CI = (diffM - qsnorm(1 - alpha / 2) * diffS,
-					diffM + qsnorm(1 - alpha / 2) * diffS)
-			} else {
-				val ndf = math.round(pow(pow(S1, 2) / n1 + pow(S2, 2) / n2, 2) / (pow(pow(S1, 2) / n1, 2) / (n1 - 1) + pow(pow(S2, 2) / n2, 2) / (n2 - 1)))
-				CI = (diffM - qt(1 - alpha / 2, ndf) * diffS,
-					diffM + qt(1 - alpha / 2, ndf) * diffS)
-			}
-			/* If 0 is within the confidence interval, we conclude that there is no
-			  statiscal difference between the two alternatives */
-			return (!(CI._1 <= 0 && 0 <= CI._2))
+		var CI = (0.0, 0.0)
+		if (n1 >= 30 && n2 >= 30) {
+			CI = (diffM - qsnorm(1 - alpha / 2) * diffS,
+				diffM + qsnorm(1 - alpha / 2) * diffS)
+		} else {
+			val ndf = math.round(pow(pow(S1, 2) / n1 + pow(S2, 2) / n2, 2) / (pow(pow(S1, 2) / n1, 2) / (n1 - 1) + pow(pow(S2, 2) / n2, 2) / (n2 - 1)))
+			CI = (diffM - qt(1 - alpha / 2, ndf) * diffS,
+				diffM + qt(1 - alpha / 2, ndf) * diffS)
+		}
+    /* If 0 is within the confidence interval, we conclude that there is no
+    statiscal difference between the two alternatives */
+		(!(CI._1 <= 0 && 0 <= CI._2))*/
+		false
 	}
 
 	/**
@@ -62,7 +63,7 @@ object Statistics {
 	 * Ref : Statistically Rigorous Java Performance Evaluation, Andy Georges, Dries Buytaert, Lieven Eeckhout
 	 */
 	def ANOVAFTest(history: Seq[Seq[Long]], newest: Seq[Long]): Boolean = {
-		val alternatives = newest +: history
+		/*val alternatives = newest +: history
 		val means = for(a <- alternatives) yield mean(a)
 		val overallMean = means.reduceLeft(_ + _) / means.length
 		// TODO : we should verify here that each alternative has the same number of measurements !
@@ -76,7 +77,8 @@ object Statistics {
 
 		val F = SSA * (k * (n - 1)) / (SSE * (k - 1))
 
-		return (F > qf(1 - alpha, k - 1, k * (n - 1)))
+		(F > qf(1 - alpha, k - 1, k * (n - 1)))*/
+		false
 	}
 
 	def CoV(measurements: Seq[Long]): Boolean = {
@@ -85,7 +87,8 @@ object Statistics {
 	}
 
 	def mean(seq : Seq[Long]): Long = {
-		if (seq.length == 0) 0 else seq reduceLeft(_ + _) / seq.length
+		/*if (seq.length == 0) 0 else seq reduceLeft(_ + _) / seq.length*/
+		0
 	}
 
 	/**

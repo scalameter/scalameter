@@ -29,7 +29,7 @@ class NewJvmMinNoGcSeqTest extends SeqTesting with PerformanceTest with Performa
 class NewJvmMinNoGcReinstSeqTest extends SeqTesting with PerformanceTest with PerformanceTest.Reporter.Html {
 
   lazy val executor = new execution.NewJvmExecutor(Aggregator.median, new Executor.Measurer.IgnoringGC with Executor.Measurer.Reinstantiation {
-    def frequency = 18
+    def frequency = 10
     def fullGC = true
   })
 
