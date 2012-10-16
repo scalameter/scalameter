@@ -12,7 +12,7 @@ class LocalSeqTest extends SeqTesting with PerformanceTest.Executor.LocalMin wit
 class NewJvmSeqTest extends SeqTesting with PerformanceTest.Executor.NewJvmMedian with PerformanceTest.Reporter.Html
 
 
-class NewJvmNoGcSeqTest extends SeqTesting with PerformanceTest with PerformanceTest.Reporter.Html {
+class NewJvmMedianNoGcSeqTest extends SeqTesting with PerformanceTest with PerformanceTest.Reporter.Html {
 
   lazy val executor = new execution.NewJvmExecutor(Aggregator.median, new Executor.Measurer.IgnoringGC)
 
@@ -28,8 +28,8 @@ class NewJvmMinNoGcSeqTest extends SeqTesting with PerformanceTest with Performa
 
 class NewJvmMinNoGcReinstSeqTest extends SeqTesting with PerformanceTest with PerformanceTest.Reporter.Html {
 
-  lazy val executor = new execution.NewJvmExecutor(Aggregator.median, new Executor.Measurer.IgnoringGC with Executor.Measurer.Reinstantiation {
-    def frequency = 10
+  lazy val executor = new execution.NewJvmExecutor(Aggregator.min, new Executor.Measurer.IgnoringGC with Executor.Measurer.Reinstantiation {
+    def frequency = 20
     def fullGC = true
   })
 
@@ -38,7 +38,7 @@ class NewJvmMinNoGcReinstSeqTest extends SeqTesting with PerformanceTest with Pe
 
 abstract class SeqTesting extends PerformanceTest {
 
-  val largesizes = Gen.range("size")(500000, 5000000, 100000)
+  val largesizes = Gen.range("size")(500000, 5000000, 500000)
 
   val lists = for {
     size <- largesizes
@@ -65,7 +65,6 @@ abstract class SeqTesting extends PerformanceTest {
 
   performance of "Large-Seq" in {
 
-    /*
     measure method "foreach" in {
       using(arrays) curve("Array") apply { xs =>
         var sum = 0
@@ -92,10 +91,9 @@ abstract class SeqTesting extends PerformanceTest {
         xs.foreach(sum += _)
       }
     }
-    */
   
     measure method "reduce" in {
-      /*using(arrays) curve("Array") apply {
+      using(arrays) curve("Array") apply {
         _.reduce(_ + _)
       }
 
@@ -105,15 +103,15 @@ abstract class SeqTesting extends PerformanceTest {
 
       using(vectors) curve("Vector") apply {
         _.reduce(_ + _)
-      }*/
+      }
 
       using(lists) curve("List") apply {
         _.reduce(_ + _)
       }
 
-      /*using(mutablelists) curve("LinkedList") apply {
+      using(mutablelists) curve("LinkedList") apply {
         _.reduce(_ + _)
-      }*/
+      }
     }
     /*
     measure method "filter" in {

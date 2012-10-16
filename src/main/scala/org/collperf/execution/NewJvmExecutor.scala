@@ -15,9 +15,9 @@ class NewJvmExecutor(val aggregator: Aggregator, val measurer: Executor.Measurer
   private val tmpfile = File.createTempFile("newjvm-", "-io")
   tmpfile.deleteOnExit()
 
-  def maxHeap = 1024
+  def maxHeap = 2048
 
-  def startHeap = 1024
+  def startHeap = 2048
 
   final def flags: String = {
     s"${if (initialContext.goe(Key.verbose, false)) "-verbose:gc" else ""} -Xmx${maxHeap}m -Xms${startHeap}m"

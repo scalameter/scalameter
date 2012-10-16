@@ -11,7 +11,7 @@ trait Gen[T] extends Serializable {
 
   def map[S](f: T => S): Gen[S] = new Gen[S] {
     def warmupset = for (x <- self.warmupset) yield f(x)
-    def dataset = for ((x, params) <- self.dataset) yield (f(x), params)
+    def dataset = for (params <- self.dataset) yield params
     def regenerate(params: Parameters) = f(self.regenerate(params))
   }
 
@@ -21,9 +21,10 @@ trait Gen[T] extends Serializable {
       y <- f(x).warmupset
     } yield y
     def dataset = for {
-      (x, selfparams) <- self.dataset
-      (y, thatparams) <- f(x).dataset
-    } yield (y, selfparams ++ thatparams)
+      selfparams <- self.dataset
+      x = self.regenerate(selfparams)
+      thatparams <- f(x).dataset
+    } yield selfparams ++ thatparams
     def regenerate(params: Parameters) = {
       val x = self.regenerate(params)
       val mapped = f(x)
@@ -33,7 +34,7 @@ trait Gen[T] extends Serializable {
 
   def warmupset: Iterator[T]
 
-  def dataset: Iterator[(T, Parameters)]
+  def dataset: Iterator[Parameters]
 
   def regenerate(params: Parameters): T
 
@@ -46,19 +47,19 @@ object Gen {
 
   def range(axisName: String)(from: Int, until: Int, step: Int): Gen[Int] = new Gen[Int] {
     def warmupset = Iterator.single(until)
-    def dataset = Iterator.range(from, until, step).map(x => (x, Parameters(axisName -> x)))
+    def dataset = Iterator.range(from, until, step).map(x => Parameters(axisName -> x))
     def regenerate(params: Parameters) = params[Int](axisName)
   }
 
   def enumeration[T](axisName: String)(xs: T*): Gen[T] = new Gen[T] {
     def warmupset = Iterator.single(xs.last)
-    def dataset = xs.iterator.map(x => (x, Parameters(axisName -> x)))
+    def dataset = xs.iterator.map(x => Parameters(axisName -> x))
     def regenerate(params: Parameters) = params[T](axisName)
   }
 
   def exponential(axisName: String)(from: Int, until: Int, factor: Int): Gen[Int] = new Gen[Int] {
     def warmupset = Iterator.single((until - from) / 2)
-    def dataset = Iterator.iterate(from)(_ * factor).takeWhile(_ < until).map(x => (x, Parameters(axisName -> x)))
+    def dataset = Iterator.iterate(from)(_ * factor).takeWhile(_ < until).map(x => Parameters(axisName -> x))
     def regenerate(params: Parameters) = params[Int](axisName)
   }
 

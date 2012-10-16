@@ -33,7 +33,7 @@ object Executor {
 
   trait Measurer extends Serializable {
     def name: String
-    def measure[T, U](measurements: Long, setup: T => Any, tear: T => Any, x: T, regen: () => T, snippet: T => Any): Seq[Long]
+    def measure[T, U](measurements: Long, setup: T => Any, tear: T => Any, regen: () => T, snippet: T => Any): Seq[Long]
   }
 
   object Measurer {
@@ -50,10 +50,10 @@ object Executor {
        */
       protected def valueAt[T](iteration: Int, regen: () => T, v: T): T = v
 
-      def measure[T, U](measurements: Long, setup: T => Any, tear: T => Any, x: T, regen: () => T, snippet: T => Any): Seq[Long] = {
+      def measure[T, U](measurements: Long, setup: T => Any, tear: T => Any, regen: () => T, snippet: T => Any): Seq[Long] = {
         var iteration = 0
         var times = List[Long]()
-        var value = x
+        var value = regen()
 
         while (iteration < measurements) {
           value = valueAt(iteration, regen, value)
@@ -85,12 +85,12 @@ object Executor {
     class IgnoringGC extends Default {
       override def name = "Measurer.IgnoringGC"
 
-      override def measure[T, U](measurements: Long, setup: T => Any, tear: T => Any, x: T, regen: () => T, snippet: T => Any): Seq[Long] = {
+      override def measure[T, U](measurements: Long, setup: T => Any, tear: T => Any, regen: () => T, snippet: T => Any): Seq[Long] = {
         var times = List[Long]()
         var okcount = 0
         var gccount = 0
         var ignoring = true
-        var value = x
+        var value = regen()
 
         while (okcount < measurements) {
           value = valueAt(okcount + gccount, regen, value)
@@ -127,16 +127,19 @@ object Executor {
 
     /** A mixin measurer which causes the value for the benchmark to be reinstantiated
      *  every `frequency` measurements.
-     *  After the new value has been instantiated, a full GC cycle is invoked if `fullGC` is `true`.
+     *  Before the new value has been instantiated, a full GC cycle is invoked if `fullGC` is `true`.
      */
     trait Reinstantiation extends Default {
       def frequency: Int
       def fullGC: Boolean
 
+      override def name = super.name + "+Reinstantiation"
+
       protected override def valueAt[T](iteration: Int, regen: () => T, v: T) = {
         if ((iteration + 1) % frequency == 0) {
-          val nv = regen()
+          log.verbose("Reinstantiating benchmark value.")
           if (fullGC) Platform.collectGarbage()
+          val nv = regen()
           nv
         } else v
       }

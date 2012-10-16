@@ -66,13 +66,13 @@ class LocalExecutor(val aggregator: Aggregator, val measurer: Executor.Measurer)
     // run tests
     val measurements = new mutable.ArrayBuffer[Measurement]()
     val repetitions = context.goe(Key.benchRuns, 1)
-    for ((x, params) <- gen.dataset) {
+    for (params <- gen.dataset) {
       val set = setupFor()
       val tear = teardownFor()
       val regen = regenerateFor(gen, params)
 
       log.verbose(s"$repetitions repetitions of the snippet starting.")
-      val times = measurer.measure(repetitions, set, tear, x, regen, snippet)
+      val times = measurer.measure(repetitions, set, tear, regen, snippet)
       log.verbose("Repetitions ended.")
 
       val processedTime = aggregator(times)

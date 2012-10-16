@@ -139,8 +139,6 @@ package collperf {
     def teardownFor() = if (teardown.isEmpty) { v: T => } else { v: T => teardown.get(v) }
   }
 
-  case class Statistic(min: Long, max: Long, average: Long, stdev: Long, median: Long)
-
   trait Aggregator extends (Seq[Long] => Long) with Serializable {
     def name: String
     def apply(times: Seq[Long]): Long
@@ -148,6 +146,9 @@ package collperf {
   }
 
   object Aggregator {
+    
+    case class Statistic(min: Long, max: Long, average: Long, stdev: Long, median: Long)
+
     def min = {
       xs: Seq[Long] => xs.min
     } toAggregator "min"
