@@ -38,7 +38,7 @@ class NewJvmMinNoGcReinstSeqTest extends SeqTesting with PerformanceTest with Pe
 
 abstract class SeqTesting extends PerformanceTest {
 
-  val largesizes = Gen.range("size")(500000, 5000000, 500000)
+  val largesizes = Gen.range("size")(500000, 5000000, 250000)
 
   val lists = for {
     size <- largesizes
@@ -113,7 +113,7 @@ abstract class SeqTesting extends PerformanceTest {
         _.reduce(_ + _)
       }
     }
-    /*
+    
     measure method "filter" in {
       using(arrays) curve("Array") apply {
         _.filter(_ % 2 == 0)
@@ -156,7 +156,7 @@ abstract class SeqTesting extends PerformanceTest {
       using(mutablelists) curve("LinkedList") apply {
         _.groupBy(_ % 10)
       }
-    }*/
+    }
 
   }
 
