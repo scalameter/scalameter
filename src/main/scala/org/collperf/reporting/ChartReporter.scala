@@ -21,7 +21,8 @@ case class ChartReporter(fileNamePrefix: String, drawer: ChartReporter.ChartFact
 
   def report(result: Tree[CurveData], persistor: Persistor) = for ((ctx, curves) <- result.scopes) {
     val scopename = ctx.scope
-    val chart = drawer.createChart(scopename, curves)
+    val history = persistor.load(ctx)
+    val chart = drawer.createChart(scopename, curves, history)
     val dir = result.context.goe(Key.resultDir, "tmp")
     new File(dir).mkdir()
     val chartfile = new File(s"$dir/$fileNamePrefix$scopename.png")
@@ -34,12 +35,12 @@ case class ChartReporter(fileNamePrefix: String, drawer: ChartReporter.ChartFact
 object ChartReporter {
 
   trait ChartFactory {
-    def createChart(scopename: String, cs: Seq[CurveData]): JFreeChart
+    def createChart(scopename: String, cs: Seq[CurveData], history: History): JFreeChart
   }
 
   object ChartFactory {
     case class XYLine() extends ChartFactory {
-      def createChart(scopename: String, cs: Seq[CurveData]): JFreeChart = {
+      def createChart(scopename: String, cs: Seq[CurveData], history: History): JFreeChart = {
         val seriesCollection = new XYSeriesCollection
         val chartName = scopename
         val xAxisName = cs.head.measurements.head.params.axisData.head._1

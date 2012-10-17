@@ -122,7 +122,7 @@ object HtmlReporter {
       def render(context: Context, curves: Seq[CurveData], h: History): Node = {
         val resultdir = context.goe(Key.resultDir, "tmp")
         val scopename = context.scope
-        val chart = factory.createChart(scopename, curves)
+        val chart = factory.createChart(scopename, curves, h)
         val chartfile = new File(s"$resultdir${File.separator}report${File.separator}images${File.separator}$scopename.png")
         ChartUtilities.saveChartAsPNG(chartfile, chart, 1600, 1200)
 
