@@ -3,7 +3,9 @@ package reporting
 
 
 
-import org.jfree.data.xy.{XYSeries, XYSeriesCollection}
+import org.jfree.data.xy.{XYSeries, XYSeriesCollection, YIntervalSeriesCollection, YIntervalSeries}
+import org.jfree.chart.renderer.xy.DeviationRenderer
+import org.jfree.chart.plot.XYPlot
 import org.jfree.data.statistics._
 import org.jfree.chart.{ChartFactory => JFreeChartFactory}
 import org.jfree.chart.plot.PlotOrientation
@@ -11,7 +13,8 @@ import org.jfree.chart._
 import java.io._
 import collection._
 import utils.Tree
-
+import java.awt.BasicStroke
+import java.awt.Color
 
 
 case class ChartReporter(fileNamePrefix: String, drawer: ChartReporter.ChartFactory) extends Reporter {
@@ -58,7 +61,38 @@ object ChartReporter {
         chart.setAntiAlias(true)
 
         chart
-      } 
+      }
+    }
+    case class RegressionChart() extends ChartFactory {
+      def createChart(scopename: String, cs: Seq[CurveData], history: History): JFreeChart = {
+        val dataset = new YIntervalSeriesCollection
+        val chartName = scopename
+        val xAxisName = cs.head.measurements.head.params.axisData.head._1
+
+        // instantiate a DeviationRenderer (lines, shapes)
+        val renderer = new DeviationRenderer(true, true)
+        // fill the dataset
+        for((curve, index) <- cs.zipWithIndex) {
+          val series = new YIntervalSeries(curve.context.goe(Key.curve, index.toString))
+          for(measurement <- curve.measurements) {
+
+            // Params : x - the x-value, y - the y-value, yLow - the lower bound of the y-interval, yHigh - the upper bound of the y-interval.
+            series.add(measurement.params.axisData.head._2.asInstanceOf[Int], measurement.time, 0, 0) // missing these two last params, but confused !
+            renderer.setSeriesStroke(index, new BasicStroke(3F, 1, 1))
+            renderer.setSeriesFillPaint(index, new Color(0, 0, 0)) // how to choose the colors here ?
+          }
+          dataset.addSeries(series)
+        }
+
+        //String title, String xAxisLabel, String yAxisLabel, XYDataset dataset, PlotOrientation orientation, boolean legend,boolean tooltips, boolean urls
+        val chart = JFreeChartFactory.createXYLineChart(chartName, xAxisName, "time", dataset, PlotOrientation.VERTICAL, true, true, false)
+        val plot: XYPlot = chart.getPlot.asInstanceOf[XYPlot]
+        plot.setBackgroundPaint(new java.awt.Color(200, 200, 200))
+        plot.setRenderer(renderer)
+        // There are many other configurable appearance options !
+        chart.setAntiAlias(true)
+        chart
+      }
     }
   }
 
