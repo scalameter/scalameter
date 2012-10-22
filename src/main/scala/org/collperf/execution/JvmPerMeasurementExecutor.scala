@@ -18,7 +18,7 @@ class JvmPerMeasurementExecutor(val aggregator: Aggregator, val measurer: Execut
 
   def startHeap = 2048
 
-  def independentSamples = 5
+  def independentSamples = 6
 
   def run[T](setuptree: Tree[Setup[T]]): Tree[CurveData] = {
     for (setup <- setuptree) yield runSetup(setup)
@@ -62,7 +62,7 @@ class JvmPerMeasurementExecutor(val aggregator: Aggregator, val measurer: Execut
       immutable.HashMap(observations.toSeq: _*)
     }
 
-    log.verbose(s"Running test set for ${context.scope}")
+    log.verbose(s"Running test set for ${context.scope}, curve ${context.goe(Key.curve, "")}")
     log.verbose(s"Starting $totalreps measurements across $independentSamples independent JVM runs.")
 
     val timemaps = for {
@@ -70,8 +70,11 @@ class JvmPerMeasurementExecutor(val aggregator: Aggregator, val measurer: Execut
       reps = repetitions(idx)
     } yield sample(idx, reps)
 
-    val timemap = timemaps.foldLeft(immutable.HashMap[Parameters, Seq[Long]]()) { (accmap, timemap) =>
-      val result = accmap.toSeq.sortBy(_._1.axisData.toList.map(_._1).toString) zip timemap.toSeq.sortBy(_._1.axisData.toList.map(_._1).toString) map {
+    // ugly as hell
+    val timemap = timemaps.reduceLeft { (accmap, timemap) =>
+      val a1 = accmap.toSeq.sortBy(_._1.axisData.toList.map(_._1).toString)
+      val a2 = timemap.toSeq.sortBy(_._1.axisData.toList.map(_._1).toString)
+      val result = a1 zip a2 map {
         case ((k1, x), (k2, y)) => (k1, x ++ y)
       }
       immutable.HashMap(result: _*)
@@ -90,7 +93,7 @@ class JvmPerMeasurementExecutor(val aggregator: Aggregator, val measurer: Execut
     CurveData(measurements.toSeq, Map.empty, context)
   }
 
-  override def toString = s"JvmPerSetupExecutor(${aggregator.name}, ${measurer.name})"
+  override def toString = s"JvmPerMeasurementExecutor(${aggregator.name}, ${measurer.name})"
 
 }
 

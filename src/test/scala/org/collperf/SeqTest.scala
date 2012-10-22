@@ -142,13 +142,12 @@ abstract class SeqTesting extends PerformanceTest {
       }
     }*/
 
-
     measure method "groupBy" in {
       using(arrays) curve("Array") apply {
         _.groupBy(_ % 10)
       }
 
-      /*using(arraybuffers) curve("ArrayBuffer") apply {
+      using(arraybuffers) curve("ArrayBuffer") apply {
         _.groupBy(_ % 10)
       }
 
@@ -162,7 +161,7 @@ abstract class SeqTesting extends PerformanceTest {
 
       using(mutablelists) curve("LinkedList") apply {
         _.groupBy(_ % 10)
-      }*/
+      }
     }
 
   }
