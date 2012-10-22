@@ -77,6 +77,8 @@ class JvmPerMeasurementExecutor(val aggregator: Aggregator, val measurer: Execut
       immutable.HashMap(result: _*)
     }
 
+    log.verbose(s"Obtained measurements:\n${timemap.mkString("\n")}")
+
     val measurements = timemap map {
       case (params, times) => Measurement(
         aggregator(times),

@@ -71,7 +71,7 @@ abstract class SeqTesting extends PerformanceTest {
 
   performance of "Large-Seq" in {
 
-    measure method "foreach" in {
+    /*measure method "foreach" in {
       using(arrays) curve("Array") apply { xs =>
         var sum = 0
         xs.foreach(sum += _)
@@ -96,7 +96,7 @@ abstract class SeqTesting extends PerformanceTest {
         var sum = 0
         xs.foreach(sum += _)
       }
-    }
+    }*/
   
     /*measure method "reduce" in {
       using(arrays) curve("Array") apply {
