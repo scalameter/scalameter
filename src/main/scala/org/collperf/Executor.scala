@@ -33,14 +33,13 @@ object Executor {
 
   trait Measurer extends Serializable {
     def name: String
-    def measure[T, U](measurements: Long, setup: T => Any, tear: T => Any, regen: () => T, snippet: T => Any): Seq[Long]
+    def measure[T, U](measurements: Int, setup: T => Any, tear: T => Any, regen: () => T, snippet: T => Any): Seq[Long]
   }
 
   object Measurer {
 
-    /** A default measurer executes the test as many times as specified and returns the sequence of measured times. */
-    class Default extends Measurer {
-      def name = "Measurer.Default"
+    /** Mixin for measurers whose benchmarked value is based on the current iteration. */
+    trait IterationBasedValue extends Measurer {
 
       /** Returns the value used for the benchmark at `iteration`.
        *  May optionally call `regen` to obtain a new value for the benchmark.
@@ -50,7 +49,13 @@ object Executor {
        */
       protected def valueAt[T](iteration: Int, regen: () => T, v: T): T = v
 
-      def measure[T, U](measurements: Long, setup: T => Any, tear: T => Any, regen: () => T, snippet: T => Any): Seq[Long] = {
+    }
+
+    /** A default measurer executes the test as many times as specified and returns the sequence of measured times. */
+    class Default extends Measurer with IterationBasedValue {
+      def name = "Measurer.Default"
+
+      def measure[T, U](measurements: Int, setup: T => Any, tear: T => Any, regen: () => T, snippet: T => Any): Seq[Long] = {
         var iteration = 0
         var times = List[Long]()
         var value = regen()
@@ -82,10 +87,10 @@ object Executor {
      *  To prevent looping forever, after the number of measurement failed due to GC exceeds the number of successful
      *  measurements by more than `M`, the subsequent measurements are accepted irregardless of whether GC cycles occur.
      */
-    class IgnoringGC extends Default {
+    class IgnoringGC extends Measurer with IterationBasedValue {
       override def name = "Measurer.IgnoringGC"
 
-      override def measure[T, U](measurements: Long, setup: T => Any, tear: T => Any, regen: () => T, snippet: T => Any): Seq[Long] = {
+      def measure[T, U](measurements: Int, setup: T => Any, tear: T => Any, regen: () => T, snippet: T => Any): Seq[Long] = {
         var times = List[Long]()
         var okcount = 0
         var gccount = 0
@@ -129,11 +134,11 @@ object Executor {
      *  every `frequency` measurements.
      *  Before the new value has been instantiated, a full GC cycle is invoked if `fullGC` is `true`.
      */
-    trait Reinstantiation extends Default {
+    trait PeriodicReinstantiation extends IterationBasedValue {
       def frequency: Int
       def fullGC: Boolean
 
-      override def name = super.name + "+Reinstantiation"
+      abstract override def name = super.name + "+PeriodicReinstantiation"
 
       protected override def valueAt[T](iteration: Int, regen: () => T, v: T) = {
         if ((iteration + 1) % frequency == 0) {
@@ -145,9 +150,69 @@ object Executor {
       }
     }
 
+    /** TODO
+     *  
+     *  This eliminates performance measurements tied to certain particularly bad allocation patterns, typically
+     *  occurring immediately before the next major GC cycle.
+     */
+    case class BestAllocation(delegate: Measurer, aggregator: Aggregator, retries: Int = 3, confidence: Double = 0.9) extends Measurer {
+
+      def name = "Measurer.BestAllocation"
+
+      def measure[T, U](measurements: Int, setup: T => Any, tear: T => Any, regen: () => T, snippet: T => Any): Seq[Long] = {
+        import Statistics._
+
+        def sample(num: Int, value: T): Seq[Long] = delegate.measure(num, setup, tear, () => value, snippet)
+
+        def safetyCheck(observations: Seq[Long], checks: Seq[Long]): Boolean = {
+          val similar = confidenceIntervalTest(observations, checks, 1.0 - confidence)
+          // either statistically similar, or checks are worse
+          similar || aggregator(observations) <= aggregator(checks)
+        }
+
+        log.verbose("Starting initial measurements.")
+        var retriesleft = retries
+        var last = sample(measurements, regen())
+        var best = last
+        while (retriesleft > 0) {
+          val checkvalue = regen()
+          log.verbose("Starting checks.")
+          val checks = sample(measurements / 5, checkvalue)
+
+          if (safetyCheck(best, checks)) {
+            log.verbose("Check passed! Returning measurements.")
+            return best
+          } else {
+            log.verbose("Check FAILED! Redoing measurements.")
+            last = checks ++ sample(measurements - measurements / 5, checkvalue)
+            if (aggregator(last) < aggregator(best)) {
+              log.verbose("Found a better set of measurements.")
+              best = last
+            }
+          }
+
+          retriesleft -= 1
+        }
+
+        best
+      }
+
+    }
+
   }
 
 }
+
+
+
+
+
+
+
+
+
+
+
 
 
 

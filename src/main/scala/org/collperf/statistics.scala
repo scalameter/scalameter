@@ -9,6 +9,13 @@ import org.apache.commons.math3.distribution.NormalDistribution
 import org.apache.commons.math3.distribution.FDistribution
 
 
+/** Standard statistics utilities.
+ *
+ *  Note: significance level `alpha` is equal to `1 - confidenceLevel`. If you want to
+ *  be sure that 2 sets of measurements do not differ with `90` percent probability, then
+ *  the significance level `alpha` should be set to `0.1`.
+ *  In this example, the confidence level is `0.9`, and the significance level is `0.1`.
+ */
 object Statistics {
 
 	/** Let Y = (Y_1, ..., Y_n) data resulting from a parametric law F of
@@ -29,7 +36,9 @@ object Statistics {
 		}
 	}
 
-	/** Compares two alternative sets of measurements given a confidence level `alpha`.
+	/** Compares two alternative sets of measurements given a significance level `alpha`.
+	 *  
+	 *  @return      returns `true` if there is no statistical difference for s.l. `alpha`
 	 */
 	def confidenceIntervalTest(alt1: Seq[Long], alt2: Seq[Long], alpha: Double): Boolean = {
 		val m1 = mean(alt1)
@@ -41,8 +50,10 @@ object Statistics {
 		confidenceIntervalTest(m1, m2, s1, s2, n1, n2, alpha)
 	}
 
-	/** Compares two alternative sets of measurements given a confidence level `alpha`, and
+	/** Compares two alternative sets of measurements given a significance level `alpha`, and
 	 *  the mean, deviation and the number of measurements for each set.
+	 *
+	 *  @return      returns `true` if there is no statistical difference for s.l. `alpha`
 	 */
 	def confidenceIntervalTest(m1: Double, m2: Double, S1: Double, S2: Double, n1: Int, n2: Int, alpha: Double): Boolean = {
 		val diffM = m1 - m2

@@ -28,10 +28,19 @@ class NewJvmMinNoGcSeqTest extends SeqTesting with PerformanceTest with Performa
 
 class NewJvmMinNoGcReinstSeqTest extends SeqTesting with PerformanceTest with PerformanceTest.Reporter.Html {
 
-  lazy val executor = new execution.NewJvmExecutor(Aggregator.min, new Executor.Measurer.IgnoringGC with Executor.Measurer.Reinstantiation {
+  lazy val executor = new execution.NewJvmExecutor(Aggregator.min, new Executor.Measurer.IgnoringGC with Executor.Measurer.PeriodicReinstantiation {
     def frequency = 20
     def fullGC = true
   })
+
+}
+
+
+class NewJvmMedianNoGcFinderSeqTest extends SeqTesting with PerformanceTest with PerformanceTest.Reporter.Html {
+
+  lazy val aggregator = Aggregator.median
+  lazy val measurer = new Executor.Measurer.BestAllocation(new Executor.Measurer.IgnoringGC, aggregator)
+  lazy val executor = new execution.NewJvmExecutor(aggregator, measurer)
 
 }
 
@@ -92,7 +101,7 @@ abstract class SeqTesting extends PerformanceTest {
       }
     }
   
-    measure method "reduce" in {
+    /*measure method "reduce" in {
       using(arrays) curve("Array") apply {
         _.reduce(_ + _)
       }
@@ -156,7 +165,7 @@ abstract class SeqTesting extends PerformanceTest {
       using(mutablelists) curve("LinkedList") apply {
         _.groupBy(_ % 10)
       }
-    }
+    }*/
 
   }
 
