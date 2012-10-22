@@ -17,13 +17,36 @@ trait PerformanceTest extends DSL {
 object PerformanceTest {
 
   object Executor {
+    import org.collperf.Executor.Measurer
 
-    trait LocalMin extends PerformanceTest {
-      lazy val executor = execution.LocalExecutor(Aggregator.min, new org.collperf.Executor.Measurer.Default())
+    trait BigOh extends PerformanceTest {
+      lazy val aggregator = Aggregator.min
+      lazy val measurer = new Measurer.Default()
+      lazy val executor = execution.LocalExecutor(aggregator, measurer)
     }
 
-    trait NewJvmMedian extends PerformanceTest {
-      lazy val executor = execution.NewJvmExecutor(Aggregator.median, new org.collperf.Executor.Measurer.Default())
+    trait MinimalTime extends PerformanceTest {
+      lazy val aggregator = Aggregator.min
+      lazy val measurer = new Measurer.IgnoringGC with Measurer.PeriodicReinstantiation {
+        def frequency = 12
+        def fullGC = true
+      }
+      lazy val executor = execution.JvmPerSetupExecutor(aggregator, measurer)
+    }
+
+    trait OptimalAllocation extends PerformanceTest {
+      lazy val aggregator = Aggregator.median
+      lazy val measurer = new Measurer.OptimalAllocation(new Measurer.IgnoringGC, aggregator)
+      lazy val executor = new execution.JvmPerSetupExecutor(aggregator, measurer)
+    }
+
+    trait Regression extends PerformanceTest {
+      lazy val aggregator = Aggregator.min
+      lazy val measurer = new Measurer.IgnoringGC with Measurer.PeriodicReinstantiation {
+        def frequency = 20
+        def fullGC = false
+      }
+      lazy val executor = new execution.JvmPerMeasurementExecutor(aggregator, measurer)
     }
 
   }
@@ -45,4 +68,23 @@ object PerformanceTest {
   }
 
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 

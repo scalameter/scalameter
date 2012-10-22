@@ -6,29 +6,23 @@ import collection._
 
 
 
-class LocalSeqTest extends SeqTesting with PerformanceTest.Executor.LocalMin with PerformanceTest.Reporter.Html
-
-
-class NewJvmSeqTest extends SeqTesting with PerformanceTest.Executor.NewJvmMedian with PerformanceTest.Reporter.Html
-
-
 class NewJvmMedianNoGcSeqTest extends SeqTesting with PerformanceTest with PerformanceTest.Reporter.Html {
 
-  lazy val executor = new execution.NewJvmExecutor(Aggregator.median, new Executor.Measurer.IgnoringGC)
+  lazy val executor = new execution.JvmPerSetupExecutor(Aggregator.median, new Executor.Measurer.IgnoringGC)
 
 }
 
 
 class NewJvmMinNoGcSeqTest extends SeqTesting with PerformanceTest with PerformanceTest.Reporter.Html {
 
-  lazy val executor = new execution.NewJvmExecutor(Aggregator.min, new Executor.Measurer.IgnoringGC)
+  lazy val executor = new execution.JvmPerSetupExecutor(Aggregator.min, new Executor.Measurer.IgnoringGC)
 
 }
 
 
 class NewJvmMinNoGcReinstSeqTest extends SeqTesting with PerformanceTest with PerformanceTest.Reporter.Html {
 
-  lazy val executor = new execution.NewJvmExecutor(Aggregator.min, new Executor.Measurer.IgnoringGC with Executor.Measurer.PeriodicReinstantiation {
+  lazy val executor = new execution.JvmPerSetupExecutor(Aggregator.min, new Executor.Measurer.IgnoringGC with Executor.Measurer.PeriodicReinstantiation {
     def frequency = 20
     def fullGC = true
   })
@@ -39,10 +33,13 @@ class NewJvmMinNoGcReinstSeqTest extends SeqTesting with PerformanceTest with Pe
 class NewJvmMedianNoGcFinderSeqTest extends SeqTesting with PerformanceTest with PerformanceTest.Reporter.Html {
 
   lazy val aggregator = Aggregator.median
-  lazy val measurer = new Executor.Measurer.BestAllocation(new Executor.Measurer.IgnoringGC, aggregator)
-  lazy val executor = new execution.NewJvmExecutor(aggregator, measurer)
+  lazy val measurer = new Executor.Measurer.OptimalAllocation(new Executor.Measurer.IgnoringGC, aggregator)
+  lazy val executor = new execution.JvmPerSetupExecutor(aggregator, measurer)
 
 }
+
+
+class NewJvmRegressionSeqTest extends SeqTesting with PerformanceTest.Executor.Regression with PerformanceTest.Reporter.Html
 
 
 abstract class SeqTesting extends PerformanceTest {
@@ -101,7 +98,7 @@ abstract class SeqTesting extends PerformanceTest {
       }
     }
   
-    measure method "reduce" in {
+    /*measure method "reduce" in {
       using(arrays) curve("Array") apply {
         _.reduce(_ + _)
       }
@@ -143,14 +140,15 @@ abstract class SeqTesting extends PerformanceTest {
       using(mutablelists) curve("LinkedList") apply {
         _.filter(_ % 2 == 0)
       }
-    }
+    }*/
+
 
     measure method "groupBy" in {
       using(arrays) curve("Array") apply {
         _.groupBy(_ % 10)
       }
 
-      using(arraybuffers) curve("ArrayBuffer") apply {
+      /*using(arraybuffers) curve("ArrayBuffer") apply {
         _.groupBy(_ % 10)
       }
 
@@ -164,7 +162,7 @@ abstract class SeqTesting extends PerformanceTest {
 
       using(mutablelists) curve("LinkedList") apply {
         _.groupBy(_ % 10)
-      }
+      }*/
     }
 
   }

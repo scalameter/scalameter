@@ -139,6 +139,7 @@ package collperf {
     def teardownFor(v: T) = if (teardown.isEmpty) { () => } else { () => teardown.get(v) }
     def setupFor() = if (setup.isEmpty) { v: T => } else { v: T => setup.get(v) }
     def teardownFor() = if (teardown.isEmpty) { v: T => } else { v: T => teardown.get(v) }
+    def regenerateFor(params: Parameters): () => T = () => gen.generate(params)
   }
 
   trait Aggregator extends (Seq[Long] => Long) with Serializable {

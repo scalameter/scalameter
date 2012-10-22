@@ -126,7 +126,8 @@ object HtmlReporter {
         val chartfile = new File(s"$resultdir${File.separator}report${File.separator}images${File.separator}$scopename.png")
         ChartUtilities.saveChartAsPNG(chartfile, chart, 1600, 1200)
 
-        <div>Chart:
+        <div>
+        <p>Chart:</p>
         <a href={"images/" + scopename + ".png"}>
         <img src={"images/" + scopename + ".png"} alt={scopename} width="800" height="600"></img>
         </a>

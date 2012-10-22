@@ -2,6 +2,8 @@ package org.collperf
 
 
 
+import java.io._
+import sys.process._
 import compat.Platform
 import utils.withGCNotification
 
@@ -48,6 +50,100 @@ package object execution {
         log.verbose(s"Ending warmup.")
       }
     }
-  }  
+  }
+
+  def jvmflags(startHeap: Int = 2048, maxHeap: Int = 2048): String = {
+    s"${if (initialContext.goe(Key.verbose, false)) "-verbose:gc" else ""} -Xmx${maxHeap}m -Xms${startHeap}m"
+  }
+
+  final class JvmRunner {
+
+    private val tmpfile = File.createTempFile("newjvm-", "-io")
+    tmpfile.deleteOnExit()
+
+    def run[R](flags: String)(body: =>R): R = {
+      serializeInput(() => body)
+      runJvm(flags)
+      readOutput[R]()
+    }
+
+    private def serializeInput[T](config: T) {
+      val fos = new FileOutputStream(tmpfile)
+      val oos = new ObjectOutputStream(fos)
+      try {
+        oos.writeObject(config)
+      } finally {
+        fos.close()
+        oos.close()
+      }
+    }
+
+    private def runJvm(flags: String) {
+      val command = s"java -server $flags -cp ${sys.props("java.class.path")} ${classOf[Main].getName} ${tmpfile.getPath}"
+      log.verbose(s"Starting new JVM: $command")
+      command !;
+    }
+
+    private def readOutput[R](): R = {
+      val fis = new FileInputStream(tmpfile)
+      val ois = new ObjectInputStream(fis)
+      try {
+        ois.readObject().asInstanceOf[R]
+      } finally {
+        fis.close()
+        ois.close()
+      }
+    }
+
+  }
+
+  class Main
+
+  object Main {
+    def main(args: Array[String]) {
+      val tmpfile = new File(args(0))
+      mainMethod(tmpfile)
+    }
+
+    def mainMethod(tmpfile: File) {
+      val body = loadBody(tmpfile)
+      val result = body()
+      saveResult(tmpfile, result)
+    }
+
+    private def loadBody(file: File): () => Any = {
+      val fis = new FileInputStream(file)
+      val ois = new ObjectInputStream(fis)
+      try {
+        ois.readObject().asInstanceOf[() => Any]
+      } finally {
+        fis.close()
+        ois.close()
+      }
+    }
+
+    private def saveResult[R](file: File, result: R) {
+      val fos = new FileOutputStream(file)
+      val oos = new ObjectOutputStream(fos)
+      try {
+        oos.writeObject(result)
+      } finally {
+        fos.close()
+        oos.close()
+      }
+    }
+  }
 
 }
+
+
+
+
+
+
+
+
+
+
+
+

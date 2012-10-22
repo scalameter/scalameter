@@ -153,9 +153,9 @@ object Executor {
     /** Eliminates performance measurements tied to certain particularly bad allocation patterns, typically
      *  occurring immediately before the next major GC cycle.
      */
-    case class BestAllocation(delegate: Measurer, aggregator: Aggregator, retries: Int = 6, confidence: Double = 0.8) extends Measurer {
+    case class OptimalAllocation(delegate: Measurer, aggregator: Aggregator, retries: Int = 5, confidence: Double = 0.8) extends Measurer {
 
-      def name = "Measurer.BestAllocation(retries: $retries, confidence: $confidence)"
+      def name = s"Measurer.OptimalAllocation(retries: $retries, confidence: $confidence, aggregator: ${aggregator.name}, delegate: ${delegate.name})"
 
       val checkfactor = 8
 
@@ -190,15 +190,15 @@ object Executor {
 
             var totalmeasurements = measurements / checkfactor
             do {
-              val ssize = measurements / checkfactor * 2
-              last = last ++ sample(ssize, value)
-              totalmeasurements += ssize
+              val step = measurements / checkfactor * 2
+              last = last ++ sample(step, value)
+              totalmeasurements += step
             } while (totalmeasurements < measurements && potential(best, last))
 
             if (worse(best, last) && totalmeasurements >= measurements) {
               log.verbose("Better sample confirmed: " + last.mkString(", "))
               best = last
-            } else log.verbose("Potentially better sample is false positive.")
+            } else log.verbose("Potentially better sample is false positive: " + last.mkString(", "))
           }
 
           i += 1

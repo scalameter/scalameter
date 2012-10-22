@@ -40,16 +40,14 @@ class LocalExecutor(val aggregator: Aggregator, val measurer: Executor.Measurer)
 
     // for every benchmark - do a warmup, and then measure
     for (bench <- setups) yield {
-      runSingle(bench)
+      runSetup(bench)
     }
   }
 
-  private def regenerateFor[T](gen: Gen[T], params: Parameters): () => T = () => gen.regenerate(params)
+  private[execution] def runSetup[T](bsetup: Setup[T]): CurveData = {
+    import bsetup._
 
-  private[execution] def runSingle[T](benchmark: Setup[T]): CurveData = {
-    import benchmark._
-
-    log.verbose(s"Running test set for ${benchmark.context.scope}, curve ${benchmark.context.goe(Key.curve, "")}")
+    log.verbose(s"Running test set for ${bsetup.context.scope}, curve ${bsetup.context.goe(Key.curve, "")}")
 
     // run warm up
     val warmups = context.goe(Key.warmupRuns, 1)
@@ -71,7 +69,7 @@ class LocalExecutor(val aggregator: Aggregator, val measurer: Executor.Measurer)
     for (params <- gen.dataset) {
       val set = setupFor()
       val tear = teardownFor()
-      val regen = regenerateFor(gen, params)
+      val regen = regenerateFor(params)
 
       log.verbose(s"$repetitions repetitions of the snippet starting.")
       val times = measurer.measure(repetitions, set, tear, regen, snippet)
