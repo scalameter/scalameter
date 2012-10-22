@@ -58,8 +58,8 @@ object Statistics {
 	def confidenceIntervalTest(m1: Double, m2: Double, S1: Double, S2: Double, n1: Int, n2: Int, alpha: Double): Boolean = {
 		val diffM = m1 - m2
 		val diffS = sqrt(S1 * S1 / n1 + S2 * S2 / n2)
-		val CI = if (n1 < 30 || n2 < 30) {
-			val ndf = math.round(pow(pow(S1, 2) / n1 + pow(S2, 2) / n2, 2) / (pow(pow(S1, 2) / n1, 2) / (n1 - 1) + pow(pow(S2, 2) / n2, 2) / (n2 - 1)))
+		val ndf = math.round(pow(pow(S1, 2) / n1 + pow(S2, 2) / n2, 2) / (pow(pow(S1, 2) / n1, 2) / (n1 - 1) + pow(pow(S2, 2) / n2, 2) / (n2 - 1)))
+		val CI = if ((ndf != 0) && (n1 < 30 || n2 < 30)) {
 			(diffM - qt(1 - alpha / 2, ndf) * diffS, diffM + qt(1 - alpha / 2, ndf) * diffS)
 		} else {
 			(diffM - qsnorm(1 - alpha / 2) * diffS, diffM + qsnorm(1 - alpha / 2) * diffS)

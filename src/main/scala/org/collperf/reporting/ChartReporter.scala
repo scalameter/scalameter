@@ -4,6 +4,7 @@ package reporting
 
 
 import org.jfree.data.xy.{XYSeries, XYSeriesCollection, YIntervalSeriesCollection, YIntervalSeries}
+import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer
 import org.jfree.chart.renderer.xy.DeviationRenderer
 import org.jfree.chart.plot.XYPlot
 import org.jfree.data.statistics._
@@ -42,11 +43,13 @@ object ChartReporter {
   }
 
   object ChartFactory {
+
     case class XYLine() extends ChartFactory {
       def createChart(scopename: String, cs: Seq[CurveData], history: History): JFreeChart = {
         val seriesCollection = new XYSeriesCollection
         val chartName = scopename
         val xAxisName = cs.head.measurements.head.params.axisData.head._1
+        val renderer = new XYLineAndShapeRenderer()
 
         for ((curve, idx) <- cs.zipWithIndex) {
           val series = new XYSeries(curve.context.goe(Key.curve, idx.toString), true, true)
@@ -54,15 +57,18 @@ object ChartReporter {
             series.add(measurement.params.axisData.head._2.asInstanceOf[Int], measurement.time)
           }
           seriesCollection.addSeries(series)
+          renderer.setSeriesShapesVisible(idx, true)
         }
 
         val chart = JFreeChartFactory.createXYLineChart(chartName, xAxisName, "time", seriesCollection, PlotOrientation.VERTICAL, true, true, false)
-        chart.getPlot.setBackgroundPaint(new java.awt.Color(200, 200, 200))
+        chart.getPlot.setBackgroundPaint(new java.awt.Color(180, 180, 180))
+        chart.getPlot.asInstanceOf[XYPlot].setRenderer(renderer)
         chart.setAntiAlias(true)
 
         chart
       }
     }
+
     case class RegressionChart() extends ChartFactory {
       def createChart(scopename: String, cs: Seq[CurveData], history: History): JFreeChart = {
         val dataset = new YIntervalSeriesCollection
@@ -94,6 +100,7 @@ object ChartReporter {
         chart
       }
     }
+
   }
 
 }

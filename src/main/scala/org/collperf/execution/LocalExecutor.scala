@@ -49,7 +49,7 @@ class LocalExecutor(val aggregator: Aggregator, val measurer: Executor.Measurer)
   private[execution] def runSingle[T](benchmark: Setup[T]): CurveData = {
     import benchmark._
 
-    log.verbose(s"Running test set for ${benchmark.context.scope}")
+    log.verbose(s"Running test set for ${benchmark.context.scope}, curve ${benchmark.context.goe(Key.curve, "")}")
 
     // run warm up
     val warmups = context.goe(Key.warmupRuns, 1)

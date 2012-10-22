@@ -138,7 +138,7 @@ object Executor {
       def frequency: Int
       def fullGC: Boolean
 
-      abstract override def name = super.name + "+PeriodicReinstantiation"
+      abstract override def name = s"${super.name}+PeriodicReinstantiation(frequency: $frequency, fullGC: $fullGC)"
 
       protected override def valueAt[T](iteration: Int, regen: () => T, v: T) = {
         if ((iteration + 1) % frequency == 0) {
@@ -150,48 +150,58 @@ object Executor {
       }
     }
 
-    /** TODO
-     *  
-     *  This eliminates performance measurements tied to certain particularly bad allocation patterns, typically
+    /** Eliminates performance measurements tied to certain particularly bad allocation patterns, typically
      *  occurring immediately before the next major GC cycle.
      */
-    case class BestAllocation(delegate: Measurer, aggregator: Aggregator, retries: Int = 3, confidence: Double = 0.9) extends Measurer {
+    case class BestAllocation(delegate: Measurer, aggregator: Aggregator, retries: Int = 6, confidence: Double = 0.8) extends Measurer {
 
-      def name = "Measurer.BestAllocation"
+      def name = "Measurer.BestAllocation(retries: $retries, confidence: $confidence)"
+
+      val checkfactor = 8
 
       def measure[T, U](measurements: Int, setup: T => Any, tear: T => Any, regen: () => T, snippet: T => Any): Seq[Long] = {
         import Statistics._
 
         def sample(num: Int, value: T): Seq[Long] = delegate.measure(num, setup, tear, () => value, snippet)
 
-        def safetyCheck(observations: Seq[Long], checks: Seq[Long]): Boolean = {
-          val similar = confidenceIntervalTest(observations, checks, 1.0 - confidence)
-          // either statistically similar, or checks are worse
-          similar || aggregator(observations) <= aggregator(checks)
+        def different(observations: Seq[Long], checks: Seq[Long]): Boolean = {
+          !confidenceIntervalTest(observations, checks, 1.0 - confidence)
         }
 
-        log.verbose("Starting initial measurements.")
-        var retriesleft = retries
+        def worse(observations: Seq[Long], checks: Seq[Long]): Boolean = {
+          aggregator(checks) < aggregator(observations)
+        }
+
+        def potential(observations: Seq[Long], checks: Seq[Long]): Boolean = {
+          different(observations, checks) && worse(observations, checks)
+        }
+
+        log.verbose("Taking initial set of measurements.")
         var last = sample(measurements, regen())
         var best = last
-        while (retriesleft > 0) {
-          val checkvalue = regen()
-          log.verbose("Starting checks.")
-          val checks = sample(measurements / 5, checkvalue)
+        var i = 0
+        while (i < retries) {
+          log.verbose("Taking another sample.")
+          val value = regen()
+          last = sample(measurements / checkfactor, value)
 
-          if (safetyCheck(best, checks)) {
-            log.verbose("Check passed! Returning measurements.")
-            return best
-          } else {
-            log.verbose("Check FAILED! Redoing measurements.")
-            last = checks ++ sample(measurements - measurements / 5, checkvalue)
-            if (aggregator(last) < aggregator(best)) {
-              log.verbose("Found a better set of measurements.")
+          if (potential(best, last)) {
+            log.verbose("Found a potentially better sample, incrementally taking more samples of the same value.")
+
+            var totalmeasurements = measurements / checkfactor
+            do {
+              val ssize = measurements / checkfactor * 2
+              last = last ++ sample(ssize, value)
+              totalmeasurements += ssize
+            } while (totalmeasurements < measurements && potential(best, last))
+
+            if (worse(best, last) && totalmeasurements >= measurements) {
+              log.verbose("Better sample confirmed: " + last.mkString(", "))
               best = last
-            }
+            } else log.verbose("Potentially better sample is false positive.")
           }
 
-          retriesleft -= 1
+          i += 1
         }
 
         best

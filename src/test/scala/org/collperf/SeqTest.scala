@@ -47,7 +47,7 @@ class NewJvmMedianNoGcFinderSeqTest extends SeqTesting with PerformanceTest with
 
 abstract class SeqTesting extends PerformanceTest {
 
-  val largesizes = Gen.range("size")(500000, 5000000, 250000)
+  val largesizes = Gen.range("size")(500000, 5000000, 1000000)
 
   val lists = for {
     size <- largesizes
@@ -101,7 +101,7 @@ abstract class SeqTesting extends PerformanceTest {
       }
     }
   
-    /*measure method "reduce" in {
+    measure method "reduce" in {
       using(arrays) curve("Array") apply {
         _.reduce(_ + _)
       }
@@ -165,7 +165,7 @@ abstract class SeqTesting extends PerformanceTest {
       using(mutablelists) curve("LinkedList") apply {
         _.groupBy(_ % 10)
       }
-    }*/
+    }
 
   }
 

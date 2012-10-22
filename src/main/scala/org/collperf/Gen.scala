@@ -43,11 +43,18 @@ trait Gen[T] extends Serializable {
 
 object Gen {
 
+  def unit: Gen[Unit] = new Gen[Unit] {
+    def axisName = Key.unit
+    def warmupset = Iterator.single(unit)
+    def dataset = Iterator.single(Parameters(axisName -> ()))
+    def regenerate(params: Parameters) = params[Unit](axisName)
+  }
+
   def single[T](axisName: String)(v: T): Gen[T] = enumeration(axisName)(v)
 
-  def range(axisName: String)(from: Int, until: Int, step: Int): Gen[Int] = new Gen[Int] {
-    def warmupset = Iterator.single(until)
-    def dataset = Iterator.range(from, until, step).map(x => Parameters(axisName -> x))
+  def range(axisName: String)(from: Int, upto: Int, hop: Int): Gen[Int] = new Gen[Int] {
+    def warmupset = Iterator.single(upto)
+    def dataset = (from to upto by hop).iterator.map(x => Parameters(axisName -> x))
     def regenerate(params: Parameters) = params[Int](axisName)
   }
 
@@ -59,8 +66,23 @@ object Gen {
 
   def exponential(axisName: String)(from: Int, until: Int, factor: Int): Gen[Int] = new Gen[Int] {
     def warmupset = Iterator.single((until - from) / 2)
-    def dataset = Iterator.iterate(from)(_ * factor).takeWhile(_ < until).map(x => Parameters(axisName -> x))
+    def dataset = Iterator.iterate(from)(_ * factor).takeWhile(_ <= until).map(x => Parameters(axisName -> x))
     def regenerate(params: Parameters) = params[Int](axisName)
   }
 
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

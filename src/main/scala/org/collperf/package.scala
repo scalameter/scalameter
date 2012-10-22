@@ -88,6 +88,8 @@ package collperf {
 
     val persistor = "persistor"
     val bigO = "big-o"
+
+    val unit = "unit"
   }
 
   case class Context(properties: immutable.Map[String, Any]) {
