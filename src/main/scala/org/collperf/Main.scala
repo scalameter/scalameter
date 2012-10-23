@@ -31,18 +31,13 @@ object Main {
 
   object Configuration extends JavaTokenParsers {
 
-    private def persistorFor(name: String) = name match {
-      case "None" => Persistor.None
-      case "Serialization" => new persistance.SerializationPersistor
-    }
-
     def fromCommandLineArgs(args: Array[String]) = {
       def arguments: Parser[Configuration] = rep(arg) ^^ {
         case configs => configs.foldLeft(Configuration(Nil, Context.empty)) {
           case (acc, x) => Configuration(acc.benches ++ x.benches, acc.context ++ x.context)
         }
       }
-      def arg: Parser[Configuration] = benches | persistor | intsetting | stringsetting | flag
+      def arg: Parser[Configuration] = benches | intsetting | stringsetting | flag
       def listOf(flagname: String, shorthand: String): Parser[Seq[String]] = "-" ~ (flagname | shorthand) ~ classnames ^^ {
         case _ ~ _ ~ classnames => classnames
       }
@@ -50,9 +45,6 @@ object Main {
       def classname: Parser[String] = repsep(ident, ".") ^^ { _.mkString(".") }
       def benches: Parser[Configuration] = listOf("benches", "b") ^^ {
         case names => Configuration(names, Context.empty)
-      }
-      def persistor: Parser[Configuration] = "-" ~ ("persistor" | "p") ~ ident ^^ {
-        case _ ~ _ ~ name => Configuration(Nil, Context(Key.persistor -> persistorFor(name)))
       }
       def intsetting: Parser[Configuration] = "-" ~ ident ~ decimalNumber ^^ {
         case _ ~ "Cwarmups" ~ num => Configuration(Nil, Context(Key.warmupRuns -> num.toInt))

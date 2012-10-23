@@ -17,7 +17,7 @@ object Reporter {
     def report(result: Tree[CurveData], persistor: Persistor) {}
   }
 
-  case class Composite(rs: Reporter*) {
+  case class Composite(rs: Reporter*) extends Reporter {
     def report(result: Tree[CurveData], persistor: Persistor) = for (r <- rs) r.report(result, persistor)
   }
 }

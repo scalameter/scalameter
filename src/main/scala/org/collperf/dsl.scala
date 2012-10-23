@@ -13,6 +13,8 @@ trait DSL extends DelayedInit {
 
   def reporter: Reporter
 
+  def persistor: Persistor
+
   private val setupzipper = new scala.util.DynamicVariable(Tree.Zipper.root[Setup[_]])
 
   private def descendInScope(name: String)(body: =>Unit) {
@@ -60,10 +62,13 @@ trait DSL extends DelayedInit {
   }
 
   protected def executeTests() {
-    val persistor = initialContext.goe(Key.persistor, Persistor.None)
+    val datestart = new java.util.Date
     val setuptree = setupzipper.value.result
     val resulttree = executor.run(setuptree.asInstanceOf[Tree[Setup[SameType]]])
-    reporter.report(resulttree, persistor)
+    val dateend = new java.util.Date
+
+    val datedtree = resulttree.copy(context = resulttree.context + (Key.startDate -> datestart) + (Key.endDate -> dateend))
+    reporter.report(datedtree, persistor)
   }
 
   def delayedInit(body: =>Unit) {

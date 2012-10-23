@@ -160,7 +160,7 @@ object Executor {
       val checkfactor = 8
 
       def measure[T, U](measurements: Int, setup: T => Any, tear: T => Any, regen: () => T, snippet: T => Any): Seq[Long] = {
-        import Statistics._
+        import utils.Statistics._
 
         def sample(num: Int, value: T): Seq[Long] = delegate.measure(num, setup, tear, () => value, snippet)
 

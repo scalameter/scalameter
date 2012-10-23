@@ -10,7 +10,7 @@ import utils.Tree
 
 
 
-class JvmPerMeasurementExecutor(val aggregator: Aggregator, val measurer: Executor.Measurer) extends Executor {
+class MultipleJvmPerSetupExecutor(val aggregator: Aggregator, val measurer: Executor.Measurer) extends Executor {
 
   val runner = new JvmRunner
 
@@ -36,10 +36,10 @@ class JvmPerMeasurementExecutor(val aggregator: Aggregator, val measurer: Execut
 
     val m = measurer
 
-    def sample(idx: Int, reps: Int): immutable.HashMap[Parameters, Seq[Long]] = runner.run(jvmflags(startHeap = startHeap, maxHeap = maxHeap)) {
+    def sample(idx: Int, reps: Int): Map[Parameters, Seq[Long]] = runner.run(jvmflags(startHeap = startHeap, maxHeap = maxHeap)) {
       initialContext = context
       
-      log.verbose(s"Sampling $reps measurements in separate JVM invocation $idx.")
+      log.verbose(s"Sampling $reps measurements in separate JVM invocation $idx - ${context.scope}, ${context.goe(Key.curve, "")}.")
 
       // warmup
       customwarmup match {
@@ -59,7 +59,7 @@ class JvmPerMeasurementExecutor(val aggregator: Aggregator, val measurer: Execut
         (params, m.measure(reps, set, tear, regen, snippet))
       }
 
-      immutable.HashMap(observations.toSeq: _*)
+      observations.toMap
     }
 
     log.verbose(s"Running test set for ${context.scope}, curve ${context.goe(Key.curve, "")}")
@@ -77,7 +77,7 @@ class JvmPerMeasurementExecutor(val aggregator: Aggregator, val measurer: Execut
       val result = a1 zip a2 map {
         case ((k1, x), (k2, y)) => (k1, x ++ y)
       }
-      immutable.HashMap(result: _*)
+      result.toMap
     }
 
     log.verbose(s"Obtained measurements:\n${timemap.mkString("\n")}")
@@ -93,14 +93,14 @@ class JvmPerMeasurementExecutor(val aggregator: Aggregator, val measurer: Execut
     CurveData(measurements.toSeq, Map.empty, context)
   }
 
-  override def toString = s"JvmPerMeasurementExecutor(${aggregator.name}, ${measurer.name})"
+  override def toString = s"MultipleJvmPerSetupExecutor(${aggregator.name}, ${measurer.name})"
 
 }
 
 
-object JvmPerMeasurementExecutor extends Executor.Factory[JvmPerMeasurementExecutor] {
+object MultipleJvmPerSetupExecutor extends Executor.Factory[MultipleJvmPerSetupExecutor] {
 
-  def apply(agg: Aggregator, m: Executor.Measurer) = new JvmPerMeasurementExecutor(agg, m)
+  def apply(agg: Aggregator, m: Executor.Measurer) = new MultipleJvmPerSetupExecutor(agg, m)
 
 }
 

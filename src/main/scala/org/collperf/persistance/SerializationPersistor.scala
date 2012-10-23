@@ -9,9 +9,16 @@ import collection._
 
 
 
-case class SerializationPersistor extends Persistor {
+case class SerializationPersistor(path: File) extends Persistor {
+
+  def this(path: String) = this(new File(path))
+
+  def this() = this(initialContext.goe(Key.resultDir, ""))
+
+  def sep = File.separator
+
   private def loadHistory(dir: String, scope: String): History = {
-    val file = new File(s"$dir${File.separator}$scope")
+    val file = new File(s"$path$sep$scope")
     if (!file.exists || !file.isFile) History(Nil)
     else {
       val fis = new FileInputStream(file)
@@ -25,7 +32,9 @@ case class SerializationPersistor extends Persistor {
   }
 
   private def saveHistory(dir: String, scope: String, h: History) {
-    val fos = new FileOutputStream(s"$dir${File.separator}$scope")
+    path.mkdir()
+    val file = new File(s"$path$sep$scope")
+    val fos = new FileOutputStream(file)
     val oos = new ObjectOutputStream(fos)
     try {
       oos.writeObject(h)

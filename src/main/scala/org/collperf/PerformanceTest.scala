@@ -11,6 +11,8 @@ trait PerformanceTest extends DSL {
 
   def reporter: Reporter
 
+  def persistor: Persistor
+
 }
 
 
@@ -23,6 +25,7 @@ object PerformanceTest {
       lazy val aggregator = Aggregator.min
       lazy val measurer = new Measurer.Default()
       lazy val executor = execution.LocalExecutor(aggregator, measurer)
+      lazy val persistor = Persistor.None
     }
 
     trait MinimalTime extends PerformanceTest {
@@ -41,31 +44,38 @@ object PerformanceTest {
     }
 
     trait Regression extends PerformanceTest {
-      lazy val aggregator = Aggregator.min
+      lazy val aggregator = Aggregator.complete(Aggregator.min)
       lazy val measurer = new Measurer.IgnoringGC with Measurer.PeriodicReinstantiation {
-        def frequency = 20
+        def frequency = 5
         def fullGC = false
       }
-      lazy val executor = new execution.JvmPerMeasurementExecutor(aggregator, measurer)
+      lazy val executor = new execution.MultipleJvmPerSetupExecutor(aggregator, measurer)
     }
 
   }
 
   object Reporter {
+    import reporting._
 
-    trait Console extends PerformanceTest {
-      lazy val reporter = new reporting.ConsoleReporter
+    trait Logging extends PerformanceTest {
+      lazy val reporter = new LoggingReporter
     }
 
     trait Chart extends PerformanceTest {
-      lazy val reporter = new reporting.ChartReporter("", reporting.ChartReporter.ChartFactory.XYLine())
+      lazy val reporter = new ChartReporter("", ChartReporter.ChartFactory.XYLine())
     }
 
     trait Html extends PerformanceTest {
-      lazy val reporter = new reporting.HtmlReporter(reporting.HtmlReporter.Renderer.all: _*)
+      lazy val reporter = new HtmlReporter(HtmlReporter.Renderer.all: _*)
+    }
+
+    trait Regression extends PerformanceTest {
+      lazy val reporter = org.collperf.Reporter.Composite(new RegressionReporter, new HtmlReporter(HtmlReporter.Renderer.all: _*))
     }
 
   }
+
+  trait Regression extends Executor.Regression with Reporter.Regression
 
 }
 

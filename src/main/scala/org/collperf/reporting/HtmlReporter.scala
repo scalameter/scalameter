@@ -3,8 +3,9 @@ package reporting
 
 
 
-import org.jfree.chart._
+import java.util.Date
 import java.io._
+import org.jfree.chart._
 import collection._
 import xml._
 import utils.Tree
@@ -24,6 +25,7 @@ case class HtmlReporter(val renderers: HtmlReporter.Renderer*) extends Reporter 
   def body(result: Tree[CurveData], persistor: Persistor) = {
     <body>
       {machineInformation}
+      {date(result)}
       <h1>Performance test charts</h1>
       {
         for ((ctx, scoperesults) <- result.scopes; if scoperesults.nonEmpty) yield <p><div>
@@ -49,6 +51,18 @@ case class HtmlReporter(val renderers: HtmlReporter.Renderer*) extends Reporter 
       </ul></p>
     </div>
 
+  def date(results: Tree[CurveData]) = {
+    val dateoption = for {
+      start <- results.context.get[Date](Key.startDate)
+      end <- results.context.get[Date](Key.endDate)
+    } yield <div>
+      <div>Started: {start}</div>
+      <div>Finished: {end}</div>
+      <div>Running time: {(end.getTime - start.getTime) / 1000} seconds</div>
+    </div>
+    dateoption.getOrElse(<div>No date information.</div>)
+  }
+  
   def report(results: Tree[CurveData], persistor: Persistor) {
     val resultdir = results.context.goe(Key.resultDir, "tmp")
 

@@ -56,6 +56,10 @@ package object collperf {
   /* logging */
 
   object log {
+    def apply(msg: =>Any) = log synchronized {
+      println(msg)
+    }
+
     def verbose(msg: =>Any) {
       if (initialContext.goe(Key.verbose, false)) log synchronized {
         println(msg)
@@ -81,12 +85,15 @@ package collperf {
     val cores = "cores"
     val hostname = "hostname"
 
+    val startDate = "date-start"
+    val endDate = "date-end"
+
     val benchRuns = "runs"
     val warmupRuns = "warmups"
     val verbose = "verbose"
     val resultDir = "result-dir"
+    val confidence = "confidence"
 
-    val persistor = "persistor"
     val bigO = "big-o"
 
     val unit = "unit"
@@ -99,6 +106,7 @@ package collperf {
     def goe[T](key: String, v: T) = properties.getOrElse(key, v).asInstanceOf[T]
 
     def scope = properties(Key.scope).asInstanceOf[List[String]].reverse.mkString(".")
+    def curve = goe(Key.curve, "")
   }
 
   object Context {
@@ -128,7 +136,9 @@ package collperf {
     def apply(xs: (String, Any)*) = new Parameters(immutable.ListMap(xs: _*))
   }
 
-  case class Measurement(time: Long, params: Parameters, data: Option[Any])
+  case class Measurement(time: Long, params: Parameters, data: Option[Any]) {
+    def complete: Seq[Long] = data.get.asInstanceOf[Seq[Long]]
+  }
 
   case class CurveData(measurements: Seq[Measurement], info: Map[String, Any], context: Context)
 
@@ -183,7 +193,7 @@ package collperf {
     }
 
     def complete(a: Aggregator) = new Aggregator {
-      def name = a.name
+      def name = s"complete(${a.name})"
       def apply(times: Seq[Long]) = a(times)
       def data(times: Seq[Long]) = Some(times)
     }

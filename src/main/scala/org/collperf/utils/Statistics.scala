@@ -1,4 +1,5 @@
 package org.collperf
+package utils
 
 
 
@@ -7,6 +8,7 @@ import math._
 import org.apache.commons.math3.distribution.TDistribution
 import org.apache.commons.math3.distribution.NormalDistribution
 import org.apache.commons.math3.distribution.FDistribution
+
 
 
 /** Standard statistics utilities.
@@ -69,32 +71,44 @@ object Statistics {
 		CI._1 <= 0 && 0 <= CI._2
 	}
 
+	/** Computes sum-of-squares due to differences between alternatives. */
+	def SSA(alternatives: Seq[Seq[Long]]): Double = {
+		val means: Seq[Double] = for(a <- alternatives) yield mean(a)
+		val overallMean: Double = means.reduceLeft(_ + _) / means.length
+
+		(means zip alternatives.map(_.length)).foldLeft(0.0) { (sum: Double, p: (Double, Int)) =>
+			val yi = p._1
+			val ni = p._2
+			sum + ni * (yi - overallMean) * (yi - overallMean)
+	  }
+	}
+
+	/** Computes sum-of-squares due to errors in measurements. */
+	def SSE(alternatives: Seq[Seq[Long]]): Double = {
+		val means: Seq[Double] = for(a <- alternatives) yield mean(a)
+		val doubleSumTerms = for ((alternative, mean) <- alternatives zip means; yij <- alternative) yield (yij - mean) * (yij - mean)
+		doubleSumTerms reduceLeft (_ + _)
+	}
+
 	/** ANOVA separates the total variation in a set of measurements into a component due to random fluctuations
 	 *  in the measurements and a component due to the actual differences among the alternatives.
 	 *  
 	 *  If the variation between the alternatives is larger than the variation within each alternative, then
 	 *  it can be concluded that there is a statistically significant difference between the alternatives.
 	 *  
-	 *  For more information see: Statistically Rigorous Java Performance Evaluation, Andy Georges, Dries Buytaert, Lieven Eeckhout
+	 *  For more information see:
+	 *  Andy Georges, Dries Buytaert, Lieven Eeckhout - Statistically Rigorous Java Performance Evaluation
 	 */
-	def ANOVAFTest(history: Seq[Seq[Long]], alpha: Double): Boolean = {
-		val alternatives = history
-		val means: Seq[Double] = for(a <- alternatives) yield mean(a)
-		val overallMean: Double = means.reduceLeft(_ + _) / means.length
-
-		val SSA = (means zip history.map(_.length)).foldLeft(0.0) { (sum: Double, p: (Double, Int)) =>
-			val yi = p._1
-			val ni = p._2
-			sum + ni * (yi - overallMean) * (yi - overallMean)
-	  }
+	def ANOVAFTest(alternatives: Seq[Seq[Long]], alpha: Double): Boolean = {
+		/* Computation of SSA */
+		val ssa = SSA(alternatives)
 
 		/* Computation of SSE */
-		val doubleSumTerms = for ((alternative, mean) <- alternatives zip means; yij <- alternative) yield (yij - mean) * (yij - mean)
-		val SSE = doubleSumTerms reduceLeft (_ + _)
+		val sse = SSE(alternatives)
 
 		val K = alternatives.length
 		val N = alternatives.foldLeft(0)(_ + _.size)
-		val F = SSA / SSE * (N - K) / (K - 1)
+		val F = ssa / sse * (N - K) / (K - 1)
 
 		F <= qf(1 - alpha, K - 1, N - K)
 	}
