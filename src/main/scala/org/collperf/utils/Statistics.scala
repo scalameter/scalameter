@@ -55,10 +55,12 @@ object Statistics {
 		val s2 = stdev(alt2)
 		val n1 = alt1.length
 		val n2 = alt2.length
+		lazy val ci1 = confidenceInterval(alt1, alpha)
+		lazy val ci2 = confidenceInterval(alt2, alpha)
 		val diffM = m1 - m2
 		val diffS = sqrt(s1 * s1 / n1 + s2 * s2 / n2)
 		val ndf = math.round(pow(pow(s1, 2) / n1 + pow(s2, 2) / n2, 2) / (pow(pow(s1, 2) / n1, 2) / (n1 - 1) + pow(pow(s2, 2) / n2, 2) / (n2 - 1)))
-		val CI = if ((ndf != 0) && (n1 < 30 || n2 < 30)) {
+		val ci = if ((ndf != 0) && (n1 < 30 || n2 < 30)) {
 			(diffM - qt(1 - alpha / 2, ndf) * diffS, diffM + qt(1 - alpha / 2, ndf) * diffS)
 		} else {
 			(diffM - qsnorm(1 - alpha / 2) * diffS, diffM + qsnorm(1 - alpha / 2) * diffS)
@@ -66,7 +68,7 @@ object Statistics {
 
     /* If 0 is within the confidence interval, we conclude that there is no
     statiscal difference between the two alternatives */
-		def passed = CI._1 <= 0 && 0 <= CI._2
+		def passed = ci._1 <= 0 && 0 <= ci._2
 	}
 
 	/** Computes sum-of-squares due to differences between alternatives. */

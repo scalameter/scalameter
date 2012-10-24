@@ -113,9 +113,12 @@ object RegressionReporter {
           
           if (!citest) {
             val color = ansi.red
+            val ciprev = f"<${citest.ci1._1}%.2f, ${citest.ci1._2}%.2f>"
+            val cilate = f"<${citest.ci2._1}%.2f, ${citest.ci2._2}%.2f>"
             val msg = {
-              f"$color    Previous (mean = ${citest.m1}%.2f, stdev = ${citest.s1}%.2f): ${previous.complete.mkString(", ")}${ansi.reset}\n" +
-              f"$color    Latest   (mean = ${citest.m2}%.2f, stdev = ${citest.s2}%.2f): ${latest.complete.mkString(", ")}${ansi.reset}"
+              f"$color      Failed confidence interval test: <${citest.ci._1}%.2f, ${citest.ci._2}%.2f> ${ansi.reset}\n" +
+              f"$color      Previous (mean = ${citest.m1}%.2f, stdev = ${citest.s1}%.2f, ci = $ciprev): ${previous.complete.mkString(", ")}${ansi.reset}\n" +
+              f"$color      Latest   (mean = ${citest.m2}%.2f, stdev = ${citest.s2}%.2f, ci = $cilate): ${latest.complete.mkString(", ")}${ansi.reset}"
             }
             (false, msg)
           } else (true, "")

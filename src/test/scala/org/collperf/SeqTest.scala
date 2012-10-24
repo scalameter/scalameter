@@ -98,7 +98,7 @@ abstract class SeqTesting extends PerformanceTest {
   
     measure method "reduce" in {
       using(arrays()) curve("Array") configuration (
-        Key.significance -> 1e-4
+        Key.significance -> 1e-7
       ) apply {
         _.reduce(_ + _)
       }
