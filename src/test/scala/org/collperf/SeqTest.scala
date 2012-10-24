@@ -76,7 +76,7 @@ abstract class SeqTesting extends PerformanceTest {
         xs.foreach(sum += _)
       }
 
-      /*using(arraybuffers) curve("ArrayBuffer") apply { xs =>
+      using(arraybuffers) curve("ArrayBuffer") apply { xs =>
         var sum = 0
         xs.foreach(sum += _)
       }
@@ -86,7 +86,7 @@ abstract class SeqTesting extends PerformanceTest {
         xs.foreach(sum += _)
       }
 
-      using(lists) curve("List") apply { xs =>
+      /*using(lists) curve("List") apply { xs =>
         var sum = 0
         xs.foreach(sum += _)
       }

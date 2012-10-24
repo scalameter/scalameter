@@ -36,7 +36,7 @@ class MultipleJvmPerSetupExecutor(val aggregator: Aggregator, val measurer: Exec
 
     val m = measurer
 
-    def sample(idx: Int, reps: Int): Map[Parameters, Seq[Long]] = runner.run(jvmflags(startHeap = startHeap, maxHeap = maxHeap)) {
+    def sample(idx: Int, reps: Int): Seq[(Parameters, Seq[Long])] = runner.run(jvmflags(startHeap = startHeap, maxHeap = maxHeap)) {
       initialContext = context
       
       log.verbose(s"Sampling $reps measurements in separate JVM invocation $idx - ${context.scope}, ${context.goe(Key.curve, "")}.")
@@ -59,30 +59,27 @@ class MultipleJvmPerSetupExecutor(val aggregator: Aggregator, val measurer: Exec
         (params, m.measure(reps, set, tear, regen, snippet))
       }
 
-      observations.toMap
+      observations.toBuffer
     }
 
     log.verbose(s"Running test set for ${context.scope}, curve ${context.goe(Key.curve, "")}")
     log.verbose(s"Starting $totalreps measurements across $independentSamples independent JVM runs.")
 
-    val timemaps = for {
+    val timeseqs = for {
       idx <- 0 until independentSamples
       reps = repetitions(idx)
     } yield sample(idx, reps)
 
     // ugly as hell
-    val timemap = timemaps.reduceLeft { (accmap, timemap) =>
-      val a1 = accmap.toSeq.sortBy(_._1.axisData.toList.map(_._1).toString)
-      val a2 = timemap.toSeq.sortBy(_._1.axisData.toList.map(_._1).toString)
-      val result = a1 zip a2 map {
+    val timeseq = timeseqs.reduceLeft { (accseq, timeseq) =>
+      accseq zip timeseq map {
         case ((k1, x), (k2, y)) => (k1, x ++ y)
       }
-      result.toMap
     }
 
-    log.verbose(s"Obtained measurements:\n${timemap.mkString("\n")}")
+    log.verbose(s"Obtained measurements:\n${timeseq.mkString("\n")}")
 
-    val measurements = timemap map {
+    val measurements = timeseq map {
       case (params, times) => Measurement(
         aggregator(times),
         params,

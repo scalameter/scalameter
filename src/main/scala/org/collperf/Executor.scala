@@ -165,7 +165,7 @@ object Executor {
         def sample(num: Int, value: T): Seq[Long] = delegate.measure(num, setup, tear, () => value, snippet)
 
         def different(observations: Seq[Long], checks: Seq[Long]): Boolean = {
-          !confidenceIntervalTest(observations, checks, 1.0 - confidence)
+          !ConfidenceIntervalTest(observations, checks, 1.0 - confidence)
         }
 
         def worse(observations: Seq[Long], checks: Seq[Long]): Boolean = {

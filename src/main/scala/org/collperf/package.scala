@@ -92,7 +92,7 @@ package collperf {
     val warmupRuns = "warmups"
     val verbose = "verbose"
     val resultDir = "result-dir"
-    val confidence = "confidence"
+    val significance = "significance"
 
     val bigO = "big-o"
 
@@ -127,6 +127,7 @@ package collperf {
     ))
   }
 
+  @SerialVersionUID(4203959258570851398L)
   case class Parameters(axisData: immutable.ListMap[String, Any]) {
     def ++(that: Parameters) = Parameters(this.axisData ++ that.axisData)
     def apply[T](key: String) = axisData.apply(key).asInstanceOf[T]
@@ -134,10 +135,19 @@ package collperf {
 
   object Parameters {
     def apply(xs: (String, Any)*) = new Parameters(immutable.ListMap(xs: _*))
+
+    implicit val ordering = Ordering.by[Parameters, Iterable[String]] {
+      _.axisData.toSeq.map(_._1).sorted.toIterable
+    }
   }
 
+  @SerialVersionUID(-2541697615491239986L)
   case class Measurement(time: Long, params: Parameters, data: Option[Any]) {
     def complete: Seq[Long] = data.get.asInstanceOf[Seq[Long]]
+  }
+
+  object Measurement {
+    implicit val ordering = Ordering.by[Measurement, Parameters](_.params)
   }
 
   case class CurveData(measurements: Seq[Measurement], info: Map[String, Any], context: Context)

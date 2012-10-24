@@ -20,6 +20,12 @@ import org.apache.commons.math3.distribution.FDistribution
  */
 object Statistics {
 
+	trait Test {
+		def result: Boolean
+	}
+
+	implicit def test2boolean(t: Test) = t.result
+
 	/** Let Y = (Y_1, ..., Y_n) data resulting from a parametric law F of
 	 *  scalar parameter θ. A confidence interval (B_i, B_s) is a statistic
 	 *  in the form of an interval containing θ with a specified probability.
@@ -42,33 +48,25 @@ object Statistics {
 	 *  
 	 *  @return      returns `true` if there is no statistical difference for s.l. `alpha`
 	 */
-	def confidenceIntervalTest(alt1: Seq[Long], alt2: Seq[Long], alpha: Double): Boolean = {
+	case class ConfidenceIntervalTest(alt1: Seq[Long], alt2: Seq[Long], alpha: Double) extends Test {
 		val m1 = mean(alt1)
 		val m2 = mean(alt2)
 		val s1 = stdev(alt1)
 		val s2 = stdev(alt2)
 		val n1 = alt1.length
 		val n2 = alt2.length
-		confidenceIntervalTest(m1, m2, s1, s2, n1, n2, alpha)
-	}
-
-	/** Compares two alternative sets of measurements given a significance level `alpha`, and
-	 *  the mean, deviation and the number of measurements for each set.
-	 *
-	 *  @return      returns `true` if there is no statistical difference for s.l. `alpha`
-	 */
-	def confidenceIntervalTest(m1: Double, m2: Double, S1: Double, S2: Double, n1: Int, n2: Int, alpha: Double): Boolean = {
 		val diffM = m1 - m2
-		val diffS = sqrt(S1 * S1 / n1 + S2 * S2 / n2)
-		val ndf = math.round(pow(pow(S1, 2) / n1 + pow(S2, 2) / n2, 2) / (pow(pow(S1, 2) / n1, 2) / (n1 - 1) + pow(pow(S2, 2) / n2, 2) / (n2 - 1)))
+		val diffS = sqrt(s1 * s1 / n1 + s2 * s2 / n2)
+		val ndf = math.round(pow(pow(s1, 2) / n1 + pow(s2, 2) / n2, 2) / (pow(pow(s1, 2) / n1, 2) / (n1 - 1) + pow(pow(s2, 2) / n2, 2) / (n2 - 1)))
 		val CI = if ((ndf != 0) && (n1 < 30 || n2 < 30)) {
 			(diffM - qt(1 - alpha / 2, ndf) * diffS, diffM + qt(1 - alpha / 2, ndf) * diffS)
 		} else {
 			(diffM - qsnorm(1 - alpha / 2) * diffS, diffM + qsnorm(1 - alpha / 2) * diffS)
 		}
+
     /* If 0 is within the confidence interval, we conclude that there is no
     statiscal difference between the two alternatives */
-		CI._1 <= 0 && 0 <= CI._2
+		def result = CI._1 <= 0 && 0 <= CI._2
 	}
 
 	/** Computes sum-of-squares due to differences between alternatives. */
@@ -99,7 +97,7 @@ object Statistics {
 	 *  For more information see:
 	 *  Andy Georges, Dries Buytaert, Lieven Eeckhout - Statistically Rigorous Java Performance Evaluation
 	 */
-	def ANOVAFTest(alternatives: Seq[Seq[Long]], alpha: Double): Boolean = {
+	case class ANOVAFTest(alternatives: Seq[Seq[Long]], alpha: Double) extends Test {
 		/* Computation of SSA */
 		val ssa = SSA(alternatives)
 
@@ -109,8 +107,9 @@ object Statistics {
 		val K = alternatives.length
 		val N = alternatives.foldLeft(0)(_ + _.size)
 		val F = ssa / sse * (N - K) / (K - 1)
+		val quantile = qf(1 - alpha, K - 1, N - K)
 
-		F <= qf(1 - alpha, K - 1, N - K)
+		def result = F <= quantile
 	}
 
 	/** Compares the coefficient of variance to some `threshold` value.

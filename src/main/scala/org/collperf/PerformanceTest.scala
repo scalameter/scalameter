@@ -44,7 +44,7 @@ object PerformanceTest {
     }
 
     trait Regression extends PerformanceTest {
-      lazy val aggregator = Aggregator.complete(Aggregator.min)
+      lazy val aggregator = Aggregator.complete(Aggregator.average)
       lazy val measurer = new Measurer.IgnoringGC with Measurer.PeriodicReinstantiation {
         def frequency = 5
         def fullGC = false
@@ -70,7 +70,7 @@ object PerformanceTest {
     }
 
     trait Regression extends PerformanceTest {
-      lazy val reporter = org.collperf.Reporter.Composite(new RegressionReporter, new HtmlReporter(HtmlReporter.Renderer.all: _*))
+      lazy val reporter = org.collperf.Reporter.Composite(RegressionReporter(RegressionReporter.Tester.ANOVA(0.04)), new HtmlReporter(HtmlReporter.Renderer.all: _*))
     }
 
   }
