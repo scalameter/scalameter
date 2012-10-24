@@ -43,26 +43,22 @@ abstract class SeqTesting extends PerformanceTest {
 
   /* data */
 
-  val largesizes = Gen.range("size")(500000, 5000000, 1000000)
+  def largesizes(from: Int = 500000) = Gen.range("size")(from, from + 5000000, 1000000)
 
-  val lists = for {
-    size <- largesizes
+  def lists(from: Int = 500000) = for {
+    size <- largesizes(from)
   } yield (0 until size).toList
 
-  val arrays = for {
-    size <- largesizes
+  def arrays(from: Int = 500000) = for {
+    size <- largesizes(from)
   } yield (0 until size).toArray
 
-  val vectors = for {
-    size <- largesizes
+  def vectors(from: Int = 500000) = for {
+    size <- largesizes(from)
   } yield (0 until size).toVector
 
-  val mutablelists = for {
-    size <- largesizes
-  } yield mutable.LinkedList(0 until size: _*)
-
-  val arraybuffers = for {
-    size <- largesizes
+  def arraybuffers(from: Int = 500000) = for {
+    size <- largesizes(from)
   } yield mutable.ArrayBuffer(0 until size: _*)
 
 
@@ -71,60 +67,67 @@ abstract class SeqTesting extends PerformanceTest {
   performance of "Large-Seq" in {
 
     measure method "foreach" in {
-      using(arrays) curve("Array") apply { xs =>
+      /*using(arrays(1000000)) curve("Array") configuration (
+        Key.significance -> 1e-4
+      ) apply { xs =>
         var sum = 0
         xs.foreach(sum += _)
       }
 
-      using(arraybuffers) curve("ArrayBuffer") apply { xs =>
+      using(arraybuffers(1000000)) curve("ArrayBuffer") configuration (
+        Key.significance -> 1e-4
+      ) apply { xs =>
         var sum = 0
         xs.foreach(sum += _)
       }
       
-      using(vectors) curve("Vector") apply { xs =>
+      using(vectors(1000000)) curve("Vector")  configuration (
+        Key.significance -> 1e-4
+      ) apply { xs =>
         var sum = 0
         xs.foreach(sum += _)
       }
 
-      /*using(lists) curve("List") apply { xs =>
-        var sum = 0
-        xs.foreach(sum += _)
-      }
-
-      using(mutablelists) curve("LinkedList") apply { xs =>
+      using(lists(1000000)) curve("List")  configuration (
+        Key.significance -> 1e-4
+      ) apply { xs =>
         var sum = 0
         xs.foreach(sum += _)
       }*/
     }
   
-    /*measure method "reduce" in {
-      using(arrays) curve("Array") apply {
+    measure method "reduce" in {
+      using(arrays()) curve("Array") configuration (
+        Key.significance -> 1e-4
+      ) apply {
         _.reduce(_ + _)
       }
 
-      using(arraybuffers) curve("ArrayBuffer") apply {
+      /*using(arraybuffers()) curve("ArrayBuffer") configuration (
+        Key.significance -> 1e-4
+      ) apply {
         _.reduce(_ + _)
       }
 
-      using(vectors) curve("Vector") apply {
+      using(vectors()) curve("Vector") configuration (
+        Key.significance -> 1e-4
+      ) apply {
         _.reduce(_ + _)
       }
 
-      using(lists) curve("List") apply {
+      using(lists()) curve("List") configuration (
+        Key.significance -> 1e-4
+      ) apply {
         _.reduce(_ + _)
-      }
-
-      using(mutablelists) curve("LinkedList") apply {
-        _.reduce(_ + _)
-      }
+      }*/
     }
     
     measure method "filter" in {
-      using(arrays) curve("Array") apply {
+      /*using(arrays) curve("Array") apply {
         _.filter(_ % 2 == 0)
-      }
+      }*/
 
-      using(arraybuffers) curve("ArrayBuffer") apply {
+      /*using(arraybuffers) curve("ArrayBuffer") apply {
         _.filter(_ % 2 == 0)
       }
       
@@ -134,15 +137,10 @@ abstract class SeqTesting extends PerformanceTest {
 
       using(lists) curve("List") apply {
         _.filter(_ % 2 == 0)
-      }
-
-      using(mutablelists) curve("LinkedList") apply {
-        _.filter(_ % 2 == 0)
-      }
+      }*/
     }
 
-
-    measure method "groupBy" in {
+    /*measure method "groupBy" in {
       using(arrays) curve("Array") apply {
         _.groupBy(_ % 10)
       }
@@ -156,10 +154,6 @@ abstract class SeqTesting extends PerformanceTest {
       }
 
       using(lists) curve("List") apply {
-        _.groupBy(_ % 10)
-      }
-
-      using(mutablelists) curve("LinkedList") apply {
         _.groupBy(_ % 10)
       }
     }*/

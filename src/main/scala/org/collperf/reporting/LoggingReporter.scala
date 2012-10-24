@@ -11,7 +11,7 @@ class LoggingReporter extends Reporter {
 
   def report(result: CurveData, persistor: Persistor) {
     // output context
-    log(s"...:::Benchmark ${result.context.scope}:::...")
+    log(s"::Benchmark ${result.context.scope}::")
     for ((key, value) <- result.context.properties.filterKeys(Context.machine.properties.keySet.contains).toSeq.sortBy(_._1)) {
       log(s"$key: $value")
     }

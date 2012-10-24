@@ -18,7 +18,7 @@ class MultipleJvmPerSetupExecutor(val aggregator: Aggregator, val measurer: Exec
 
   def startHeap = 2048
 
-  def independentSamples = 6
+  def independentSamples = 7
 
   def run[T](setuptree: Tree[Setup[T]]): Tree[CurveData] = {
     for (setup <- setuptree) yield runSetup(setup)
@@ -77,7 +77,11 @@ class MultipleJvmPerSetupExecutor(val aggregator: Aggregator, val measurer: Exec
       }
     }
 
-    log.verbose(s"Obtained measurements:\n${timeseq.mkString("\n")}")
+    def nice(ts: Seq[(Parameters, Seq[Long])]) = ts map {
+      case (params, seq) => params.axisData.mkString(", ") + ": " + seq.mkString(", ")
+    } mkString("\n")
+
+    log.verbose(s"Obtained measurements:\n${nice(timeseq)}")
 
     val measurements = timeseq map {
       case (params, times) => Measurement(

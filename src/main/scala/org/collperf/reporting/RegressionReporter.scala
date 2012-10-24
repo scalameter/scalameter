@@ -14,18 +14,23 @@ case class RegressionReporter(test: RegressionReporter.Tester) extends Reporter 
   import RegressionReporter.ansi
 
   def report(results: Tree[CurveData], persistor: Persistor) {
+    log(s"${ansi.green}::Regression test results - $test::${ansi.reset}")
+
     val oks = for {
       (context, curves) <- results.scopes
       if curves.nonEmpty
       _ = log(s"${ansi.green}Test group: ${context.scope}${ansi.reset}")
       history = persistor.load(context)
       curvetable = history.results.map(_._3).flatten.groupBy(_.context.curve)
-      curvedata <- curves
     } yield {
-      val corresponding = curvetable.getOrElse(curvedata.context.curve, Seq(curvedata))
-      val passed = test(context, curvedata, corresponding)
-      if (passed) persistor.save(context, curves)
-      passed
+      val curvespassed = for (curvedata <- curves) yield {
+        val corresponding = curvetable.getOrElse(curvedata.context.curve, Seq(curvedata))
+        test(context, curvedata, corresponding)
+      }
+
+      val allpassed = curvespassed.forall(_ == true)
+      if (allpassed) persistor.save(context, curves)
+      allpassed
     }
 
     val failure = oks.count(_ == false)
@@ -52,7 +57,18 @@ object RegressionReporter {
 
   object Tester {
 
-    case class ANOVA(defaultSignificance: Double) extends Tester {
+    case class Accepter() extends Tester {
+      def apply(context: Context, curvedata: CurveData, corresponding: Seq[CurveData]): Boolean = {
+        true
+      }
+    }
+
+    trait Logging {
+      def logging: Boolean
+      def log(s: String) = if (logging) org.collperf.log(s)
+    }
+
+    case class ANOVA(defaultSignificance: Double, logging: Boolean = true) extends Tester with Logging {
       def apply(context: Context, curvedata: CurveData, corresponding: Seq[CurveData]): Boolean = {
         log(s"${ansi.green}- ${curvedata.context.curve} measurements:${ansi.reset}")
 
@@ -68,13 +84,20 @@ object RegressionReporter {
             val color = if (ftest) ansi.green else ansi.red
             val passed = if (ftest) "passed" else "failed"
 
-            log(s"$color  - curve ${curvedata.context.curve} at ${measurement.params}: $passed")
-            log(s"    (SSA: ${ftest.ssa}, SSE: ${ftest.sse}, F: ${ftest.F}, qf: ${ftest.quantile}, significance: $significance)${ansi.reset}")
+            log(s"$color  - at ${measurement.params.axisData.mkString(", ")}, ${alternatives.size} alternatives: $passed${ansi.reset}")
+            log(f"$color    (SSA: ${ftest.ssa}%.2f, SSE: ${ftest.sse}%.2f, F: ${ftest.F}%.2f, qf: ${ftest.quantile}%.2f, significance: $significance)${ansi.reset}")
+            if (!ftest) {
+              def logalt(a: Seq[Long]) = log(s"$color      ${a.mkString(", ")}${ansi.reset}")
+              log(s"$color    History:")
+              for (a <- alternatives.init) logalt(a)
+              log(s"$color    Latest:")
+              logalt(alternatives.last)
+            }
 
-            ftest.result
+            ftest.passed
           } catch {
             case e: Exception =>
-              log("Error in ANOVA F-test: " + e.getMessage)
+              log(s"${ansi.red}    Error in ANOVA F-test: ${e.getMessage}${ansi.reset}")
               false
           }
         }
@@ -83,13 +106,48 @@ object RegressionReporter {
       }
     }
 
-    case class ConfidenceIntervals(defaultSignificance: Double) extends Tester {
+    case class ConfidenceIntervals(defaultSignificance: Double, logging: Boolean = true) extends Tester with Logging {
+      def single(previous: Measurement, latest: Measurement, sig: Double): (Boolean, String) = {
+        try {
+          val citest = ConfidenceIntervalTest(previous.complete, latest.complete, sig)
+          
+          if (!citest) {
+            val color = ansi.red
+            val msg = {
+              f"$color    Previous (mean = ${citest.m1}%.2f, stdev = ${citest.s1}%.2f): ${previous.complete.mkString(", ")}${ansi.reset}\n" +
+              f"$color    Latest   (mean = ${citest.m2}%.2f, stdev = ${citest.s2}%.2f): ${latest.complete.mkString(", ")}${ansi.reset}"
+            }
+            (false, msg)
+          } else (true, "")
+        } catch {
+          case e: Exception => (false, s"${ansi.red}    Error in confidence interval test: ${e.getMessage}${ansi.reset}")
+        }
+      }
+
+      def multiple(previouss: Seq[Measurement], latest: Measurement, sig: Double): Seq[Boolean] = {
+        val passes = for (previous <- previouss) yield single(previous, latest, sig)
+        val allpass = passes.forall(_._1 == true)
+        val color = if (allpass) ansi.green else ansi.red
+        val passed = if (allpass) "passed" else "failed"
+        log(s"$color  - at ${latest.params.axisData.mkString(", ")}, ${previouss.size} alternatives: $passed${ansi.reset}")
+        log(s"$color    (significance = $sig)${ansi.reset}")
+        for ((false, msg) <- passes) log(msg)
+        passes.map(_._1)
+      }
+
       def apply(context: Context, curvedata: CurveData, corresponding: Seq[CurveData]): Boolean = {
         log(s"${ansi.green}- ${curvedata.context.curve} measurements:${ansi.reset}")
 
-        // TODO
+        val significance = curvedata.context.goe(Key.significance, defaultSignificance)
+        val previousmeasurements = corresponding map (_.measurements)
+        val measurementtable = previousmeasurements.flatten.groupBy(_.params)
+        val pointspassed = for {
+          measurement <- curvedata.measurements
+        } yield {
+          multiple(measurementtable(measurement.params), measurement, significance)
+        }
 
-        false
+        pointspassed.flatten.forall(_ == true)
       }
     }
 

@@ -150,6 +150,32 @@ object Executor {
       }
     }
 
+    /** A mixin measurer which detects outliers (due to an undetected GC or JIT) and requests additional measurements to replace them. */
+    trait OutlierElimination extends Measurer {
+      abstract override def name = s"${super.name}+OutlierElimination"
+
+      abstract override def measure[T, U](measurements: Int, setup: T => Any, tear: T => Any, regen: () => T, snippet: T => Any): Seq[Long] = {
+        import utils.Statistics._
+
+        var results = super.measure(measurements, setup, tear, regen, snippet).sorted
+        var retries = 8
+
+        def outlierExists(rs: Seq[Long]) = {
+          val cov = CoV(rs)
+          val covinit = CoV(rs.init)
+          cov / covinit > 3.0 && covinit != 0.0
+        }
+
+        while (outlierExists(results) && retries > 0) {
+          log.verbose("Detected an outlier: " + results.mkString(", "))
+          results = (results.init ++ super.measure(1, setup, tear, regen, snippet)).sorted
+          retries -= 1
+        }
+
+        results
+      }
+    }
+
     /** Eliminates performance measurements tied to certain particularly bad allocation patterns, typically
      *  occurring immediately before the next major GC cycle.
      */

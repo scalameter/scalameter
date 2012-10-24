@@ -48,6 +48,7 @@ trait DSL extends DelayedInit {
     def tearDown(block: T => Any) = Using(benchmark.copy(teardown = Some(block)))
     def warmUp(block: =>Any) = Using(benchmark.copy(customwarmup = Some(() => block)))
     def curve(name: String) = Using(benchmark.copy(context = benchmark.context + (Key.curve -> name)))
+    def configuration(xs: (String, Any)*) = Using(benchmark.copy(context = benchmark.context ++ Context(xs: _*)))
     def apply(block: T => Any) {
       setupzipper.value = setupzipper.value.addItem(benchmark.copy(snippet = block))
     }

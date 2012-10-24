@@ -21,10 +21,10 @@ import org.apache.commons.math3.distribution.FDistribution
 object Statistics {
 
 	trait Test {
-		def result: Boolean
+		def passed: Boolean
 	}
 
-	implicit def test2boolean(t: Test) = t.result
+	implicit def test2boolean(t: Test) = t.passed
 
 	/** Let Y = (Y_1, ..., Y_n) data resulting from a parametric law F of
 	 *  scalar parameter θ. A confidence interval (B_i, B_s) is a statistic
@@ -66,7 +66,7 @@ object Statistics {
 
     /* If 0 is within the confidence interval, we conclude that there is no
     statiscal difference between the two alternatives */
-		def result = CI._1 <= 0 && 0 <= CI._2
+		def passed = CI._1 <= 0 && 0 <= CI._2
 	}
 
 	/** Computes sum-of-squares due to differences between alternatives. */
@@ -109,16 +109,19 @@ object Statistics {
 		val F = ssa / sse * (N - K) / (K - 1)
 		val quantile = qf(1 - alpha, K - 1, N - K)
 
-		def result = F <= quantile
+		def passed = F <= quantile || sse == 0.0
 	}
+
+	def CoV(measurements: Seq[Long]) = stdev(measurements) / mean(measurements)
 
 	/** Compares the coefficient of variance to some `threshold` value.
 	 *  
 	 *  This heuristic can be used to detect if the measurement has stabilized.
 	 */
-	def CoV(measurements: Seq[Long], threshold: Double): Boolean = {
-		val cov = stdev(measurements) / mean(measurements)
-		cov <= threshold
+	case class CoVTest(measurements: Seq[Long], threshold: Double) extends Test {
+		val cov = CoV(measurements)
+
+		def passed = cov <= threshold
 	}
 
 	/** Computes the mean of the sequence of measurements. */
