@@ -66,9 +66,18 @@ object Statistics {
 			(diffM - qsnorm(1 - alpha / 2) * diffS, diffM + qsnorm(1 - alpha / 2) * diffS)
 		}
 
-    /* If 0 is within the confidence interval, we conclude that there is no
-    statiscal difference between the two alternatives */
-		def passed = ci._1 <= 0 && 0 <= ci._2
+		private def in(x: Double, int: (Double, Double)) = x >= int._1 && x <= int._2
+
+		def overlapping = in(ci1._1, ci2) || in(ci1._2, ci2) || in(ci2._1, ci1) || in(ci2._2, ci1)
+
+		def strictPassed = ci._1 <= 0 && 0 <= ci._2
+
+		def relaxedPassed = strictPassed || overlapping
+
+    /** If 0 is within the confidence interval of the mean difference, or confidence intervals overlap,
+     *  we conclude that there is no statiscal difference between the two alternatives.
+     */
+		def passed = relaxedPassed
 	}
 
 	/** Computes sum-of-squares due to differences between alternatives. */

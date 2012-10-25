@@ -10,7 +10,7 @@ import utils.Statistics._
 
 
 
-case class RegressionReporter(test: RegressionReporter.Tester) extends Reporter {
+case class RegressionReporter(test: RegressionReporter.Tester, historian: RegressionReporter.Historian) extends Reporter {
   import RegressionReporter.ansi
 
   def report(results: Tree[CurveData], persistor: Persistor) {
@@ -29,7 +29,7 @@ case class RegressionReporter(test: RegressionReporter.Tester) extends Reporter 
       }
 
       val allpassed = curvespassed.forall(_ == true)
-      if (allpassed) persistor.save(context, curves)
+      if (allpassed) historian.persist(persistor, context, history, curves)
       allpassed
     }
 
@@ -49,6 +49,21 @@ object RegressionReporter {
     val green = "\u001B[32m"
     val yellow = "\u001B[33m"
     val reset = "\u001B[0m"
+  }
+
+  trait Historian {
+    def persist(p: Persistor, ctx: Context, h: History, newest: Seq[CurveData]): Unit
+  }
+
+  object Historian {
+
+    case class Default() extends Historian {
+      def persist(p: Persistor, ctx: Context, h: History, newest: Seq[CurveData]) {
+        val newhistory = History(h.results :+ ((new Date, ctx, newest)))
+        p.save(ctx, newhistory)
+      }
+    }
+
   }
 
   trait Tester {

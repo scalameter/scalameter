@@ -49,12 +49,10 @@ case class SerializationPersistor(path: File) extends Persistor {
     loadHistory(resultdir, scope)
   }
 
-  def save(context: Context, result: Seq[CurveData]) {
+  def save(context: Context, h: History) {
     val scope = context.scope
     val resultdir = context.goe(Key.resultDir, "tmp")
-    val history = loadHistory(resultdir, scope)
-    val newhistory = History(history.results :+ (new Date, context, result))
-    saveHistory(resultdir, scope, newhistory)
+    saveHistory(resultdir, scope, h)
   }
 }
 

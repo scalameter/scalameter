@@ -123,23 +123,27 @@ abstract class SeqTesting extends PerformanceTest {
     }
     
     measure method "filter" in {
-      using(arrays()) curve("Array") configuration (
-        Key.significance -> 1e-12
+      // using(arrays()) curve("Array") configuration (
+      //   Key.significance -> 1e-13
+      // ) apply {
+      //   _.filter(_ % 2 == 0)
+      // }
+
+      // using(arraybuffers) curve("ArrayBuffer") apply {
+      //   _.filter(_ % 2 == 0)
+      // }
+      
+      using(vectors()) curve("Vector") configuration (
+        Key.significance -> 1e-13
       ) apply {
         _.filter(_ % 2 == 0)
       }
 
-      /*using(arraybuffers) curve("ArrayBuffer") apply {
+      using(lists()) curve("List") configuration (
+        Key.significance -> 1e-13
+      ) apply {
         _.filter(_ % 2 == 0)
       }
-      
-      using(vectors) curve("Vector") apply {
-        _.filter(_ % 2 == 0)
-      }
-
-      using(lists) curve("List") apply {
-        _.filter(_ % 2 == 0)
-      }*/
     }
 
     /*measure method "groupBy" in {
