@@ -18,7 +18,7 @@ class MultipleJvmPerSetupExecutor(val aggregator: Aggregator, val measurer: Exec
 
   def startHeap = 2048
 
-  def independentSamples = 7
+  def independentSamples = 9
 
   def run[T](setuptree: Tree[Setup[T]]): Tree[CurveData] = {
     for (setup <- setuptree) yield runSetup(setup)

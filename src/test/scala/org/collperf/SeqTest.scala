@@ -97,11 +97,11 @@ abstract class SeqTesting extends PerformanceTest {
     }
   
     measure method "reduce" in {
-      using(arrays()) curve("Array") configuration (
-        Key.significance -> 1e-7
+      /*using(arrays()) curve("Array") configuration (
+        Key.significance -> 1e-12
       ) apply {
         _.reduce(_ + _)
-      }
+      }*/
 
       /*using(arraybuffers()) curve("ArrayBuffer") configuration (
         Key.significance -> 1e-4
@@ -123,9 +123,11 @@ abstract class SeqTesting extends PerformanceTest {
     }
     
     measure method "filter" in {
-      /*using(arrays) curve("Array") apply {
+      using(arrays()) curve("Array") configuration (
+        Key.significance -> 1e-12
+      ) apply {
         _.filter(_ % 2 == 0)
-      }*/
+      }
 
       /*using(arraybuffers) curve("ArrayBuffer") apply {
         _.filter(_ % 2 == 0)

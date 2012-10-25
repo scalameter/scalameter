@@ -149,14 +149,24 @@ object HtmlReporter {
       }
     }
 
+    case class HistoryList() extends Renderer {
+      def render(context: Context, curves: Seq[CurveData], h: History): Node = {
+        // TODO
+
+        <div>
+        </div>
+      }
+    }
+
     case class Regression() extends Renderer {
       def render(context: Context, curves: Seq[CurveData], h: History): Node = {
         // TODO
 
-        <div>History:
+        <div>
         </div>
       }
     }
+
   }
 
 }

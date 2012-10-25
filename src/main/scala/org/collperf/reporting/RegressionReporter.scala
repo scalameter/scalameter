@@ -107,14 +107,16 @@ object RegressionReporter {
     }
 
     case class ConfidenceIntervals(defaultSignificance: Double, logging: Boolean = true) extends Tester with Logging {
+      def cistr(ci: (Double, Double)) = f"<${ci._1}%.2f, ${ci._2}%.2f>"
+
       def single(previous: Measurement, latest: Measurement, sig: Double): (Boolean, String) = {
         try {
           val citest = ConfidenceIntervalTest(previous.complete, latest.complete, sig)
           
           if (!citest) {
             val color = ansi.red
-            val ciprev = f"<${citest.ci1._1}%.2f, ${citest.ci1._2}%.2f>"
-            val cilate = f"<${citest.ci2._1}%.2f, ${citest.ci2._2}%.2f>"
+            val ciprev = cistr(citest.ci1)
+            val cilate = cistr(citest.ci2)
             val msg = {
               f"$color      Failed confidence interval test: <${citest.ci._1}%.2f, ${citest.ci._2}%.2f> ${ansi.reset}\n" +
               f"$color      Previous (mean = ${citest.m1}%.2f, stdev = ${citest.s1}%.2f, ci = $ciprev): ${previous.complete.mkString(", ")}${ansi.reset}\n" +
@@ -132,8 +134,10 @@ object RegressionReporter {
         val allpass = passes.forall(_._1 == true)
         val color = if (allpass) ansi.green else ansi.red
         val passed = if (allpass) "passed" else "failed"
+        val ci = confidenceInterval(latest.complete, sig)
+        val cis = cistr(ci)
         log(s"$color  - at ${latest.params.axisData.mkString(", ")}, ${previouss.size} alternatives: $passed${ansi.reset}")
-        log(s"$color    (significance = $sig)${ansi.reset}")
+        log(s"$color    (ci = $cis, significance = $sig)${ansi.reset}")
         for ((false, msg) <- passes) log(msg)
         passes.map(_._1)
       }

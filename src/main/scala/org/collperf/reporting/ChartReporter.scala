@@ -39,6 +39,12 @@ case class ChartReporter(fileNamePrefix: String, drawer: ChartReporter.ChartFact
 object ChartReporter {
 
   trait ChartFactory {
+    /** Generates a chart for the given curve data, with the given history.
+     *
+     *  @param scopename      name of the chart
+     *  @param cs             a list of curves that should appear on the chart
+     *  @param history        previous chart data for the same set of curves
+     */
     def createChart(scopename: String, cs: Seq[CurveData], history: History): JFreeChart
   }
 
@@ -69,7 +75,7 @@ object ChartReporter {
       }
     }
 
-    case class RegressionChart() extends ChartFactory {
+    case class Regression(showLatestCi: Boolean, showHistoryCi: Boolean, color: Color) extends ChartFactory {
       def createChart(scopename: String, cs: Seq[CurveData], history: History): JFreeChart = {
         val dataset = new YIntervalSeriesCollection
         val chartName = scopename
