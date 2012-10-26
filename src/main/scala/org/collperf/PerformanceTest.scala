@@ -48,6 +48,7 @@ object PerformanceTest {
       lazy val measurer = new Measurer.IgnoringGC with Measurer.PeriodicReinstantiation with Measurer.OutlierElimination {
         def frequency = 10
         def fullGC = false
+        def suspectPercent = 25
       }
       lazy val executor = new execution.MultipleJvmPerSetupExecutor(aggregator, measurer)
     }

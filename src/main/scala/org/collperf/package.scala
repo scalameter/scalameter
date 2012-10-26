@@ -93,6 +93,7 @@ package collperf {
     val verbose = "verbose"
     val resultDir = "result-dir"
     val significance = "significance"
+    val independentSamples = "independent-samples"
 
     val bigO = "big-o"
 

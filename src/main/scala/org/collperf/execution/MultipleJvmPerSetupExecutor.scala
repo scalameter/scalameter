@@ -18,7 +18,7 @@ class MultipleJvmPerSetupExecutor(val aggregator: Aggregator, val measurer: Exec
 
   def startHeap = 2048
 
-  def independentSamples = 9
+  def defaultIndependentSamples = 9
 
   def run[T](setuptree: Tree[Setup[T]]): Tree[CurveData] = {
     for (setup <- setuptree) yield runSetup(setup)
@@ -27,8 +27,9 @@ class MultipleJvmPerSetupExecutor(val aggregator: Aggregator, val measurer: Exec
   private[execution] def runSetup[T](setup: Setup[T]): CurveData = {
     import setup._
 
-    val warmups = context.goe(Key.warmupRuns, 1)
-    val totalreps = context.goe(Key.benchRuns, 1)
+    val warmups = context.goe(Key.warmupRuns, 10)
+    val totalreps = context.goe(Key.benchRuns, 10)
+    val independentSamples = context.goe(Key.independentSamples, defaultIndependentSamples)
     def repetitions(idx: Int): Int = {
       val is = independentSamples
       totalreps / is + (if (idx < totalreps % is) 1 else 0)

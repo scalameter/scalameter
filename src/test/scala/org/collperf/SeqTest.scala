@@ -67,71 +67,76 @@ abstract class SeqTesting extends PerformanceTest {
   performance of "Large-Seq" in {
 
     measure method "foreach" in {
-      /*using(arrays(1000000)) curve("Array") configuration (
-        Key.significance -> 1e-4
-      ) apply { xs =>
-        var sum = 0
-        xs.foreach(sum += _)
-      }
+      // using(arrays(1000000)) curve("Array") configuration (
+      //   Key.significance -> 1e-13
+      // ) apply { xs =>
+      //   var sum = 0
+      //   xs.foreach(sum += _)
+      // }
 
-      using(arraybuffers(1000000)) curve("ArrayBuffer") configuration (
-        Key.significance -> 1e-4
-      ) apply { xs =>
-        var sum = 0
-        xs.foreach(sum += _)
-      }
+      // using(arraybuffers(1000000)) curve("ArrayBuffer") configuration (
+      //   Key.significance -> 1e-13
+      // ) apply { xs =>
+      //   var sum = 0
+      //   xs.foreach(sum += _)
+      // }
       
-      using(vectors(1000000)) curve("Vector")  configuration (
-        Key.significance -> 1e-4
-      ) apply { xs =>
-        var sum = 0
-        xs.foreach(sum += _)
-      }
+      // using(vectors(1000000)) curve("Vector")  configuration (
+      //   Key.significance -> 1e-13
+      // ) apply { xs =>
+      //   var sum = 0
+      //   xs.foreach(sum += _)
+      // }
 
-      using(lists(1000000)) curve("List")  configuration (
-        Key.significance -> 1e-4
-      ) apply { xs =>
-        var sum = 0
-        xs.foreach(sum += _)
-      }*/
+      // using(lists(1000000)) curve("List")  configuration (
+      //   Key.significance -> 1e-13,
+      //   Key.benchRuns -> 64
+      // ) apply { xs =>
+      //   var sum = 0
+      //   xs.foreach(sum += _)
+      // }
     }
   
     measure method "reduce" in {
-      /*using(arrays()) curve("Array") configuration (
-        Key.significance -> 1e-12
+      using(arrays()) curve("Array") configuration (
+        Key.significance -> 1e-13
       ) apply {
         _.reduce(_ + _)
-      }*/
+      }
 
-      /*using(arraybuffers()) curve("ArrayBuffer") configuration (
-        Key.significance -> 1e-4
+      using(arraybuffers()) curve("ArrayBuffer") configuration (
+        Key.significance -> 1e-13
       ) apply {
         _.reduce(_ + _)
       }
 
       using(vectors()) curve("Vector") configuration (
-        Key.significance -> 1e-4
+        Key.significance -> 1e-13
       ) apply {
         _.reduce(_ + _)
       }
 
       using(lists()) curve("List") configuration (
-        Key.significance -> 1e-4
+        Key.significance -> 1e-13,
+        Key.benchRuns -> 64,
+        Key.independentSamples -> 8
       ) apply {
         _.reduce(_ + _)
-      }*/
+      }
     }
     
     measure method "filter" in {
-      // using(arrays()) curve("Array") configuration (
-      //   Key.significance -> 1e-13
-      // ) apply {
-      //   _.filter(_ % 2 == 0)
-      // }
+      using(arrays()) curve("Array") configuration (
+        Key.significance -> 1e-13
+      ) apply {
+        _.filter(_ % 2 == 0)
+      }
 
-      // using(arraybuffers) curve("ArrayBuffer") apply {
-      //   _.filter(_ % 2 == 0)
-      // }
+      using(arraybuffers()) curve("ArrayBuffer") configuration (
+        Key.significance -> 1e-13
+      ) apply {
+        _.filter(_ % 2 == 0)
+      }
       
       using(vectors()) curve("Vector") configuration (
         Key.significance -> 1e-13
@@ -140,7 +145,9 @@ abstract class SeqTesting extends PerformanceTest {
       }
 
       using(lists()) curve("List") configuration (
-        Key.significance -> 1e-13
+        Key.significance -> 1e-13,
+        Key.benchRuns -> 64,
+        Key.independentSamples -> 8
       ) apply {
         _.filter(_ % 2 == 0)
       }

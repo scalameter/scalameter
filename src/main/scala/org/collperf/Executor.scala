@@ -150,25 +150,49 @@ object Executor {
       }
     }
 
-    /** A mixin measurer which detects outliers (due to an undetected GC or JIT) and requests additional measurements to replace them. */
+    /** A mixin measurer which detects outliers (due to an undetected GC or JIT) and requests additional measurements to replace them.
+     *  Outlier elimination can also eliminate some pretty bad allocation patterns in some cases.
+     *
+     *  When detecting an outlier, `suspectPercent`% (with a minimum of `1`) of worst times will be considered.
+     *  For example, given `suspectPercent = 25` the times:
+     *
+     *  {{{
+     *      10, 11, 10, 12, 11, 11, 10, 11, 44
+     *  }}}
+     *
+     *  times `12` and `44` are considered for outlier elimination.
+     *
+     *  Given the times:
+     *  
+     *  {{{
+     *      10, 12, 14, 55
+     *  }}}
+     *  
+     *  the time `55` will be considered for outlier elimination.
+     *
+     *  A potential outlier (suffix) is removed if removing it increases the coefficient of variance by at least 3 times.
+     */
     trait OutlierElimination extends Measurer {
-      abstract override def name = s"${super.name}+OutlierElimination"
+      def suspectPercent: Int
+
+      abstract override def name = s"${super.name}+OutlierElimination(suspects: ${}%)"
 
       abstract override def measure[T, U](measurements: Int, setup: T => Any, tear: T => Any, regen: () => T, snippet: T => Any): Seq[Long] = {
         import utils.Statistics._
 
         var results = super.measure(measurements, setup, tear, regen, snippet).sorted
+        val suspectnum = math.max(1, results.length * suspectPercent / 100)
         var retries = 8
 
         def outlierExists(rs: Seq[Long]) = {
           val cov = CoV(rs)
-          val covinit = CoV(rs.init)
-          cov / covinit > 3.0 && covinit != 0.0
+          val covinit = CoV(rs.dropRight(suspectnum))
+          cov > 2.0 * covinit && covinit != 0.0
         }
 
         while (outlierExists(results) && retries > 0) {
           log.verbose("Detected an outlier: " + results.mkString(", "))
-          results = (results.init ++ super.measure(1, setup, tear, regen, snippet)).sorted
+          results = (results.dropRight(suspectnum) ++ super.measure(suspectnum, setup, tear, regen, snippet)).sorted
           retries -= 1
         }
 
@@ -178,6 +202,7 @@ object Executor {
 
     /** Eliminates performance measurements tied to certain particularly bad allocation patterns, typically
      *  occurring immediately before the next major GC cycle.
+     *  Useful for "flattening" out the curves.
      */
     case class OptimalAllocation(delegate: Measurer, aggregator: Aggregator, retries: Int = 5, confidence: Double = 0.8) extends Measurer {
 
