@@ -94,6 +94,11 @@ package collperf {
     val resultDir = "result-dir"
     val significance = "significance"
     val independentSamples = "independent-samples"
+    val frequency = "frequency"
+    val fullGC = "full-gc"
+    val suspectPercent = "suspect-percent"
+    val covMultiplier = "cov-multiplier"
+    val noiseMagnitude = "noise-magnitude"
 
     val bigO = "big-o"
 
@@ -115,7 +120,7 @@ package collperf {
 
     val empty = new Context(immutable.Map())
 
-    val topLevel = machine + (Key.scope -> Nil)
+    val topLevel = machine + (Key.scope -> Nil) + (Key.benchRuns -> 36) + (Key.warmupRuns -> 100)
 
     def machine = Context(immutable.Map(
       Key.jvmVersion -> sys.props("java.vm.version"),

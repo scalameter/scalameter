@@ -146,6 +146,8 @@ object Statistics {
 		sqrt(squaresum / (seq.length - 1))
 	}
 
+	def clamp(x: Double, below: Double, above: Double) = math.max(below, math.min(above, x))
+
 	/** Quantile function for the Student's t distribution.
 	 *  Let 0 < p < 1. The p-th quantile of the cumulative distribution function F(x) is defined as
 	 *  x_p = inf{x : F(x) >= p}

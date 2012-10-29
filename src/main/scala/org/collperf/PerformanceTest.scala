@@ -45,11 +45,7 @@ object PerformanceTest {
 
     trait Regression extends PerformanceTest {
       lazy val aggregator = Aggregator.complete(Aggregator.average)
-      lazy val measurer = new Measurer.IgnoringGC with Measurer.PeriodicReinstantiation with Measurer.OutlierElimination {
-        def frequency = 10
-        def fullGC = false
-        def suspectPercent = 25
-      }
+      lazy val measurer = new Measurer.IgnoringGC with Measurer.PeriodicReinstantiation with Measurer.OutlierElimination with Measurer.RelativeNoise
       lazy val executor = new execution.MultipleJvmPerSetupExecutor(aggregator, measurer)
     }
 

@@ -33,7 +33,7 @@ object Executor {
 
   trait Measurer extends Serializable {
     def name: String
-    def measure[T, U](measurements: Int, setup: T => Any, tear: T => Any, regen: () => T, snippet: T => Any): Seq[Long]
+    def measure[T, U](context: Context, measurements: Int, setup: T => Any, tear: T => Any, regen: () => T, snippet: T => Any): Seq[Long]
   }
 
   object Measurer {
@@ -47,7 +47,7 @@ object Executor {
        *  By default, the value `v` is always returned and the value for the
        *  benchmark is never regenerated.
        */
-      protected def valueAt[T](iteration: Int, regen: () => T, v: T): T = v
+      protected def valueAt[T](context: Context, iteration: Int, regen: () => T, v: T): T = v
 
     }
 
@@ -55,13 +55,13 @@ object Executor {
     class Default extends Measurer with IterationBasedValue {
       def name = "Measurer.Default"
 
-      def measure[T, U](measurements: Int, setup: T => Any, tear: T => Any, regen: () => T, snippet: T => Any): Seq[Long] = {
+      def measure[T, U](context: Context, measurements: Int, setup: T => Any, tear: T => Any, regen: () => T, snippet: T => Any): Seq[Long] = {
         var iteration = 0
         var times = List[Long]()
         var value = regen()
 
         while (iteration < measurements) {
-          value = valueAt(iteration, regen, value)
+          value = valueAt(context, iteration, regen, value)
           setup(value)
 
           val start = Platform.currentTime
@@ -90,7 +90,7 @@ object Executor {
     class IgnoringGC extends Measurer with IterationBasedValue {
       override def name = "Measurer.IgnoringGC"
 
-      def measure[T, U](measurements: Int, setup: T => Any, tear: T => Any, regen: () => T, snippet: T => Any): Seq[Long] = {
+      def measure[T, U](context: Context, measurements: Int, setup: T => Any, tear: T => Any, regen: () => T, snippet: T => Any): Seq[Long] = {
         var times = List[Long]()
         var okcount = 0
         var gccount = 0
@@ -98,7 +98,7 @@ object Executor {
         var value = regen()
 
         while (okcount < measurements) {
-          value = valueAt(okcount + gccount, regen, value)
+          value = valueAt(context, okcount + gccount, regen, value)
           setup(value)
 
           @volatile var gc = false
@@ -131,16 +131,16 @@ object Executor {
     }
 
     /** A mixin measurer which causes the value for the benchmark to be reinstantiated
-     *  every `frequency` measurements.
-     *  Before the new value has been instantiated, a full GC cycle is invoked if `fullGC` is `true`.
+     *  every `Key.frequency` measurements.
+     *  Before the new value has been instantiated, a full GC cycle is invoked if `Key.fullGC` is `true`.
      */
     trait PeriodicReinstantiation extends IterationBasedValue {
-      def frequency: Int
-      def fullGC: Boolean
+      abstract override def name = s"${super.name}+PeriodicReinstantiation"
 
-      abstract override def name = s"${super.name}+PeriodicReinstantiation(frequency: $frequency, fullGC: $fullGC)"
+      protected override def valueAt[T](context: Context, iteration: Int, regen: () => T, v: T) = {
+        val frequency = context.goe(Key.frequency, 10)
+        val fullGC = context.goe(Key.fullGC, false)
 
-      protected override def valueAt[T](iteration: Int, regen: () => T, v: T) = {
         if ((iteration + 1) % frequency == 0) {
           log.verbose("Reinstantiating benchmark value.")
           if (fullGC) Platform.collectGarbage()
@@ -152,9 +152,10 @@ object Executor {
 
     /** A mixin measurer which detects outliers (due to an undetected GC or JIT) and requests additional measurements to replace them.
      *  Outlier elimination can also eliminate some pretty bad allocation patterns in some cases.
+     *  Only outliers from above are considered.
      *
-     *  When detecting an outlier, `suspectPercent`% (with a minimum of `1`) of worst times will be considered.
-     *  For example, given `suspectPercent = 25` the times:
+     *  When detecting an outlier, `Key.suspectPercent`% (with a minimum of `1`) of worst times will be considered.
+     *  For example, given `Key.suspectPercent = 25` the times:
      *
      *  {{{
      *      10, 11, 10, 12, 11, 11, 10, 11, 44
@@ -170,34 +171,110 @@ object Executor {
      *  
      *  the time `55` will be considered for outlier elimination.
      *
-     *  A potential outlier (suffix) is removed if removing it increases the coefficient of variance by at least 3 times.
+     *  A potential outlier (suffix) is removed if removing it increases the coefficient of variance by at least `Key.covMultiplier` times.
      */
     trait OutlierElimination extends Measurer {
-      def suspectPercent: Int
 
-      abstract override def name = s"${super.name}+OutlierElimination(suspects: ${}%)"
+      abstract override def name = s"${super.name}+OutlierElimination"
 
-      abstract override def measure[T, U](measurements: Int, setup: T => Any, tear: T => Any, regen: () => T, snippet: T => Any): Seq[Long] = {
+      abstract override def measure[T, U](context: Context, measurements: Int, setup: T => Any, tear: T => Any, regen: () => T, snippet: T => Any): Seq[Long] = {
         import utils.Statistics._
 
-        var results = super.measure(measurements, setup, tear, regen, snippet).sorted
+        val suspectPercent = context.goe(Key.suspectPercent, 25)
+        val covmult = context.goe(Key.covMultiplier, 3.0)
+        var results = super.measure(context, measurements, setup, tear, regen, snippet).sorted
         val suspectnum = math.max(1, results.length * suspectPercent / 100)
         var retries = 8
 
         def outlierExists(rs: Seq[Long]) = {
           val cov = CoV(rs)
           val covinit = CoV(rs.dropRight(suspectnum))
-          cov > 2.0 * covinit && covinit != 0.0
+          if (covinit != 0.0) cov > covmult * covinit
+          else mean(rs.takeRight(suspectnum)) > 1.2 * mean(rs.dropRight(suspectnum))
         }
 
         while (outlierExists(results) && retries > 0) {
           log.verbose("Detected an outlier: " + results.mkString(", "))
-          results = (results.dropRight(suspectnum) ++ super.measure(suspectnum, setup, tear, regen, snippet)).sorted
+          results = (results.dropRight(suspectnum) ++ super.measure(context, suspectnum, setup, tear, regen, snippet)).sorted
           retries -= 1
         }
 
+        log.verbose("After outlier elimination: " + results.mkString(", "))
         results
       }
+    }
+
+    /** A measurer which adds noise to the measurement.
+     *
+     *  @define noise This measurer makes the regression tests more solid. While certain forms of
+     *  gradual regressions are harder to detect, the measurements become less
+     *  susceptible to actual randomness, because adding artificial noise increases
+     *  the confidence intervals.
+     */
+    trait Noise extends Measurer {
+
+      def noiseFunction(observations: Seq[Long], magnitude: Double): Long => Double
+
+      abstract override def measure[T, U](context: Context, measurements: Int, setup: T => Any, tear: T => Any, regen: () => T, snippet: T => Any): Seq[Long] = {
+        val observations = super.measure(context, measurements, setup, tear, regen, snippet)
+        val magnitude = context.goe(Key.noiseMagnitude, 0.0)
+        val noise = noiseFunction(observations, magnitude)
+        val withnoise = observations map {
+          x => (x + noise(x)).toLong
+        }
+
+        log.verbose("After applying noise: " + withnoise.mkString(", "))
+
+        withnoise
+      }
+
+    }
+
+    import utils.Statistics.clamp
+
+    /** A mixin measurer which adds an absolute amount of Gaussian noise to the measurement.
+     *  
+     *  A random value is sampled from a Gaussian distribution for each measurement `x`.
+     *  This value is then multiplied with `Key.noiseMagnitude` and added to the measurement.
+     *  The default value for the noise magnitude is `0.0` - it has to be set manually
+     *  for tests requiring artificial noise.
+     *  The resulting value is clamped into the range `x - magnitude, x + magnitude`.
+     *  
+     *  $noise
+     */
+    trait AbsoluteNoise extends Noise {
+
+      abstract override def name = s"${super.name}+AbsoluteNoise"
+
+      def noiseFunction(observations: Seq[Long], m: Double) = (x: Long) => {
+        clamp(m * util.Random.nextGaussian(), -m, +m)
+      }
+
+    }
+
+    /** A mixin measurer which adds an amount of Gaussian noise to the measurement relative
+     *  to its mean.
+     * 
+     *  An observations sequence mean `m` is computed.
+     *  A random Gaussian value is sampled for each measurement `x` in the observations sequence.
+     *  It is multiplied with `m / 10.0` times `Key.noiseMagnitude` (default `0.0`).
+     *  Call this multiplication factor `f`.
+     *  The resulting value is clamped into the range `x - f, x + f`.
+     *
+     *  $noise
+     */
+    trait RelativeNoise extends Noise {
+
+      abstract override def name = s"${super.name}+RelativeNoise"
+
+      def noiseFunction(observations: Seq[Long], magnitude: Double) = {
+        val m = utils.Statistics.mean(observations)
+        (x: Long) => {
+          val f = m / 10.0 * magnitude
+          clamp(f * util.Random.nextGaussian(), -f, +f)
+        }
+      }
+
     }
 
     /** Eliminates performance measurements tied to certain particularly bad allocation patterns, typically
@@ -210,10 +287,10 @@ object Executor {
 
       val checkfactor = 8
 
-      def measure[T, U](measurements: Int, setup: T => Any, tear: T => Any, regen: () => T, snippet: T => Any): Seq[Long] = {
+      def measure[T, U](context: Context, measurements: Int, setup: T => Any, tear: T => Any, regen: () => T, snippet: T => Any): Seq[Long] = {
         import utils.Statistics._
 
-        def sample(num: Int, value: T): Seq[Long] = delegate.measure(num, setup, tear, () => value, snippet)
+        def sample(num: Int, value: T): Seq[Long] = delegate.measure(context, num, setup, tear, () => value, snippet)
 
         def different(observations: Seq[Long], checks: Seq[Long]): Boolean = {
           !ConfidenceIntervalTest(observations, checks, 1.0 - confidence)

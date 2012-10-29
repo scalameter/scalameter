@@ -17,27 +17,25 @@ trait DSL extends DelayedInit {
 
   private val setupzipper = new scala.util.DynamicVariable(Tree.Zipper.root[Setup[_]])
 
-  private def descendInScope(name: String)(body: =>Unit) {
-    setupzipper.value = setupzipper.value.descend.transformContext(Key.scope, {
-      scope: List[String] => name :: scope
-    })
+  private def descendInScope(name: String, context: Context)(body: =>Unit) {
+    setupzipper.value = setupzipper.value.descend.setContext(context)
     body
     setupzipper.value = setupzipper.value.ascend
   }
 
   object performance {
-    def of(modulename: String) = new {
-      def in(block: =>Unit): Unit = descendInScope(modulename) {
-        block
-      }
-    }
+    def of(modulename: String) = Scope(modulename, setupzipper.value.current.context)
   }
 
-  type SameType
-
   object measure {
-    def method(methodname: String) = new {
-      def in(block: =>Unit): Unit = descendInScope(methodname) {
+    def method(methodname: String) = Scope(methodname, setupzipper.value.current.context)
+  }
+
+  protected case class Scope(name: String, context: Context) {
+    def configuration(kvs: (String, Any)*) = Scope(name, context ++ Context(kvs.toMap))
+    def in(block: =>Unit): Unit = {
+      val oldscope = context.goe(Key.scope, List())
+      descendInScope(name, context + (Key.scope -> (name :: oldscope))) {
         block
       }
     }
@@ -61,6 +59,8 @@ trait DSL extends DelayedInit {
   protected def initSetupTree() {
     setupzipper.value = setupzipper.value.addContext(Key.executor -> executor.toString)
   }
+
+  type SameType
 
   protected def executeTests() {
     val datestart = new java.util.Date

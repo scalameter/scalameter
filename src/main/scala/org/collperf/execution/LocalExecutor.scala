@@ -72,7 +72,7 @@ class LocalExecutor(val aggregator: Aggregator, val measurer: Executor.Measurer)
       val regen = regenerateFor(params)
 
       log.verbose(s"$repetitions repetitions of the snippet starting.")
-      val times = measurer.measure(repetitions, set, tear, regen, snippet)
+      val times = measurer.measure(context, repetitions, set, tear, regen, snippet)
       log.verbose("Repetitions ended.")
 
       val processedTime = aggregator(times)

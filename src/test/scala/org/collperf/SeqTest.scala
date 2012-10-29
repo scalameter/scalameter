@@ -66,31 +66,30 @@ abstract class SeqTesting extends PerformanceTest {
 
   performance of "Large-Seq" in {
 
-    measure method "foreach" in {
-      // using(arrays(1000000)) curve("Array") configuration (
-      //   Key.significance -> 1e-13
-      // ) apply { xs =>
+    measure method "foreach" configuration (
+      Key.benchRuns -> 36,
+      Key.significance -> 1e-13
+    ) in {
+      // using(arrays(1000000)) curve("Array") apply { xs =>
       //   var sum = 0
       //   xs.foreach(sum += _)
       // }
 
-      // using(arraybuffers(1000000)) curve("ArrayBuffer") configuration (
-      //   Key.significance -> 1e-13
-      // ) apply { xs =>
+      // using(arraybuffers(1000000)) curve("ArrayBuffer") apply { xs =>
       //   var sum = 0
       //   xs.foreach(sum += _)
       // }
       
-      // using(vectors(1000000)) curve("Vector")  configuration (
-      //   Key.significance -> 1e-13
-      // ) apply { xs =>
+      // using(vectors(1000000)) curve("Vector") apply { xs =>
       //   var sum = 0
       //   xs.foreach(sum += _)
       // }
 
-      // using(lists(1000000)) curve("List")  configuration (
-      //   Key.significance -> 1e-13,
-      //   Key.benchRuns -> 64
+      // using(lists(1000000)) curve("List") configuration (
+      //   Key.benchRuns -> 48,
+      //   Key.independentSamples -> 6,
+      //   Key.fullGC -> true,
+      //   Key.frequency -> 4
       // ) apply { xs =>
       //   var sum = 0
       //   xs.foreach(sum += _)
@@ -98,56 +97,55 @@ abstract class SeqTesting extends PerformanceTest {
     }
   
     measure method "reduce" in {
-      using(arrays()) curve("Array") configuration (
-        Key.significance -> 1e-13
-      ) apply {
-        _.reduce(_ + _)
-      }
+      // using(arrays()) curve("Array") configuration (
+      //   Key.significance -> 1e-13
+      // ) apply {
+      //   _.reduce(_ + _)
+      // }
 
-      using(arraybuffers()) curve("ArrayBuffer") configuration (
-        Key.significance -> 1e-13
-      ) apply {
-        _.reduce(_ + _)
-      }
+      // using(arraybuffers()) curve("ArrayBuffer") configuration (
+      //   Key.significance -> 1e-13
+      // ) apply {
+      //   _.reduce(_ + _)
+      // }
 
-      using(vectors()) curve("Vector") configuration (
-        Key.significance -> 1e-13
-      ) apply {
-        _.reduce(_ + _)
-      }
+      // using(vectors()) curve("Vector") configuration (
+      //   Key.significance -> 1e-13
+      // ) apply {
+      //   _.reduce(_ + _)
+      // }
 
-      using(lists()) curve("List") configuration (
-        Key.significance -> 1e-13,
-        Key.benchRuns -> 64,
-        Key.independentSamples -> 8
-      ) apply {
-        _.reduce(_ + _)
-      }
+      // using(lists()) curve("List") configuration (
+      //   Key.significance -> 1e-13,
+      //   Key.benchRuns -> 64,
+      //   Key.independentSamples -> 8
+      // ) apply {
+      //   _.reduce(_ + _)
+      // }
     }
     
-    measure method "filter" in {
-      using(arrays()) curve("Array") configuration (
-        Key.significance -> 1e-13
-      ) apply {
-        _.filter(_ % 2 == 0)
-      }
+    measure method "filter" configuration (
+      Key.benchRuns -> 36,
+      Key.significance -> 1e-13
+    ) in {
+      // using(arrays()) curve("Array") apply {
+      //   _.filter(_ % 2 == 0)
+      // }
 
-      using(arraybuffers()) curve("ArrayBuffer") configuration (
-        Key.significance -> 1e-13
-      ) apply {
-        _.filter(_ % 2 == 0)
-      }
+      // using(arraybuffers()) curve("ArrayBuffer")  apply {
+      //   _.filter(_ % 2 == 0)
+      // }
       
-      using(vectors()) curve("Vector") configuration (
-        Key.significance -> 1e-13
-      ) apply {
-        _.filter(_ % 2 == 0)
-      }
+      // using(vectors()) curve("Vector") apply {
+      //   _.filter(_ % 2 == 0)
+      // }
 
       using(lists()) curve("List") configuration (
-        Key.significance -> 1e-13,
-        Key.benchRuns -> 64,
-        Key.independentSamples -> 8
+        Key.benchRuns -> 48,
+        Key.independentSamples -> 6,
+        Key.fullGC -> true,
+        Key.frequency -> 4,
+        Key.noiseMagnitude -> 1.0
       ) apply {
         _.filter(_ % 2 == 0)
       }

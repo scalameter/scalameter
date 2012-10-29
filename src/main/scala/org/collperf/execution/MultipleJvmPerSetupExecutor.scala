@@ -57,7 +57,7 @@ class MultipleJvmPerSetupExecutor(val aggregator: Aggregator, val measurer: Exec
         val set = setupFor()
         val tear = teardownFor()
         val regen = regenerateFor(params)
-        (params, m.measure(reps, set, tear, regen, snippet))
+        (params, m.measure(context, reps, set, tear, regen, snippet))
       }
 
       observations.toBuffer
