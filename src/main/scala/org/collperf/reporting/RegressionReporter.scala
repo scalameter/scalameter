@@ -19,14 +19,17 @@ case class RegressionReporter(test: RegressionReporter.Tester, historian: Regres
     val oks = for {
       (context, curves) <- results.scopes
       if curves.nonEmpty
-      _ = log(s"${ansi.green}Test group: ${context.scope}${ansi.reset}")
       history = persistor.load(context)
       curvetable = history.results.map(_._3).flatten.groupBy(_.context.curve)
     } yield {
+      log(s"${ansi.green}Test group: ${context.scope}${ansi.reset}")
+
       val curvespassed = for (curvedata <- curves) yield {
         val corresponding = curvetable.getOrElse(curvedata.context.curve, Seq(curvedata))
         test(context, curvedata, corresponding)
       }
+
+      log("")
 
       val allpassed = curvespassed.forall(_ == true)
       if (allpassed) historian.persist(persistor, context, history, curves)

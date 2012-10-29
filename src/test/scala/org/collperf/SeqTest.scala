@@ -43,22 +43,22 @@ abstract class SeqTesting extends PerformanceTest {
 
   /* data */
 
-  def largesizes(from: Int = 500000) = Gen.range("size")(from, from + 5000000, 1000000)
+  def largesizes(from: Int = 500000, to: Int = 5000000, by: Int = 1000000) = Gen.range("size")(from, to, by)
 
-  def lists(from: Int = 500000) = for {
-    size <- largesizes(from)
+  def lists(from: Int = 500000, to: Int = 5000000, by: Int = 1000000) = for {
+    size <- largesizes(from, to, by)
   } yield (0 until size).toList
 
-  def arrays(from: Int = 500000) = for {
-    size <- largesizes(from)
+  def arrays(from: Int = 500000, to: Int = 5000000, by: Int = 1000000) = for {
+    size <- largesizes(from, to, by)
   } yield (0 until size).toArray
 
-  def vectors(from: Int = 500000) = for {
-    size <- largesizes(from)
+  def vectors(from: Int = 500000, to: Int = 5000000, by: Int = 1000000) = for {
+    size <- largesizes(from, to, by)
   } yield (0 until size).toVector
 
-  def arraybuffers(from: Int = 500000) = for {
-    size <- largesizes(from)
+  def arraybuffers(from: Int = 500000, to: Int = 5000000, by: Int = 1000000) = for {
+    size <- largesizes(from, to, by)
   } yield mutable.ArrayBuffer(0 until size: _*)
 
 
@@ -68,106 +68,135 @@ abstract class SeqTesting extends PerformanceTest {
 
     measure method "foreach" configuration (
       Key.benchRuns -> 36,
+      Key.independentSamples -> 9,
       Key.significance -> 1e-13
     ) in {
-      // using(arrays(1000000)) curve("Array") apply { xs =>
-      //   var sum = 0
-      //   xs.foreach(sum += _)
-      // }
+      val from = 1000000
 
-      // using(arraybuffers(1000000)) curve("ArrayBuffer") apply { xs =>
-      //   var sum = 0
-      //   xs.foreach(sum += _)
-      // }
+      using(arrays(from)) curve("Array") in { xs =>
+        var sum = 0
+        xs.foreach(sum += _)
+      }
+
+      using(arraybuffers(from)) curve("ArrayBuffer") in { xs =>
+        var sum = 0
+        xs.foreach(sum += _)
+      }
       
-      // using(vectors(1000000)) curve("Vector") apply { xs =>
-      //   var sum = 0
-      //   xs.foreach(sum += _)
-      // }
+      using(vectors(from)) curve("Vector") in { xs =>
+        var sum = 0
+        xs.foreach(sum += _)
+      }
 
-      // using(lists(1000000)) curve("List") configuration (
-      //   Key.benchRuns -> 48,
-      //   Key.independentSamples -> 6,
-      //   Key.fullGC -> true,
-      //   Key.frequency -> 4
-      // ) apply { xs =>
-      //   var sum = 0
-      //   xs.foreach(sum += _)
-      // }
+      using(lists(from)) curve("List") configuration (
+        Key.benchRuns -> 40,
+        Key.independentSamples -> 4,
+        Key.fullGC -> true,
+        Key.frequency -> 5,
+        Key.noiseMagnitude -> 1.0
+      ) in { xs =>
+        var sum = 0
+        xs.foreach(sum += _)
+      }
     }
   
-    measure method "reduce" in {
-      // using(arrays()) curve("Array") configuration (
-      //   Key.significance -> 1e-13
-      // ) apply {
-      //   _.reduce(_ + _)
-      // }
+    measure method "reduce" configuration (
+      Key.benchRuns -> 36,
+      Key.independentSamples -> 9,
+      Key.significance -> 1e-13
+    ) in {
+      val from = 500000
+      val to = 3500000
+      val by = 700000
 
-      // using(arraybuffers()) curve("ArrayBuffer") configuration (
-      //   Key.significance -> 1e-13
-      // ) apply {
-      //   _.reduce(_ + _)
-      // }
+      using(arrays()) curve("Array") in {
+        _.reduce(_ + _)
+      }
 
-      // using(vectors()) curve("Vector") configuration (
-      //   Key.significance -> 1e-13
-      // ) apply {
-      //   _.reduce(_ + _)
-      // }
+      using(arraybuffers()) curve("ArrayBuffer") in {
+        _.reduce(_ + _)
+      }
 
-      // using(lists()) curve("List") configuration (
-      //   Key.significance -> 1e-13,
-      //   Key.benchRuns -> 64,
-      //   Key.independentSamples -> 8
-      // ) apply {
-      //   _.reduce(_ + _)
-      // }
+      using(vectors()) curve("Vector") in {
+        _.reduce(_ + _)
+      }
+
+      using(lists()) curve("List") configuration (
+        Key.benchRuns -> 20,
+        Key.independentSamples -> 4,
+        Key.fullGC -> true,
+        Key.frequency -> 5,
+        Key.noiseMagnitude -> 1.0
+      ) in {
+        _.reduce(_ + _)
+      }
     }
     
     measure method "filter" configuration (
       Key.benchRuns -> 36,
-      Key.significance -> 1e-13
+      Key.significance -> 1e-13,
+      Key.independentSamples -> 9
     ) in {
-      // using(arrays()) curve("Array") apply {
-      //   _.filter(_ % 2 == 0)
-      // }
+      val from = 500000
+      val to = 2500000
+      val by = 500000
 
-      // using(arraybuffers()) curve("ArrayBuffer")  apply {
-      //   _.filter(_ % 2 == 0)
-      // }
+      using(arrays(from, to, by)) curve("Array") in {
+        _.filter(_ % 2 == 0)
+      }
+
+      using(arraybuffers(from, to, by)) curve("ArrayBuffer")  in {
+        _.filter(_ % 2 == 0)
+      }
       
-      // using(vectors()) curve("Vector") apply {
-      //   _.filter(_ % 2 == 0)
-      // }
+      using(vectors(from, to, by)) curve("Vector") in {
+        _.filter(_ % 2 == 0)
+      }
 
-      using(lists()) curve("List") configuration (
+      using(lists(from, to, by)) curve("List") configuration (
         Key.benchRuns -> 48,
         Key.independentSamples -> 6,
         Key.fullGC -> true,
-        Key.frequency -> 4,
+        Key.frequency -> 6,
         Key.noiseMagnitude -> 1.0
-      ) apply {
+      ) in {
         _.filter(_ % 2 == 0)
       }
     }
 
-    /*measure method "groupBy" in {
-      using(arrays) curve("Array") apply {
+    measure method "groupBy" configuration (
+      Key.benchRuns -> 36,
+      Key.significance -> 1e-13,
+      Key.independentSamples -> 9
+    ) in {
+      val from = 100000
+      val to = 2000000
+      val by = 400000
+
+      using(arrays(from, to, by)) curve("Array") in {
         _.groupBy(_ % 10)
       }
 
-      using(arraybuffers) curve("ArrayBuffer") apply {
+      using(arraybuffers(from, to, by)) curve("ArrayBuffer") in {
         _.groupBy(_ % 10)
       }
 
-      using(vectors) curve("Vector") apply {
+      using(vectors(from, to, by)) curve("Vector") in {
         _.groupBy(_ % 10)
       }
 
-      using(lists) curve("List") apply {
+      using(lists(from, to, by)) curve("List") configuration (
+        Key.benchRuns -> 24,
+        Key.independentSamples -> 4,
+        Key.fullGC -> true,
+        Key.frequency -> 4,
+        Key.suspectPercent -> 50,
+        Key.covMultiplier -> 2.0,
+        Key.noiseMagnitude -> 1.0
+      ) in {
         _.groupBy(_ % 10)
       }
-    }*/
+    }
 
   }
 

@@ -181,7 +181,7 @@ object Executor {
         import utils.Statistics._
 
         val suspectPercent = context.goe(Key.suspectPercent, 25)
-        val covmult = context.goe(Key.covMultiplier, 3.0)
+        val covmult = context.goe(Key.covMultiplier, 2.0)
         var results = super.measure(context, measurements, setup, tear, regen, snippet).sorted
         val suspectnum = math.max(1, results.length * suspectPercent / 100)
         var retries = 8
@@ -260,6 +260,8 @@ object Executor {
      *  It is multiplied with `m / 10.0` times `Key.noiseMagnitude` (default `0.0`).
      *  Call this multiplication factor `f`.
      *  The resulting value is clamped into the range `x - f, x + f`.
+     *
+     *  The bottomline is - a `1.0` noise magnitude is a variation of `10%` of the mean.
      *
      *  $noise
      */
