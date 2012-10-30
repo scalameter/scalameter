@@ -100,6 +100,8 @@ package collperf {
     val covMultiplier = "cov-multiplier"
     val noiseMagnitude = "noise-magnitude"
 
+    val timeIndices = "time-indices"
+
     val bigO = "big-o"
 
     val unit = "unit"
@@ -158,7 +160,15 @@ package collperf {
 
   case class CurveData(measurements: Seq[Measurement], info: Map[String, Any], context: Context)
 
-  case class History(results: Seq[(Date, Context, Seq[CurveData])])
+  case class History(results: Seq[History.Entry], infomap: Map[String, Any] = Map.empty) {
+    def info[T](key: String, fallback: T) = infomap.getOrElse(key, fallback).asInstanceOf[T]
+
+    override def toString = s"History(${results.mkString("\n")},\ninfo: $infomap)"
+  }
+
+  object History {
+    type Entry = (Date, Context, Seq[CurveData])
+  }
 
   case class Setup[T](context: Context, gen: Gen[T], setup: Option[T => Any], teardown: Option[T => Any], customwarmup: Option[() => Any], snippet: T => Any) {
     def setupFor(v: T) = if (setup.isEmpty) { () => } else { () => setup.get(v) }

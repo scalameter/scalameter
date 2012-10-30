@@ -68,7 +68,7 @@ object PerformanceTest {
 
     trait Regression extends PerformanceTest {
       lazy val reporter = org.collperf.Reporter.Composite(
-        RegressionReporter(RegressionReporter.Tester.ConfidenceIntervals(0.02), RegressionReporter.Historian.Default()),
+        RegressionReporter(RegressionReporter.Tester.ConfidenceIntervals(0.02), RegressionReporter.Historian.ExponentialBackoff()),
         new HtmlReporter(HtmlReporter.Renderer.all: _*)
       )
     }

@@ -89,7 +89,7 @@ abstract class SeqTesting extends PerformanceTest {
       }
 
       using(lists(from)) curve("List") configuration (
-        Key.benchRuns -> 40,
+        Key.benchRuns -> 32,
         Key.independentSamples -> 4,
         Key.fullGC -> true,
         Key.frequency -> 5,

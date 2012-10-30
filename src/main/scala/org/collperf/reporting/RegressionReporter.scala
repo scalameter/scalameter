@@ -60,9 +60,49 @@ object RegressionReporter {
 
   object Historian {
 
-    case class Default() extends Historian {
+    case class Complete() extends Historian {
       def persist(p: Persistor, ctx: Context, h: History, newest: Seq[CurveData]) {
         val newhistory = History(h.results :+ ((new Date, ctx, newest)))
+        p.save(ctx, newhistory)
+      }
+    }
+
+    case class Window(size: Int) extends Historian {
+      def persist(p: Persistor, ctx: Context, h: History, newest: Seq[CurveData]) {
+        val newseries = h.results :+ ((new Date, ctx, newest))
+        val prunedhistory = History(newseries.takeRight(size))
+        p.save(ctx, prunedhistory)
+      }
+    }
+
+    case class ExponentialBackoff() extends Historian {
+
+      def prune(series: Seq[History.Entry], indices: Seq[Long], newest: History.Entry): History = {
+        val entries = series.reverse zip indices
+        val sizes = Stream.from(0).map(1L << _).scanLeft(0L)(_ + _)
+        val buckets = sizes zip sizes.tail
+        val bucketed = buckets map {
+          case (from, to) => entries filter {
+            case (_, idx) => from < idx && idx <= to
+          }
+        }
+        val pruned = bucketed takeWhile { _.nonEmpty } map { elems =>
+          val (last, lastidx) = elems.last
+          (last, lastidx + 1)
+        }
+        val (newentries, newindices) = pruned.unzip
+
+        History(newentries.toBuffer.reverse :+ newest, Map(Key.timeIndices -> (1L +: newindices.toBuffer)))
+      }
+
+      def prune(h: History, newest: History.Entry): History = {
+        val indices = h.info[Seq[Long]](Key.timeIndices, (0 until h.results.length) map { 1L << _ })
+        val newhistory = prune(h.results, indices, newest)
+        newhistory
+      }
+
+      def persist(p: Persistor, ctx: Context, h: History, newest: Seq[CurveData]) {
+        val newhistory = prune(h, (new Date, ctx, newest))
         p.save(ctx, newhistory)
       }
     }
