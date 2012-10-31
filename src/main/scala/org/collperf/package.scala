@@ -160,6 +160,7 @@ package collperf {
 
   case class CurveData(measurements: Seq[Measurement], info: Map[String, Any], context: Context)
 
+  @SerialVersionUID(-2666789428423525666L)
   case class History(results: Seq[History.Entry], infomap: Map[String, Any] = Map.empty) {
     def info[T](key: String, fallback: T) = infomap.getOrElse(key, fallback).asInstanceOf[T]
 

@@ -107,7 +107,9 @@ object HtmlReporter {
   }
 
   object Renderer {
-    def all = Seq(Info(), BigO(), Chart(ChartReporter.ChartFactory.XYLine()))
+    def regression = Seq(Info(), Chart(ChartReporter.ChartFactory.XYLine()))
+
+    def basic = Seq(Info(), BigO(), Chart(ChartReporter.ChartFactory.XYLine()))
 
     case class Info() extends Renderer {
       def render(context: Context, curves: Seq[CurveData], h: History): Node = 

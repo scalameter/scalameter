@@ -63,13 +63,13 @@ object PerformanceTest {
     }
 
     trait Html extends PerformanceTest {
-      lazy val reporter = new HtmlReporter(HtmlReporter.Renderer.all: _*)
+      lazy val reporter = new HtmlReporter(HtmlReporter.Renderer.basic: _*)
     }
 
     trait Regression extends PerformanceTest {
       lazy val reporter = org.collperf.Reporter.Composite(
         RegressionReporter(RegressionReporter.Tester.ConfidenceIntervals(0.02), RegressionReporter.Historian.ExponentialBackoff()),
-        new HtmlReporter(HtmlReporter.Renderer.all: _*)
+        new HtmlReporter(HtmlReporter.Renderer.regression: _*)
       )
     }
 

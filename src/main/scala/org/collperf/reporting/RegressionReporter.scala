@@ -77,7 +77,7 @@ object RegressionReporter {
 
     case class ExponentialBackoff() extends Historian {
 
-      def prune(series: Seq[History.Entry], indices: Seq[Long], newest: History.Entry): History = {
+      def push(series: Seq[History.Entry], indices: Seq[Long], newest: History.Entry): History = {
         val entries = series.reverse zip indices
         val sizes = Stream.from(0).map(1L << _).scanLeft(0L)(_ + _)
         val buckets = sizes zip sizes.tail
@@ -95,14 +95,19 @@ object RegressionReporter {
         History(newentries.toBuffer.reverse :+ newest, Map(Key.timeIndices -> (1L +: newindices.toBuffer)))
       }
 
-      def prune(h: History, newest: History.Entry): History = {
+      def push(h: History, newest: History.Entry): History = {
+        log.verbose("Pushing to history with info: " + h.infomap)
+
         val indices = h.info[Seq[Long]](Key.timeIndices, (0 until h.results.length) map { 1L << _ })
-        val newhistory = prune(h.results, indices, newest)
+        val newhistory = push(h.results, indices, newest)
+
+        log.verbose("New history info: " + newhistory.infomap)
+
         newhistory
       }
 
       def persist(p: Persistor, ctx: Context, h: History, newest: Seq[CurveData]) {
-        val newhistory = prune(h, (new Date, ctx, newest))
+        val newhistory = push(h, (new Date, ctx, newest))
         p.save(ctx, newhistory)
       }
     }
