@@ -47,7 +47,8 @@ object Main {
         case names => Configuration(names, Context.empty)
       }
       def intsetting: Parser[Configuration] = "-" ~ ident ~ decimalNumber ^^ {
-        case _ ~ "Cwarmups" ~ num => Configuration(Nil, Context(Key.warmupRuns -> num.toInt))
+        case _ ~ "Cminwarmups" ~ num => Configuration(Nil, Context(Key.minWarmupRuns -> num.toInt))
+        case _ ~ "Cmaxwarmups" ~ num => Configuration(Nil, Context(Key.maxWarmupRuns -> num.toInt))
         case _ ~ "Cruns" ~ num => Configuration(Nil, Context(Key.benchRuns -> num.toInt))
       }
       def stringsetting: Parser[Configuration] = "-" ~ ident ~ ident ^^ {

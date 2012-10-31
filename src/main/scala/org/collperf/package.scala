@@ -89,7 +89,8 @@ package collperf {
     val endDate = "date-end"
 
     val benchRuns = "runs"
-    val warmupRuns = "warmups"
+    val minWarmupRuns = "min-warmups"
+    val maxWarmupRuns = "max-warmups"
     val verbose = "verbose"
     val resultDir = "result-dir"
     val significance = "significance"
@@ -122,7 +123,7 @@ package collperf {
 
     val empty = new Context(immutable.Map())
 
-    val topLevel = machine + (Key.scope -> Nil) + (Key.benchRuns -> 36) + (Key.warmupRuns -> 100)
+    val topLevel = machine + (Key.scope -> Nil) + (Key.benchRuns -> 36) + (Key.minWarmupRuns -> 10) + (Key.maxWarmupRuns -> 50)
 
     def machine = Context(immutable.Map(
       Key.jvmVersion -> sys.props("java.vm.version"),

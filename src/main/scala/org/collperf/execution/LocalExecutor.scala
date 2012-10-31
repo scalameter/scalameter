@@ -33,8 +33,9 @@ class LocalExecutor(val aggregator: Aggregator, val measurer: Executor.Measurer)
     for (bench <- setups) {
       import bench._
       for (x <- gen.warmupset) {
-        val warmups = context.goe(Key.warmupRuns, 10)
-        for (_ <- Warmer(warmups, setupFor(x), teardownFor(x))) snippet(x)
+        val warmups = context.goe(Key.maxWarmupRuns, 10)
+        customwarmup.map(_())
+        for (_ <- Warmer(context, setupFor(x), teardownFor(x))) snippet(x)
       }
     }
 
@@ -50,13 +51,13 @@ class LocalExecutor(val aggregator: Aggregator, val measurer: Executor.Measurer)
     log.verbose(s"Running test set for ${bsetup.context.scope}, curve ${bsetup.context.goe(Key.curve, "")}")
 
     // run warm up
-    val warmups = context.goe(Key.warmupRuns, 10)
+    val warmups = context.goe(Key.maxWarmupRuns, 10)
     customwarmup match {
       case Some(warmup) =>
         for (i <- 0 until warmups) warmup()
       case _ =>
         for (x <- gen.warmupset) {
-          for (i <- Warmer(warmups, setupFor(x), teardownFor(x))) snippet(x)
+          for (i <- Warmer(context, setupFor(x), teardownFor(x))) snippet(x)
         }
     }
 

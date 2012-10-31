@@ -11,10 +11,13 @@ import utils.withGCNotification
 
 package object execution {
 
-  case class Warmer(maxwarmups: Int, setup: () => Any, teardown: () => Any) {
+  case class Warmer(ctx: Context, setup: () => Any, teardown: () => Any) {
+    val minwarmups = ctx.goe(Key.minWarmupRuns, 10)
+    val maxwarmups = ctx.goe(Key.maxWarmupRuns, 50)
+
     def foreach[U](f: Int => U): Unit = {
-      val withgc = new utils.SlidingWindow(10)
-      val withoutgc = new utils.SlidingWindow(10)
+      val withgc = new utils.SlidingWindow(minwarmups)
+      val withoutgc = new utils.SlidingWindow(minwarmups)
       @volatile var nogc = true
 
       log.verbose(s"Starting warmup.")
@@ -42,7 +45,7 @@ package object execution {
           val covGC = withgc.cov
 
           log.verbose(s"$i. warmup run running time: $runningtime (covNoGC: $covNoGC, covGC: $covGC)")
-          if ((withoutgc.size >= 10 && covNoGC < 0.1) || (withgc.size >= 10 && covGC < 0.1)) {
+          if ((withoutgc.size >= minwarmups && covNoGC < 0.1) || (withgc.size >= minwarmups && covGC < 0.1)) {
             log.verbose(s"Steady-state detected.")
             i = maxwarmups
           } else i += 1
@@ -53,7 +56,7 @@ package object execution {
   }
 
   def jvmflags(startHeap: Int = 2048, maxHeap: Int = 2048): String = {
-    s"${if (initialContext.goe(Key.verbose, false)) "-verbose:gc" else ""} -Xmx${maxHeap}m -Xms${startHeap}m"
+    s"${if (initialContext.goe(Key.verbose, false)) "-verbose:gc" else ""} -Xmx${maxHeap}m -Xms${startHeap}m -XX:CompileThreshold=1"
   }
 
   final class JvmRunner {

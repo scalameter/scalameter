@@ -10,6 +10,11 @@ import utils.Tree
 
 
 
+/** Runs multiple JVM instances per each setup and aggregates all the results together.
+ *
+ *  This produces more stable results, as the performance related effects of each JVM instantiation
+ *  are averaged.
+ */
 class MultipleJvmPerSetupExecutor(val aggregator: Aggregator, val measurer: Executor.Measurer) extends Executor {
 
   val runner = new JvmRunner
@@ -27,7 +32,7 @@ class MultipleJvmPerSetupExecutor(val aggregator: Aggregator, val measurer: Exec
   private[execution] def runSetup[T](setup: Setup[T]): CurveData = {
     import setup._
 
-    val warmups = context.goe(Key.warmupRuns, 10)
+    val warmups = context.goe(Key.maxWarmupRuns, 10)
     val totalreps = context.goe(Key.benchRuns, 10)
     val independentSamples = context.goe(Key.independentSamples, defaultIndependentSamples)
     def repetitions(idx: Int): Int = {
@@ -48,7 +53,7 @@ class MultipleJvmPerSetupExecutor(val aggregator: Aggregator, val measurer: Exec
           for (i <- 0 until warmups) warmup()
         case _ =>
           for (x <- gen.warmupset) {
-            for (i <- Warmer(warmups, setupFor(x), teardownFor(x))) snippet(x)
+            for (i <- Warmer(context, setupFor(x), teardownFor(x))) snippet(x)
           }
       }
 
