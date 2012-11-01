@@ -98,7 +98,7 @@ object ChartReporter {
               previousMeasurements = correspondingCurveInHistory.measurements(measurementIndex) :: previousMeasurements
             }
 
-            val previousMeasurementsTimes = previousMeasurements map(m => m.time)
+            val previousMeasurementsTimes = previousMeasurements map(m => m.time.toLong)
             val ciForThisPoint = if(showHistoryCi) { confidenceInterval(previousMeasurementsTimes, alpha) } else { (0D, 0D) }
             val meanOfPreviousMeasurements = mean(previousMeasurementsTimes)
             // Params : x - the x-value, y - the y-value, yLow - the lower bound of the y-interval, yHigh - the upper bound of the y-interval.

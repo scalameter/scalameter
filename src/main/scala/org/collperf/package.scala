@@ -14,7 +14,7 @@ package object collperf {
 
   /* decorators */
 
-  implicit def fun2ops(f: Seq[Long] => Long) = new {
+  implicit def fun2ops(f: Seq[Long] => Double) = new {
     def toAggregator(n: String) = {
       val function = f
       new Aggregator {
@@ -151,7 +151,7 @@ package collperf {
   }
 
   @SerialVersionUID(-2541697615491239986L)
-  case class Measurement(time: Long, params: Parameters, data: Option[Any]) {
+  case class Measurement(time: Double, params: Parameters, data: Option[Any]) {
     def complete: Seq[Long] = data.get.asInstanceOf[Seq[Long]]
   }
 
@@ -180,33 +180,33 @@ package collperf {
     def regenerateFor(params: Parameters): () => T = () => gen.generate(params)
   }
 
-  trait Aggregator extends (Seq[Long] => Long) with Serializable {
+  trait Aggregator extends (Seq[Long] => Double) with Serializable {
     def name: String
-    def apply(times: Seq[Long]): Long
+    def apply(times: Seq[Long]): Double
     def data(times: Seq[Long]): Option[Any]
   }
 
   object Aggregator {
     
-    case class Statistic(min: Long, max: Long, average: Long, stdev: Long, median: Long)
+    case class Statistic(min: Double, max: Double, average: Double, stdev: Double, median: Double)
 
     def min = {
-      xs: Seq[Long] => xs.min
+      xs: Seq[Long] => xs.min.toDouble
     } toAggregator "min"
 
     def max = {
-      xs: Seq[Long] => xs.max
+      xs: Seq[Long] => xs.max.toDouble
     } toAggregator "max"
 
     def median = {
       xs: Seq[Long] =>
       val sorted = xs.sorted
-      sorted(sorted.size / 2)
+      sorted(sorted.size / 2).toDouble
     } toAggregator "median"
 
-    def average = { xs: Seq[Long] => xs.sum / xs.size } toAggregator "average"
+    def average = { xs: Seq[Long] => xs.sum.toDouble / xs.size } toAggregator "average"
 
-    def stdev = { xs: Seq[Long] => xs.stdev.toLong } toAggregator "stdev"
+    def stdev = { xs: Seq[Long] => xs.stdev } toAggregator "stdev"
 
     def statistic(a: Aggregator) = new Aggregator {
       def name = a.name
