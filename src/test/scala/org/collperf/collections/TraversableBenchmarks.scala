@@ -7,36 +7,11 @@ import collection._
 
 
 
-class TraversableBenchmarks extends PerformanceTest.Regression {
+class TraversableBenchmarks extends PerformanceTest.Regression with Collections {
 
   def persistor = new persistance.SerializationPersistor()
 
-  /* data */
-
-  def sizes(from: Int = 500000, to: Int = 5000000, by: Int = 1000000) = Gen.range("size")(from, to, by)
-
-  def lists(from: Int = 500000, to: Int = 5000000, by: Int = 1000000) = for {
-    size <- sizes(from, to, by)
-  } yield (0 until size).toList
-
-  def arrays(from: Int = 500000, to: Int = 5000000, by: Int = 1000000) = for {
-    size <- sizes(from, to, by)
-  } yield (0 until size).toArray
-
-  def vectors(from: Int = 500000, to: Int = 5000000, by: Int = 1000000) = for {
-    size <- sizes(from, to, by)
-  } yield (0 until size).toVector
-
-  def arraybuffers(from: Int = 500000, to: Int = 5000000, by: Int = 1000000) = for {
-    size <- sizes(from, to, by)
-  } yield mutable.ArrayBuffer(0 until size: _*)
-
-  def ranges(from: Int = 500000, to: Int = 5000000, by: Int = 1000000) = for {
-    size <- sizes(from, to, by)
-  } yield 0 until size
-
-
-  /* Large sequences */
+  /* traversable collections */
 
   performance of "Traversable" in {
 

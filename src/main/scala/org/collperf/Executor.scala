@@ -154,7 +154,7 @@ object Executor {
      *  Outlier elimination can also eliminate some pretty bad allocation patterns in some cases.
      *  Only outliers from above are considered.
      *
-     *  When detecting an outlier, `Key.suspectPercent`% (with a minimum of `1`) of worst times will be considered.
+     *  When detecting an outlier, up to `Key.suspectPercent`% (with a minimum of `1`) of worst times will be considered.
      *  For example, given `Key.suspectPercent = 25` the times:
      *
      *  {{{
@@ -180,27 +180,39 @@ object Executor {
       abstract override def measure[T, U](context: Context, measurements: Int, setup: T => Any, tear: T => Any, regen: () => T, snippet: T => Any): Seq[Long] = {
         import utils.Statistics._
 
+        var results = super.measure(context, measurements, setup, tear, regen, snippet).sorted
         val suspectPercent = context.goe(Key.suspectPercent, 25)
         val covmult = context.goe(Key.covMultiplier, 2.0)
-        var results = super.measure(context, measurements, setup, tear, regen, snippet).sorted
         val suspectnum = math.max(1, results.length * suspectPercent / 100)
-        var retries = 8
+        var retries = context.goe(Key.retries, 8)
 
-        def outlierExists(rs: Seq[Long]) = {
-          val cov = CoV(rs)
-          val covinit = CoV(rs.dropRight(suspectnum))
-          if (covinit != 0.0) cov > covmult * covinit
-          else mean(rs.takeRight(suspectnum)) > 1.2 * mean(rs.dropRight(suspectnum))
+        def outlierSuffixLength(rs: Seq[Long]): Int = {
+          var minlen = 1
+          while (minlen <= suspectnum) {
+            val cov = CoV(rs)
+            val covinit = CoV(rs.dropRight(minlen))
+            val confirmed = if (covinit != 0.0) cov > covmult * covinit
+              else mean(rs.takeRight(minlen)) > 1.2 * mean(rs.dropRight(minlen))
+
+            if (confirmed) return minlen
+            else minlen += 1
+          }
+          0
         }
 
+        def outlierExists(rs: Seq[Long]) = outlierSuffixLength(rs) > 0
+
+        var best = results
         while (outlierExists(results) && retries > 0) {
-          log.verbose("Detected an outlier: " + results.mkString(", "))
-          results = (results.dropRight(suspectnum) ++ super.measure(context, suspectnum, setup, tear, regen, snippet)).sorted
+          val suffixlen = outlierSuffixLength(results)
+          log.verbose(s"Detected $suffixlen outlier(s): ${results.mkString(", ")}")
+          results = (results.dropRight(suffixlen) ++ super.measure(context, suffixlen, setup, tear, regen, snippet)).sorted
+          if (CoV(results) < CoV(best)) best = results
           retries -= 1
         }
 
-        log.verbose("After outlier elimination: " + results.mkString(", "))
-        results
+        log.verbose("After outlier elimination: " + best.mkString(", "))
+        best
       }
     }
 
@@ -295,7 +307,7 @@ object Executor {
         def sample(num: Int, value: T): Seq[Long] = delegate.measure(context, num, setup, tear, () => value, snippet)
 
         def different(observations: Seq[Long], checks: Seq[Long]): Boolean = {
-          !ConfidenceIntervalTest(observations, checks, 1.0 - confidence)
+          !ConfidenceIntervalTest(false, observations, checks, 1.0 - confidence)
         }
 
         def worse(observations: Seq[Long], checks: Seq[Long]): Boolean = {

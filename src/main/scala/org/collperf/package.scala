@@ -100,6 +100,7 @@ package collperf {
     val suspectPercent = "suspect-percent"
     val covMultiplier = "cov-multiplier"
     val noiseMagnitude = "noise-magnitude"
+    val retries = "retries"
 
     val timeIndices = "time-indices"
 

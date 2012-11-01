@@ -169,12 +169,12 @@ object RegressionReporter {
       }
     }
 
-    case class ConfidenceIntervals(defaultSignificance: Double, logging: Boolean = true) extends Tester with Logging {
+    case class ConfidenceIntervals(defaultSignificance: Double, strict: Boolean = false, logging: Boolean = true) extends Tester with Logging {
       def cistr(ci: (Double, Double)) = f"<${ci._1}%.2f, ${ci._2}%.2f>"
 
       def single(previous: Measurement, latest: Measurement, sig: Double): (Boolean, String) = {
         try {
-          val citest = ConfidenceIntervalTest(previous.complete, latest.complete, sig)
+          val citest = ConfidenceIntervalTest(strict, previous.complete, latest.complete, sig)
           
           if (!citest) {
             val color = ansi.red

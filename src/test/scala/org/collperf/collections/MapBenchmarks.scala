@@ -11,8 +11,6 @@ class MapBenchmarks extends PerformanceTest.Regression {
 
   def persistor = new persistance.SerializationPersistor()
 
-  /* data */
-
   /* tests */
 
   // applies
