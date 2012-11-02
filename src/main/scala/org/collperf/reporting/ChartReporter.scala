@@ -17,6 +17,8 @@ import utils.Tree
 import utils.Statistics._
 import java.awt.BasicStroke
 import java.awt.Color
+import Key.reporting._
+
 
 
 case class ChartReporter(fileNamePrefix: String, drawer: ChartReporter.ChartFactory) extends Reporter {
@@ -28,7 +30,7 @@ case class ChartReporter(fileNamePrefix: String, drawer: ChartReporter.ChartFact
     val scopename = ctx.scope
     val history = persistor.load(ctx)
     val chart = drawer.createChart(scopename, curves, history)
-    val dir = result.context.goe(Key.resultDir, "tmp")
+    val dir = result.context.goe(resultDir, "tmp")
     new File(dir).mkdir()
     val chartfile = new File(s"$dir/$fileNamePrefix$scopename.png")
     ChartUtilities.saveChartAsPNG(chartfile, chart, defaultChartWidth, defaultChartHeight)
@@ -38,6 +40,8 @@ case class ChartReporter(fileNamePrefix: String, drawer: ChartReporter.ChartFact
 
 
 object ChartReporter {
+
+  import Key._
 
   trait ChartFactory {
     /** Generates a chart for the given curve data, with the given history.
@@ -59,7 +63,7 @@ object ChartReporter {
         val renderer = new XYLineAndShapeRenderer()
 
         for ((curve, idx) <- cs.zipWithIndex) {
-          val series = new XYSeries(curve.context.goe(Key.curve, idx.toString), true, true)
+          val series = new XYSeries(curve.context.goe(dsl.curve, idx.toString), true, true)
           for (measurement <- curve.measurements) {
             series.add(measurement.params.axisData.head._2.asInstanceOf[Int], measurement.time)
           }
@@ -87,8 +91,8 @@ object ChartReporter {
         // fill the dataset
         for((curve, curveIndex) <- cs.zipWithIndex) {
 
-          val newestSeries = new YIntervalSeries(curve.context.goe(Key.curve, curveIndex.toString))
-          val historySeries = new YIntervalSeries(curve.context.goe(Key.curve, curveIndex.toString))
+          val newestSeries = new YIntervalSeries(curve.context.goe(dsl.curve, curveIndex.toString))
+          val historySeries = new YIntervalSeries(curve.context.goe(dsl.curve, curveIndex.toString))
 
           for((measurement, measurementIndex) <- curve.measurements.zipWithIndex) {
             // Fetch, for each corresponding curve in history, the measurement that was at the same position (same size for instance)

@@ -4,6 +4,7 @@ package collections
 
 
 import collection._
+import Key._
 
 
 
@@ -16,10 +17,10 @@ class SetBenchmarks extends PerformanceTest.Regression with Collections {
   performance of "Set" in {
 
     measure method "apply" configuration (
-      Key.minWarmupRuns -> 25,
-      Key.benchRuns -> 40,
-      Key.independentSamples -> 10,
-      Key.significance -> 1e-13
+      exec.minWarmupRuns -> 25,
+      exec.benchRuns -> 40,
+      exec.independentSamples -> 10,
+      reporting.regression.significance -> 1e-13
     ) in {
       val from = 50000
       val to = 500000
@@ -56,11 +57,11 @@ class SetBenchmarks extends PerformanceTest.Regression with Collections {
       }
 
       using(hashtriesets(from, to, by)) curve("immutable.HashSet") configuration (
-        Key.benchRuns -> 36,
-        Key.independentSamples -> 6,
-        Key.frequency -> 1,
-        Key.fullGC -> true,
-        Key.noiseMagnitude -> 1.0
+        exec.benchRuns -> 36,
+        exec.independentSamples -> 6,
+        exec.reinstantiation.frequency -> 1,
+        exec.reinstantiation.fullGC -> true,
+        exec.noise.magnitude -> 1.0
       ) in { xs =>
         var i = 0
         val sz = xs.size
@@ -84,10 +85,10 @@ class SetBenchmarks extends PerformanceTest.Regression with Collections {
     }
 
     measure method "add" configuration (
-      Key.minWarmupRuns -> 15,
-      Key.benchRuns -> 32,
-      Key.independentSamples -> 8,
-      Key.significance -> 1e-13
+      exec.minWarmupRuns -> 15,
+      exec.benchRuns -> 32,
+      exec.independentSamples -> 8,
+      reporting.regression.significance -> 1e-13
     ) in {
       val from = 100000
       val to = 750000
@@ -123,10 +124,10 @@ class SetBenchmarks extends PerformanceTest.Regression with Collections {
     }
 
     measure method "update" configuration (
-      Key.minWarmupRuns -> 15,
-      Key.benchRuns -> 32,
-      Key.independentSamples -> 8,
-      Key.significance -> 1e-13
+      exec.minWarmupRuns -> 15,
+      exec.benchRuns -> 32,
+      exec.independentSamples -> 8,
+      reporting.regression.significance -> 1e-13
     ) in {
       val from = 25000
       val to = 125000
@@ -145,9 +146,9 @@ class SetBenchmarks extends PerformanceTest.Regression with Collections {
       }
 
       using(sized(avlsets(from, to,  by))) curve("mutable.TreeSet") configuration (
-        Key.minWarmupRuns -> 6,
-        Key.benchRuns -> 30,
-        Key.independentSamples -> 4
+        exec.minWarmupRuns -> 6,
+        exec.benchRuns -> 30,
+        exec.independentSamples -> 4
       ) tearDown {
         case (sz, xs) => for (i <- 0 until (sz / 8)) xs.add(i)
       } in {
@@ -162,10 +163,10 @@ class SetBenchmarks extends PerformanceTest.Regression with Collections {
     }
 
     measure method "remove" configuration (
-      Key.minWarmupRuns -> 15,
-      Key.benchRuns -> 35,
-      Key.independentSamples -> 5,
-      Key.significance -> 1e-13
+      exec.minWarmupRuns -> 15,
+      exec.benchRuns -> 35,
+      exec.independentSamples -> 5,
+      reporting.regression.significance -> 1e-13
     ) in {
       val from = 50000
       val to = 500000
@@ -197,10 +198,10 @@ class SetBenchmarks extends PerformanceTest.Regression with Collections {
     }
 
     measure method "+" configuration (
-      Key.minWarmupRuns -> 15,
-      Key.benchRuns -> 35,
-      Key.independentSamples -> 5,
-      Key.significance -> 1e-13
+      exec.minWarmupRuns -> 15,
+      exec.benchRuns -> 35,
+      exec.independentSamples -> 5,
+      reporting.regression.significance -> 1e-13
     ) in {
       val from = 50000
       val to = 500000
@@ -227,11 +228,11 @@ class SetBenchmarks extends PerformanceTest.Regression with Collections {
     }
 
     measure method "-" configuration (
-      Key.minWarmupRuns -> 15,
-      Key.benchRuns -> 35,
-      Key.independentSamples -> 5,
-      Key.significance -> 1e-13,
-      Key.noiseMagnitude -> 0.5
+      exec.minWarmupRuns -> 15,
+      exec.benchRuns -> 35,
+      exec.independentSamples -> 5,
+      reporting.regression.significance -> 1e-13,
+      exec.noise.magnitude -> 0.5
     ) in {
       val from = 50000
       val to = 500000

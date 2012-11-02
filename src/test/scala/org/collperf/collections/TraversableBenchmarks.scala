@@ -4,6 +4,7 @@ package collections
 
 
 import collection._
+import Key._
 
 
 
@@ -16,9 +17,9 @@ class TraversableBenchmarks extends PerformanceTest.Regression with Collections 
   performance of "Traversable" in {
 
     measure method "foreach" configuration (
-      Key.benchRuns -> 36,
-      Key.independentSamples -> 9,
-      Key.significance -> 1e-13
+      exec.benchRuns -> 36,
+      exec.independentSamples -> 9,
+      reporting.regression.significance -> 1e-13
     ) in {
       val from = 1000000
       val to = 5000000
@@ -40,11 +41,11 @@ class TraversableBenchmarks extends PerformanceTest.Regression with Collections 
       }
 
       using(lists(from, to, by)) curve("List") configuration (
-        Key.benchRuns -> 32,
-        Key.independentSamples -> 4,
-        Key.fullGC -> true,
-        Key.frequency -> 5,
-        Key.noiseMagnitude -> 1.0
+        exec.benchRuns -> 32,
+        exec.independentSamples -> 4,
+        exec.reinstantiation.fullGC -> true,
+        exec.reinstantiation.frequency -> 5,
+        exec.noise.magnitude -> 1.0
       ) in { xs =>
         var sum = 0
         xs.foreach(sum += _)
@@ -58,9 +59,9 @@ class TraversableBenchmarks extends PerformanceTest.Regression with Collections 
     }
   
     measure method "reduce" configuration (
-      Key.benchRuns -> 36,
-      Key.independentSamples -> 9,
-      Key.significance -> 1e-13
+      exec.benchRuns -> 36,
+      exec.independentSamples -> 9,
+      reporting.regression.significance -> 1e-13
     ) in {
       val from = 500000
       val to = 5000000
@@ -79,11 +80,11 @@ class TraversableBenchmarks extends PerformanceTest.Regression with Collections 
       }
 
       using(lists(from, to, by)) curve("List") configuration (
-        Key.benchRuns -> 20,
-        Key.independentSamples -> 4,
-        Key.fullGC -> true,
-        Key.frequency -> 5,
-        Key.noiseMagnitude -> 1.0
+        exec.benchRuns -> 20,
+        exec.independentSamples -> 4,
+        exec.reinstantiation.fullGC -> true,
+        exec.reinstantiation.frequency -> 5,
+        exec.noise.magnitude -> 1.0
       ) in {
         _.reduce(_ + _)
       }
@@ -94,9 +95,9 @@ class TraversableBenchmarks extends PerformanceTest.Regression with Collections 
     }
     
     measure method "filter" configuration (
-      Key.benchRuns -> 36,
-      Key.significance -> 1e-13,
-      Key.independentSamples -> 9
+      exec.benchRuns -> 36,
+      reporting.regression.significance -> 1e-13,
+      exec.independentSamples -> 9
     ) in {
       val from = 500000
       val to = 2500000
@@ -115,11 +116,11 @@ class TraversableBenchmarks extends PerformanceTest.Regression with Collections 
       }
 
       using(lists(from, to, by)) curve("List") configuration (
-        Key.benchRuns -> 48,
-        Key.independentSamples -> 6,
-        Key.fullGC -> true,
-        Key.frequency -> 6,
-        Key.noiseMagnitude -> 1.0
+        exec.benchRuns -> 48,
+        exec.independentSamples -> 6,
+        exec.reinstantiation.fullGC -> true,
+        exec.reinstantiation.frequency -> 6,
+        exec.noise.magnitude -> 1.0
       ) in {
         _.filter(_ % 2 == 0)
       }
@@ -130,9 +131,9 @@ class TraversableBenchmarks extends PerformanceTest.Regression with Collections 
     }
 
     measure method "groupBy" configuration (
-      Key.benchRuns -> 36,
-      Key.significance -> 1e-13,
-      Key.independentSamples -> 9
+      exec.benchRuns -> 36,
+      reporting.regression.significance -> 1e-13,
+      exec.independentSamples -> 9
     ) in {
       val from = 100000
       val to = 2000000
@@ -151,13 +152,13 @@ class TraversableBenchmarks extends PerformanceTest.Regression with Collections 
       }
 
       using(lists(from, to, by)) curve("List") configuration (
-        Key.benchRuns -> 24,
-        Key.independentSamples -> 4,
-        Key.fullGC -> true,
-        Key.frequency -> 4,
-        Key.suspectPercent -> 50,
-        Key.covMultiplier -> 2.0,
-        Key.noiseMagnitude -> 1.0
+        exec.benchRuns -> 24,
+        exec.independentSamples -> 4,
+        exec.reinstantiation.fullGC -> true,
+        exec.reinstantiation.frequency -> 4,
+        exec.outliers.suspectPercent -> 50,
+        exec.outliers.covMultiplier -> 2.0,
+        exec.noise.magnitude -> 1.0
       ) in {
         _.groupBy(_ % 10)
       }
@@ -168,9 +169,9 @@ class TraversableBenchmarks extends PerformanceTest.Regression with Collections 
     }
 
     measure method "map" configuration (
-      Key.benchRuns -> 36,
-      Key.significance -> 1e-13,
-      Key.independentSamples -> 9
+      exec.benchRuns -> 36,
+      reporting.regression.significance -> 1e-13,
+      exec.independentSamples -> 9
     ) in {
       val from = 500000
       val to = 2000000
@@ -189,11 +190,11 @@ class TraversableBenchmarks extends PerformanceTest.Regression with Collections 
       }
 
       using(lists(from, to, by)) curve("List") configuration (
-        Key.benchRuns -> 48,
-        Key.independentSamples -> 6,
-        Key.fullGC -> true,
-        Key.frequency -> 6,
-        Key.noiseMagnitude -> 1.0
+        exec.benchRuns -> 48,
+        exec.independentSamples -> 6,
+        exec.reinstantiation.fullGC -> true,
+        exec.reinstantiation.frequency -> 6,
+        exec.noise.magnitude -> 1.0
       ) in {
         _.map(_ * 2)
       }
@@ -204,9 +205,9 @@ class TraversableBenchmarks extends PerformanceTest.Regression with Collections 
     }
 
     measure method "flatMap" configuration (
-      Key.benchRuns -> 36,
-      Key.significance -> 1e-13,
-      Key.independentSamples -> 9
+      exec.benchRuns -> 36,
+      reporting.regression.significance -> 1e-13,
+      exec.independentSamples -> 9
     ) in {
       val from = 250000
       val to = 1250000
@@ -226,11 +227,11 @@ class TraversableBenchmarks extends PerformanceTest.Regression with Collections 
       }
 
       using(lists(from, to, by)) curve("List") configuration (
-        Key.benchRuns -> 48,
-        Key.independentSamples -> 6,
-        Key.fullGC -> true,
-        Key.frequency -> 6,
-        Key.noiseMagnitude -> 1.0
+        exec.benchRuns -> 48,
+        exec.independentSamples -> 6,
+        exec.reinstantiation.fullGC -> true,
+        exec.reinstantiation.frequency -> 6,
+        exec.noise.magnitude -> 1.0
       ) in {
         _.flatMap(x => 0 until 2)
       }

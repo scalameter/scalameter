@@ -47,6 +47,8 @@ case class RegressionReporter(test: RegressionReporter.Tester, historian: Regres
 
 object RegressionReporter {
 
+  import Key._
+
   object ansi {
     val red = "\u001B[31m"
     val green = "\u001B[32m"
@@ -92,13 +94,13 @@ object RegressionReporter {
         }
         val (newentries, newindices) = pruned.unzip
 
-        History(newentries.toBuffer.reverse :+ newest, Map(Key.timeIndices -> (1L +: newindices.toBuffer)))
+        History(newentries.toBuffer.reverse :+ newest, Map(reporting.regression.timeIndices -> (1L +: newindices.toBuffer)))
       }
 
       def push(h: History, newest: History.Entry): History = {
         log.verbose("Pushing to history with info: " + h.infomap)
 
-        val indices = h.info[Seq[Long]](Key.timeIndices, (0 until h.results.length) map { 1L << _ })
+        val indices = h.info[Seq[Long]](reporting.regression.timeIndices, (0 until h.results.length) map { 1L << _ })
         val newhistory = push(h.results, indices, newest)
 
         log.verbose("New history info: " + newhistory.infomap)
@@ -135,7 +137,7 @@ object RegressionReporter {
       def apply(context: Context, curvedata: CurveData, corresponding: Seq[CurveData]): Boolean = {
         log(s"${ansi.green}- ${curvedata.context.curve} measurements:${ansi.reset}")
 
-        val significance = curvedata.context.goe(Key.significance, defaultSignificance)
+        val significance = curvedata.context.goe(reporting.regression.significance, defaultSignificance)
         val allmeasurements = (corresponding :+ curvedata) map (_.measurements)
         val measurementtable = allmeasurements.flatten.groupBy(_.params)
         val pointspassed = for {
@@ -208,7 +210,7 @@ object RegressionReporter {
       def apply(context: Context, curvedata: CurveData, corresponding: Seq[CurveData]): Boolean = {
         log(s"${ansi.green}- ${curvedata.context.curve} measurements:${ansi.reset}")
 
-        val significance = curvedata.context.goe(Key.significance, defaultSignificance)
+        val significance = curvedata.context.goe(reporting.regression.significance, defaultSignificance)
         val previousmeasurements = corresponding map (_.measurements)
         val measurementtable = previousmeasurements.flatten.groupBy(_.params)
         val pointspassed = for {

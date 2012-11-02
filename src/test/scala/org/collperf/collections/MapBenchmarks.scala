@@ -4,6 +4,7 @@ package collections
 
 
 import collection._
+import Key._
 
 
 
@@ -16,10 +17,10 @@ class MapBenchmarks extends PerformanceTest.Regression with Collections {
   performance of "Map" in {
 
     measure method "apply" configuration (
-      Key.minWarmupRuns -> 25,
-      Key.benchRuns -> 30,
-      Key.independentSamples -> 6,
-      Key.significance -> 1e-13
+      exec.minWarmupRuns -> 25,
+      exec.benchRuns -> 30,
+      exec.independentSamples -> 6,
+      reporting.regression.significance -> 1e-13
     ) in {
       val from = 50000
       val to = 500000
@@ -51,12 +52,12 @@ class MapBenchmarks extends PerformanceTest.Regression with Collections {
       }
 
       using(hashtriemaps(from, to, by)) curve("immutable.HashMap") configuration (
-        Key.benchRuns -> 48,
-        Key.independentSamples -> 6,
-        Key.frequency -> 2,
-        Key.fullGC -> true,
-        Key.noiseMagnitude -> 0.5,
-        Key.retries -> 16
+        exec.benchRuns -> 48,
+        exec.independentSamples -> 6,
+        exec.reinstantiation.frequency -> 2,
+        exec.reinstantiation.fullGC -> true,
+        exec.noise.magnitude -> 0.5,
+        exec.outliers.retries -> 16
       ) in { xs =>
         var i = 0
         var sum = 0
@@ -70,11 +71,11 @@ class MapBenchmarks extends PerformanceTest.Regression with Collections {
       }
 
       using(redblackmaps(from, to, by)) curve("immutable.TreeMap") configuration (
-        Key.benchRuns -> 128,
-        Key.independentSamples -> 6,
-        Key.frequency -> 2,
-        Key.fullGC -> true,
-        Key.noiseMagnitude -> 1.0
+        exec.benchRuns -> 128,
+        exec.independentSamples -> 6,
+        exec.reinstantiation.frequency -> 2,
+        exec.reinstantiation.fullGC -> true,
+        exec.noise.magnitude -> 1.0
       ) in { xs =>
         var i = 0
         var sum = 0
@@ -90,10 +91,10 @@ class MapBenchmarks extends PerformanceTest.Regression with Collections {
     }
 
     measure method "get" configuration (
-      Key.minWarmupRuns -> 25,
-      Key.benchRuns -> 30,
-      Key.independentSamples -> 6,
-      Key.significance -> 1e-13
+      exec.minWarmupRuns -> 25,
+      exec.benchRuns -> 30,
+      exec.independentSamples -> 6,
+      reporting.regression.significance -> 1e-13
     ) in {
       val from = 50000
       val to = 500000
@@ -120,13 +121,13 @@ class MapBenchmarks extends PerformanceTest.Regression with Collections {
       }
 
       using(hashtriemaps(from, to, by)) curve("immutable.HashMap") configuration (
-        Key.minWarmupRuns -> 20,
-        Key.benchRuns -> 48,
-        Key.independentSamples -> 6,
-        Key.frequency -> 2,
-        Key.fullGC -> true,
-        Key.noiseMagnitude -> 0.5,
-        Key.retries -> 16
+        exec.minWarmupRuns -> 20,
+        exec.benchRuns -> 48,
+        exec.independentSamples -> 6,
+        exec.reinstantiation.frequency -> 2,
+        exec.reinstantiation.fullGC -> true,
+        exec.noise.magnitude -> 0.5,
+        exec.outliers.retries -> 16
       ) in { xs =>
         var i = 0
         val sz = xs.size
@@ -138,11 +139,11 @@ class MapBenchmarks extends PerformanceTest.Regression with Collections {
       }
 
       using(redblackmaps(from, to, by)) curve("immutable.TreeMap") configuration (
-        Key.benchRuns -> 128,
-        Key.independentSamples -> 4,
-        Key.frequency -> 2,
-        Key.fullGC -> true,
-        Key.noiseMagnitude -> 1.0
+        exec.benchRuns -> 128,
+        exec.independentSamples -> 4,
+        exec.reinstantiation.frequency -> 2,
+        exec.reinstantiation.fullGC -> true,
+        exec.noise.magnitude -> 1.0
       ) in { xs =>
         var i = 0
         val sz = xs.size
@@ -156,12 +157,12 @@ class MapBenchmarks extends PerformanceTest.Regression with Collections {
     }
 
     measure method "update" configuration (
-      Key.minWarmupRuns -> 25,
-      Key.benchRuns -> 48,
-      Key.independentSamples -> 6,
-      Key.frequency -> 4,
-      Key.fullGC -> true,
-      Key.significance -> 1e-13
+      exec.minWarmupRuns -> 25,
+      exec.benchRuns -> 48,
+      exec.independentSamples -> 6,
+      exec.reinstantiation.frequency -> 4,
+      exec.reinstantiation.fullGC -> true,
+      reporting.regression.significance -> 1e-13
     ) in {
       val from = 50000
       val to = 500000
@@ -189,12 +190,12 @@ class MapBenchmarks extends PerformanceTest.Regression with Collections {
     }
 
     measure method "remove" configuration (
-      Key.minWarmupRuns -> 25,
-      Key.benchRuns -> 36,
-      Key.independentSamples -> 6,
-      Key.frequency -> 3,
-      Key.fullGC -> true,
-      Key.significance -> 1e-13
+      exec.minWarmupRuns -> 25,
+      exec.benchRuns -> 36,
+      exec.independentSamples -> 6,
+      exec.reinstantiation.frequency -> 3,
+      exec.reinstantiation.fullGC -> true,
+      reporting.regression.significance -> 1e-13
     ) in {
       val from = 50000
       val to = 500000
@@ -224,14 +225,14 @@ class MapBenchmarks extends PerformanceTest.Regression with Collections {
     }
 
     measure method "+" configuration (
-      Key.minWarmupRuns -> 10,
-      Key.benchRuns -> 30,
-      Key.independentSamples -> 6,
-      Key.significance -> 1e-13,
-      Key.frequency -> 2,
-      Key.fullGC -> true,
-      Key.covMultiplier -> 1.5,
-      Key.noiseMagnitude -> 0.5
+      exec.minWarmupRuns -> 10,
+      exec.benchRuns -> 30,
+      exec.independentSamples -> 6,
+      reporting.regression.significance -> 1e-13,
+      exec.reinstantiation.frequency -> 2,
+      exec.reinstantiation.fullGC -> true,
+      exec.outliers.covMultiplier -> 1.5,
+      exec.noise.magnitude -> 0.5
     ) in {
       val from = 50000
       val to = 300000
@@ -258,14 +259,14 @@ class MapBenchmarks extends PerformanceTest.Regression with Collections {
     }
 
     measure method "-" configuration (
-      Key.minWarmupRuns -> 10,
-      Key.benchRuns -> 30,
-      Key.independentSamples -> 6,
-      Key.significance -> 1e-13,
-      Key.frequency -> 2,
-      Key.fullGC -> true,
-      Key.covMultiplier -> 1.5,
-      Key.noiseMagnitude -> 0.5
+      exec.minWarmupRuns -> 10,
+      exec.benchRuns -> 30,
+      exec.independentSamples -> 6,
+      reporting.regression.significance -> 1e-13,
+      exec.reinstantiation.frequency -> 2,
+      exec.reinstantiation.fullGC -> true,
+      exec.outliers.covMultiplier -> 1.5,
+      exec.noise.magnitude -> 0.5
     ) in {
       val from = 50000
       val to = 300000

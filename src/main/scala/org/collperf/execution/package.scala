@@ -6,14 +6,15 @@ import java.io._
 import sys.process._
 import compat.Platform
 import utils.withGCNotification
+import Key._
 
 
 
 package object execution {
 
   case class Warmer(ctx: Context, setup: () => Any, teardown: () => Any) {
-    val minwarmups = ctx.goe(Key.minWarmupRuns, 10)
-    val maxwarmups = ctx.goe(Key.maxWarmupRuns, 50)
+    val minwarmups = ctx.goe(exec.minWarmupRuns, 10)
+    val maxwarmups = ctx.goe(exec.maxWarmupRuns, 50)
 
     def foreach[U](f: Int => U): Unit = {
       val withgc = new utils.SlidingWindow(minwarmups)

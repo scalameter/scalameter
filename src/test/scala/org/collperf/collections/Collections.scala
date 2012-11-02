@@ -4,6 +4,7 @@ package collections
 
 
 import collection._
+import Key._
 
 
 

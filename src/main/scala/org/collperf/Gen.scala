@@ -44,7 +44,7 @@ trait Gen[T] extends Serializable {
 object Gen {
 
   def unit: Gen[Unit] = new Gen[Unit] {
-    def axisName = Key.unit
+    def axisName = Key.gen.unit
     def warmupset = Iterator.single(unit)
     def dataset = Iterator.single(Parameters(axisName -> ()))
     def generate(params: Parameters) = params[Unit](axisName)

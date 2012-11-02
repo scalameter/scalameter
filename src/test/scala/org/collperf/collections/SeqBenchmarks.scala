@@ -4,6 +4,7 @@ package collections
 
 
 import collection._
+import Key._
 
 
 
@@ -16,9 +17,9 @@ class SeqBenchmarks extends PerformanceTest.Regression with Collections {
   performance of "Seq" in {
 
     measure method "apply" configuration (
-      Key.benchRuns -> 36,
-      Key.independentSamples -> 9,
-      Key.significance -> 1e-13
+      exec.benchRuns -> 36,
+      exec.independentSamples -> 9,
+      reporting.regression.significance -> 1e-13
     ) in {
       val from = 1000000
       val to = 5000000
@@ -76,9 +77,9 @@ class SeqBenchmarks extends PerformanceTest.Regression with Collections {
     }
 
     measure method "update" configuration (
-      Key.benchRuns -> 36,
-      Key.independentSamples -> 9,
-      Key.significance -> 1e-13
+      exec.benchRuns -> 36,
+      exec.independentSamples -> 9,
+      reporting.regression.significance -> 1e-13
     ) in {
       val from = 1000000
       val to = 5000000
@@ -112,20 +113,20 @@ class SeqBenchmarks extends PerformanceTest.Regression with Collections {
     }
 
     measure method "append" configuration (
-      Key.benchRuns -> 36,
-      Key.independentSamples -> 9,
-      Key.significance -> 1e-13
+      exec.benchRuns -> 36,
+      exec.independentSamples -> 9,
+      reporting.regression.significance -> 1e-13
     ) in {
       val from = 200000
       val to = 2200000
       val by = 400000
 
       using(sizes(from, to, by)) curve("Vector") configuration (
-        Key.benchRuns -> 32,
-        Key.independentSamples -> 4,
-        Key.suspectPercent -> 66,
-        Key.covMultiplier -> 1.4,
-        Key.noiseMagnitude -> 1.0
+        exec.benchRuns -> 32,
+        exec.independentSamples -> 4,
+        exec.outliers.suspectPercent -> 66,
+        exec.outliers.covMultiplier -> 1.4,
+        exec.noise.magnitude -> 1.0
       ) in { len =>
         var i = 0
         var vector = Vector.empty[Int]
@@ -138,20 +139,20 @@ class SeqBenchmarks extends PerformanceTest.Regression with Collections {
     }
 
     measure method "prepend" configuration (
-      Key.benchRuns -> 36,
-      Key.independentSamples -> 9,
-      Key.significance -> 1e-13
+      exec.benchRuns -> 36,
+      exec.independentSamples -> 9,
+      reporting.regression.significance -> 1e-13
     ) in {
       val from = 200000
       val to = 2200000
       val by = 400000
 
       using(sizes(from, to, by)) curve("Vector") configuration (
-        Key.benchRuns -> 32,
-        Key.independentSamples -> 4,
-        Key.suspectPercent -> 66,
-        Key.covMultiplier -> 1.4,
-        Key.noiseMagnitude -> 1.0
+        exec.benchRuns -> 32,
+        exec.independentSamples -> 4,
+        exec.outliers.suspectPercent -> 66,
+        exec.outliers.covMultiplier -> 1.4,
+        exec.noise.magnitude -> 1.0
       ) in { len =>
         var i = 0
         var vector = Vector.empty[Int]
@@ -173,9 +174,9 @@ class SeqBenchmarks extends PerformanceTest.Regression with Collections {
     }
 
     measure method "sorted" configuration (
-      Key.benchRuns -> 36,
-      Key.independentSamples -> 9,
-      Key.significance -> 1e-13
+      exec.benchRuns -> 36,
+      exec.independentSamples -> 9,
+      reporting.regression.significance -> 1e-13
     ) in {
       val from = 800000
       val to = 4000000
@@ -190,11 +191,11 @@ class SeqBenchmarks extends PerformanceTest.Regression with Collections {
       }
 
       using(lists(from, to, by)) curve("List") configuration (
-        Key.benchRuns -> 32,
-        Key.independentSamples -> 4,
-        Key.suspectPercent -> 50,
-        Key.covMultiplier -> 1.6,
-        Key.noiseMagnitude -> 1.0
+        exec.benchRuns -> 32,
+        exec.independentSamples -> 4,
+        exec.outliers.suspectPercent -> 50,
+        exec.outliers.covMultiplier -> 1.6,
+        exec.noise.magnitude -> 1.0
       ) in {
         _.sorted
       }

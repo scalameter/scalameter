@@ -17,6 +17,8 @@ trait Executor {
 
 object Executor {
 
+  import Key._
+
   trait Factory[E <: Executor] {
     def apply(aggregator: Aggregator, m: Measurer): E
 
@@ -131,19 +133,21 @@ object Executor {
     }
 
     /** A mixin measurer which causes the value for the benchmark to be reinstantiated
-     *  every `Key.frequency` measurements.
-     *  Before the new value has been instantiated, a full GC cycle is invoked if `Key.fullGC` is `true`.
+     *  every `Key.exec.reinstantiation.frequency` measurements.
+     *  Before the new value has been instantiated, a full GC cycle is invoked if `Key.exec.reinstantiation.fullGC` is `true`.
      */
     trait PeriodicReinstantiation extends IterationBasedValue {
+      import exec.reinstantiation._
+
       abstract override def name = s"${super.name}+PeriodicReinstantiation"
 
       protected override def valueAt[T](context: Context, iteration: Int, regen: () => T, v: T) = {
-        val frequency = context.goe(Key.frequency, 10)
-        val fullGC = context.goe(Key.fullGC, false)
+        val freq = context.goe(frequency, 10)
+        val fullgc = context.goe(fullGC, false)
 
-        if ((iteration + 1) % frequency == 0) {
+        if ((iteration + 1) % freq == 0) {
           log.verbose("Reinstantiating benchmark value.")
-          if (fullGC) Platform.collectGarbage()
+          if (fullgc) Platform.collectGarbage()
           val nv = regen()
           nv
         } else v
@@ -154,8 +158,8 @@ object Executor {
      *  Outlier elimination can also eliminate some pretty bad allocation patterns in some cases.
      *  Only outliers from above are considered.
      *
-     *  When detecting an outlier, up to `Key.suspectPercent`% (with a minimum of `1`) of worst times will be considered.
-     *  For example, given `Key.suspectPercent = 25` the times:
+     *  When detecting an outlier, up to `Key.exec.outliers.suspectPercent`% (with a minimum of `1`) of worst times will be considered.
+     *  For example, given `Key.exec.outliers.suspectPercent = 25` the times:
      *
      *  {{{
      *      10, 11, 10, 12, 11, 11, 10, 11, 44
@@ -171,9 +175,11 @@ object Executor {
      *  
      *  the time `55` will be considered for outlier elimination.
      *
-     *  A potential outlier (suffix) is removed if removing it increases the coefficient of variance by at least `Key.covMultiplier` times.
+     *  A potential outlier (suffix) is removed if removing it increases the coefficient of variance by at least `Key.exec.outliers.covMultiplier` times.
      */
     trait OutlierElimination extends Measurer {
+
+      import exec.outliers._
 
       abstract override def name = s"${super.name}+OutlierElimination"
 
@@ -181,10 +187,10 @@ object Executor {
         import utils.Statistics._
 
         var results = super.measure(context, measurements, setup, tear, regen, snippet).sorted
-        val suspectPercent = context.goe(Key.suspectPercent, 25)
-        val covmult = context.goe(Key.covMultiplier, 2.0)
-        val suspectnum = math.max(1, results.length * suspectPercent / 100)
-        var retries = context.goe(Key.retries, 8)
+        val suspectp = context.goe(suspectPercent, 25)
+        val covmult = context.goe(covMultiplier, 2.0)
+        val suspectnum = math.max(1, results.length * suspectp / 100)
+        var retleft = context.goe(retries, 8)
 
         def outlierSuffixLength(rs: Seq[Long]): Int = {
           var minlen = 1
@@ -203,12 +209,12 @@ object Executor {
         def outlierExists(rs: Seq[Long]) = outlierSuffixLength(rs) > 0
 
         var best = results
-        while (outlierExists(results) && retries > 0) {
+        while (outlierExists(results) && retleft > 0) {
           val suffixlen = outlierSuffixLength(results)
           log.verbose(s"Detected $suffixlen outlier(s): ${results.mkString(", ")}")
           results = (results.dropRight(suffixlen) ++ super.measure(context, suffixlen, setup, tear, regen, snippet)).sorted
           if (CoV(results) < CoV(best)) best = results
-          retries -= 1
+          retleft -= 1
         }
 
         log.verbose("After outlier elimination: " + best.mkString(", "))
@@ -225,12 +231,14 @@ object Executor {
      */
     trait Noise extends Measurer {
 
+      import exec.noise._
+
       def noiseFunction(observations: Seq[Long], magnitude: Double): Long => Double
 
       abstract override def measure[T, U](context: Context, measurements: Int, setup: T => Any, tear: T => Any, regen: () => T, snippet: T => Any): Seq[Long] = {
         val observations = super.measure(context, measurements, setup, tear, regen, snippet)
-        val magnitude = context.goe(Key.noiseMagnitude, 0.0)
-        val noise = noiseFunction(observations, magnitude)
+        val magni = context.goe(magnitude, 0.0)
+        val noise = noiseFunction(observations, magni)
         val withnoise = observations map {
           x => (x + noise(x)).toLong
         }
