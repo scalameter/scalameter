@@ -69,7 +69,7 @@ class MapBenchmarks extends PerformanceTest.Regression with Collections {
         sideeffect = sum
       }
 
-      using(treemaps(from, to, by)) curve("immutable.TreeMap") configuration (
+      using(redblackmaps(from, to, by)) curve("immutable.TreeMap") configuration (
         Key.benchRuns -> 128,
         Key.independentSamples -> 6,
         Key.frequency -> 2,
@@ -137,7 +137,7 @@ class MapBenchmarks extends PerformanceTest.Regression with Collections {
         }
       }
 
-      using(treemaps(from, to, by)) curve("immutable.TreeMap") configuration (
+      using(redblackmaps(from, to, by)) curve("immutable.TreeMap") configuration (
         Key.benchRuns -> 128,
         Key.independentSamples -> 4,
         Key.frequency -> 2,
@@ -281,7 +281,7 @@ class MapBenchmarks extends PerformanceTest.Regression with Collections {
         }
       }
 
-      using(treemaps(from, to, by)) curve("immutable.TreeMap") in { xs =>
+      using(redblackmaps(from, to, by)) curve("immutable.TreeMap") in { xs =>
         var i = 0
         var tm = xs
         val sz = xs.size
