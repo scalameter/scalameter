@@ -9,6 +9,7 @@ import org.jfree.chart._
 import collection._
 import xml._
 import utils.Tree
+import Key._
 
 
 
@@ -53,8 +54,8 @@ case class HtmlReporter(val renderers: HtmlReporter.Renderer*) extends Reporter 
 
   def date(results: Tree[CurveData]) = {
     val dateoption = for {
-      start <- results.context.get[Date](Key.startDate)
-      end <- results.context.get[Date](Key.endDate)
+      start <- results.context.get[Date](reporting.startDate)
+      end <- results.context.get[Date](reporting.endDate)
     } yield <div>
       <div>Started: {start}</div>
       <div>Finished: {end}</div>
@@ -64,7 +65,7 @@ case class HtmlReporter(val renderers: HtmlReporter.Renderer*) extends Reporter 
   }
   
   def report(results: Tree[CurveData], persistor: Persistor) {
-    val resultdir = results.context.goe(Key.resultDir, "tmp")
+    val resultdir = results.context.goe(reporting.resultDir, "tmp")
 
     new File(s"$resultdir").mkdir()
     new File(s"$resultdir${sep}report").mkdir()
@@ -107,14 +108,16 @@ object HtmlReporter {
   }
 
   object Renderer {
-    def all = Seq(Info(), BigO(), Chart(ChartReporter.ChartFactory.XYLine()))
+    def regression = Seq(Info(), Chart(ChartReporter.ChartFactory.XYLine()))
+
+    def basic = Seq(Info(), BigO(), Chart(ChartReporter.ChartFactory.XYLine()))
 
     case class Info() extends Renderer {
       def render(context: Context, curves: Seq[CurveData], h: History): Node = 
       <div>Info:
       <ul>
-      <li>Number of runs: {context.goe(Key.benchRuns, "")}</li>
-      <li>Executor: {context.goe(Key.executor, "")}</li>
+      <li>Number of runs: {context.goe(exec.benchRuns, "")}</li>
+      <li>Executor: {context.goe(dsl.executor, "")}</li>
       </ul>
       </div>
     }
@@ -125,7 +128,7 @@ object HtmlReporter {
       <ul>
       {
         for (cd <- curves) yield <li>
-        {cd.context.goe(Key.curve, "")}: {cd.context.goe(Key.bigO, "(no data)")}
+        {cd.context.goe(dsl.curve, "")}: {cd.context.goe(reporting.bigO, "(no data)")}
         </li>
       }
       </ul>
@@ -134,7 +137,7 @@ object HtmlReporter {
 
     case class Chart(factory: ChartReporter.ChartFactory) extends Renderer {
       def render(context: Context, curves: Seq[CurveData], h: History): Node = {
-        val resultdir = context.goe(Key.resultDir, "tmp")
+        val resultdir = context.goe(reporting.resultDir, "tmp")
         val scopename = context.scope
         val chart = factory.createChart(scopename, curves, h)
         val chartfile = new File(s"$resultdir${File.separator}report${File.separator}images${File.separator}$scopename.png")

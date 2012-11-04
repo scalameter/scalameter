@@ -31,6 +31,8 @@ object Main {
 
   object Configuration extends JavaTokenParsers {
 
+    import Key._
+
     def fromCommandLineArgs(args: Array[String]) = {
       def arguments: Parser[Configuration] = rep(arg) ^^ {
         case configs => configs.foldLeft(Configuration(Nil, Context.empty)) {
@@ -47,11 +49,12 @@ object Main {
         case names => Configuration(names, Context.empty)
       }
       def intsetting: Parser[Configuration] = "-" ~ ident ~ decimalNumber ^^ {
-        case _ ~ "Cwarmups" ~ num => Configuration(Nil, Context(Key.warmupRuns -> num.toInt))
-        case _ ~ "Cruns" ~ num => Configuration(Nil, Context(Key.benchRuns -> num.toInt))
+        case _ ~ "Cminwarmups" ~ num => Configuration(Nil, Context(exec.minWarmupRuns -> num.toInt))
+        case _ ~ "Cmaxwarmups" ~ num => Configuration(Nil, Context(exec.maxWarmupRuns -> num.toInt))
+        case _ ~ "Cruns" ~ num => Configuration(Nil, Context(exec.benchRuns -> num.toInt))
       }
       def stringsetting: Parser[Configuration] = "-" ~ ident ~ ident ^^ {
-        case _ ~ "Cresultdir" ~ s => Configuration(Nil, Context(Key.resultDir -> s))
+        case _ ~ "Cresultdir" ~ s => Configuration(Nil, Context(reporting.resultDir -> s))
       }
       def flag: Parser[Configuration] = "-" ~ ident ^^ {
         case _ ~ "verbose" => Configuration(Nil, Context(Key.verbose -> true))

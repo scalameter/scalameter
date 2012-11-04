@@ -8,6 +8,10 @@ import utils.Tree
 
 
 
+/** Runs a separate JVM instance per setup (i.e. per one curve).
+ *
+ *  Each separate JVM instance then uses the `LocalExecutor` to run the test.
+ */
 class JvmPerSetupExecutor(val aggregator: Aggregator, val measurer: Executor.Measurer) extends Executor {
 
   val runner = new JvmRunner

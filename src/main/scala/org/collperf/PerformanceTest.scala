@@ -45,11 +45,7 @@ object PerformanceTest {
 
     trait Regression extends PerformanceTest {
       lazy val aggregator = Aggregator.complete(Aggregator.average)
-      lazy val measurer = new Measurer.IgnoringGC with Measurer.PeriodicReinstantiation with Measurer.OutlierElimination {
-        def frequency = 10
-        def fullGC = false
-        def suspectPercent = 25
-      }
+      lazy val measurer = new Measurer.IgnoringGC with Measurer.PeriodicReinstantiation with Measurer.OutlierElimination with Measurer.RelativeNoise
       lazy val executor = new execution.MultipleJvmPerSetupExecutor(aggregator, measurer)
     }
 
@@ -67,13 +63,13 @@ object PerformanceTest {
     }
 
     trait Html extends PerformanceTest {
-      lazy val reporter = new HtmlReporter(HtmlReporter.Renderer.all: _*)
+      lazy val reporter = new HtmlReporter(HtmlReporter.Renderer.basic: _*)
     }
 
     trait Regression extends PerformanceTest {
       lazy val reporter = org.collperf.Reporter.Composite(
-        RegressionReporter(RegressionReporter.Tester.ConfidenceIntervals(0.02), RegressionReporter.Historian.Default()),
-        new HtmlReporter(HtmlReporter.Renderer.all: _*)
+        RegressionReporter(RegressionReporter.Tester.ConfidenceIntervals(0.02), RegressionReporter.Historian.ExponentialBackoff()),
+        new HtmlReporter(HtmlReporter.Renderer.regression: _*)
       )
     }
 

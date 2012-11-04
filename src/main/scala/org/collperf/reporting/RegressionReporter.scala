@@ -19,14 +19,17 @@ case class RegressionReporter(test: RegressionReporter.Tester, historian: Regres
     val oks = for {
       (context, curves) <- results.scopes
       if curves.nonEmpty
-      _ = log(s"${ansi.green}Test group: ${context.scope}${ansi.reset}")
       history = persistor.load(context)
       curvetable = history.results.map(_._3).flatten.groupBy(_.context.curve)
     } yield {
+      log(s"${ansi.green}Test group: ${context.scope}${ansi.reset}")
+
       val curvespassed = for (curvedata <- curves) yield {
         val corresponding = curvetable.getOrElse(curvedata.context.curve, Seq(curvedata))
         test(context, curvedata, corresponding)
       }
+
+      log("")
 
       val allpassed = curvespassed.forall(_ == true)
       if (allpassed) historian.persist(persistor, context, history, curves)
@@ -44,6 +47,8 @@ case class RegressionReporter(test: RegressionReporter.Tester, historian: Regres
 
 object RegressionReporter {
 
+  import Key._
+
   object ansi {
     val red = "\u001B[31m"
     val green = "\u001B[32m"
@@ -57,9 +62,54 @@ object RegressionReporter {
 
   object Historian {
 
-    case class Default() extends Historian {
+    case class Complete() extends Historian {
       def persist(p: Persistor, ctx: Context, h: History, newest: Seq[CurveData]) {
         val newhistory = History(h.results :+ ((new Date, ctx, newest)))
+        p.save(ctx, newhistory)
+      }
+    }
+
+    case class Window(size: Int) extends Historian {
+      def persist(p: Persistor, ctx: Context, h: History, newest: Seq[CurveData]) {
+        val newseries = h.results :+ ((new Date, ctx, newest))
+        val prunedhistory = History(newseries.takeRight(size))
+        p.save(ctx, prunedhistory)
+      }
+    }
+
+    case class ExponentialBackoff() extends Historian {
+
+      def push(series: Seq[History.Entry], indices: Seq[Long], newest: History.Entry): History = {
+        val entries = series.reverse zip indices
+        val sizes = Stream.from(0).map(1L << _).scanLeft(0L)(_ + _)
+        val buckets = sizes zip sizes.tail
+        val bucketed = buckets map {
+          case (from, to) => entries filter {
+            case (_, idx) => from < idx && idx <= to
+          }
+        }
+        val pruned = bucketed takeWhile { _.nonEmpty } map { elems =>
+          val (last, lastidx) = elems.last
+          (last, lastidx + 1)
+        }
+        val (newentries, newindices) = pruned.unzip
+
+        History(newentries.toBuffer.reverse :+ newest, Map(reporting.regression.timeIndices -> (1L +: newindices.toBuffer)))
+      }
+
+      def push(h: History, newest: History.Entry): History = {
+        log.verbose("Pushing to history with info: " + h.infomap)
+
+        val indices = h.info[Seq[Long]](reporting.regression.timeIndices, (0 until h.results.length) map { 1L << _ })
+        val newhistory = push(h.results, indices, newest)
+
+        log.verbose("New history info: " + newhistory.infomap)
+
+        newhistory
+      }
+
+      def persist(p: Persistor, ctx: Context, h: History, newest: Seq[CurveData]) {
+        val newhistory = push(h, (new Date, ctx, newest))
         p.save(ctx, newhistory)
       }
     }
@@ -87,7 +137,7 @@ object RegressionReporter {
       def apply(context: Context, curvedata: CurveData, corresponding: Seq[CurveData]): Boolean = {
         log(s"${ansi.green}- ${curvedata.context.curve} measurements:${ansi.reset}")
 
-        val significance = curvedata.context.goe(Key.significance, defaultSignificance)
+        val significance = curvedata.context.goe(reporting.regression.significance, defaultSignificance)
         val allmeasurements = (corresponding :+ curvedata) map (_.measurements)
         val measurementtable = allmeasurements.flatten.groupBy(_.params)
         val pointspassed = for {
@@ -121,12 +171,12 @@ object RegressionReporter {
       }
     }
 
-    case class ConfidenceIntervals(defaultSignificance: Double, logging: Boolean = true) extends Tester with Logging {
+    case class ConfidenceIntervals(defaultSignificance: Double, strict: Boolean = false, logging: Boolean = true) extends Tester with Logging {
       def cistr(ci: (Double, Double)) = f"<${ci._1}%.2f, ${ci._2}%.2f>"
 
       def single(previous: Measurement, latest: Measurement, sig: Double): (Boolean, String) = {
         try {
-          val citest = ConfidenceIntervalTest(previous.complete, latest.complete, sig)
+          val citest = ConfidenceIntervalTest(strict, previous.complete, latest.complete, sig)
           
           if (!citest) {
             val color = ansi.red
@@ -160,7 +210,7 @@ object RegressionReporter {
       def apply(context: Context, curvedata: CurveData, corresponding: Seq[CurveData]): Boolean = {
         log(s"${ansi.green}- ${curvedata.context.curve} measurements:${ansi.reset}")
 
-        val significance = curvedata.context.goe(Key.significance, defaultSignificance)
+        val significance = curvedata.context.goe(reporting.regression.significance, defaultSignificance)
         val previousmeasurements = corresponding map (_.measurements)
         val measurementtable = previousmeasurements.flatten.groupBy(_.params)
         val pointspassed = for {

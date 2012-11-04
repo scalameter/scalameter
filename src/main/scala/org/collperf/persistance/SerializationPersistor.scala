@@ -6,6 +6,7 @@ package persistance
 import java.util.Date
 import java.io._
 import collection._
+import Key.reporting._
 
 
 
@@ -13,7 +14,7 @@ case class SerializationPersistor(path: File) extends Persistor {
 
   def this(path: String) = this(new File(path))
 
-  def this() = this(initialContext.goe(Key.resultDir, ""))
+  def this() = this(initialContext.goe(resultDir, ""))
 
   def sep = File.separator
 
@@ -45,13 +46,13 @@ case class SerializationPersistor(path: File) extends Persistor {
 
   def load(context: Context): History = {
     val scope = context.scope
-    val resultdir = context.goe(Key.resultDir, "tmp")
+    val resultdir = context.goe(resultDir, "tmp")
     loadHistory(resultdir, scope)
   }
 
   def save(context: Context, h: History) {
     val scope = context.scope
-    val resultdir = context.goe(Key.resultDir, "tmp")
+    val resultdir = context.goe(resultDir, "tmp")
     saveHistory(resultdir, scope, h)
   }
 }

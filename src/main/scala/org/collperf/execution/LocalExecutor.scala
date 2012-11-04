@@ -28,13 +28,16 @@ import utils.Tree
  */
 class LocalExecutor(val aggregator: Aggregator, val measurer: Executor.Measurer) extends Executor {
 
+  import Key._
+
   def run[T](setups: Tree[Setup[T]]) = {
     // run all warmups for classloading purposes
     for (bench <- setups) {
       import bench._
       for (x <- gen.warmupset) {
-        val warmups = context.goe(Key.warmupRuns, 10)
-        for (_ <- Warmer(warmups, setupFor(x), teardownFor(x))) snippet(x)
+        val warmups = context.goe(exec.maxWarmupRuns, 10)
+        customwarmup.map(_())
+        for (_ <- Warmer(context, setupFor(x), teardownFor(x))) snippet(x)
       }
     }
 
@@ -47,16 +50,16 @@ class LocalExecutor(val aggregator: Aggregator, val measurer: Executor.Measurer)
   private[execution] def runSetup[T](bsetup: Setup[T]): CurveData = {
     import bsetup._
 
-    log.verbose(s"Running test set for ${bsetup.context.scope}, curve ${bsetup.context.goe(Key.curve, "")}")
+    log.verbose(s"Running test set for ${bsetup.context.scope}, curve ${bsetup.context.goe(dsl.curve, "")}")
 
     // run warm up
-    val warmups = context.goe(Key.warmupRuns, 10)
+    val warmups = context.goe(exec.maxWarmupRuns, 10)
     customwarmup match {
       case Some(warmup) =>
         for (i <- 0 until warmups) warmup()
       case _ =>
         for (x <- gen.warmupset) {
-          for (i <- Warmer(warmups, setupFor(x), teardownFor(x))) snippet(x)
+          for (i <- Warmer(context, setupFor(x), teardownFor(x))) snippet(x)
         }
     }
 
@@ -65,14 +68,14 @@ class LocalExecutor(val aggregator: Aggregator, val measurer: Executor.Measurer)
 
     // run tests
     val measurements = new mutable.ArrayBuffer[Measurement]()
-    val repetitions = context.goe(Key.benchRuns, 10)
+    val repetitions = context.goe(exec.benchRuns, 10)
     for (params <- gen.dataset) {
       val set = setupFor()
       val tear = teardownFor()
       val regen = regenerateFor(params)
 
       log.verbose(s"$repetitions repetitions of the snippet starting.")
-      val times = measurer.measure(repetitions, set, tear, regen, snippet)
+      val times = measurer.measure(context, repetitions, set, tear, regen, snippet)
       log.verbose("Repetitions ended.")
 
       val processedTime = aggregator(times)

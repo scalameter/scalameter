@@ -46,9 +46,11 @@ object Statistics {
 
 	/** Compares two alternative sets of measurements given a significance level `alpha`.
 	 *  
-	 *  @return      returns `true` if there is no statistical difference for s.l. `alpha`
+	 *  @param strict   if `true`, the confidence interval test is strict - the confidence interval overlap
+	 *                  of the alternatives will not be additionally compared
+	 *  @return         returns `true` if there is no statistical difference for s.l. `alpha`
 	 */
-	case class ConfidenceIntervalTest(alt1: Seq[Long], alt2: Seq[Long], alpha: Double) extends Test {
+	case class ConfidenceIntervalTest(strict: Boolean, alt1: Seq[Long], alt2: Seq[Long], alpha: Double) extends Test {
 		val m1 = mean(alt1)
 		val m2 = mean(alt2)
 		val s1 = stdev(alt1)
@@ -77,7 +79,7 @@ object Statistics {
     /** If 0 is within the confidence interval of the mean difference, or confidence intervals overlap,
      *  we conclude that there is no statiscal difference between the two alternatives.
      */
-		def passed = relaxedPassed
+		def passed = if (strict) strictPassed else relaxedPassed
 	}
 
 	/** Computes sum-of-squares due to differences between alternatives. */
@@ -145,6 +147,8 @@ object Statistics {
 		val squaresum: Double = seq.foldLeft(0.0)((sum, xi) => sum + (xi - xbar) * (xi - xbar))
 		sqrt(squaresum / (seq.length - 1))
 	}
+
+	def clamp(x: Double, below: Double, above: Double) = math.max(below, math.min(above, x))
 
 	/** Quantile function for the Student's t distribution.
 	 *  Let 0 < p < 1. The p-th quantile of the cumulative distribution function F(x) is defined as

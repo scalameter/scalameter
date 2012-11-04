@@ -14,7 +14,7 @@ package object collperf {
 
   /* decorators */
 
-  implicit def fun2ops(f: Seq[Long] => Long) = new {
+  implicit def fun2ops(f: Seq[Long] => Double) = new {
     def toAggregator(n: String) = {
       val function = f
       new Aggregator {
@@ -72,33 +72,7 @@ package object collperf {
 
 package collperf {
 
-  object Key {
-    val curve = "curve"
-    val scope = "scope"
-    val executor = "executor"
-
-    val jvmVersion = "jvm-version"
-    val jvmVendor = "jvm-vendor"
-    val jvmName = "jvm-name"
-    val osName = "os-name"
-    val osArch = "os-arch"
-    val cores = "cores"
-    val hostname = "hostname"
-
-    val startDate = "date-start"
-    val endDate = "date-end"
-
-    val benchRuns = "runs"
-    val warmupRuns = "warmups"
-    val verbose = "verbose"
-    val resultDir = "result-dir"
-    val significance = "significance"
-    val independentSamples = "independent-samples"
-
-    val bigO = "big-o"
-
-    val unit = "unit"
-  }
+  import Key._
 
   case class Context(properties: immutable.Map[String, Any]) {
     def +(t: (String, Any)) = Context(properties + t)
@@ -106,8 +80,8 @@ package collperf {
     def get[T](key: String) = properties.get(key).asInstanceOf[Option[T]]
     def goe[T](key: String, v: T) = properties.getOrElse(key, v).asInstanceOf[T]
 
-    def scope = properties(Key.scope).asInstanceOf[List[String]].reverse.mkString(".")
-    def curve = goe(Key.curve, "")
+    def scope = properties(dsl.scope).asInstanceOf[List[String]].reverse.mkString(".")
+    def curve = goe(dsl.curve, "")
   }
 
   object Context {
@@ -115,16 +89,16 @@ package collperf {
 
     val empty = new Context(immutable.Map())
 
-    val topLevel = machine + (Key.scope -> Nil)
+    val topLevel = machine + (dsl.scope -> Nil) + (exec.benchRuns -> 36) + (exec.minWarmupRuns -> 10) + (exec.maxWarmupRuns -> 50)
 
     def machine = Context(immutable.Map(
-      Key.jvmVersion -> sys.props("java.vm.version"),
-      Key.jvmVendor -> sys.props("java.vm.vendor"),
-      Key.jvmName -> sys.props("java.vm.name"),
-      Key.osName -> sys.props("os.name"),
-      Key.osArch -> sys.props("os.arch"),
-      Key.cores -> Runtime.getRuntime.availableProcessors,
-      Key.hostname -> java.net.InetAddress.getLocalHost.getHostName
+      Key.machine.jvmVersion -> sys.props("java.vm.version"),
+      Key.machine.jvmVendor -> sys.props("java.vm.vendor"),
+      Key.machine.jvmName -> sys.props("java.vm.name"),
+      Key.machine.osName -> sys.props("os.name"),
+      Key.machine.osArch -> sys.props("os.arch"),
+      Key.machine.cores -> Runtime.getRuntime.availableProcessors,
+      Key.machine.hostname -> java.net.InetAddress.getLocalHost.getHostName
     ))
   }
 
@@ -143,7 +117,7 @@ package collperf {
   }
 
   @SerialVersionUID(-2541697615491239986L)
-  case class Measurement(time: Long, params: Parameters, data: Option[Any]) {
+  case class Measurement(time: Double, params: Parameters, data: Option[Any]) {
     def complete: Seq[Long] = data.get.asInstanceOf[Seq[Long]]
   }
 
@@ -153,7 +127,16 @@ package collperf {
 
   case class CurveData(measurements: Seq[Measurement], info: Map[String, Any], context: Context)
 
-  case class History(results: Seq[(Date, Context, Seq[CurveData])])
+  @SerialVersionUID(-2666789428423525666L)
+  case class History(results: Seq[History.Entry], infomap: Map[String, Any] = Map.empty) {
+    def info[T](key: String, fallback: T) = infomap.getOrElse(key, fallback).asInstanceOf[T]
+
+    override def toString = s"History(${results.mkString("\n")},\ninfo: $infomap)"
+  }
+
+  object History {
+    type Entry = (Date, Context, Seq[CurveData])
+  }
 
   case class Setup[T](context: Context, gen: Gen[T], setup: Option[T => Any], teardown: Option[T => Any], customwarmup: Option[() => Any], snippet: T => Any) {
     def setupFor(v: T) = if (setup.isEmpty) { () => } else { () => setup.get(v) }
@@ -163,33 +146,33 @@ package collperf {
     def regenerateFor(params: Parameters): () => T = () => gen.generate(params)
   }
 
-  trait Aggregator extends (Seq[Long] => Long) with Serializable {
+  trait Aggregator extends (Seq[Long] => Double) with Serializable {
     def name: String
-    def apply(times: Seq[Long]): Long
+    def apply(times: Seq[Long]): Double
     def data(times: Seq[Long]): Option[Any]
   }
 
   object Aggregator {
     
-    case class Statistic(min: Long, max: Long, average: Long, stdev: Long, median: Long)
+    case class Statistic(min: Double, max: Double, average: Double, stdev: Double, median: Double)
 
     def min = {
-      xs: Seq[Long] => xs.min
+      xs: Seq[Long] => xs.min.toDouble
     } toAggregator "min"
 
     def max = {
-      xs: Seq[Long] => xs.max
+      xs: Seq[Long] => xs.max.toDouble
     } toAggregator "max"
 
     def median = {
       xs: Seq[Long] =>
       val sorted = xs.sorted
-      sorted(sorted.size / 2)
+      sorted(sorted.size / 2).toDouble
     } toAggregator "median"
 
-    def average = { xs: Seq[Long] => xs.sum / xs.size } toAggregator "average"
+    def average = { xs: Seq[Long] => xs.sum.toDouble / xs.size } toAggregator "average"
 
-    def stdev = { xs: Seq[Long] => xs.stdev.toLong } toAggregator "stdev"
+    def stdev = { xs: Seq[Long] => xs.stdev } toAggregator "stdev"
 
     def statistic(a: Aggregator) = new Aggregator {
       def name = a.name

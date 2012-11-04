@@ -46,7 +46,7 @@ object CollPerfBuild extends Build {
   
   /* projects */
   
-  lazy val storm = Project(
+  lazy val collperf = Project(
     "collperf",
     file("."),
     settings = Defaults.defaultSettings ++ Seq(runsuiteTask, javaCommandSetting)

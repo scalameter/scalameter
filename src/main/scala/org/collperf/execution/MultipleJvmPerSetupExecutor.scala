@@ -10,7 +10,14 @@ import utils.Tree
 
 
 
+/** Runs multiple JVM instances per each setup and aggregates all the results together.
+ *
+ *  This produces more stable results, as the performance related effects of each JVM instantiation
+ *  are averaged.
+ */
 class MultipleJvmPerSetupExecutor(val aggregator: Aggregator, val measurer: Executor.Measurer) extends Executor {
+
+  import Key._
 
   val runner = new JvmRunner
 
@@ -27,9 +34,9 @@ class MultipleJvmPerSetupExecutor(val aggregator: Aggregator, val measurer: Exec
   private[execution] def runSetup[T](setup: Setup[T]): CurveData = {
     import setup._
 
-    val warmups = context.goe(Key.warmupRuns, 10)
-    val totalreps = context.goe(Key.benchRuns, 10)
-    val independentSamples = context.goe(Key.independentSamples, defaultIndependentSamples)
+    val warmups = context.goe(exec.maxWarmupRuns, 10)
+    val totalreps = context.goe(exec.benchRuns, 10)
+    val independentSamples = context.goe(exec.independentSamples, defaultIndependentSamples)
     def repetitions(idx: Int): Int = {
       val is = independentSamples
       totalreps / is + (if (idx < totalreps % is) 1 else 0)
@@ -40,7 +47,7 @@ class MultipleJvmPerSetupExecutor(val aggregator: Aggregator, val measurer: Exec
     def sample(idx: Int, reps: Int): Seq[(Parameters, Seq[Long])] = runner.run(jvmflags(startHeap = startHeap, maxHeap = maxHeap)) {
       initialContext = context
       
-      log.verbose(s"Sampling $reps measurements in separate JVM invocation $idx - ${context.scope}, ${context.goe(Key.curve, "")}.")
+      log.verbose(s"Sampling $reps measurements in separate JVM invocation $idx - ${context.scope}, ${context.goe(dsl.curve, "")}.")
 
       // warmup
       customwarmup match {
@@ -48,7 +55,7 @@ class MultipleJvmPerSetupExecutor(val aggregator: Aggregator, val measurer: Exec
           for (i <- 0 until warmups) warmup()
         case _ =>
           for (x <- gen.warmupset) {
-            for (i <- Warmer(warmups, setupFor(x), teardownFor(x))) snippet(x)
+            for (i <- Warmer(context, setupFor(x), teardownFor(x))) snippet(x)
           }
       }
 
@@ -57,13 +64,13 @@ class MultipleJvmPerSetupExecutor(val aggregator: Aggregator, val measurer: Exec
         val set = setupFor()
         val tear = teardownFor()
         val regen = regenerateFor(params)
-        (params, m.measure(reps, set, tear, regen, snippet))
+        (params, m.measure(context, reps, set, tear, regen, snippet))
       }
 
       observations.toBuffer
     }
 
-    log.verbose(s"Running test set for ${context.scope}, curve ${context.goe(Key.curve, "")}")
+    log.verbose(s"Running test set for ${context.scope}, curve ${context.goe(dsl.curve, "")}")
     log.verbose(s"Starting $totalreps measurements across $independentSamples independent JVM runs.")
 
     val timeseqs = for {
