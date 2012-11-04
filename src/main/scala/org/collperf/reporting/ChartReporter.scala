@@ -111,12 +111,14 @@ object ChartReporter {
               }
 
             newestSeries.add(measurement.params.axisData.head._2.asInstanceOf[Int], measurement.time, ciForNewestPoint._1, ciForNewestPoint._2)
-            //renderer.setSeriesStroke(curveIndex, new BasicStroke(3F, 1, 1))
-            renderer.setSeriesFillPaint(curveIndex, colors(curveIndex)) /* need to think about which colors we use. We may need to call other
-            methods from the JFreeChart API, there a lot of them related to appearance in class DeviationRenderer and in its parent classes */
           }
           dataset.addSeries(historySeries)
           dataset.addSeries(newestSeries)
+          //renderer.setSeriesStroke(curveIndex, new BasicStroke(3F, 1, 1))
+          renderer.setSeriesFillPaint(curveIndex, colors(curveIndex))
+          renderer.setSeriesFillPaint(curveIndex + 1, colors(curveIndex + 1))
+          /* need to think about which colors we use. We may need to call other
+          methods from the JFreeChart API, there a lot of them related to appearance in class DeviationRenderer and in its parent classes */
         }
 
         //String title, String xAxisLabel, String yAxisLabel, XYDataset dataset, PlotOrientation orientation, boolean legend,boolean tooltips, boolean urls
@@ -127,6 +129,12 @@ object ChartReporter {
         // There are many other configurable appearance options !
         chart.setAntiAlias(true)
         chart
+      }
+    }
+
+    case class Histogram extends ChartFactory {
+      def createChart(scopename: String, cs: Seq[CurveData], history: History): JFreeChart = {
+        val chart = JFreeChartFactory.createBarChar(scopename, )
       }
     }
 
