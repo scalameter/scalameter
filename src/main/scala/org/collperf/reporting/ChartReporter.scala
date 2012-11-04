@@ -50,13 +50,13 @@ object ChartReporter {
      *  @param cs             a list of curves that should appear on the chart
      *  @param history        previous chart data for the same set of curves
      */
-    def createChart(scopename: String, cs: Seq[CurveData], history: History): JFreeChart
+    def createChart(scopename: String, cs: Seq[CurveData], history: History, colors: Seq[Color] = Seq()): JFreeChart
   }
 
   object ChartFactory {
 
     case class XYLine() extends ChartFactory {
-      def createChart(scopename: String, cs: Seq[CurveData], history: History): JFreeChart = {
+      def createChart(scopename: String, cs: Seq[CurveData], history: History, colors: Seq[Color] = Seq()): JFreeChart = {
         val seriesCollection = new XYSeriesCollection
         val chartName = scopename
         val xAxisName = cs.head.measurements.head.params.axisData.head._1
@@ -80,35 +80,44 @@ object ChartReporter {
       }
     }
 
-    case class Regression(showLatestCi: Boolean, showHistoryCi: Boolean, alpha: Double, colors: Seq[Color]) extends ChartFactory {
-      def createChart(scopename: String, cs: Seq[CurveData], history: History): JFreeChart = {
+    case class Regression(showLatestCi: Boolean, showHistoryCi: Boolean, alpha: Double) extends ChartFactory {
+      def createChart(scopename: String, cs: Seq[CurveData], history: History, colors: Seq[Color] = Seq()): JFreeChart = {
         val dataset = new YIntervalSeriesCollection
         val chartName = scopename
         val xAxisName = cs.head.measurements.head.params.axisData.head._1
 
         // instantiate a DeviationRenderer (lines, shapes)
         val renderer = new DeviationRenderer(true, true)
+        
+        var colorIndex = 0
+        def colorNextCurve() {
+          if (colorIndex < colors.size) {
+            renderer.setSeriesFillPaint(colorIndex, colors(colorIndex))
+            colorIndex = colorIndex + 1
+          }
+        }
         // fill the dataset
-        for((curve, curveIndex) <- cs.zipWithIndex) {
+        for ((curve, curveIndex) <- cs.zipWithIndex) {
 
           val newestSeries = new YIntervalSeries(curve.context.goe(dsl.curve, curveIndex.toString))
           val historySeries = new YIntervalSeries(curve.context.goe(dsl.curve, curveIndex.toString))
 
-          for((measurement, measurementIndex) <- curve.measurements.zipWithIndex) {
-            // Fetch, for each corresponding curve in history, the measurement that was at the same position (same size for instance)
-            var previousMeasurements: List[Measurement]= List()
-            for(pastResult <- history.results) {
-              val correspondingCurveInHistory = pastResult._3(curveIndex) //._3 to access the Seq[CurveData]
-              previousMeasurements = correspondingCurveInHistory.measurements(measurementIndex) :: previousMeasurements
-            }
+          for ((measurement, measurementIndex) <- curve.measurements.zipWithIndex) {
+            /* Fetch, for each corresponding curve in history, the measurements that were at the same position (same size for instance)
+            on x-axis, and make a list of them */
+            val previousMeasurements = for {
+              pastResult <- history.results
+              correspondingCurveInHistory = pastResult._3(curveIndex) //._3 to access the Seq[CurveData]  
+            } yield correspondingCurveInHistory.measurements(measurementIndex)
+            // We then take all observations that gave the time measurement (by calling complete) of each point, and concat them
+            val previousMeasurementsObservations = previousMeasurements flatMap(m => m.complete)
 
-            val previousMeasurementsTimes = previousMeasurements map(m => m.time.toLong)
-            val ciForThisPoint = if(showHistoryCi) { confidenceInterval(previousMeasurementsTimes, alpha) } else { (0D, 0D) }
-            val meanOfPreviousMeasurements = mean(previousMeasurementsTimes)
+            val ciForThisPoint = if (showHistoryCi) { confidenceInterval(previousMeasurementsObservations, alpha) } else { (0D, 0D) }
+            val meanForThisPoint = mean(previousMeasurementsObservations)
             // Params : x - the x-value, y - the y-value, yLow - the lower bound of the y-interval, yHigh - the upper bound of the y-interval.
-            historySeries.add(measurement.params.axisData.head._2.asInstanceOf[Int], meanOfPreviousMeasurements, ciForThisPoint._1, ciForThisPoint._2)
+            historySeries.add(measurement.params.axisData.head._2.asInstanceOf[Int], meanForThisPoint, ciForThisPoint._1, ciForThisPoint._2)
 
-            val ciForNewestPoint = if(showLatestCi) {
+            val ciForNewestPoint = if (showLatestCi) {
                 confidenceInterval(measurement.complete, alpha)
               } else {
                 (0D, 0D)
@@ -119,10 +128,13 @@ object ChartReporter {
           dataset.addSeries(historySeries)
           dataset.addSeries(newestSeries)
           //renderer.setSeriesStroke(curveIndex, new BasicStroke(3F, 1, 1))
-          renderer.setSeriesFillPaint(curveIndex, colors(curveIndex))
-          renderer.setSeriesFillPaint(curveIndex + 1, colors(curveIndex + 1))
-          /* need to think about which colors we use. We may need to call other
-          methods from the JFreeChart API, there a lot of them related to appearance in class DeviationRenderer and in its parent classes */
+          /* The first `colors.size` curves from `cs` have their colors specified by `colors`,
+          and the rest are assigned some default set of colors. */
+          // cannot use curveIndex for coloring the curve, because we color two curves at a time
+          colorNextCurve
+          colorNextCurve
+          /* We may want to call other methods from the JFreeChart API, as there are a
+          lot of them related to appearance in class DeviationRenderer and in its parent classes */
         }
 
         //String title, String xAxisLabel, String yAxisLabel, XYDataset dataset, PlotOrientation orientation, boolean legend,boolean tooltips, boolean urls
@@ -136,11 +148,11 @@ object ChartReporter {
       }
     }
 
-    case class Histogram extends ChartFactory {
+    /*case class Histogram extends ChartFactory {
       def createChart(scopename: String, cs: Seq[CurveData], history: History): JFreeChart = {
         val chart = JFreeChartFactory.createBarChar(scopename, )
       }
-    }
+    }*/
 
   }
 
