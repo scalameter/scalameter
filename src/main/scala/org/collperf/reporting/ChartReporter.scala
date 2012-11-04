@@ -6,10 +6,12 @@ package reporting
 import org.jfree.data.xy.{XYSeries, XYSeriesCollection, YIntervalSeriesCollection, YIntervalSeries}
 import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer
 import org.jfree.chart.renderer.xy.DeviationRenderer
-import org.jfree.chart.plot.XYPlot
+import org.jfree.chart.renderer.category.BarRenderer
+import org.jfree.chart.plot.{XYPlot, CategoryPlot}
 import org.jfree.data.statistics._
 import org.jfree.chart.{ChartFactory => JFreeChartFactory}
 import org.jfree.chart.plot.PlotOrientation
+import org.jfree.data.category.DefaultCategoryDataset
 import org.jfree.chart._
 import java.io._
 import collection._
@@ -148,11 +150,38 @@ object ChartReporter {
       }
     }
 
-    /*case class Histogram extends ChartFactory {
-      def createChart(scopename: String, cs: Seq[CurveData], history: History): JFreeChart = {
-        val chart = JFreeChartFactory.createBarChar(scopename, )
+    case class Histogram extends ChartFactory {
+      def createChart(scopename: String, cs: Seq[CurveData], history: History, colors: Seq[Color] = Seq()): JFreeChart = {
+        val chartName = scopename
+        val xAxisName = cs.head.measurements.head.params.axisData.head._1 //date (for trend histogram), or size (for normal histogram)
+        val dataset = new DefaultCategoryDataset
+        // 1 curve is 1 category here
+        for(curve <- cs) {
+          for((measurement, measurementIndex) <- curve.measurements.zipWithIndex) {
+            // addValue params : Double value, String series_name (eg. ArrayBuffer), category name (should be a date or a size)
+            // addValue(double value, java.lang.Comparable rowKey, java.lang.Comparable columnKey)
+            // We need to decide if we put the series_name in the CurveData's info or maybe the Measurement's params
+            dataset.addValue(measurement.time, (curve.info("seriesNames").asInstanceOf[Map[Int, String]])(measurementIndex),
+              curve.info("categoryName").asInstanceOf[String])
+          }
+        }
+        val chart = JFreeChartFactory.createBarChart(chartName, xAxisName, "time", dataset, PlotOrientation.VERTICAL, true, true, false)
+        val plot: CategoryPlot = chart.getPlot.asInstanceOf[CategoryPlot]
+        val renderer: BarRenderer = plot.getRenderer.asInstanceOf[BarRenderer]
+        renderer.setDrawBarOutline(false)
+        for (seriesIndex <- 0 to cs.head.info("seriesNames").asInstanceOf[Map[Int, String]].size) {
+          // create new gradient paint ... colors parameter to be used here
+          // renderer.setSeriesPaint(seriesIndex, gradientPaint)
+        }
+        plot.setBackgroundPaint(new java.awt.Color(200, 200, 200))
+        plot.setDomainGridlinePaint(Color.white)
+        plot.setRangeGridlinePaint(Color.white)
+        chart.setBackgroundPaint(Color.white)
+        // probably needs additional graphical customisation, like appareance of axes
+        chart.setAntiAlias(true)
+        chart
       }
-    }*/
+    }
 
   }
 
