@@ -45,7 +45,7 @@ class MultipleJvmPerSetupExecutor(val aggregator: Aggregator, val measurer: Exec
     val m = measurer
 
     def sample(idx: Int, reps: Int): Seq[(Parameters, Seq[Long])] = runner.run(jvmflags(startHeap = startHeap, maxHeap = maxHeap)) {
-      initialContext = context
+      dyn.initialContext.value = context
       
       log.verbose(s"Sampling $reps measurements in separate JVM invocation $idx - ${context.scope}, ${context.goe(dsl.curve, "")}.")
 

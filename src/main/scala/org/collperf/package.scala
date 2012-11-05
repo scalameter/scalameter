@@ -10,7 +10,14 @@ import scala.util.DynamicVariable
 
 package object collperf {
 
-  @volatile var initialContext = Context.topLevel
+  private[collperf] object dyn {
+    val initialContext = new DynamicVariable(Context.topLevel)
+    val log = new DynamicVariable[Logger](Logger.Console)
+  }
+
+  def initialContext: Context = dyn.initialContext.value
+
+  def log: Logger = dyn.log.value
 
   /* decorators */
 
@@ -55,16 +62,37 @@ package object collperf {
 
   /* logging */
 
-  object log {
-    def apply(msg: =>Any) = log synchronized {
-      println(msg)
-    }
+  trait Logger {
+    def error(msg: String): Unit
+    def warn(msg: String): Unit
+    def info(msg: String): Unit
+    def debug(msg: String): Unit
+    def trace(t: Throwable): Unit
 
-    def verbose(msg: =>Any) {
-      if (initialContext.goe(Key.verbose, false)) log synchronized {
+    def verbose(msg: =>Any) = debug(msg.toString)
+    def apply(msg: =>Any) = info(msg.toString)
+  }
+
+  object Logger {
+
+    object Console extends Logger {
+      def error(msg: String) = info(msg)
+
+      def warn(msg: String) = info(msg)
+
+      def trace(t: Throwable) = info(t.getMessage)
+
+      def info(msg: String) = log synchronized {
         println(msg)
       }
+
+      def debug(msg: String) {
+        if (initialContext.goe(Key.verbose, false)) log synchronized {
+          println(msg)
+        }
+      }
     }
+
   }
 
 }

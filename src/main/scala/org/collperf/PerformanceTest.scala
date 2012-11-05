@@ -2,21 +2,53 @@ package org.collperf
 
 
 
+import collection._
+import utils.Tree
 
 
 
-trait PerformanceTest extends DSL {
-
-  def executor: Executor
-
-  def reporter: Reporter
-
-  def persistor: Persistor
+trait PerformanceTest extends PerformanceTest.Initialization {
 
 }
 
 
 object PerformanceTest {
+
+  trait Initialization extends DSL with DelayedInit {
+
+    import DSL._
+
+    def executor: org.collperf.Executor
+
+    def reporter: org.collperf.Reporter
+
+    def persistor: Persistor
+  
+    protected def initSetupTree() {
+      setupzipper.value = setupzipper.value.addContext(Key.dsl.executor -> executor.toString)
+    }
+
+    type SameType
+
+    protected def executeTests() {
+      val datestart = new java.util.Date
+      val setuptree = setupzipper.value.result
+      val resulttree = executor.run(setuptree.asInstanceOf[Tree[Setup[SameType]]])
+      val dateend = new java.util.Date
+
+      val datedtree = resulttree.copy(context = resulttree.context + (Key.reporting.startDate -> datestart) + (Key.reporting.endDate -> dateend))
+      reporter.report(datedtree, persistor)
+    }
+
+    def delayedInit(body: =>Unit) {
+      if (!DSL.withinInclude.value) {
+        initSetupTree()
+        body
+        executeTests()
+      } else body
+    }
+
+  }
 
   object Executor {
     import org.collperf.Executor.Measurer

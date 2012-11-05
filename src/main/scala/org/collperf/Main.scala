@@ -18,12 +18,13 @@ object Main {
   def run(configuration: Configuration) {
     // prepare initial context
     // identify test objects
-    initialContext = Context.topLevel ++ configuration.context
-    import configuration._
+    dyn.initialContext.withValue(Context.topLevel ++ configuration.context) {
+      import configuration._
 
-    // schedule benchmarks
-    for (benchname <- benches) {
-      val bench = Class.forName(benchname).newInstance.asInstanceOf[PerformanceTest]
+      // schedule benchmarks
+      for (benchname <- benches) {
+        val bench = Class.forName(benchname).newInstance.asInstanceOf[PerformanceTest]
+      }
     }
   }
 

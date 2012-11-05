@@ -26,7 +26,7 @@ class SetBenchmarks extends PerformanceTest.Regression with Collections {
       val to = 500000
       val by = 100000
       
-      using(hashtablesets(from, to,  by)) curve("mutable.HashSet") in { xs =>
+      using(hashtablesets(from, to, by)) curve("mutable.HashSet") in { xs =>
         var i = 0
         val sz = xs.size
         val until = sz * 3
@@ -36,7 +36,7 @@ class SetBenchmarks extends PerformanceTest.Regression with Collections {
         }
       }
 
-      using(linkedhashtablesets(from, to,  by)) curve("mutable.LinkedHashSet") in { xs =>
+      using(linkedhashtablesets(from, to, by)) curve("mutable.LinkedHashSet") in { xs =>
         var i = 0
         val sz = xs.size
         val until = sz * 3
@@ -46,7 +46,7 @@ class SetBenchmarks extends PerformanceTest.Regression with Collections {
         }
       }
 
-      using(avlsets(from, to,  by)) curve("mutable.TreeSet") in { xs =>
+      using(avlsets(from, to, by)) curve("mutable.TreeSet") in { xs =>
         var i = 0
         val sz = xs.size
         val until = sz * 3
@@ -94,7 +94,7 @@ class SetBenchmarks extends PerformanceTest.Regression with Collections {
       val to = 750000
       val by = 150000
       
-      using(sizes(from, to,  by)) curve("mutable.HashSet") in { sz =>
+      using(sizes(from, to, by)) curve("mutable.HashSet") in { sz =>
         var i = 0
         val xs = mutable.HashSet[Int]()
         while (i < sz) {
@@ -103,7 +103,7 @@ class SetBenchmarks extends PerformanceTest.Regression with Collections {
         }
       }
 
-      using(sizes(from, to,  by)) curve("mutable.LinkedHashSet") in { sz =>
+      using(sizes(from, to, by)) curve("mutable.LinkedHashSet") in { sz =>
         var i = 0
         val xs = mutable.LinkedHashSet[Int]()
         while (i < sz) {
@@ -112,7 +112,7 @@ class SetBenchmarks extends PerformanceTest.Regression with Collections {
         }
       }
 
-      using(sizes(from, to,  by)) curve("mutable.TreeSet") in { sz =>
+      using(sizes(from, to, by)) curve("mutable.TreeSet") in { sz =>
         var i = 0
         val xs = mutable.TreeSet[Int]()
         while (i < sz) {
@@ -133,7 +133,7 @@ class SetBenchmarks extends PerformanceTest.Regression with Collections {
       val to = 125000
       val by = 25000
       
-      using(sized(hashtablesets(from, to,  by))) curve("mutable.HashSet") tearDown {
+      using(sized(hashtablesets(from, to, by))) curve("mutable.HashSet") tearDown {
         case (sz, xs) => for (i <- 0 until sz) xs.add(i)
       } in {
         case (sz, xs) =>
@@ -145,7 +145,7 @@ class SetBenchmarks extends PerformanceTest.Regression with Collections {
           }
       }
 
-      using(sized(avlsets(from, to,  by))) curve("mutable.TreeSet") configuration (
+      using(sized(avlsets(from, to, by))) curve("mutable.TreeSet") configuration (
         exec.minWarmupRuns -> 6,
         exec.benchRuns -> 30,
         exec.independentSamples -> 4
@@ -172,7 +172,7 @@ class SetBenchmarks extends PerformanceTest.Regression with Collections {
       val to = 500000
       val by = 100000
       
-      using(sized(hashtablesets(from, to,  by))) curve("mutable.HashSet") tearDown {
+      using(sized(hashtablesets(from, to, by))) curve("mutable.HashSet") tearDown {
         case (sz, xs) => for (i <- 0 until sz) xs.add(i)
       } in {
         case (sz, xs) =>
@@ -184,7 +184,7 @@ class SetBenchmarks extends PerformanceTest.Regression with Collections {
           }
       }
 
-      using(sized(avlsets(from, to,  by))) curve("mutable.TreeSet") tearDown {
+      using(sized(avlsets(from, to, by))) curve("mutable.TreeSet") tearDown {
         case (sz, xs) => for (i <- 0 until sz) xs.add(i)
       } in {
         case (sz, xs) =>

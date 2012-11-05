@@ -19,6 +19,10 @@ object Executor {
 
   import Key._
 
+  object None extends Executor {
+    def run[T](setups: Tree[Setup[T]]): Tree[CurveData] = ???
+  }
+
   trait Factory[E <: Executor] {
     def apply(aggregator: Aggregator, m: Measurer): E
 

@@ -3,25 +3,14 @@ package org.collperf
 
 
 import collection._
+import scala.util.DynamicVariable
 import utils.Tree
 
 
 
-trait DSL extends DelayedInit {
+trait DSL {
 
-  def executor: Executor
-
-  def reporter: Reporter
-
-  def persistor: Persistor
-
-  private val setupzipper = new scala.util.DynamicVariable(Tree.Zipper.root[Setup[_]])
-
-  private def descendInScope(name: String, context: Context)(body: =>Unit) {
-    setupzipper.value = setupzipper.value.descend.setContext(context)
-    body
-    setupzipper.value = setupzipper.value.ascend
-  }
+  import DSL._
 
   object performance {
     def of(modulename: String) = Scope(modulename, setupzipper.value.current.context)
@@ -54,31 +43,28 @@ trait DSL extends DelayedInit {
 
   def using[T](gen: Gen[T]) = Using(Setup(setupzipper.value.current.context, gen, None, None, None, null))
 
-  /* initialization */
-  
-  protected def initSetupTree() {
-    setupzipper.value = setupzipper.value.addContext(Key.dsl.executor -> executor.toString)
-  }
-
-  type SameType
-
-  protected def executeTests() {
-    val datestart = new java.util.Date
-    val setuptree = setupzipper.value.result
-    val resulttree = executor.run(setuptree.asInstanceOf[Tree[Setup[SameType]]])
-    val dateend = new java.util.Date
-
-    val datedtree = resulttree.copy(context = resulttree.context + (Key.reporting.startDate -> datestart) + (Key.reporting.endDate -> dateend))
-    reporter.report(datedtree, persistor)
-  }
-
-  def delayedInit(body: =>Unit) {
-    initSetupTree()
-    body
-    executeTests()
+  def include[T <: PerformanceTest.Initialization: Manifest] = withinInclude.withValue(true) {
+    manifest[T].erasure.newInstance
+    ()
   }
 
 }
+
+
+object DSL {
+
+  private[collperf] val withinInclude = new DynamicVariable(false)
+
+  private[collperf] val setupzipper = new DynamicVariable(Tree.Zipper.root[Setup[_]])
+
+  protected[collperf] def descendInScope(name: String, context: Context)(body: =>Unit) {
+    setupzipper.value = setupzipper.value.descend.setContext(context)
+    body
+    setupzipper.value = setupzipper.value.ascend
+  }
+
+}
+
 
 
 
