@@ -12,12 +12,15 @@ package object collperf {
 
   private[collperf] object dyn {
     val initialContext = new DynamicVariable(Context.topLevel)
-    val log = new DynamicVariable[Logger](Logger.Console)
+    val log = new DynamicVariable[Log](Log.Console)
+    val events = new DynamicVariable[Events](Events.None)
   }
 
   def initialContext: Context = dyn.initialContext.value
 
-  def log: Logger = dyn.log.value
+  def log: Log = dyn.log.value
+
+  def events: Events = dyn.events.value
 
   /* decorators */
 
@@ -60,9 +63,29 @@ package object collperf {
     }
   }
 
+  /* events */
+
+  case class Event(testName: String, description: String, result: Events.Result, throwable: Throwable)
+
+  trait Events {
+    def emit(e: Event): Unit
+  }
+
+  object Events {
+    trait Result
+    case object Success extends Result
+    case object Failure extends Result
+    case object Error extends Result
+    case object Skipped extends Result
+
+    case object None extends Events {
+      def emit(e: Event) {}
+    }
+  }
+
   /* logging */
 
-  trait Logger {
+  trait Log {
     def error(msg: String): Unit
     def warn(msg: String): Unit
     def info(msg: String): Unit
@@ -73,24 +96,36 @@ package object collperf {
     def apply(msg: =>Any) = info(msg.toString)
   }
 
-  object Logger {
+  object Log {
 
-    object Console extends Logger {
+    case object None extends Log {
+      def error(msg: String) {}
+      def warn(msg: String) {}
+      def info(msg: String) {}
+      def debug(msg: String) {}
+      def trace(t: Throwable) {}
+    }
+
+    case object Console extends Log {
       def error(msg: String) = info(msg)
-
       def warn(msg: String) = info(msg)
-
       def trace(t: Throwable) = info(t.getMessage)
-
       def info(msg: String) = log synchronized {
         println(msg)
       }
-
       def debug(msg: String) {
         if (initialContext.goe(Key.verbose, false)) log synchronized {
           println(msg)
         }
       }
+    }
+
+    case class Composite(logs: Log*) extends Log {
+      def error(msg: String) = for (l <- logs) l.error(msg)
+      def warn(msg: String) = for (l <- logs) l.warn(msg)
+      def trace(t: Throwable) = for (l <- logs) l.trace(t)
+      def info(msg: String) = for (l <- logs) l.info(msg)
+      def debug(msg: String) = for (l <- logs) l.debug(msg)
     }
 
   }

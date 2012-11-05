@@ -32,7 +32,13 @@ case class RegressionReporter(test: RegressionReporter.Tester, historian: Regres
       log("")
 
       val allpassed = curvespassed.forall(_ == true)
-      if (allpassed) historian.persist(persistor, context, history, curves)
+
+      if (allpassed) {
+        historian.persist(persistor, context, history, curves)
+      } else {
+        // TODO
+      }
+
       allpassed
     }
 
@@ -128,12 +134,7 @@ object RegressionReporter {
       }
     }
 
-    trait Logging {
-      def logging: Boolean
-      def log(s: String) = if (logging) org.collperf.log(s)
-    }
-
-    case class ANOVA(defaultSignificance: Double, logging: Boolean = true) extends Tester with Logging {
+    case class ANOVA(defaultSignificance: Double, logging: Boolean = true) extends Tester {
       def apply(context: Context, curvedata: CurveData, corresponding: Seq[CurveData]): Boolean = {
         log(s"${ansi.green}- ${curvedata.context.curve} measurements:${ansi.reset}")
 
@@ -171,7 +172,7 @@ object RegressionReporter {
       }
     }
 
-    case class ConfidenceIntervals(defaultSignificance: Double, strict: Boolean = false, logging: Boolean = true) extends Tester with Logging {
+    case class ConfidenceIntervals(defaultSignificance: Double, strict: Boolean = false, logging: Boolean = true) extends Tester {
       def cistr(ci: (Double, Double)) = f"<${ci._1}%.2f, ${ci._2}%.2f>"
 
       def single(previous: Measurement, latest: Measurement, sig: Double): (Boolean, String) = {
@@ -203,7 +204,7 @@ object RegressionReporter {
         val cis = cistr(ci)
         log(s"$color  - at ${latest.params.axisData.mkString(", ")}, ${previouss.size} alternatives: $passed${ansi.reset}")
         log(s"$color    (ci = $cis, significance = $sig)${ansi.reset}")
-        for ((false, msg) <- passes) log(msg)
+        for ((false, msg) <- passes) log.error(msg)
         passes.map(_._1)
       }
 

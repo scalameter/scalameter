@@ -6,17 +6,17 @@ import collection._
 
 
 
-class NewJvmMedianNoGcSeqTest extends SeqTesting with PerformanceTest with PerformanceTest.Reporter.Html {
+class NewJvmMedianNoGcSeqTest extends SeqTesting with PerformanceTest.Reporter.Html {
   lazy val executor = new execution.JvmPerSetupExecutor(Aggregator.median, new Executor.Measurer.IgnoringGC)
 }
 
 
-class NewJvmMinNoGcSeqTest extends SeqTesting with PerformanceTest with PerformanceTest.Reporter.Html {
+class NewJvmMinNoGcSeqTest extends SeqTesting with PerformanceTest.Reporter.Html {
   lazy val executor = new execution.JvmPerSetupExecutor(Aggregator.min, new Executor.Measurer.IgnoringGC)
 }
 
 
-class NewJvmMinNoGcReinstSeqTest extends SeqTesting with PerformanceTest with PerformanceTest.Reporter.Html {
+class NewJvmMinNoGcReinstSeqTest extends SeqTesting with PerformanceTest.Reporter.Html {
   lazy val executor = new execution.JvmPerSetupExecutor(Aggregator.min, new Executor.Measurer.IgnoringGC with Executor.Measurer.PeriodicReinstantiation {
     def frequency = 20
     def fullGC = true
@@ -24,7 +24,7 @@ class NewJvmMinNoGcReinstSeqTest extends SeqTesting with PerformanceTest with Pe
 }
 
 
-class NewJvmMedianNoGcFinderSeqTest extends SeqTesting with PerformanceTest with PerformanceTest.Reporter.Html {
+class NewJvmMedianNoGcFinderSeqTest extends SeqTesting with PerformanceTest.Reporter.Html {
   lazy val aggregator = Aggregator.median
   lazy val measurer = new Executor.Measurer.OptimalAllocation(new Executor.Measurer.IgnoringGC, aggregator)
   lazy val executor = new execution.JvmPerSetupExecutor(aggregator, measurer)

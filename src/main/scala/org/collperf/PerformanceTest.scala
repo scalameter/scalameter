@@ -7,9 +7,7 @@ import utils.Tree
 
 
 
-trait PerformanceTest extends PerformanceTest.Initialization {
-
-}
+abstract class PerformanceTest extends PerformanceTest.Initialization
 
 
 object PerformanceTest {
