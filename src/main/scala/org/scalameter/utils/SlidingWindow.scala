@@ -1,4 +1,4 @@
-package org.collperf.utils
+package org.scalameter.utils
 
 
 

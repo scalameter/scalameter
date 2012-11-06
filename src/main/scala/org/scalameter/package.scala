@@ -8,7 +8,7 @@ import scala.util.DynamicVariable
 
 
 
-package object collperf {
+package object scalameter {
 
   trait Foreach[T] {
     def foreach[U](f: T => U): Unit
@@ -20,7 +20,7 @@ package object collperf {
     }
   }
 
-  private[collperf] object dyn {
+  private[scalameter] object dyn {
     val initialContext = new MonadicDynVar(Context.topLevel)
     val log = new MonadicDynVar[Log](Log.Console)
     val events = new MonadicDynVar[Events](Events.None)
@@ -143,7 +143,7 @@ package object collperf {
 }
 
 
-package collperf {
+package scalameter {
 
   import Key._
 

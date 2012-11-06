@@ -1,4 +1,4 @@
-package org.collperf
+package org.scalameter
 
 
 
@@ -19,7 +19,7 @@ class ScalaMeterFramework extends Framework {
 
   def testRunner(testClassLoader: ClassLoader, loggers: Array[Logger]) = new Runner2 {
     case class TestInterfaceEvents(eventHandler: EventHandler) extends Events {
-      def emit(e: org.collperf.Event) = eventHandler.handle(new org.scalatools.testing.Event {
+      def emit(e: org.scalameter.Event) = eventHandler.handle(new org.scalatools.testing.Event {
         def testName = e.testName
         def description = e.description
         def error = e.throwable

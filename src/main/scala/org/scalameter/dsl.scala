@@ -1,4 +1,4 @@
-package org.collperf
+package org.scalameter
 
 
 
@@ -53,19 +53,19 @@ trait DSL {
 
 object DSL {
 
-  private[collperf] val withinInclude = new DynamicVariable(false)
+  private[scalameter] val withinInclude = new DynamicVariable(false)
 
-  private[collperf] val setupzipper = new DynamicVariable(Tree.Zipper.root[Setup[_]])
+  private[scalameter] val setupzipper = new DynamicVariable(Tree.Zipper.root[Setup[_]])
 
-  private[collperf] def descendInScope(name: String, context: Context)(body: =>Unit) {
+  private[scalameter] def descendInScope(name: String, context: Context)(body: =>Unit) {
     setupzipper.value = setupzipper.value.descend.setContext(context)
     body
     setupzipper.value = setupzipper.value.ascend
   }
 
-  private[collperf] val curveNameCount = new java.util.concurrent.atomic.AtomicInteger(0)
+  private[scalameter] val curveNameCount = new java.util.concurrent.atomic.AtomicInteger(0)
 
-  private[collperf] def freshCurveName(): String = "Test-" + curveNameCount.getAndIncrement()
+  private[scalameter] def freshCurveName(): String = "Test-" + curveNameCount.getAndIncrement()
 
 }
 

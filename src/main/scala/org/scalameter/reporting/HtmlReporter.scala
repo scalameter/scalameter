@@ -1,4 +1,4 @@
-package org.collperf
+package org.scalameter
 package reporting
 
 

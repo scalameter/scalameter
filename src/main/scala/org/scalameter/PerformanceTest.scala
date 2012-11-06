@@ -1,4 +1,4 @@
-package org.collperf
+package org.scalameter
 
 
 
@@ -16,9 +16,9 @@ object PerformanceTest {
 
     import DSL._
 
-    def executor: org.collperf.Executor
+    def executor: org.scalameter.Executor
 
-    def reporter: org.collperf.Reporter
+    def reporter: org.scalameter.Reporter
 
     def persistor: Persistor
   
@@ -49,7 +49,7 @@ object PerformanceTest {
   }
 
   object Executor {
-    import org.collperf.Executor.Measurer
+    import org.scalameter.Executor.Measurer
 
     trait BigOh extends PerformanceTest {
       lazy val aggregator = Aggregator.min
@@ -96,7 +96,7 @@ object PerformanceTest {
     }
 
     trait Regression extends PerformanceTest {
-      lazy val reporter = org.collperf.Reporter.Composite(
+      lazy val reporter = org.scalameter.Reporter.Composite(
         RegressionReporter(RegressionReporter.Tester.ConfidenceIntervals(0.02), RegressionReporter.Historian.ExponentialBackoff()),
         new HtmlReporter(HtmlReporter.Renderer.regression: _*)
       )
