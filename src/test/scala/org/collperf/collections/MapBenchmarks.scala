@@ -20,7 +20,7 @@ class MapBenchmarks extends PerformanceTest.Regression with Collections {
       exec.minWarmupRuns -> 25,
       exec.benchRuns -> 30,
       exec.independentSamples -> 6,
-      reporting.regression.significance -> 1e-13
+      reports.regression.significance -> 1e-13
     ) in {
       val from = 50000
       val to = 500000
@@ -94,7 +94,7 @@ class MapBenchmarks extends PerformanceTest.Regression with Collections {
       exec.minWarmupRuns -> 25,
       exec.benchRuns -> 30,
       exec.independentSamples -> 6,
-      reporting.regression.significance -> 1e-13
+      reports.regression.significance -> 1e-13
     ) in {
       val from = 50000
       val to = 500000
@@ -162,7 +162,7 @@ class MapBenchmarks extends PerformanceTest.Regression with Collections {
       exec.independentSamples -> 6,
       exec.reinstantiation.frequency -> 4,
       exec.reinstantiation.fullGC -> true,
-      reporting.regression.significance -> 1e-13
+      reports.regression.significance -> 1e-13
     ) in {
       val from = 50000
       val to = 500000
@@ -195,7 +195,7 @@ class MapBenchmarks extends PerformanceTest.Regression with Collections {
       exec.independentSamples -> 6,
       exec.reinstantiation.frequency -> 3,
       exec.reinstantiation.fullGC -> true,
-      reporting.regression.significance -> 1e-13
+      reports.regression.significance -> 1e-13
     ) in {
       val from = 50000
       val to = 500000
@@ -228,7 +228,7 @@ class MapBenchmarks extends PerformanceTest.Regression with Collections {
       exec.minWarmupRuns -> 10,
       exec.benchRuns -> 30,
       exec.independentSamples -> 6,
-      reporting.regression.significance -> 1e-13,
+      reports.regression.significance -> 1e-13,
       exec.reinstantiation.frequency -> 2,
       exec.reinstantiation.fullGC -> true,
       exec.outliers.covMultiplier -> 1.5,
@@ -262,7 +262,7 @@ class MapBenchmarks extends PerformanceTest.Regression with Collections {
       exec.minWarmupRuns -> 10,
       exec.benchRuns -> 30,
       exec.independentSamples -> 6,
-      reporting.regression.significance -> 1e-13,
+      reports.regression.significance -> 1e-13,
       exec.reinstantiation.frequency -> 2,
       exec.reinstantiation.fullGC -> true,
       exec.outliers.covMultiplier -> 1.5,

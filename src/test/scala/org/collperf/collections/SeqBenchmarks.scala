@@ -19,7 +19,7 @@ class SeqBenchmarks extends PerformanceTest.Regression with Collections {
     // measure method "apply" configuration (
     //   exec.benchRuns -> 36,
     //   exec.independentSamples -> 9,
-    //   reporting.regression.significance -> 1e-13
+    //   reports.regression.significance -> 1e-13
     // ) in {
     //   val from = 1000000
     //   val to = 5000000
@@ -79,7 +79,7 @@ class SeqBenchmarks extends PerformanceTest.Regression with Collections {
     // measure method "update" configuration (
     //   exec.benchRuns -> 36,
     //   exec.independentSamples -> 9,
-    //   reporting.regression.significance -> 1e-13
+    //   reports.regression.significance -> 1e-13
     // ) in {
     //   val from = 1000000
     //   val to = 5000000
@@ -115,7 +115,7 @@ class SeqBenchmarks extends PerformanceTest.Regression with Collections {
     // measure method "append" configuration (
     //   exec.benchRuns -> 36,
     //   exec.independentSamples -> 9,
-    //   reporting.regression.significance -> 1e-13
+    //   reports.regression.significance -> 1e-13
     // ) in {
     //   val from = 200000
     //   val to = 2200000
@@ -141,7 +141,7 @@ class SeqBenchmarks extends PerformanceTest.Regression with Collections {
     // measure method "prepend" configuration (
     //   exec.benchRuns -> 36,
     //   exec.independentSamples -> 9,
-    //   reporting.regression.significance -> 1e-13
+    //   reports.regression.significance -> 1e-13
     // ) in {
     //   val from = 200000
     //   val to = 2200000
@@ -176,7 +176,7 @@ class SeqBenchmarks extends PerformanceTest.Regression with Collections {
     measure method "sorted" configuration (
       exec.benchRuns -> 36,
       exec.independentSamples -> 9,
-      reporting.regression.significance -> 1e-13
+      reports.regression.significance -> 1e-13
     ) in {
       val from = 800000
       val to = 4000000

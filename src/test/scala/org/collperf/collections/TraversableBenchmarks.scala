@@ -19,7 +19,7 @@ class TraversableBenchmarks extends PerformanceTest.Regression with Collections 
     measure method "foreach" configuration (
       exec.benchRuns -> 36,
       exec.independentSamples -> 9,
-      reporting.regression.significance -> 1e-13
+      reports.regression.significance -> 1e-13
     ) in {
       val from = 1000000
       val to = 5000000
@@ -61,7 +61,7 @@ class TraversableBenchmarks extends PerformanceTest.Regression with Collections 
     measure method "reduce" configuration (
       exec.benchRuns -> 36,
       exec.independentSamples -> 9,
-      reporting.regression.significance -> 1e-13
+      reports.regression.significance -> 1e-13
     ) in {
       val from = 500000
       val to = 5000000
@@ -96,7 +96,7 @@ class TraversableBenchmarks extends PerformanceTest.Regression with Collections 
     
     measure method "filter" configuration (
       exec.benchRuns -> 36,
-      reporting.regression.significance -> 1e-13,
+      reports.regression.significance -> 1e-13,
       exec.independentSamples -> 9
     ) in {
       val from = 500000
@@ -132,7 +132,7 @@ class TraversableBenchmarks extends PerformanceTest.Regression with Collections 
 
     measure method "groupBy" configuration (
       exec.benchRuns -> 36,
-      reporting.regression.significance -> 1e-13,
+      reports.regression.significance -> 1e-13,
       exec.independentSamples -> 9
     ) in {
       val from = 100000
@@ -170,7 +170,7 @@ class TraversableBenchmarks extends PerformanceTest.Regression with Collections 
 
     measure method "map" configuration (
       exec.benchRuns -> 36,
-      reporting.regression.significance -> 1e-13,
+      reports.regression.significance -> 1e-13,
       exec.independentSamples -> 9
     ) in {
       val from = 500000
@@ -206,7 +206,7 @@ class TraversableBenchmarks extends PerformanceTest.Regression with Collections 
 
     measure method "flatMap" configuration (
       exec.benchRuns -> 36,
-      reporting.regression.significance -> 1e-13,
+      reports.regression.significance -> 1e-13,
       exec.independentSamples -> 9
     ) in {
       val from = 250000

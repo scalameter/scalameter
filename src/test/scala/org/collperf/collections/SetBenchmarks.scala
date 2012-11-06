@@ -20,7 +20,7 @@ class SetBenchmarks extends PerformanceTest.Regression with Collections {
       exec.minWarmupRuns -> 25,
       exec.benchRuns -> 40,
       exec.independentSamples -> 10,
-      reporting.regression.significance -> 1e-13
+      reports.regression.significance -> 1e-13
     ) in {
       val from = 50000
       val to = 500000
@@ -88,7 +88,7 @@ class SetBenchmarks extends PerformanceTest.Regression with Collections {
       exec.minWarmupRuns -> 15,
       exec.benchRuns -> 32,
       exec.independentSamples -> 8,
-      reporting.regression.significance -> 1e-13
+      reports.regression.significance -> 1e-13
     ) in {
       val from = 100000
       val to = 750000
@@ -127,7 +127,7 @@ class SetBenchmarks extends PerformanceTest.Regression with Collections {
       exec.minWarmupRuns -> 15,
       exec.benchRuns -> 32,
       exec.independentSamples -> 8,
-      reporting.regression.significance -> 1e-13
+      reports.regression.significance -> 1e-13
     ) in {
       val from = 25000
       val to = 125000
@@ -166,7 +166,7 @@ class SetBenchmarks extends PerformanceTest.Regression with Collections {
       exec.minWarmupRuns -> 15,
       exec.benchRuns -> 35,
       exec.independentSamples -> 5,
-      reporting.regression.significance -> 1e-13
+      reports.regression.significance -> 1e-13
     ) in {
       val from = 50000
       val to = 500000
@@ -201,7 +201,7 @@ class SetBenchmarks extends PerformanceTest.Regression with Collections {
       exec.minWarmupRuns -> 15,
       exec.benchRuns -> 35,
       exec.independentSamples -> 5,
-      reporting.regression.significance -> 1e-13
+      reports.regression.significance -> 1e-13
     ) in {
       val from = 50000
       val to = 500000
@@ -231,7 +231,7 @@ class SetBenchmarks extends PerformanceTest.Regression with Collections {
       exec.minWarmupRuns -> 15,
       exec.benchRuns -> 35,
       exec.independentSamples -> 5,
-      reporting.regression.significance -> 1e-13,
+      reports.regression.significance -> 1e-13,
       exec.noise.magnitude -> 0.5
     ) in {
       val from = 50000

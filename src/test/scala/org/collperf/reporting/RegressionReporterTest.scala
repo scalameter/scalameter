@@ -10,7 +10,7 @@ import org.scalatest.FunSuite
 
 class RegressionReporterTest extends FunSuite {
 
-  import Key.reporting.regression.timeIndices
+  import Key.reports.regression.timeIndices
 
   test("ExponentialBackoff should correctly prune the history") {
     val expback = RegressionReporter.Historian.ExponentialBackoff()
