@@ -54,8 +54,8 @@ case class HtmlReporter(val renderers: HtmlReporter.Renderer*) extends Reporter 
 
   def date(results: Tree[CurveData]) = {
     val dateoption = for {
-      start <- results.context.get[Date](reporting.startDate)
-      end <- results.context.get[Date](reporting.endDate)
+      start <- results.context.get[Date](reports.startDate)
+      end <- results.context.get[Date](reports.endDate)
     } yield <div>
       <div>Started: {start}</div>
       <div>Finished: {end}</div>
@@ -65,7 +65,7 @@ case class HtmlReporter(val renderers: HtmlReporter.Renderer*) extends Reporter 
   }
   
   def report(results: Tree[CurveData], persistor: Persistor) {
-    val resultdir = results.context.goe(reporting.resultDir, "tmp")
+    val resultdir = results.context.goe(reports.resultDir, "tmp")
 
     new File(s"$resultdir").mkdir()
     new File(s"$resultdir${sep}report").mkdir()
@@ -128,7 +128,7 @@ object HtmlReporter {
       <ul>
       {
         for (cd <- curves) yield <li>
-        {cd.context.goe(dsl.curve, "")}: {cd.context.goe(reporting.bigO, "(no data)")}
+        {cd.context.goe(dsl.curve, "")}: {cd.context.goe(reports.bigO, "(no data)")}
         </li>
       }
       </ul>
@@ -137,7 +137,7 @@ object HtmlReporter {
 
     case class Chart(factory: ChartReporter.ChartFactory) extends Renderer {
       def render(context: Context, curves: Seq[CurveData], h: History): Node = {
-        val resultdir = context.goe(reporting.resultDir, "tmp")
+        val resultdir = context.goe(reports.resultDir, "tmp")
         val scopename = context.scope
         val chart = factory.createChart(scopename, curves, h)
         val chartfile = new File(s"$resultdir${File.separator}report${File.separator}images${File.separator}$scopename.png")

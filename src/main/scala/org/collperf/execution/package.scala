@@ -56,8 +56,9 @@ package object execution {
     }
   }
 
-  def jvmflags(startHeap: Int = 2048, maxHeap: Int = 2048): String = {
-    s"${if (initialContext.goe(Key.verbose, false)) "-verbose:gc" else ""} -Xmx${maxHeap}m -Xms${startHeap}m -XX:CompileThreshold=1"
+  def createJvmContext(ctx: Context, startHeap: Int = 2048, maxHeap: Int = 2048) = {
+    val flags = s"${if (initialContext.goe(Key.verbose, false)) "-verbose:gc" else ""} -Xmx${maxHeap}m -Xms${startHeap}m -XX:CompileThreshold=1"
+    Context(ctx.properties + (jvmflags -> flags))
   }
 
   final class JvmRunner {
@@ -65,9 +66,9 @@ package object execution {
     private val tmpfile = File.createTempFile("newjvm-", "-io")
     tmpfile.deleteOnExit()
 
-    def run[R](flags: String)(body: =>R): R = {
+    def run[R](ctx: Context)(body: =>R): R = {
       serializeInput(() => body)
-      runJvm(flags)
+      runJvm(ctx)
       readOutput[R]()
     }
 
@@ -82,8 +83,10 @@ package object execution {
       }
     }
 
-    private def runJvm(flags: String) {
-      val command = s"java -server $flags -cp ${sys.props("java.class.path")} ${classOf[Main].getName} ${tmpfile.getPath}"
+    private def runJvm(ctx: Context) {
+      val classpath = ctx.goe(Key.classpath, sys.props("java.class.path"))
+      val flags = ctx.goe(Key.jvmflags, "")
+      val command = s"java -server $flags -cp $classpath} ${classOf[Main].getName} ${tmpfile.getPath}"
       log.verbose(s"Starting new JVM: $command")
       command !;
     }

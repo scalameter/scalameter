@@ -8,6 +8,8 @@ package org.collperf
 object Key {
 
   val verbose = "verbose"
+  val classpath = "classpath"
+  val jvmflags = "jvm-flags"
 
   object dsl {
     val curve = "curve"
@@ -16,9 +18,12 @@ object Key {
   }
 
   object machine {
-    val jvmVersion = "jvm-version"
-    val jvmVendor = "jvm-vendor"
-    val jvmName = "jvm-name"
+    object jvm {
+      val version = "jvm-version"
+      val vendor = "jvm-vendor"
+      val name = "jvm-name"
+    }
+    
     val osName = "os-name"
     val osArch = "os-arch"
     val cores = "cores"
@@ -29,7 +34,7 @@ object Key {
     val unit = "unit"
   }
 
-  object reporting {
+  object reports {
     val startDate = "date-start"
     val endDate = "date-end"
     val bigO = "big-o"

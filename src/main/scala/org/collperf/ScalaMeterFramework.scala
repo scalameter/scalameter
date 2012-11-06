@@ -2,8 +2,10 @@ package org.collperf
 
 
 
+import java.net.URLClassLoader
 import org.scalatools.testing._
 import collection._
+import util.matching.Regex._
 
 
 
@@ -38,16 +40,34 @@ class ScalaMeterFramework extends Framework {
       def debug(msg: String) = l.debug(msg)
     }
 
+    def computeClasspath = testClassLoader match {
+      case urlclassloader: URLClassLoader =>
+        val fileResource = "file:(.*)".r
+        val files = urlclassloader.getURLs.map(_.toString) collect {
+          case fileResource(file) => file
+        }
+        files.mkString(":")
+      case _ => sys.error(s"Cannot recognize classloader (not URLClassLoader): $testClassLoader")
+    }
+
     def run(testClassName: String, fingerprint: Fingerprint, eventHandler: EventHandler, args: Array[String]) {
       val complog = Log.Composite(loggers.map(TestInterfaceLog): _*)
       val tievents = TestInterfaceEvents(eventHandler)
-      dyn.log.withValue(complog) {
-        dyn.events.withValue(tievents) {
-          dyn.initialContext.withValue(Main.Configuration.fromCommandLineArgs(args).context) {
-            testClassLoader.loadClass(testClassName).newInstance
-            ()
-          }
+      val testcp = computeClasspath
+
+      for {
+        _ <- dyn.log.using(complog)
+        _ <- dyn.events.using(tievents)
+        _ <- dyn.initialContext.using(initialContext ++ Main.Configuration.fromCommandLineArgs(args).context + (Key.classpath -> testcp))
+      } {
+        try testClassLoader.loadClass(testClassName).newInstance
+        catch {
+          case e: Exception =>
+            println("Test threw exception: " + e)
+            e.printStackTrace()
+            throw e
         }
+        ()
       }
     }
   }

@@ -46,8 +46,8 @@ object CollPerfBuild extends Build {
   
   /* projects */
   
-  lazy val collperf = Project(
-    "collperf",
+  lazy val scalameter = Project(
+    "scalameter",
     file("."),
     settings = Defaults.defaultSettings ++ Seq(runsuiteTask, javaCommandSetting)
   ) dependsOn (

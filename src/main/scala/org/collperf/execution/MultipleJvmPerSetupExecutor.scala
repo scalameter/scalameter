@@ -43,8 +43,9 @@ class MultipleJvmPerSetupExecutor(val aggregator: Aggregator, val measurer: Exec
     }
 
     val m = measurer
+    val jvmContext = createJvmContext(context, startHeap = startHeap, maxHeap = maxHeap)
 
-    def sample(idx: Int, reps: Int): Seq[(Parameters, Seq[Long])] = runner.run(jvmflags(startHeap = startHeap, maxHeap = maxHeap)) {
+    def sample(idx: Int, reps: Int): Seq[(Parameters, Seq[Long])] = runner.run(jvmContext) {
       dyn.initialContext.value = context
       
       log.verbose(s"Sampling $reps measurements in separate JVM invocation $idx - ${context.scope}, ${context.goe(dsl.curve, "")}.")
@@ -70,13 +71,22 @@ class MultipleJvmPerSetupExecutor(val aggregator: Aggregator, val measurer: Exec
       observations.toBuffer
     }
 
+    def sampleReport(idx: Int, reps: Int): Seq[(Parameters, Seq[Long])] = try {
+      sample(idx, reps)
+    } catch {
+      case e: Exception =>
+        log.error(s"Error running separate JVM: $e")
+        log.error(s"Classpath: ${sys.props("java.class.path")}")
+        throw e
+    }
+
     log.verbose(s"Running test set for ${context.scope}, curve ${context.goe(dsl.curve, "")}")
     log.verbose(s"Starting $totalreps measurements across $independentSamples independent JVM runs.")
 
     val timeseqs = for {
       idx <- 0 until independentSamples
       reps = repetitions(idx)
-    } yield sample(idx, reps)
+    } yield sampleReport(idx, reps)
 
     // ugly as hell
     val timeseq = timeseqs.reduceLeft { (accseq, timeseq) =>

@@ -55,7 +55,7 @@ object Main {
         case _ ~ "Cruns" ~ num => Configuration(Nil, Context(exec.benchRuns -> num.toInt))
       }
       def stringsetting: Parser[Configuration] = "-" ~ ident ~ ident ^^ {
-        case _ ~ "Cresultdir" ~ s => Configuration(Nil, Context(reporting.resultDir -> s))
+        case _ ~ "Cresultdir" ~ s => Configuration(Nil, Context(reports.resultDir -> s))
       }
       def flag: Parser[Configuration] = "-" ~ ident ^^ {
         case _ ~ "verbose" => Configuration(Nil, Context(Key.verbose -> true))

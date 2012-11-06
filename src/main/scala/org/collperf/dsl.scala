@@ -41,7 +41,7 @@ trait DSL {
     }
   }
 
-  def using[T](gen: Gen[T]) = Using(Setup(setupzipper.value.current.context, gen, None, None, None, null))
+  def using[T](gen: Gen[T]) = Using(Setup(setupzipper.value.current.context + (Key.dsl.curve -> freshCurveName()), gen, None, None, None, null))
 
   def include[T <: PerformanceTest.Initialization: Manifest] = withinInclude.withValue(true) {
     manifest[T].erasure.newInstance
@@ -57,11 +57,15 @@ object DSL {
 
   private[collperf] val setupzipper = new DynamicVariable(Tree.Zipper.root[Setup[_]])
 
-  protected[collperf] def descendInScope(name: String, context: Context)(body: =>Unit) {
+  private[collperf] def descendInScope(name: String, context: Context)(body: =>Unit) {
     setupzipper.value = setupzipper.value.descend.setContext(context)
     body
     setupzipper.value = setupzipper.value.ascend
   }
+
+  private[collperf] val curveNameCount = new java.util.concurrent.atomic.AtomicInteger(0)
+
+  private[collperf] def freshCurveName(): String = "Test-" + curveNameCount.getAndIncrement()
 
 }
 

@@ -244,7 +244,7 @@ object Executor {
         val magni = context.goe(magnitude, 0.0)
         val noise = noiseFunction(observations, magni)
         val withnoise = observations map {
-          x => (x + noise(x)).toLong
+          x => (x + 0.49 + noise(x)).toLong
         }
 
         log.verbose("After applying noise: " + withnoise.mkString(", "))

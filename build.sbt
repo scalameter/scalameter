@@ -1,6 +1,8 @@
 
 
-name := "collection-performance"
+name := "scalameter"
+
+organization := "org.scalameter"
 
 version := "0.1"
 
@@ -12,3 +14,4 @@ libraryDependencies ++= List(
   "org.apache.commons" % "commons-math3" % "3.0",
   "org.scala-tools.testing" % "test-interface" % "0.5"
 )
+

@@ -28,7 +28,8 @@ class JvmPerSetupExecutor(val aggregator: Aggregator, val measurer: Executor.Mea
     val initial = initialContext
     val agg = aggregator
     val m = measurer
-    runner.run(jvmflags()) {
+    val jvmContext = createJvmContext(setup.context, startHeap = startHeap, maxHeap = maxHeap)
+    runner.run(jvmContext) {
       dyn.initialContext.value = initial
       val delegate = new LocalExecutor(agg, m)
       delegate.runSetup(setup)

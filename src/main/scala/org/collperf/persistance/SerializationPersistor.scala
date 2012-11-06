@@ -6,7 +6,7 @@ package persistance
 import java.util.Date
 import java.io._
 import collection._
-import Key.reporting._
+import Key.reports._
 
 
 
@@ -23,7 +23,9 @@ case class SerializationPersistor(path: File) extends Persistor {
     if (!file.exists || !file.isFile) History(Nil)
     else {
       val fis = new FileInputStream(file)
-      val ois = new ObjectInputStream(fis)
+      val ois = new ObjectInputStream(fis) {
+        override def resolveClass(desc: ObjectStreamClass) = Class.forName(desc.getName)
+      }
       try {
         ois.readObject().asInstanceOf[History]
       } finally {

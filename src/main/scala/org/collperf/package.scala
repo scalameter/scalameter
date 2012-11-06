@@ -10,10 +10,20 @@ import scala.util.DynamicVariable
 
 package object collperf {
 
+  trait Foreach[T] {
+    def foreach[U](f: T => U): Unit
+  }
+
+  class MonadicDynVar[T](v: T) extends DynamicVariable(v) {
+    def using(nv: T) = new Foreach[Unit] {
+      def foreach[U](f: Unit => U) = withValue(nv)(f())
+    }
+  }
+
   private[collperf] object dyn {
-    val initialContext = new DynamicVariable(Context.topLevel)
-    val log = new DynamicVariable[Log](Log.Console)
-    val events = new DynamicVariable[Events](Events.None)
+    val initialContext = new MonadicDynVar(Context.topLevel)
+    val log = new MonadicDynVar[Log](Log.Console)
+    val events = new MonadicDynVar[Events](Events.None)
   }
 
   def initialContext: Context = dyn.initialContext.value
@@ -140,6 +150,7 @@ package collperf {
   case class Context(properties: immutable.Map[String, Any]) {
     def +(t: (String, Any)) = Context(properties + t)
     def ++(that: Context) = Context(this.properties ++ that.properties)
+    def ++(that: Seq[(String, Any)]) = Context(this.properties ++ that)
     def get[T](key: String) = properties.get(key).asInstanceOf[Option[T]]
     def goe[T](key: String, v: T) = properties.getOrElse(key, v).asInstanceOf[T]
 
@@ -152,12 +163,19 @@ package collperf {
 
     val empty = new Context(immutable.Map())
 
-    val topLevel = machine + (dsl.scope -> Nil) + (exec.benchRuns -> 36) + (exec.minWarmupRuns -> 10) + (exec.maxWarmupRuns -> 50)
+    val topLevel = machine ++ List(
+      dsl.scope -> Nil,
+      exec.benchRuns -> 36,
+      exec.minWarmupRuns -> 10,
+      exec.maxWarmupRuns -> 50,
+      classpath -> sys.props("java.class.path"),
+      reports.resultDir -> "tmp"
+    )
 
     def machine = Context(immutable.Map(
-      Key.machine.jvmVersion -> sys.props("java.vm.version"),
-      Key.machine.jvmVendor -> sys.props("java.vm.vendor"),
-      Key.machine.jvmName -> sys.props("java.vm.name"),
+      Key.machine.jvm.version -> sys.props("java.vm.version"),
+      Key.machine.jvm.vendor -> sys.props("java.vm.vendor"),
+      Key.machine.jvm.name -> sys.props("java.vm.name"),
       Key.machine.osName -> sys.props("os.name"),
       Key.machine.osArch -> sys.props("os.arch"),
       Key.machine.cores -> Runtime.getRuntime.availableProcessors,

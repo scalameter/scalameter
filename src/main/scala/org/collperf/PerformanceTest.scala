@@ -34,7 +34,7 @@ object PerformanceTest {
       val resulttree = executor.run(setuptree.asInstanceOf[Tree[Setup[SameType]]])
       val dateend = new java.util.Date
 
-      val datedtree = resulttree.copy(context = resulttree.context + (Key.reporting.startDate -> datestart) + (Key.reporting.endDate -> dateend))
+      val datedtree = resulttree.copy(context = resulttree.context + (Key.reports.startDate -> datestart) + (Key.reports.endDate -> dateend))
       reporter.report(datedtree, persistor)
     }
 
@@ -55,7 +55,6 @@ object PerformanceTest {
       lazy val aggregator = Aggregator.min
       lazy val measurer = new Measurer.Default()
       lazy val executor = execution.LocalExecutor(aggregator, measurer)
-      lazy val persistor = Persistor.None
     }
 
     trait MinimalTime extends PerformanceTest {
