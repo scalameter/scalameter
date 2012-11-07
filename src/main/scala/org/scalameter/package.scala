@@ -285,6 +285,65 @@ package scalameter {
     }
   }
 
+  /** Import the contents of this singleton object to obtain access to most abstractions
+   *  in the ScalaMeter API.
+   *
+   *  Note that some definitions might shadow others, so if you import the contents of this
+   *  object, you should not import the contents of other packages directly.
+   *
+   *  This object contains:
+   *  - basic datatypes and singleton objects for writing tests, like `PerformanceTest`
+   *  - all the context map keys
+   *  - contents of the `execution` package
+   *  - contents of the `reporting` package
+   *  - contents of the `persistance` package
+   *  - the `Executor.Measurer` object
+   *  - the `RegressionReporter.Tester` object
+   *  - the `RegressionReporter.Historian` object
+   *  - the `ChartReporter.ChartFactory` object
+   *  - the `HtmlReporter.Renderer` object
+   *  - and much more...
+   */
+  object api extends Key {
+
+    type Gen[T] = org.scalameter.Gen[T]
+    val Gen = org.scalameter.Gen
+
+    type PerformanceTest = org.scalameter.PerformanceTest
+    val PerformanceTest = org.scalameter.PerformanceTest
+
+    /* execution */
+
+    val LocalExecutor = execution.LocalExecutor
+    val JvmPerSetupExecutor = execution.JvmPerSetupExecutor
+    val MultipleJvmPerSetupExecutor = execution.MultipleJvmPerSetupExecutor
+
+    val Measurer = Executor.Measurer
+
+    /* reporting */
+
+    type ChartReporter = reporting.ChartReporter
+    type HtmlReporter = reporting.HtmlReporter
+    type LogginReporter = reporting.LoggingReporter
+    type RegressionReporter = reporting.RegressionReporter
+
+    val ChartReporter = reporting.ChartReporter
+    val HtmlReporter = reporting.HtmlReporter
+    val LoggingReporter = reporting.LoggingReporter
+    val RegressionReporter = reporting.RegressionReporter
+
+    val Tester = reporting.RegressionReporter.Tester
+    val Historian = reporting.RegressionReporter.Historian
+    val ChartFactory = reporting.ChartReporter.ChartFactory
+    val Renderer = reporting.HtmlReporter.Renderer
+
+    /* persistance */
+
+    type SerializationPersistor = persistance.SerializationPersistor
+    val SerializationPersistor = persistance.SerializationPersistor
+
+  }
+
 }
 
 

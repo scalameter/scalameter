@@ -5,7 +5,7 @@ package org.scalameter
 
 
 
-object Key {
+class Key {
 
   val verbose = "verbose"
   val classpath = "classpath"
@@ -70,3 +70,5 @@ object Key {
 
 }
 
+
+object Key extends Key

@@ -59,3 +59,9 @@ case class SerializationPersistor(path: File) extends Persistor {
   }
 }
 
+
+object SerializationPersistor {
+
+  def apply() = new SerializationPersistor
+
+}

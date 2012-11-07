@@ -7,7 +7,7 @@ import utils.Tree
 
 
 
-class LoggingReporter extends Reporter {
+case class LoggingReporter() extends Reporter {
 
   def report(result: CurveData, persistor: Persistor) {
     // output context
@@ -30,7 +30,7 @@ class LoggingReporter extends Reporter {
 }
 
 
-
+object LoggingReporter
 
 
 
