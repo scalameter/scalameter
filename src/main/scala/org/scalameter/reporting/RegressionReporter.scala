@@ -155,11 +155,11 @@ object RegressionReporter {
       }
     }
 
-    case class ANOVA(defaultSignificance: Double) extends Tester {
+    case class ANOVA() extends Tester {
       def apply(context: Context, curvedata: CurveData, corresponding: Seq[CurveData]): Boolean = {
         log(s"${ansi.green}- ${curvedata.context.curve} measurements:${ansi.reset}")
 
-        val significance = curvedata.context.goe(reports.regression.significance, defaultSignificance)
+        val significance = curvedata.context.goe(reports.regression.significance, 1e-10)
         val allmeasurements = (corresponding :+ curvedata) map (_.measurements)
         val measurementtable = allmeasurements.flatten.groupBy(_.params)
         val pointspassed = for {
@@ -193,7 +193,7 @@ object RegressionReporter {
       }
     }
 
-    case class ConfidenceIntervals(defaultSignificance: Double, strict: Boolean = false) extends Tester {
+    case class ConfidenceIntervals(strict: Boolean = false) extends Tester {
       def cistr(ci: (Double, Double)) = f"<${ci._1}%.2f, ${ci._2}%.2f>"
 
       def single(previous: Measurement, latest: Measurement, sig: Double): (Boolean, String) = {
@@ -232,7 +232,7 @@ object RegressionReporter {
       def apply(context: Context, curvedata: CurveData, corresponding: Seq[CurveData]): Boolean = {
         log(s"${ansi.green}- ${curvedata.context.curve} measurements:${ansi.reset}")
 
-        val significance = curvedata.context.goe(reports.regression.significance, defaultSignificance)
+        val significance = curvedata.context.goe(reports.regression.significance, 1e-10)
         val previousmeasurements = corresponding map (_.measurements)
         val measurementtable = previousmeasurements.flatten.groupBy(_.params)
         val pointspassed = for {

@@ -103,7 +103,7 @@ object PerformanceTest {
 
     trait Regression extends PerformanceTest {
       lazy val reporter = org.scalameter.Reporter.Composite(
-        RegressionReporter(RegressionReporter.Tester.ConfidenceIntervals(0.02), RegressionReporter.Historian.ExponentialBackoff()),
+        RegressionReporter(RegressionReporter.Tester.ConfidenceIntervals(), RegressionReporter.Historian.ExponentialBackoff()),
         new HtmlReporter(HtmlReporter.Renderer.regression: _*)
       )
     }

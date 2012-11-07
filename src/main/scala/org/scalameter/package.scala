@@ -170,7 +170,7 @@ package scalameter {
       exec.maxWarmupRuns -> 50,
       classpath -> sys.props("java.class.path"),
       reports.resultDir -> "tmp",
-      exec.jvmflags -> "-Xmx${maxHeap}m -Xms${startHeap}m -XX:CompileThreshold=1"
+      exec.jvmflags -> "-Xmx2048m -Xms2048m -XX:CompileThreshold=1"
     )
 
     def machine = Context(immutable.Map(
