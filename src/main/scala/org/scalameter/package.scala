@@ -292,7 +292,7 @@ package scalameter {
    *  object, you should not import the contents of other packages directly.
    *
    *  This object contains:
-   *  - basic datatypes and singleton objects for writing tests, like `PerformanceTest`
+   *  - basic datatypes and singleton objects for writing tests, such as `PerformanceTest`
    *  - all the context map keys
    *  - contents of the `execution` package
    *  - contents of the `reporting` package
@@ -312,6 +312,12 @@ package scalameter {
     type PerformanceTest = org.scalameter.PerformanceTest
     val PerformanceTest = org.scalameter.PerformanceTest
 
+    type Reporter = org.scalameter.Reporter
+    val Reporter = org.scalameter.Reporter
+
+    type Persistor = org.scalameter.Persistor
+    val Persistor = org.scalameter.Persistor
+
     /* execution */
 
     val LocalExecutor = execution.LocalExecutor
@@ -323,13 +329,15 @@ package scalameter {
     /* reporting */
 
     type ChartReporter = reporting.ChartReporter
-    type HtmlReporter = reporting.HtmlReporter
-    type LogginReporter = reporting.LoggingReporter
-    type RegressionReporter = reporting.RegressionReporter
-
     val ChartReporter = reporting.ChartReporter
+
+    type HtmlReporter = reporting.HtmlReporter
     val HtmlReporter = reporting.HtmlReporter
+
+    type LogginReporter = reporting.LoggingReporter
     val LoggingReporter = reporting.LoggingReporter
+
+    type RegressionReporter = reporting.RegressionReporter
     val RegressionReporter = reporting.RegressionReporter
 
     val Tester = reporting.RegressionReporter.Tester

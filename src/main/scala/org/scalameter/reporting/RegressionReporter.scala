@@ -32,7 +32,7 @@ case class RegressionReporter(test: RegressionReporter.Tester, historian: Regres
 
   def report(results: Tree[CurveData], persistor: Persistor) {
     log("")
-    log(s"${ansi.green}:::Regression test results - $test:::${ansi.reset}")
+    log(s"${ansi.green}:::Summary of regression test results - $test:::${ansi.reset}")
 
     val oks = for {
       (context, curves) <- results.scopes
@@ -149,7 +149,7 @@ object RegressionReporter {
 
     case class Accepter() extends Tester {
       def apply(context: Context, curvedata: CurveData, corresponding: Seq[CurveData]): Boolean = {
-        log(s"${ansi.green}- ${curvedata.context.curve} measurements:${ansi.reset}")
+        log(s"${ansi.green}- ${context.scope}.${curvedata.context.curve} measurements:${ansi.reset}")
 
         true
       }
@@ -157,7 +157,7 @@ object RegressionReporter {
 
     case class ANOVA() extends Tester {
       def apply(context: Context, curvedata: CurveData, corresponding: Seq[CurveData]): Boolean = {
-        log(s"${ansi.green}- ${curvedata.context.curve} measurements:${ansi.reset}")
+        log(s"${ansi.green}- ${context.scope}.${curvedata.context.curve} measurements:${ansi.reset}")
 
         val significance = curvedata.context.goe(reports.regression.significance, 1e-10)
         val allmeasurements = (corresponding :+ curvedata) map (_.measurements)
@@ -230,7 +230,7 @@ object RegressionReporter {
       }
 
       def apply(context: Context, curvedata: CurveData, corresponding: Seq[CurveData]): Boolean = {
-        log(s"${ansi.green}- ${curvedata.context.curve} measurements:${ansi.reset}")
+        log(s"${ansi.green}- ${context.scope}.${curvedata.context.curve} measurements:${ansi.reset}")
 
         val significance = curvedata.context.goe(reports.regression.significance, 1e-10)
         val previousmeasurements = corresponding map (_.measurements)

@@ -65,3 +65,4 @@ object SerializationPersistor {
   def apply() = new SerializationPersistor
 
 }
+
