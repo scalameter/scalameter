@@ -27,11 +27,7 @@ class MultipleJvmPerSetupExecutor(val aggregator: Aggregator, val measurer: Exec
 
   def defaultIndependentSamples = 9
 
-  def run[T](setuptree: Tree[Setup[T]]): Tree[CurveData] = {
-    for (setup <- setuptree) yield runSetup(setup)
-  }
-
-  private[execution] def runSetup[T](setup: Setup[T]): CurveData = {
+  def runSetup[T](setup: Setup[T]): CurveData = {
     import setup._
 
     val warmups = context.goe(exec.maxWarmupRuns, 10)

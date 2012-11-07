@@ -30,7 +30,7 @@ class LocalExecutor(val aggregator: Aggregator, val measurer: Executor.Measurer)
 
   import Key._
 
-  def run[T](setups: Tree[Setup[T]]) = {
+  override def run[T](setups: Tree[Setup[T]]) = {
     // run all warmups for classloading purposes
     for (bench <- setups) {
       import bench._
@@ -47,7 +47,7 @@ class LocalExecutor(val aggregator: Aggregator, val measurer: Executor.Measurer)
     }
   }
 
-  private[execution] def runSetup[T](bsetup: Setup[T]): CurveData = {
+  def runSetup[T](bsetup: Setup[T]): CurveData = {
     import bsetup._
 
     log.verbose(s"Running test set for ${bsetup.context.scope}, curve ${bsetup.context.goe(dsl.curve, "")}")

@@ -10,7 +10,13 @@ import utils.{withGCNotification, Tree}
 
 trait Executor {
 
-  def run[T](setups: Tree[Setup[T]]): Tree[CurveData]
+  def run[T](setuptree: Tree[Setup[T]]): Tree[CurveData] = {
+    for (setup <- setuptree) yield {
+      runSetup(setup)
+    }
+  }
+
+  def runSetup[T](setup: Setup[T]): CurveData
 
 }
 
@@ -20,7 +26,7 @@ object Executor {
   import Key._
 
   object None extends Executor {
-    def run[T](setups: Tree[Setup[T]]): Tree[CurveData] = ???
+    def runSetup[T](setup: Setup[T]): CurveData = ???
   }
 
   trait Factory[E <: Executor] {

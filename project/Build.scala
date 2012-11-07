@@ -6,7 +6,7 @@ import java.io.File
 
 
 
-object CollPerfBuild extends Build {
+object ScalaMeterBuild extends Build {
   
   /* tasks and settings */
   
@@ -38,7 +38,7 @@ object CollPerfBuild extends Build {
     (argTask, javaCommand) map {
       (args, jc) =>
       val javacommand = jc
-      val comm = javacommand + " " + "org.collperf.Main" + " " + args.mkString(" ")
+      val comm = javacommand + " " + "org.scalameter.Main" + " " + args.mkString(" ")
       println("Executing: " + comm)
       comm!
     }

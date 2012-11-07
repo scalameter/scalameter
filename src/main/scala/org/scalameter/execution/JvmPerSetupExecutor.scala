@@ -20,11 +20,7 @@ class JvmPerSetupExecutor(val aggregator: Aggregator, val measurer: Executor.Mea
 
   def startHeap = 2048
 
-  def run[T](setuptree: Tree[Setup[T]]): Tree[CurveData] = {
-    for (setup <- setuptree) yield runSetup(setup)
-  }
-
-  private[execution] def runSetup[T](setup: Setup[T]): CurveData = {
+  def runSetup[T](setup: Setup[T]): CurveData = {
     val initial = initialContext
     val agg = aggregator
     val m = measurer

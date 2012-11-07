@@ -64,6 +64,10 @@ case class HtmlReporter(val renderers: HtmlReporter.Renderer*) extends Reporter 
     dateoption.getOrElse(<div>No date information.</div>)
   }
   
+  def report(result: CurveData, persistor: Persistor) {
+    // nothing - the charts are generated only at the end
+  }
+
   def report(results: Tree[CurveData], persistor: Persistor) {
     val resultdir = results.context.goe(reports.resultDir, "tmp")
 

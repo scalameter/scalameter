@@ -14,7 +14,8 @@ class ScalaMeterFramework extends Framework {
   def name = "ScalaMeter"
 
   def tests = Array[Fingerprint](
-    PerformanceTestFingerprint
+    PerformanceTestClassFingerprint,
+    PerformanceTestModuleFingerprint
   )
 
   def testRunner(testClassLoader: ClassLoader, loggers: Array[Logger]) = new Runner2 {
@@ -59,21 +60,28 @@ class ScalaMeterFramework extends Framework {
         _ <- dyn.log.using(complog)
         _ <- dyn.events.using(tievents)
         _ <- dyn.initialContext.using(initialContext ++ Main.Configuration.fromCommandLineArgs(args).context + (Key.classpath -> testcp))
-      } {
-        try testClassLoader.loadClass(testClassName).newInstance
-        catch {
-          case e: Exception =>
-            println("Test threw exception: " + e)
-            e.printStackTrace()
-            throw e
-        }
-        ()
-      }
+      } try fingerprint match {
+        case PerformanceTestClassFingerprint =>
+          val ptest = testClassLoader.loadClass(testClassName).newInstance.asInstanceOf[PerformanceTest]
+        case PerformanceTestModuleFingerprint =>
+          val module = Class.forName(testClassName + "$", true, testClassLoader)
+          val ptest = module.getField("MODULE$").get(null).asInstanceOf[PerformanceTest]
+      } catch {
+        case e: Exception =>
+          println("Test threw exception: " + e)
+          e.printStackTrace()
+          throw e
+      }  
     }
   }
 
-  private case object PerformanceTestFingerprint extends SubclassFingerprint {
+  private case object PerformanceTestClassFingerprint extends SubclassFingerprint {
     def isModule = false
+    def superClassName = classOf[PerformanceTest].getName
+  }
+
+  private case object PerformanceTestModuleFingerprint extends SubclassFingerprint {
+    def isModule = true
     def superClassName = classOf[PerformanceTest].getName
   }
 

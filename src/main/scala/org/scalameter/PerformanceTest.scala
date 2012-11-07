@@ -7,7 +7,13 @@ import utils.Tree
 
 
 
-abstract class PerformanceTest extends PerformanceTest.Initialization
+abstract class PerformanceTest extends PerformanceTest.Initialization {
+
+  def main(args: Array[String]) {
+    Main.main(args :+ "-benches" :+ this.getClass.getName)
+  }
+
+}
 
 
 object PerformanceTest {

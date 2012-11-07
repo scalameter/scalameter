@@ -13,14 +13,31 @@ import utils.Statistics._
 case class RegressionReporter(test: RegressionReporter.Tester, historian: RegressionReporter.Historian) extends Reporter {
   import RegressionReporter.ansi
 
+  private val historyCache = mutable.Map[Context, History]()
+
+  def loadHistory(ctx: Context, persistor: Persistor) = historyCache.get(ctx) match {
+    case Some(h) => h
+    case None =>
+      val h = persistor.load(ctx)
+      historyCache.put(ctx, h)
+      h
+  }
+
+  def report(curvedata: CurveData, persistor: Persistor) {
+    val ctx = curvedata.context
+    val curvetable = loadHistory(ctx, persistor).curveTable
+    val corresponding = curvetable.getOrElse(curvedata.context.curve, Seq(curvedata))
+    test(ctx, curvedata, corresponding)
+  }
+
   def report(results: Tree[CurveData], persistor: Persistor) {
     log(s"${ansi.green}::Regression test results - $test::${ansi.reset}")
 
     val oks = for {
       (context, curves) <- results.scopes
       if curves.nonEmpty
-      history = persistor.load(context)
-      curvetable = history.results.map(_._3).flatten.groupBy(_.context.curve)
+      history = loadHistory(context, persistor)
+      curvetable = history.curveTable
     } yield {
       log(s"${ansi.green}Test group: ${context.scope}${ansi.reset}")
 

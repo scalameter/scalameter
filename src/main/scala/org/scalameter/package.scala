@@ -211,6 +211,7 @@ package scalameter {
   @SerialVersionUID(-2666789428423525666L)
   case class History(results: Seq[History.Entry], infomap: Map[String, Any] = Map.empty) {
     def info[T](key: String, fallback: T) = infomap.getOrElse(key, fallback).asInstanceOf[T]
+    def curveTable: Map[String, Seq[CurveData]] = results.map(_._3).flatten.groupBy(_.context.curve)
 
     override def toString = s"History(${results.mkString("\n")},\ninfo: $infomap)"
   }

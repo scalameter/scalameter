@@ -28,7 +28,11 @@ case class ChartReporter(fileNamePrefix: String, drawer: ChartReporter.ChartFact
   private[reporting] val defaultChartWidth = 1600
   private[reporting] val defaultChartHeight = 1200
 
-  def report(result: Tree[CurveData], persistor: Persistor) = for ((ctx, curves) <- result.scopes) {
+  def report(result: CurveData, persistor: Persistor) {
+    // nothing - the charts are generated only at the end
+  }
+
+  def report(result: Tree[CurveData], persistor: Persistor) = for ((ctx, curves) <- result.scopes if curves.nonEmpty) {
     val scopename = ctx.scope
     val history = persistor.load(ctx)
     val chart = drawer.createChart(scopename, curves, history)
@@ -133,8 +137,8 @@ object ChartReporter {
           /* The first `colors.size` curves from `cs` have their colors specified by `colors`,
           and the rest are assigned some default set of colors. */
           // cannot use curveIndex for coloring the curve, because we color two curves at a time
-          colorNextCurve
-          colorNextCurve
+          colorNextCurve()
+          colorNextCurve()
           /* We may want to call other methods from the JFreeChart API, as there are a
           lot of them related to appearance in class DeviationRenderer and in its parent classes */
         }
@@ -150,7 +154,7 @@ object ChartReporter {
       }
     }
 
-    case class Histogram extends ChartFactory {
+    case class Histogram() extends ChartFactory {
       def createChart(scopename: String, cs: Seq[CurveData], history: History, colors: Seq[Color] = Seq()): JFreeChart = {
         val chartName = scopename
         val xAxisName = cs.head.measurements.head.params.axisData.head._1 //date (for trend histogram), or size (for normal histogram)
