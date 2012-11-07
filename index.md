@@ -1,6 +1,9 @@
 ---
 layout: frontpage
-title: ScalaMeter Documentation
+title: ScalaMeter Website
 ---
+
+
+# ScalaMeter
 
 
