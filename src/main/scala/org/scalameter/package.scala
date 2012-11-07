@@ -168,9 +168,10 @@ package scalameter {
       exec.benchRuns -> 36,
       exec.minWarmupRuns -> 10,
       exec.maxWarmupRuns -> 50,
+      exec.jvmflags -> "-Xmx2048m -Xms2048m -XX:CompileThreshold=1",
       classpath -> sys.props("java.class.path"),
       reports.resultDir -> "tmp",
-      exec.jvmflags -> "-Xmx2048m -Xms2048m -XX:CompileThreshold=1"
+      reports.regression.significance -> 1e-10
     )
 
     def machine = Context(immutable.Map(
