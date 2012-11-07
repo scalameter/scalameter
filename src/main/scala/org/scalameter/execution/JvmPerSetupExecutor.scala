@@ -16,15 +16,11 @@ class JvmPerSetupExecutor(val aggregator: Aggregator, val measurer: Executor.Mea
 
   val runner = new JvmRunner
 
-  def maxHeap = 2048
-
-  def startHeap = 2048
-
   def runSetup[T](setup: Setup[T]): CurveData = {
     val initial = initialContext
     val agg = aggregator
     val m = measurer
-    val jvmContext = createJvmContext(setup.context, startHeap = startHeap, maxHeap = maxHeap)
+    val jvmContext = createJvmContext(setup.context)
     runner.run(jvmContext) {
       dyn.initialContext.value = initial
       val delegate = new LocalExecutor(agg, m)

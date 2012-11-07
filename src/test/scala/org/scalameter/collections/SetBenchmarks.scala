@@ -16,7 +16,7 @@ class SetBenchmarks extends PerformanceTest.Regression with Collections {
 
   performance of "Set" in {
 
-    measure method "apply" configuration (
+    measure method "apply" config (
       exec.minWarmupRuns -> 25,
       exec.benchRuns -> 40,
       exec.independentSamples -> 10,
@@ -56,7 +56,7 @@ class SetBenchmarks extends PerformanceTest.Regression with Collections {
         }
       }
 
-      using(hashtriesets(from, to, by)) curve("immutable.HashSet") configuration (
+      using(hashtriesets(from, to, by)) curve("immutable.HashSet") config (
         exec.benchRuns -> 36,
         exec.independentSamples -> 6,
         exec.reinstantiation.frequency -> 1,
@@ -84,7 +84,7 @@ class SetBenchmarks extends PerformanceTest.Regression with Collections {
 
     }
 
-    measure method "add" configuration (
+    measure method "add" config (
       exec.minWarmupRuns -> 15,
       exec.benchRuns -> 32,
       exec.independentSamples -> 8,
@@ -123,7 +123,7 @@ class SetBenchmarks extends PerformanceTest.Regression with Collections {
 
     }
 
-    measure method "update" configuration (
+    measure method "update" config (
       exec.minWarmupRuns -> 15,
       exec.benchRuns -> 32,
       exec.independentSamples -> 8,
@@ -145,7 +145,7 @@ class SetBenchmarks extends PerformanceTest.Regression with Collections {
           }
       }
 
-      using(sized(avlsets(from, to, by))) curve("mutable.TreeSet") configuration (
+      using(sized(avlsets(from, to, by))) curve("mutable.TreeSet") config (
         exec.minWarmupRuns -> 6,
         exec.benchRuns -> 30,
         exec.independentSamples -> 4
@@ -162,7 +162,7 @@ class SetBenchmarks extends PerformanceTest.Regression with Collections {
       }
     }
 
-    measure method "remove" configuration (
+    measure method "remove" config (
       exec.minWarmupRuns -> 15,
       exec.benchRuns -> 35,
       exec.independentSamples -> 5,
@@ -197,7 +197,7 @@ class SetBenchmarks extends PerformanceTest.Regression with Collections {
       }
     }
 
-    measure method "+" configuration (
+    measure method "+" config (
       exec.minWarmupRuns -> 15,
       exec.benchRuns -> 35,
       exec.independentSamples -> 5,
@@ -227,7 +227,7 @@ class SetBenchmarks extends PerformanceTest.Regression with Collections {
 
     }
 
-    measure method "-" configuration (
+    measure method "-" config (
       exec.minWarmupRuns -> 15,
       exec.benchRuns -> 35,
       exec.independentSamples -> 5,

@@ -10,9 +10,11 @@ import utils.{withGCNotification, Tree}
 
 trait Executor {
 
-  def run[T](setuptree: Tree[Setup[T]]): Tree[CurveData] = {
+  def run[T](setuptree: Tree[Setup[T]], reporter: Reporter, persistor: Persistor): Tree[CurveData] = {
     for (setup <- setuptree) yield {
-      runSetup(setup)
+      val cd = runSetup(setup)
+      reporter.report(cd, persistor)
+      cd
     }
   }
 

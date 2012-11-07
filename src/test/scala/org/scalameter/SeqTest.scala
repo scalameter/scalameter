@@ -66,7 +66,7 @@ abstract class SeqTesting extends PerformanceTest {
 
   performance of "Large-Seq" in {
 
-    // measure method "foreach" configuration (
+    // measure method "foreach" config (
     //   Key.benchRuns -> 36,
     //   Key.independentSamples -> 9,
     //   Key.significance -> 1e-13
@@ -88,7 +88,7 @@ abstract class SeqTesting extends PerformanceTest {
     //     xs.foreach(sum += _)
     //   }
 
-    //   using(lists(from)) curve("List") configuration (
+    //   using(lists(from)) curve("List") config (
     //     Key.benchRuns -> 32,
     //     Key.independentSamples -> 4,
     //     Key.fullGC -> true,
@@ -100,7 +100,7 @@ abstract class SeqTesting extends PerformanceTest {
     //   }
     // }
   
-    // measure method "reduce" configuration (
+    // measure method "reduce" config (
     //   Key.benchRuns -> 36,
     //   Key.independentSamples -> 9,
     //   Key.significance -> 1e-13
@@ -121,7 +121,7 @@ abstract class SeqTesting extends PerformanceTest {
     //     _.reduce(_ + _)
     //   }
 
-    //   using(lists()) curve("List") configuration (
+    //   using(lists()) curve("List") config (
     //     Key.benchRuns -> 20,
     //     Key.independentSamples -> 4,
     //     Key.fullGC -> true,
@@ -132,7 +132,7 @@ abstract class SeqTesting extends PerformanceTest {
     //   }
     // }
     
-    // measure method "filter" configuration (
+    // measure method "filter" config (
     //   Key.benchRuns -> 36,
     //   Key.significance -> 1e-13,
     //   Key.independentSamples -> 9
@@ -153,7 +153,7 @@ abstract class SeqTesting extends PerformanceTest {
     //     _.filter(_ % 2 == 0)
     //   }
 
-    //   using(lists(from, to, by)) curve("List") configuration (
+    //   using(lists(from, to, by)) curve("List") config (
     //     Key.benchRuns -> 48,
     //     Key.independentSamples -> 6,
     //     Key.fullGC -> true,
@@ -164,7 +164,7 @@ abstract class SeqTesting extends PerformanceTest {
     //   }
     // }
 
-    // measure method "groupBy" configuration (
+    // measure method "groupBy" config (
     //   Key.benchRuns -> 36,
     //   Key.significance -> 1e-13,
     //   Key.independentSamples -> 9
@@ -185,7 +185,7 @@ abstract class SeqTesting extends PerformanceTest {
     //     _.groupBy(_ % 10)
     //   }
 
-    //   using(lists(from, to, by)) curve("List") configuration (
+    //   using(lists(from, to, by)) curve("List") config (
     //     Key.benchRuns -> 24,
     //     Key.independentSamples -> 4,
     //     Key.fullGC -> true,

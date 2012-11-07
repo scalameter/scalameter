@@ -31,7 +31,8 @@ case class RegressionReporter(test: RegressionReporter.Tester, historian: Regres
   }
 
   def report(results: Tree[CurveData], persistor: Persistor) {
-    log(s"${ansi.green}::Regression test results - $test::${ansi.reset}")
+    log("")
+    log(s"${ansi.green}:::Regression test results - $test:::${ansi.reset}")
 
     val oks = for {
       (context, curves) <- results.scopes
@@ -148,11 +149,13 @@ object RegressionReporter {
 
     case class Accepter() extends Tester {
       def apply(context: Context, curvedata: CurveData, corresponding: Seq[CurveData]): Boolean = {
+        log(s"${ansi.green}- ${curvedata.context.curve} measurements:${ansi.reset}")
+
         true
       }
     }
 
-    case class ANOVA(defaultSignificance: Double, logging: Boolean = true) extends Tester {
+    case class ANOVA(defaultSignificance: Double) extends Tester {
       def apply(context: Context, curvedata: CurveData, corresponding: Seq[CurveData]): Boolean = {
         log(s"${ansi.green}- ${curvedata.context.curve} measurements:${ansi.reset}")
 
@@ -190,7 +193,7 @@ object RegressionReporter {
       }
     }
 
-    case class ConfidenceIntervals(defaultSignificance: Double, strict: Boolean = false, logging: Boolean = true) extends Tester {
+    case class ConfidenceIntervals(defaultSignificance: Double, strict: Boolean = false) extends Tester {
       def cistr(ci: (Double, Double)) = f"<${ci._1}%.2f, ${ci._2}%.2f>"
 
       def single(previous: Measurement, latest: Measurement, sig: Double): (Boolean, String) = {

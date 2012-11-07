@@ -16,7 +16,7 @@ class TraversableBenchmarks extends PerformanceTest.Regression with Collections 
 
   performance of "Traversable" in {
 
-    measure method "foreach" configuration (
+    measure method "foreach" config (
       exec.benchRuns -> 36,
       exec.independentSamples -> 9,
       reports.regression.significance -> 1e-13
@@ -40,7 +40,7 @@ class TraversableBenchmarks extends PerformanceTest.Regression with Collections 
         xs.foreach(sum += _)
       }
 
-      using(lists(from, to, by)) curve("List") configuration (
+      using(lists(from, to, by)) curve("List") config (
         exec.benchRuns -> 32,
         exec.independentSamples -> 4,
         exec.reinstantiation.fullGC -> true,
@@ -58,7 +58,7 @@ class TraversableBenchmarks extends PerformanceTest.Regression with Collections 
       }
     }
   
-    measure method "reduce" configuration (
+    measure method "reduce" config (
       exec.benchRuns -> 36,
       exec.independentSamples -> 9,
       reports.regression.significance -> 1e-13
@@ -79,7 +79,7 @@ class TraversableBenchmarks extends PerformanceTest.Regression with Collections 
         _.reduce(_ + _)
       }
 
-      using(lists(from, to, by)) curve("List") configuration (
+      using(lists(from, to, by)) curve("List") config (
         exec.benchRuns -> 20,
         exec.independentSamples -> 4,
         exec.reinstantiation.fullGC -> true,
@@ -94,7 +94,7 @@ class TraversableBenchmarks extends PerformanceTest.Regression with Collections 
       }
     }
     
-    measure method "filter" configuration (
+    measure method "filter" config (
       exec.benchRuns -> 36,
       reports.regression.significance -> 1e-13,
       exec.independentSamples -> 9
@@ -115,7 +115,7 @@ class TraversableBenchmarks extends PerformanceTest.Regression with Collections 
         _.filter(_ % 2 == 0)
       }
 
-      using(lists(from, to, by)) curve("List") configuration (
+      using(lists(from, to, by)) curve("List") config (
         exec.benchRuns -> 48,
         exec.independentSamples -> 6,
         exec.reinstantiation.fullGC -> true,
@@ -130,7 +130,7 @@ class TraversableBenchmarks extends PerformanceTest.Regression with Collections 
       }
     }
 
-    measure method "groupBy" configuration (
+    measure method "groupBy" config (
       exec.benchRuns -> 36,
       reports.regression.significance -> 1e-13,
       exec.independentSamples -> 9
@@ -151,7 +151,7 @@ class TraversableBenchmarks extends PerformanceTest.Regression with Collections 
         _.groupBy(_ % 10)
       }
 
-      using(lists(from, to, by)) curve("List") configuration (
+      using(lists(from, to, by)) curve("List") config (
         exec.benchRuns -> 24,
         exec.independentSamples -> 4,
         exec.reinstantiation.fullGC -> true,
@@ -168,7 +168,7 @@ class TraversableBenchmarks extends PerformanceTest.Regression with Collections 
       }
     }
 
-    measure method "map" configuration (
+    measure method "map" config (
       exec.benchRuns -> 36,
       reports.regression.significance -> 1e-13,
       exec.independentSamples -> 9
@@ -189,7 +189,7 @@ class TraversableBenchmarks extends PerformanceTest.Regression with Collections 
         _.map(_ * 2)
       }
 
-      using(lists(from, to, by)) curve("List") configuration (
+      using(lists(from, to, by)) curve("List") config (
         exec.benchRuns -> 48,
         exec.independentSamples -> 6,
         exec.reinstantiation.fullGC -> true,
@@ -204,7 +204,7 @@ class TraversableBenchmarks extends PerformanceTest.Regression with Collections 
       }
     }
 
-    measure method "flatMap" configuration (
+    measure method "flatMap" config (
       exec.benchRuns -> 36,
       reports.regression.significance -> 1e-13,
       exec.independentSamples -> 9
@@ -217,7 +217,7 @@ class TraversableBenchmarks extends PerformanceTest.Regression with Collections 
         _.flatMap(x => 0 until 2)
       }
 
-      using(arraybuffers(from, to, by)) curve("ArrayBuffer") configuration (
+      using(arraybuffers(from, to, by)) curve("ArrayBuffer") config (
       ) in {
         _.flatMap(x => 0 until 2)
       }
@@ -226,7 +226,7 @@ class TraversableBenchmarks extends PerformanceTest.Regression with Collections 
         _.flatMap(x => 0 until 2)
       }
 
-      using(lists(from, to, by)) curve("List") configuration (
+      using(lists(from, to, by)) curve("List") config (
         exec.benchRuns -> 48,
         exec.independentSamples -> 6,
         exec.reinstantiation.fullGC -> true,

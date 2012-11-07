@@ -16,7 +16,7 @@ class MapBenchmarks extends PerformanceTest.Regression with Collections {
 
   performance of "Map" in {
 
-    measure method "apply" configuration (
+    measure method "apply" config (
       exec.minWarmupRuns -> 25,
       exec.benchRuns -> 30,
       exec.independentSamples -> 6,
@@ -51,7 +51,7 @@ class MapBenchmarks extends PerformanceTest.Regression with Collections {
         sideeffect = sum
       }
 
-      using(hashtriemaps(from, to, by)) curve("immutable.HashMap") configuration (
+      using(hashtriemaps(from, to, by)) curve("immutable.HashMap") config (
         exec.benchRuns -> 48,
         exec.independentSamples -> 6,
         exec.reinstantiation.frequency -> 2,
@@ -70,7 +70,7 @@ class MapBenchmarks extends PerformanceTest.Regression with Collections {
         sideeffect = sum
       }
 
-      using(redblackmaps(from, to, by)) curve("immutable.TreeMap") configuration (
+      using(redblackmaps(from, to, by)) curve("immutable.TreeMap") config (
         exec.benchRuns -> 128,
         exec.independentSamples -> 6,
         exec.reinstantiation.frequency -> 2,
@@ -90,7 +90,7 @@ class MapBenchmarks extends PerformanceTest.Regression with Collections {
 
     }
 
-    measure method "get" configuration (
+    measure method "get" config (
       exec.minWarmupRuns -> 25,
       exec.benchRuns -> 30,
       exec.independentSamples -> 6,
@@ -120,7 +120,7 @@ class MapBenchmarks extends PerformanceTest.Regression with Collections {
         }
       }
 
-      using(hashtriemaps(from, to, by)) curve("immutable.HashMap") configuration (
+      using(hashtriemaps(from, to, by)) curve("immutable.HashMap") config (
         exec.minWarmupRuns -> 20,
         exec.benchRuns -> 48,
         exec.independentSamples -> 6,
@@ -138,7 +138,7 @@ class MapBenchmarks extends PerformanceTest.Regression with Collections {
         }
       }
 
-      using(redblackmaps(from, to, by)) curve("immutable.TreeMap") configuration (
+      using(redblackmaps(from, to, by)) curve("immutable.TreeMap") config (
         exec.benchRuns -> 128,
         exec.independentSamples -> 4,
         exec.reinstantiation.frequency -> 2,
@@ -156,7 +156,7 @@ class MapBenchmarks extends PerformanceTest.Regression with Collections {
 
     }
 
-    measure method "update" configuration (
+    measure method "update" config (
       exec.minWarmupRuns -> 25,
       exec.benchRuns -> 48,
       exec.independentSamples -> 6,
@@ -189,7 +189,7 @@ class MapBenchmarks extends PerformanceTest.Regression with Collections {
       }
     }
 
-    measure method "remove" configuration (
+    measure method "remove" config (
       exec.minWarmupRuns -> 25,
       exec.benchRuns -> 36,
       exec.independentSamples -> 6,
@@ -224,7 +224,7 @@ class MapBenchmarks extends PerformanceTest.Regression with Collections {
       }
     }
 
-    measure method "+" configuration (
+    measure method "+" config (
       exec.minWarmupRuns -> 10,
       exec.benchRuns -> 30,
       exec.independentSamples -> 6,
@@ -258,7 +258,7 @@ class MapBenchmarks extends PerformanceTest.Regression with Collections {
 
     }
 
-    measure method "-" configuration (
+    measure method "-" config (
       exec.minWarmupRuns -> 10,
       exec.benchRuns -> 30,
       exec.independentSamples -> 6,

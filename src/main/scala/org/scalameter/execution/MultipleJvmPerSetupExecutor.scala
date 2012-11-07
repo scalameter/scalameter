@@ -21,25 +21,19 @@ class MultipleJvmPerSetupExecutor(val aggregator: Aggregator, val measurer: Exec
 
   val runner = new JvmRunner
 
-  def maxHeap = 2048
-
-  def startHeap = 2048
-
-  def defaultIndependentSamples = 9
-
   def runSetup[T](setup: Setup[T]): CurveData = {
     import setup._
 
     val warmups = context.goe(exec.maxWarmupRuns, 10)
     val totalreps = context.goe(exec.benchRuns, 10)
-    val independentSamples = context.goe(exec.independentSamples, defaultIndependentSamples)
+    val independentSamples = context.goe(exec.independentSamples, 9)
     def repetitions(idx: Int): Int = {
       val is = independentSamples
       totalreps / is + (if (idx < totalreps % is) 1 else 0)
     }
 
     val m = measurer
-    val jvmContext = createJvmContext(context, startHeap = startHeap, maxHeap = maxHeap)
+    val jvmContext = createJvmContext(context)
 
     def sample(idx: Int, reps: Int): Seq[(Parameters, Seq[Long])] = runner.run(jvmContext) {
       dyn.initialContext.value = context

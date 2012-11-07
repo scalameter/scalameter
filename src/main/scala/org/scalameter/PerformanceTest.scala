@@ -37,7 +37,7 @@ object PerformanceTest {
     protected def executeTests() {
       val datestart = new java.util.Date
       val setuptree = setupzipper.value.result
-      val resulttree = executor.run(setuptree.asInstanceOf[Tree[Setup[SameType]]])
+      val resulttree = executor.run(setuptree.asInstanceOf[Tree[Setup[SameType]]], reporter, persistor)
       val dateend = new java.util.Date
 
       val datedtree = resulttree.copy(context = resulttree.context + (Key.reports.startDate -> datestart) + (Key.reports.endDate -> dateend))

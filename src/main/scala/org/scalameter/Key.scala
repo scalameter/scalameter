@@ -9,7 +9,6 @@ object Key {
 
   val verbose = "verbose"
   val classpath = "classpath"
-  val jvmflags = "jvm-flags"
 
   object dsl {
     val curve = "curve"
@@ -51,6 +50,7 @@ object Key {
     val minWarmupRuns = "min-warmups"
     val maxWarmupRuns = "max-warmups"
     val independentSamples = "independent-samples"
+    val jvmflags = "jvm-flags"
 
     object reinstantiation {
       val frequency = "frequency"

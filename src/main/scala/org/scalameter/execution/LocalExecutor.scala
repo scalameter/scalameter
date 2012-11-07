@@ -30,7 +30,7 @@ class LocalExecutor(val aggregator: Aggregator, val measurer: Executor.Measurer)
 
   import Key._
 
-  override def run[T](setups: Tree[Setup[T]]) = {
+  override def run[T](setups: Tree[Setup[T]], reporter: Reporter, persistor: Persistor) = {
     // run all warmups for classloading purposes
     for (bench <- setups) {
       import bench._
@@ -43,7 +43,9 @@ class LocalExecutor(val aggregator: Aggregator, val measurer: Executor.Measurer)
 
     // for every benchmark - do a warmup, and then measure
     for (bench <- setups) yield {
-      runSetup(bench)
+      val cd = runSetup(bench)
+      reporter.report(cd, persistor)
+      cd
     }
   }
 
