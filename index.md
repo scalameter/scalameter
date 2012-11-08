@@ -1,6 +1,6 @@
 ---
 layout: default
-title: ScalaMeter Website
+title: home
 ---
 
 

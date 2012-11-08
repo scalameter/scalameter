@@ -25,7 +25,7 @@
   src: url('../fonts/PressStart2P-Regular.ttf');
 }
 
-h1, p, body, html {
+body, html {
   margin: 0;
   padding: 0;
   height: 100%;
