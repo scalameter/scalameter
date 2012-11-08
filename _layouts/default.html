@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset=utf-8 />
+  <title> {% if page.title %} {{ page.title }} | {% endif %} ScalaMeter </title>
+  <link rel="stylesheet" href="resources/css/960.css" />
+  <link rel="stylesheet" href="resources/css/scalameter.css" />
+</head>
+<body>
+
+  <div id="top">
+    <div class="container_12">
+      <div class="grid_12">
+        <ul>
+          <li><a href="/">Home</a></li>
+          <!--<li><a href="/gettingstarted">Getting Started</a></li>
+          <li><a href="/download">Download</a></li>
+          <li><a href="/API">API</a></li>
+          <li><a href="/sourcecode">Source Code</a></li>-->
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div id="topdivider"></div>
+
+  <div id="header">
+    <div class="container_12">
+      <div class="grid_12">ScalaMeter</div>
+    </div>
+  </div>
+
+  <div id="headerdivider"></div>
+
+  <div id="content">
+    <div id="main" class="container_12">
+
+      <div class="grid_12">{{ content }}</div>
+
+    </div>
+  </div>
+
+  <div id="footer">
+    <div id="contentdivider"></div>
+  
+    <div class="container_12">
+      <div class="grid_12">ScalaMeter (c) 2012</div>
+    </div>
+  </div>
+
+</body>
+</html>

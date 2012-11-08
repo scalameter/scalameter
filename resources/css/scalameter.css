@@ -1,0 +1,50 @@
+
+
+h1, p, body, html {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+}
+
+#top {
+  background: #100000;
+  height: 24px;
+}
+
+#topdivider {
+  background: #6a4040;
+  height: 1px;
+}
+
+#header {
+  background-image: url('../images/header.png');
+  background-repeat: repeat-x;
+  height: 48px;
+}
+
+#headerdivider {
+  background: #6a3131;
+  height: 1px;
+}
+
+#content {
+  background-image: url('../images/content.png');
+  background-repeat: repeat;
+  padding-bottom: 96px;
+  min-height: 85%;
+}
+
+#contentdivider {
+  background: #3a1111;
+  height: 1px;  
+}
+
+#footer {
+  background-image: url('../images/footer.png');
+  background-repeat: repeat-x;
+  height: 96px;
+  clear: both;
+  position: relative;
+  z-index: 10;
+  margin-top: -96px;
+}
