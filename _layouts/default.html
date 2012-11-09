@@ -1,83 +1,21 @@
-<!DOCTYPE html>
-<html>
-<head>
-  <meta charset=utf-8 />
-  <title> {% if page.title %} {{ page.title }} | {% endif %} ScalaMeter </title>
-  <link rel="stylesheet" href="/resources/css/960.css" />
-  <link rel="stylesheet" href="/resources/css/scalameter.css" />
-</head>
-<body>
+---
+layout: base
+---
 
-  <div id="top">
-    <div class="container_12">
-      <div class="grid_12">
-        <ul class="horizmenu">
-          <li><a href="/">Home</a></li>
-          <li><a href="/home/news">News</a></li>
-          <li><a href="/home/gettingstarted">Getting Started</a></li>
-          <li><a href="/mailinglist">Mailing List</a></li>
-          <li><a href="/home/download">Download</a></li>
-          <li><a href="http://github.com/axel22/scalameter">Code</a></li>
-        </ul>
-      </div>
-    </div>
+
+<div id="header">
+  <div class="container_12">
+    <div class="grid_12 titlebar"> {% if page.title %} {{ page.title }} {% endif %} </div>
   </div>
+</div>
 
-  <div class="lightdivider"></div>
+<div class="darkdivider"></div>
+<div class="topshadow"></div>
 
-  <div id="header">
-    <div class="container_12">
-      <div class="grid_12 titlebar">ScalaMeter</div>
-    </div>
+<div id="content">
+  <div id="main" class="container_12">
+
+    {{ content }}
+
   </div>
-
-  <div class="darkdivider"></div>
-
-  <div id="content">
-    <div id="main" class="container_12">
-
-      <div class="grid_12">{{ content }}</div>
-
-    </div>
-  </div>
-
-  <div id="footer">
-    <div class="darkdivider"></div>
-    <div class="lightdivider"></div>
-  
-    <div id="footercontent" class="container_16">
-      <div class="grid_3 footer">
-        <div class"grid_3 alpha footer"><h2 class="footer">ScalaMeter</h3></div>
-        <div class"grid_3 darkdivider hidivider"><hr class="footer"/></div>
-        <div class"grid_3 footer"><a href="/home/gettingstarted">Getting Started</a></div>
-        <div class"grid_3 footer"><a href="/home/api">API Reference</a></div>
-        <div class"grid_3 omega footer"><a href="/home/download">Download</a></div>
-      </div>
-      <div class="grid_3 footer">
-        <div class"grid_3 alpha footer"><h2 class="footer">Contribute</h3></div>
-        <div class"grid_3 darkdivider hidivider"><hr class="footer"/></div>
-        <div class"grid_3 footer"><a href="http://github.com/axel22/scalameter">Source Code</a></div>
-        <div class"grid_3 footer"><a href="/home/mailinglist">Mailing List</a></div>
-        <div class"grid_3 omega footer"><a href="/home/reportbug">Report a Bug</a></div>
-      </div>
-      <div class="grid_3 footer">
-        <div class"grid_3 alpha footer"><h2 class="footer">Information</h3></div>
-        <div class"grid_3 darkdivider hidivider"><hr class="footer"/></div>
-        <div class"grid_3 footer"><a href="/home/license">License</a></div>
-        <div class"grid_3 omega footer"><a href="/home/contact">Contact</a></div>
-        <div class"grid_3 footer"><a href="/home/authors">Authors</a></div>
-      </div>
-      <div class="grid_7 push_1 footer titlefooter">
-        <img src="/resources/images/logo-small2.png" alt="logo" class="footer"></img>
-        ScalaMeter
-      </div>
-      
-      <div class="grid_16 darkdivider hidivider"></div>
-
-      <div class="grid_8 footer">&copy; 2012 ScalaMeter</div>
-      <div class="grid_8 footer">ScalaMeter is Open Source Software and is available under the New BSD License.</div>
-    </div>
-  </div>
-
-</body>
-</html>
+</div>

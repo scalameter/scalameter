@@ -86,10 +86,22 @@ ul.horizmenu li a:hover {
   margin-bottom: 7px;
 }
 
+.topshadow {
+  background-image: url('../images/topshadow3.png');
+  background-repeat: repeat-x;
+  height: 8px;
+}
+
 #header {
   background-image: url('../images/header3.png');
   background-repeat: repeat-x;
   height: 48px;
+}
+
+.bigheader {
+  background-image: url('../images/header4.png');
+  background-repeat: repeat-x;
+  height: 384px;
 }
 
 .titlebar {
@@ -169,7 +181,19 @@ img.footer {
   color: #9a5050;
 }
 
+.titlemain {
+  font-family: Titillium;
+  font-size: 96px;
+  color: #dddddd;
+  text-shadow: 2px 2px #000000;
+}
 
+.titleslogan {
+  font-family: Titillium;
+  font-size: 24px;
+  color: #dddddd;
+  text-shadow: 1px 1px #000000;
+}
 
 
 

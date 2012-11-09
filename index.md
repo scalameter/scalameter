@@ -1,6 +1,6 @@
 ---
-layout: default
-title: home
+layout: mainpage
+title: ScalaMeter
 ---
 
 
