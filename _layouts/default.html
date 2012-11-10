@@ -13,9 +13,15 @@ layout: base
 <div class="topshadow"></div>
 
 <div id="content">
-  <div id="main" class="container_12">
+  <div id="main" class="container_16">
 
-    {{ content }}
+    <div class="grid_10">
+      {{ content }}
+    </div>
+
+    <div class="grid_6">
+      {% include toc.htm %}
+    </div>
 
   </div>
 </div>

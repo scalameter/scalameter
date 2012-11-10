@@ -98,12 +98,6 @@ ul.horizmenu li a:hover {
   height: 48px;
 }
 
-.bigheader {
-  background-image: url('../images/header4.png');
-  background-repeat: repeat-x;
-  height: 384px;
-}
-
 .titlebar {
   font-family: Titillium;
   font-size: 33px;
@@ -175,6 +169,12 @@ img.footer {
   font-size: 12px;
 }
 
+.bigheader {
+  background-image: url('../images/header4.png');
+  background-repeat: repeat-x;
+  height: 212px;
+}
+
 .titlefooter {
   font-family: Titillium;
   font-size: 38px;
@@ -184,14 +184,15 @@ img.footer {
 .titlemain {
   font-family: Titillium;
   font-size: 96px;
-  color: #dddddd;
-  text-shadow: 2px 2px #000000;
+  color: #cfcab0;
+  text-shadow: 2px 2px #440000;
+  -webkit-text-stroke: 1px #665533;
 }
 
 .titleslogan {
   font-family: Titillium;
   font-size: 24px;
-  color: #dddddd;
+  color: #cfcab0;
   text-shadow: 1px 1px #000000;
 }
 
