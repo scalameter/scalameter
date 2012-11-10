@@ -5,6 +5,8 @@ permalink: /license/index.html
 ---
 
 
+![Alt text](/resources/images/logo-yellow-small.png)
+
 ScalaMeter is Open Source Software and is available under the New BSD License.
 
 
@@ -41,3 +43,4 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
 LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
 OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 SUCH DAMAGE.
+

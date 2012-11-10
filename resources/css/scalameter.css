@@ -25,12 +25,60 @@
   src: url('../fonts/PressStart2P-Regular.ttf');
 }
 
+@font-face {
+  font-family: Cabin;
+  src: url('../fonts/Cabin-Regular.ttf');
+}
+
+@font-face {
+  font-family: LiberationSans;
+  src: url('../fonts/LiberationSans-Regular.ttf');
+}
+
+@font-face {
+  font-family: Inconsolata;
+  src: url('../fonts/Inconsolata-Regular.ttf');
+}
+
+@font-face {
+  font-family: DejaVuSansMono;
+  src: url('../fonts/DejaVuSansMono.ttf');
+}
+
 body, html {
   margin: 0;
   padding: 0;
   height: 100%;
-  font-family: Helvetica;
+  font-family: LiberationSans;
   font-size: 14px;
+  color: #441a00;
+}
+
+h2 {
+  font-family: Titillium;
+  font-size: 32px;
+  color: #8a2a00;
+  text-shadow: 1px 1px #440000;
+}
+
+a:link {
+  color: #b61a00;
+  text-decoration: none;
+}
+
+a:visited {
+  color: #b61a00;
+  text-decoration: none;
+}
+
+a:active {
+  color: #f67a00;
+  text-decoration: none;
+}
+
+a:hover {
+  color: #f67a00;
+  text-decoration: none;
 }
 
 #top {
@@ -69,6 +117,10 @@ ul.horizmenu li a:active {
 ul.horizmenu li a:hover {
   text-decoration: none;
   color: white;
+}
+
+ul.bullets {
+  list-style-image: url('../images/bullet-cog.png');
 }
 
 .lightdivider {
@@ -128,6 +180,7 @@ ul.horizmenu li a:hover {
 }
 
 h2.footer {
+  font-family: Helvetica;
   margin-top: 4px;
   margin-bottom: 2px;
 }

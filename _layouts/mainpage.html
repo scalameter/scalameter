@@ -24,8 +24,87 @@ layout: base
   <div id="main" class="container_16">
 
     <div class="grid_16">
-      {{ content }}
+
+      <div class="grid_8 alpha">
+        {% capture main_test %}
+          {% include main-test-example.md %}
+        {% endcapture %}
+        <code class="scala">
+          {{ main_test | markdownify }}
+        </code>
+      </div>
+      <div class="grid_6 push_1">
+        <br/>
+        <br/>
+        ScalaMeter is a microbenchmarking and performance regression testing framework for the JVM platform
+        that allows expressing performance tests in a way which is both simple and concise.
+        <br/>
+        It can be used both from <a href="http://www.scala-lang.org/">Scala</a> and <a href="http://www.java.com">Java</a>.
+        <ul class="bullets">
+          <li>write performance tests in a DSL similar to ScalaTest and ScalaCheck</li>
+          <li>specify test input data</li>
+          <li>specify how test results are collected</li>
+          <li>organize performance tests hierarchically</li>
+        </ul>
+      </div>
+      <div class="grid_3 omega">
+      </div>
+
     </div>
+
+    <div class="grid_16"><br/></div>
+
+    <div class="grid_16">
+
+      <div class="grid_7 alpha">
+        <br/>
+        After writing a performance test, you run it.
+        You can configure how the test is executed depending on whether you need to compare several
+        alternatives, check for performance regressions or just obtain the running time of a simple
+        microbenchmark.
+        <ul class="bullets">
+          <li>decide how and where the tests are executed</li>
+          <li>automatically eliminate noise due to JIT compilation, garbage collection or undesired heap allocation patterns</li>
+          <li>customize test results reporting</li>
+          <li>save performance test results for later analysis</li>
+        </ul>
+      </div>
+      <div class="grid_1">
+        <br/>
+      </div>
+      <div class="grid_8 omega">
+        {% capture main_run %}
+          {% include main-run-example.md %}
+        {% endcapture %}
+        <code class="">
+          {{ main_run | markdownify }}
+        </code>
+      </div>
+
+    </div>
+
+    <div class="grid_16"><br/></div>
+
+    <div class="grid_16"><h2>Features</h2></div>
+
+    <div class="grid_8">
+      <ul class="bullets">
+        <li>quick and easy setup for simple microbenchmarks</li>
+        <li>multiple configurable JVM microbenchmarking methodologies</li>
+        <li>concise DSL for performance tests and input data generation</li>
+        <li>configurable performance test statistical analysis and automated regression detection</li>
+      </ul>
+    </div>
+    <div class="grid_8">
+      <ul class="bullets">
+        <li>configurable performance test reporting and result persistance</li>
+        <li><a href="http://www.scala-lang.org">Scala</a> and <a href="http://www.java.com">Java</a> support</li>
+        <li><a href="http://www.scala-sbt.org/">SBT</a> test interface integration</li>
+        <li>and much more...</li>
+      </ul>
+    </div>
+
+    <div class="grid_16">See the <a href="/home/gettingstarted">Getting Started</a> section for a more detailed explanation.</div>
 
   </div>
 </div>
