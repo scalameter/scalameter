@@ -205,7 +205,7 @@ package scalameter {
     def ++(that: Parameters) = Parameters(this.axisData ++ that.axisData)
     def apply[T](key: String) = axisData.apply(key).asInstanceOf[T]
 
-    override def toString = s"Parameters(${axisData.map(t => t._1 + " -> " + t._2).mkString(, )})"
+    override def toString = s"Parameters(${axisData.map(t => t._1 + " -> " + t._2).mkString(", ")})"
   }
 
   object Parameters {
