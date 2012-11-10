@@ -87,62 +87,83 @@ object ChartReporter {
     }
 
     case class Regression(showLatestCi: Boolean, showHistoryCi: Boolean, alpha: Double) extends ChartFactory {
+      /**
+       *
+       *
+       * @param colors        specifies the colors assigned to the the first `colors.size` curves from `cs`.
+                              The rest of the curves are assigned some default set of colors.
+       */
       def createChart(scopename: String, cs: Seq[CurveData], history: History, colors: Seq[Color] = Seq()): JFreeChart = {
-        val dataset = new YIntervalSeriesCollection
+
+        def createDataset = {
+          val dataset = new YIntervalSeriesCollection
+          if(history.results.isEmpty) {
+              for ((curve, curveIndex) <- cs.zipWithIndex) {
+                val series = new YIntervalSeries(curve.context.goe(dsl.curve, curveIndex.toString))
+                for (measurement <- curve.measurements) {
+                  val ciForThisPoint = if (showLatestCi) {
+                    confidenceInterval(measurement.complete, alpha)
+                  } else {
+                    (0D, 0D)
+                  }
+                series.add(measurement.params.axisData.head._2.asInstanceOf[Int], measurement.time, ciForThisPoint._1, ciForThisPoint._2)
+                }
+              }
+          } else {
+            for ((curve, curveIndex) <- cs.zipWithIndex) {
+              val newestSeries = new YIntervalSeries(curve.context.goe(dsl.curve, curveIndex.toString))
+              val historySeries = new YIntervalSeries(curve.context.goe(dsl.curve, curveIndex.toString))
+
+              for ((measurement, measurementIndex) <- curve.measurements.zipWithIndex) {
+                /* Fetch, for each corresponding curve in history, the measurements that were at the same position (same size for instance)
+                on x-axis, and make a list of them */
+                val previousMeasurements = for {
+                  pastResult <- history.results
+                  correspondingCurveInHistory = pastResult._3(curveIndex) //._3 to access the Seq[CurveData]  
+                } yield correspondingCurveInHistory.measurements(measurementIndex)
+                // We then take all observations that gave the time measurement (by calling complete) of each point, and concat them
+                val previousMeasurementsObservations = previousMeasurements flatMap(m => m.complete)
+
+                val ciForThisPoint = if (showHistoryCi) { confidenceInterval(previousMeasurementsObservations, alpha) } else { (0D, 0D) }
+                val meanForThisPoint = mean(previousMeasurementsObservations)
+                // Params : x - the x-value, y - the y-value, yLow - the lower bound of the y-interval, yHigh - the upper bound of the y-interval.
+                historySeries.add(measurement.params.axisData.head._2.asInstanceOf[Int], meanForThisPoint, ciForThisPoint._1, ciForThisPoint._2)
+
+                val ciForNewestPoint = if (showLatestCi) {
+                    confidenceInterval(measurement.complete, alpha)
+                  } else {
+                    (0D, 0D)
+                  }
+
+                newestSeries.add(measurement.params.axisData.head._2.asInstanceOf[Int], measurement.time, ciForNewestPoint._1, ciForNewestPoint._2)
+              }
+              dataset.addSeries(historySeries)
+              dataset.addSeries(newestSeries)
+            }
+          }
+
+          dataset
+
+        }
+        /* We may want to call other methods from the JFreeChart API, as there are a
+           lot of them related to appearance in class DeviationRenderer and in its parent classes */
+        def colorCurves(renderer: DeviationRenderer) {
+          //val test = List(new Color(255, 200, 200), new Color(200, 200, 255))
+          for(i <- 0 to (colors.size - 1)) {
+            // for instance, to further configure appearance :
+            // renderer.setSeriesStroke(i, new BasicStroke(3F, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND))
+            renderer.setSeriesFillPaint(i, colors(i))
+          }
+        }
+
+        val dataset = createDataset
         val chartName = scopename
         val xAxisName = cs.head.measurements.head.params.axisData.head._1
 
         // instantiate a DeviationRenderer (lines, shapes)
         val renderer = new DeviationRenderer(true, true)
-        
-        var colorIndex = 0
-        def colorNextCurve() {
-          if (colorIndex < colors.size) {
-            renderer.setSeriesFillPaint(colorIndex, colors(colorIndex))
-            colorIndex = colorIndex + 1
-          }
-        }
-        // fill the dataset
-        for ((curve, curveIndex) <- cs.zipWithIndex) {
-
-          val newestSeries = new YIntervalSeries(curve.context.goe(dsl.curve, curveIndex.toString))
-          val historySeries = new YIntervalSeries(curve.context.goe(dsl.curve, curveIndex.toString))
-
-          for ((measurement, measurementIndex) <- curve.measurements.zipWithIndex) {
-            /* Fetch, for each corresponding curve in history, the measurements that were at the same position (same size for instance)
-            on x-axis, and make a list of them */
-            val previousMeasurements = for {
-              pastResult <- history.results
-              correspondingCurveInHistory = pastResult._3(curveIndex) //._3 to access the Seq[CurveData]  
-            } yield correspondingCurveInHistory.measurements(measurementIndex)
-            // We then take all observations that gave the time measurement (by calling complete) of each point, and concat them
-            val previousMeasurementsObservations = previousMeasurements flatMap(m => m.complete)
-
-            val ciForThisPoint = if (showHistoryCi) { confidenceInterval(previousMeasurementsObservations, alpha) } else { (0D, 0D) }
-            val meanForThisPoint = mean(previousMeasurementsObservations)
-            // Params : x - the x-value, y - the y-value, yLow - the lower bound of the y-interval, yHigh - the upper bound of the y-interval.
-            historySeries.add(measurement.params.axisData.head._2.asInstanceOf[Int], meanForThisPoint, ciForThisPoint._1, ciForThisPoint._2)
-
-            val ciForNewestPoint = if (showLatestCi) {
-                confidenceInterval(measurement.complete, alpha)
-              } else {
-                (0D, 0D)
-              }
-
-            newestSeries.add(measurement.params.axisData.head._2.asInstanceOf[Int], measurement.time, ciForNewestPoint._1, ciForNewestPoint._2)
-          }
-          dataset.addSeries(historySeries)
-          dataset.addSeries(newestSeries)
-          //renderer.setSeriesStroke(curveIndex, new BasicStroke(3F, 1, 1))
-          /* The first `colors.size` curves from `cs` have their colors specified by `colors`,
-          and the rest are assigned some default set of colors. */
-          // cannot use curveIndex for coloring the curve, because we color two curves at a time
-          colorNextCurve()
-          colorNextCurve()
-          /* We may want to call other methods from the JFreeChart API, as there are a
-          lot of them related to appearance in class DeviationRenderer and in its parent classes */
-        }
-
+        colorCurves(renderer)
+    
         //String title, String xAxisLabel, String yAxisLabel, XYDataset dataset, PlotOrientation orientation, boolean legend,boolean tooltips, boolean urls
         val chart = JFreeChartFactory.createXYLineChart(chartName, xAxisName, "time", dataset, PlotOrientation.VERTICAL, true, true, false)
         val plot: XYPlot = chart.getPlot.asInstanceOf[XYPlot]
