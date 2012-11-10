@@ -25,7 +25,7 @@ case class LoggingReporter() extends Reporter {
     log()
   }
 
-  def report(result: Tree[CurveData], persistor: Persistor) = for (res <- result) report(res, persistor)
+  def report(result: Tree[CurveData], persistor: Persistor) {}
 
 }
 
