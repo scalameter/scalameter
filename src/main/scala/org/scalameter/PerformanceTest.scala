@@ -10,7 +10,10 @@ import utils.Tree
 abstract class PerformanceTest extends PerformanceTest.Initialization {
 
   def main(args: Array[String]) {
-    Main.main(args :+ "-benches" :+ this.getClass.getName)
+    val ctx = Main.Configuration.fromCommandLineArgs(args).context
+    dyn.initialContext.withValue(ctx) {
+      executeTests()
+    }
   }
 
 }
@@ -27,10 +30,8 @@ object PerformanceTest {
     def reporter: org.scalameter.Reporter
 
     def persistor: Persistor
-  
-    protected def initSetupTree() {
-      setupzipper.value = setupzipper.value.addContext(Key.dsl.executor -> executor.toString)
-    }
+
+    setupzipper.value = setupzipper.value.addContext(Key.dsl.executor -> executor.toString)
 
     type SameType
 
@@ -45,8 +46,7 @@ object PerformanceTest {
     }
 
     def delayedInit(body: =>Unit) {
-      if (!DSL.withinInclude.value) {
-        initSetupTree()
+      if (!withinInclude.value) {
         body
         executeTests()
       } else body

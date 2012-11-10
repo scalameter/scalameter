@@ -12,6 +12,16 @@ trait DSL {
 
   import DSL._
 
+  private[scalameter] val withinInclude = new DynamicVariable(this.getClass.getName.endsWith("$"))
+
+  private[scalameter] val setupzipper = new DynamicVariable(Tree.Zipper.root[Setup[_]])
+
+  private[scalameter] def descendInScope(name: String, context: Context)(body: =>Unit) {
+    setupzipper.value = setupzipper.value.descend.setContext(context)
+    body
+    setupzipper.value = setupzipper.value.ascend
+  }
+
   object performance {
     def of(modulename: String) = Scope(modulename, setupzipper.value.current.context)
   }
@@ -52,16 +62,6 @@ trait DSL {
 
 
 object DSL {
-
-  private[scalameter] val withinInclude = new DynamicVariable(false)
-
-  private[scalameter] val setupzipper = new DynamicVariable(Tree.Zipper.root[Setup[_]])
-
-  private[scalameter] def descendInScope(name: String, context: Context)(body: =>Unit) {
-    setupzipper.value = setupzipper.value.descend.setContext(context)
-    body
-    setupzipper.value = setupzipper.value.ascend
-  }
 
   private[scalameter] val curveNameCount = new java.util.concurrent.atomic.AtomicInteger(0)
 
