@@ -22,7 +22,7 @@ case class LoggingReporter() extends Reporter {
     }
 
     // add a new line
-    log()
+    log("")
   }
 
   def report(result: Tree[CurveData], persistor: Persistor) {}
