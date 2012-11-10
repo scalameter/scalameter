@@ -140,6 +140,21 @@ package object scalameter {
 
   }
 
+  /* misc */
+
+  def defaultClasspath = this.getClass.getClassLoader match {
+    case urlcl: java.net.URLClassLoader => extractClasspath(urlcl)
+    case cl => sys.props("java.class.path")
+  }
+
+  def extractClasspath(urlclassloader: java.net.URLClassLoader): String = {
+    val fileResource = "file:(.*)".r
+    val files = urlclassloader.getURLs.map(_.toString) collect {
+      case fileResource(file) => file
+    }
+    files.mkString(":")
+  }
+
 }
 
 
@@ -169,7 +184,7 @@ package scalameter {
       exec.minWarmupRuns -> 10,
       exec.maxWarmupRuns -> 50,
       exec.jvmflags -> "-Xmx2048m -Xms2048m -XX:CompileThreshold=1",
-      classpath -> sys.props("java.class.path"),
+      classpath -> defaultClasspath,
       reports.resultDir -> "tmp",
       reports.regression.significance -> 1e-10
     )

@@ -42,12 +42,7 @@ class ScalaMeterFramework extends Framework {
     }
 
     def computeClasspath = testClassLoader match {
-      case urlclassloader: URLClassLoader =>
-        val fileResource = "file:(.*)".r
-        val files = urlclassloader.getURLs.map(_.toString) collect {
-          case fileResource(file) => file
-        }
-        files.mkString(":")
+      case urlclassloader: URLClassLoader => extractClasspath(urlclassloader)
       case _ => sys.error(s"Cannot recognize classloader (not URLClassLoader): $testClassLoader")
     }
 
