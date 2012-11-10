@@ -18,7 +18,9 @@ class ChartReporterTest extends PerformanceTest {
 
   val sizes = Gen.range("size")(300000, 1500000, 300000)
 
-  performance of "Range" in {
+  performance of "Range" config {
+    Key.exec.jvmflags -> "-Xmx1024m -Xms1024m"
+  } in {
 
     measure method "map" in {
 

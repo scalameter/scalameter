@@ -112,6 +112,10 @@ object PerformanceTest {
 
   trait Regression extends Executor.Regression with Reporter.Regression
 
+  trait Microbenchmark extends Executor.MinimalTime with Reporter.Logging {
+    def persistor = Persistor.None
+  }
+
 }
 
 
