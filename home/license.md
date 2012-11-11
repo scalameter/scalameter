@@ -5,12 +5,12 @@ permalink: /license/index.html
 ---
 
 
-![Alt text](/resources/images/logo-yellow-small.png)
+![Logo](/resources/images/logo-yellow-small.png)
 
 ScalaMeter is Open Source Software and is available under the New BSD License.
 
 
-## ScalaMeter LICENSE
+# ScalaMeter LICENSE
 
 Copyright &copy; 2012, Aleksandar Prokopec
 

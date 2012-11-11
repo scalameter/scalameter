@@ -54,11 +54,22 @@ body, html {
   color: #441a00;
 }
 
-h2 {
+h1, h2 {
   font-family: Titillium;
-  font-size: 32px;
   color: #8a2a00;
   text-shadow: 1px 1px #440000;
+}
+
+h1 {
+  font-size: 36px;
+}
+
+h2 {
+  font-size: 28px;
+}
+
+h3 {
+  font-size: 15px;
 }
 
 a:link {
