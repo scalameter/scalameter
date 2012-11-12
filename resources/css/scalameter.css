@@ -54,7 +54,7 @@ body, html {
   color: #441a00;
 }
 
-h1, h2 {
+h1 {
   font-family: Titillium;
   color: #8a2a00;
   text-shadow: 1px 1px #440000;
@@ -65,11 +65,21 @@ h1 {
 }
 
 h2 {
-  font-size: 28px;
+  padding-top: 10px;
+  font-size: 24px;
 }
 
 h3 {
+  padding-top: 6px;
   font-size: 15px;
+}
+
+blockquote {
+  padding: 6px;
+  border: 1px solid #c0a090;
+  background: #f8f8e8;
+  -moz-border-radius:7px;
+  -webkit-border-radius:7px;
 }
 
 a:link {
@@ -90,6 +100,12 @@ a:active {
 a:hover {
   color: #f67a00;
   text-decoration: none;
+}
+
+#wrap {
+  background-image: url('../images/content3.png');
+  background-repeat: repeat;
+  min-height: 100%;
 }
 
 #top {
@@ -134,6 +150,18 @@ ul.bullets {
   list-style-image: url('../images/bullet-cog.png');
 }
 
+.equation {
+  text-align: center;
+}
+
+div.imageframe {
+  text-align: center;
+}
+
+div.imageframe img {
+  border: 1px solid #441a00;
+}
+
 .lightdivider {
   background: #6a4040;
   height: 1px;
@@ -169,21 +197,18 @@ ul.bullets {
 }
 
 #content {
-  background-image: url('../images/content3.png');
-  background-repeat: repeat;
-  padding-bottom: 128px;
-  min-height: 100%;
   padding: 20px;
+  padding-bottom: 160px;
+  overflow: auto;
 }
 
 #footer {
   background-image: url('../images/footer3.png');
   background-repeat: repeat-x;
   height: 128px;
-  clear: both;
-  position: relative;
-  z-index: 10;
   margin-top: -128px;
+  position: relative;
+  clear:both;
 }
 
 #footercontent {
