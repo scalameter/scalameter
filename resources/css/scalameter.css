@@ -154,6 +154,10 @@ ul.bullets {
   text-align: center;
 }
 
+div.imagenoframe {
+  text-align: center;
+}
+
 div.imageframe {
   text-align: center;
 }
@@ -198,7 +202,7 @@ div.imageframe img {
 
 #content {
   padding: 20px;
-  padding-bottom: 160px;
+  padding-bottom: 176px;
   overflow: auto;
 }
 
