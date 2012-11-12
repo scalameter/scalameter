@@ -72,14 +72,14 @@ little or no control over this.
 **Just in Time compilation**. The HotSpot compiler continually analyzes the program performance for parts of the
 program executed frequently and compiles those parts down to machine code.
 Any part of the code can potentially be chosen for compilation at any point during the runtime, and this decision
-can happen in the midst of running a microbenchmark, giving you an inaccurate observation.
+can happen in the midst of running a microbenchmark, yielding an inaccurate running time measurement.
 Also, portions of the program are periodically recompiled based on the JVM runtime information -- during the runtime
-of your program, the same code might exhibit very different performance characteristics.
+of the program, the same code might exhibit very different performance characteristics.
 
 **Classloading**. Since the JVM, unlike a typical compiler, has global program information available, it can apply
 non-local optimizations.
 This means that a method may be optimized based on the information in some seemingly unrelated method.
-One such example is [inline caching](http://en.wikipedia.org/wiki/Inline_caching), where it can optimize and even
+One such example is [inline caching](http://en.wikipedia.org/wiki/Inline_caching), where the JVM can optimize and even
 inline polymorphic method calls.
 Since not all of the classes loaded in the real application are loaded in a microbenchmark, many callsites
 can be optimized.
@@ -177,9 +177,10 @@ Why not write performance regression as well?
 
 The reason this is done less often is because it is not easy to assess the **correctness** of a
 performance regression test.
-A typical unit test will invoke a certain method and compare its return value against hardcoded expected values.
-Methods usually return the same value provided that the same preconditions (method arguments and global state) are
-met -- in this sense, they are *deterministic* and *reproducible*.
+A typical unit test will invoke a certain method and compare its return value against a hardcoded expected value.
+Methods return the same value in all environments provided that the same preconditions (method arguments
+and global state) are met -- in this sense, they are *deterministic* and *reproducible*, something we usually take
+for granted.
 Performance regression tests exhibit very different properties.
 
 First, microbenchmark running times are not deterministic.
@@ -198,7 +199,7 @@ The execution times of the previous runs are then persisted for later comparison
 These two crucial differences between normal regression tests and performance regression tests are the reason why
 ScalaMeter exists -- to allow you to write and run performance tests in a reliable manner.
 
-Now that we've got all the theory we need, it's time to get practical and do some
+Now that we've covered all the theory we need, it's time to get practical and do some
 [coding](/home/gettingstarted/simplemicrobenchmark).
 
 

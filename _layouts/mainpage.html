@@ -29,9 +29,7 @@ layout: base
         {% capture main_test %}
           {% include main-test-example.md %}
         {% endcapture %}
-        <code class="scala">
-          {{ main_test | markdownify }}
-        </code>
+        {{ main_test | markdownify }}
       </div>
       <div class="grid_6 push_1">
         <br/>
@@ -76,9 +74,7 @@ layout: base
         {% capture main_run %}
           {% include main-run-example.md %}
         {% endcapture %}
-        <code class="">
-          {{ main_run | markdownify }}
-        </code>
+        {{ main_run | markdownify }}
       </div>
 
     </div>

@@ -78,8 +78,8 @@ blockquote {
   padding: 6px;
   border: 1px solid #c0a090;
   background: #f8f8e8;
-  -moz-border-radius:7px;
-  -webkit-border-radius:7px;
+  -moz-border-radius: 5px;
+  -webkit-border-radius: 5px;
 }
 
 a:link {
