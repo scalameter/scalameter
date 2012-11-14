@@ -58,9 +58,11 @@ class ScalaMeterFramework extends Framework {
       } try fingerprint match {
         case PerformanceTestClassFingerprint =>
           val ptest = testClassLoader.loadClass(testClassName).newInstance.asInstanceOf[PerformanceTest]
+          ptest.executeTests()
         case PerformanceTestModuleFingerprint =>
           val module = Class.forName(testClassName + "$", true, testClassLoader)
-          val ptest = module.getField("MODULE$").get(null).asInstanceOf[PerformanceTest]
+          val ptest = singletonInstance(module)
+          ptest.executeTests()
       } catch {
         case e: Exception =>
           println("Test threw exception: " + e)

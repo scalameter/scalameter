@@ -24,6 +24,7 @@ object Main {
       // schedule benchmarks
       for (benchname <- benches) {
         val bench = Class.forName(benchname).newInstance.asInstanceOf[PerformanceTest]
+        bench.executeTests()
       }
     }
   }

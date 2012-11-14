@@ -31,13 +31,13 @@ object PerformanceTest {
 
     def persistor: Persistor
 
-    setupzipper.value = setupzipper.value.addContext(Key.dsl.executor -> executor.toString)
-
     type SameType
 
-    protected def executeTests() {
+    def executeTests() {
       val datestart = new java.util.Date
-      val setuptree = setupzipper.value.result
+      DSL.setupzipper.value = Tree.Zipper.root[Setup[_]]
+      testbody.value.apply()
+      val setuptree = DSL.setupzipper.value.result
       val resulttree = executor.run(setuptree.asInstanceOf[Tree[Setup[SameType]]], reporter, persistor)
       val dateend = new java.util.Date
 
@@ -46,10 +46,7 @@ object PerformanceTest {
     }
 
     def delayedInit(body: =>Unit) {
-      if (!withinInclude.value) {
-        body
-        executeTests()
-      } else body
+      testbody.value = () => body
     }
 
   }
@@ -113,6 +110,11 @@ object PerformanceTest {
   trait Regression extends Executor.Regression with Reporter.Regression
 
   trait Microbenchmark extends Executor.MinimalTime with Reporter.Logging {
+    def persistor = Persistor.None
+  }
+
+  trait Quickbenchmark extends PerformanceTest with Reporter.Logging {
+    def executor = new execution.LocalExecutor(Aggregator.min, new org.scalameter.Executor.Measurer.Default)
     def persistor = Persistor.None
   }
 

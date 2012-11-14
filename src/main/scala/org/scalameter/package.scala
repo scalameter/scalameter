@@ -155,6 +155,8 @@ package object scalameter {
     files.mkString(":")
   }
 
+  def singletonInstance[C](module: Class[C]) = module.getField("MODULE$").get(null).asInstanceOf[PerformanceTest]
+
 }
 
 
@@ -341,6 +343,7 @@ package scalameter {
     val JvmPerSetupExecutor = execution.JvmPerSetupExecutor
     val MultipleJvmPerSetupExecutor = execution.MultipleJvmPerSetupExecutor
 
+    val Aggregator = org.scalameter.Aggregator
     val Measurer = Executor.Measurer
 
     /* reporting */
@@ -351,7 +354,7 @@ package scalameter {
     type HtmlReporter = reporting.HtmlReporter
     val HtmlReporter = reporting.HtmlReporter
 
-    type LogginReporter = reporting.LoggingReporter
+    type LoggingReporter = reporting.LoggingReporter
     val LoggingReporter = reporting.LoggingReporter
 
     type RegressionReporter = reporting.RegressionReporter

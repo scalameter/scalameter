@@ -12,15 +12,7 @@ trait DSL {
 
   import DSL._
 
-  private[scalameter] val withinInclude = new DynamicVariable(this.getClass.getName.endsWith("$"))
-
-  private[scalameter] val setupzipper = new DynamicVariable(Tree.Zipper.root[Setup[_]])
-
-  private[scalameter] def descendInScope(name: String, context: Context)(body: =>Unit) {
-    setupzipper.value = setupzipper.value.descend.setContext(context)
-    body
-    setupzipper.value = setupzipper.value.ascend
-  }
+  private[scalameter] val testbody = new DynamicVariable[() => Any](() => ???)
 
   object performance {
     def of(modulename: String) = Scope(modulename, setupzipper.value.current.context)
@@ -53,15 +45,29 @@ trait DSL {
 
   def using[T](gen: Gen[T]) = Using(Setup(setupzipper.value.current.context + (Key.dsl.curve -> freshCurveName()), gen, None, None, None, null))
 
-  def include[T <: PerformanceTest.Initialization: Manifest] = withinInclude.withValue(true) {
-    manifest[T].erasure.newInstance
-    ()
+  def isModule = this.getClass.getSimpleName.endsWith("$")
+
+  def include[T <: PerformanceTest.Initialization: Manifest] = {
+    if (isModule) singletonInstance(manifest[T].erasure).testbody.value.apply()
+    else manifest[T].erasure.newInstance.asInstanceOf[PerformanceTest].testbody.value.apply()
   }
+
+  /** Runs all the tests in this test class or singleton object.
+   */
+  def executeTests(): Unit
 
 }
 
 
 object DSL {
+
+  private[scalameter] val setupzipper = new DynamicVariable(Tree.Zipper.root[Setup[_]])
+
+  private[scalameter] def descendInScope(name: String, context: Context)(body: =>Unit) {
+    setupzipper.value = setupzipper.value.descend.setContext(context)
+    body
+    setupzipper.value = setupzipper.value.ascend
+  }
 
   private[scalameter] val curveNameCount = new java.util.concurrent.atomic.AtomicInteger(0)
 
