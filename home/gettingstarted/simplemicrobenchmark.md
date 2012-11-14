@@ -1,6 +1,6 @@
 ---
 layout: default
-title: Simple Microbenchmark
+title: Simple benchmark
 permalink: /simplemicrobenchmark/index.html
 ---
 
@@ -42,11 +42,15 @@ a `main` method, hence being runnable applications.
 For that reason, we choose the latter:
 
     object RangeBenchmark
-    extends PerformanceTest.Microbenchmark {
+    extends PerformanceTest.Quickbenchmark {
+
+      // multiple tests can be specified here
+
+    }
 
 The `PerformanceTest` abstract class is a highly configurable test template which allows more than
 we need right now.
-Instead of inheriting it directly, we inherit a predefined class called `PerformanceTest.Microbenchmark`
+Instead of inheriting it directly, we inherit a predefined class called `PerformanceTest.Quickbenchmark`
 which is a performance test configured to simply run the tests and output them in the terminal.
 
 Most benchmarks need input data that they are executed on.
@@ -55,7 +59,7 @@ represented by the `Gen` interface.
 These generators are similar to the ones in frameworks like [ScalaCheck](https://github.com/rickynils/scalacheck/wiki/User-Guide)
 in that they are composable with `for`-comprehensions and that they can generate multiple values.
 However, ScalaMeter generators do not generate random or arbitrary values -- the values they produce
-are always the same and well-defined.
+are always the same, ordered and well-defined.
 
 ScalaCheck generators can be roughly divided into 2 groups -- *basic* and *composed* generators.
 There exist a number of basic generators already defined for you.
@@ -83,10 +87,136 @@ The new generator is a composed generator, because it has been obtain through a 
 
 We're now done with defining input data for the benchmark, and we move on to defining the actual
 code that the benchmark is supposed to evaluate.
+ScalaMeter defines a custom DSL for writing tests.
+The first important statement we need to know is `performance of`:
+
+    performance of "Range" in {
+      // nested tests
+    }
+
+This statement has the effect that all the tests nested in the block behind `in` get a prefix `Range`
+in their name.
+You can nest `performance of` blocks arbitrarily deep to divide your tests in groups and achieve the
+desired hierarchy.
+The related statement `measure method` behaves in exactly the same way -- the only difference is its
+name, so you will usually write this one immediately surrounding your test:
+
+    performance of "Range" in {
+      measure method "map" in {
+        // we will write the actual test body here
+      }
+    }
+
+In order to write the actual test, we have to tell ScalaMeter which data inputs to use.
+This is done with the `using` statement, which takes a generator and the snippet invoking
+a some code on a range `r`:
+
+    performance of "Range" in {
+      measure method "map" in {
+        using(ranges) in {
+          r => r.map(_ + 1)
+        }
+      }
+    }
+
+And that's it - we've defined a test group `Range.map` consisting of a single test where the elements
+of a range are `map`ped so that each element is incremented by one.
+For the sake of completeness, here is the complete runnable test:
+
+    import org.scalameter.api._
+
+    object RangeBenchmark
+    extends PerformanceTest.Quickbenchmark {
+      val sizes = Gen.range("size")(300000, 1500000, 300000)
+
+      val ranges = for {
+        size <- sizes
+      } yield 0 until size
+
+      performance of "Range" in {
+        measure method "map" in {
+          using(ranges) in {
+            r => r.map(_ + 1)
+          }
+        }
+      }
+    }
+
+
+## Running the benchmark
+
+Now that we have the benchmark, it's time to run it.
+First, compile it with `scalac`:
+
+    $ scalac -cp scalameter_2.10-0.1.jar RangeBenchmark.scala
+
+Then run it:
+
+    $ scala -cp scalameter_2.10-0.1.jar:. RangeBenchmark
+
+Alternatively, you can use [SBT](http://www.scala-sbt.org/) build tool, which is much simpler and the preferred
+way to run ScalaMeter tests in larger projects.
+A huge benefit of doing so is that you don't have to manually pick the correct Scala version and the ScalaMeter
+artifact - SBT does this for you automatically.
+Also, with SBT you can run the tests directly from the SBT shell.
+See the section [SBT integration](/home/gettingstarted/sbt/) for details. 
+
+After running the test, you should get an output similar to the following one:
+
+    ::Benchmark Range.map::
+    jvm-name: Java HotSpot(TM) 64-Bit Server VM
+    jvm-vendor: Oracle Corporation
+    jvm-version: 23.0-b16
+    os-arch: amd64
+    os-name: Mac OS X
+    Parameters(size -> 300000): 2.0
+    Parameters(size -> 600000): 4.0
+    Parameters(size -> 900000): 7.0
+    Parameters(size -> 1200000): 16.0
+    Parameters(size -> 1500000): 30.0
+
+The `PerformanceTest.Quickbenchmark` class uses a simple terminal reporter, so
+all the results of the test are just printed to the standard output.
+The results are in milliseconds.
+We can see that the reporter outputs some machine-specific data, followed by the
+results for each of the input parameters.
+
+<div class="remark">
+<p class="remarktitle">Note</p>
+<p>
+Your mileage may vary!
+When writing these guidelines, the tests were taken on a 4-core 3.4 GHz i7 iMac, Mac OS X 10.7.5,
+JRE 7 update 9 and Scala 2.10-RC2.
+With a different configuration, particularly with different hardware, you might get
+entirely different running times.
+</p>
+</div>
+
+A `PerformanceTest.Quickbenchmark` is already configured to warm up the JVM and do several tests
+for each input size.
+It takes the smallest time observed for each input size.
+Statistically, a mean running time gives much more insight into performance characteristics, but
+we will see how to obtain it later.
+
+And that's it -- you just wrote your first ScalaMeter microbenchmark.
+Next, you will see how to <a href="/home/gettingstarted/configuration/">configure test execution and
+test reporting</a>.
+
 
 <div class="imagenoframe">
   <img src="/resources/images/logo-yellow-small.png"></img>
 </div>
+
+
+
+
+
+
+
+
+
+
+
 
 
 

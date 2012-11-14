@@ -53,7 +53,7 @@ pre .symbol,
 pre .symbol .string,
 pre .value,
 pre .regexp {
-	color: #BF79DB;
+	color: #441a00;
 }
 
 pre .tag .value,

@@ -97,8 +97,12 @@ Specific processors, cache and memory sizes may show a very different performanc
 On a single processor system, concurrently running applications or OS events can cause a degradation in performance.
 Different JRE versions may yield entirely different results.
 The important thing to note is that these effects do not cause a linear degradation in performance -- decreasing the
-memory size twice, might make your microbenchmark run a hundred times slower.
+memory size twice might make your microbenchmark run a hundred times slower.
 You can experiment with this easily by decreasing the maximum heap size when running a JVM application.
+
+Performance of some code is not some absolute scalar value denoting how fast the code is.
+Rather, it is some function which maps the inputs and the runtime conditions to a running time.
+This function is impossible to reproduce analytically.
 
 In conclusion:
 
@@ -107,13 +111,16 @@ In conclusion:
 - runtime behaviour is in general nondeterministic
 - performance metrics such as *running time* inherently give an incomplete picture about the performance characteristics
 
-A microbenchmark portrays neither the real-world behaviour of your code, nor does it result in a precise
-performance measurement. So why is microbenchmarking still important?
+A microbenchmark portrays neither the real-world behaviour of your code, nor does it result in a precise,
+reproducible performance measurement. So why is microbenchmarking still important?
 
 It is important because it gives you *some* information about the performance characteristics
 of your code, in some particular conditions.
 This information might not be complete, but it can capture some of the characteristics that you
 are interested in.
+In particular, it can compare several implementations in some specific conditions leading you to
+a conclusion which is faster in those specific conditions.
+That may give you some idea of how your code behaves in some other set of conditions.
 
 
 ### When to write a microbenchmark
@@ -172,7 +179,7 @@ A red flag is raised quickly if you try to do something you're not supposed to.
 
 A snippet of code which tests a certain feature or functionality in an application which is known to have previously
 existed is called a *regression test*.
-Ideally, every feature should have a regression test and developers take a great deal of time to write these.
+Ideally, every feature should have a regression test and developers spend a great deal of time to write these.
 <br/>
 But, is performance not a certain type of functionality too?
 Why not write performance regression as well? 
@@ -200,7 +207,8 @@ with a particular JVM version.
 The execution times of these preliminary benchmarks are then persisted for later comparison.
 
 These two crucial differences between normal regression tests and performance regression tests are the reason why
-ScalaMeter exists -- to allow you to write and run performance tests in a reliable manner.
+ScalaMeter exists -- to allow you to write and run performance tests in a reliable manner, where the performance
+regressions can be detected deterministically and running times reproduced under the same conditions.
 
 Now that we've covered all the theoretical aspects we need, it's time to get practical and do some
 [coding](/home/gettingstarted/simplemicrobenchmark).

@@ -206,13 +206,53 @@ div.imageframe img {
   overflow: auto;
 }
 
+div.remark {
+  background: #541010;
+  padding: 10px;
+  padding-top: 0px;
+  margin: 10px;
+  border: 1px solid #341010;
+  -moz-border-radius: 3px;
+  -webkit-border-radius: 3px;
+
+  background-image: linear-gradient(bottom, rgb(110,30,30) 32%, rgb(79,30,30) 66%, rgb(51,30,30) 95%);
+  background-image: -o-linear-gradient(bottom, rgb(110,30,30) 32%, rgb(79,30,30) 66%, rgb(51,30,30) 95%);
+  background-image: -moz-linear-gradient(bottom, rgb(110,30,30) 32%, rgb(79,30,30) 66%, rgb(51,30,30) 95%);
+  background-image: -ms-linear-gradient(bottom, rgb(110,30,30) 32%, rgb(79,30,30) 66%, rgb(51,30,30) 95%);
+
+  background-image: -webkit-gradient(
+    linear,
+    left bottom,
+    left top,
+    color-stop(0.32, rgb(110, 30, 30)),
+    color-stop(0.66, rgb(79, 30, 30)),
+    color-stop(0.95, rgb(51, 30, 30))
+  );
+}
+
+div.remark p {
+  color: #d0d0d0;
+}
+
+div.remark p code {
+  background: #541010;
+  border: 1px solid #341010;
+}
+
+p.remarktitle {
+  color: #d0d0cf;
+  font-size: 22px;
+  color: white;
+  text-shadow: 1px 1px #000000;
+}
+
 #footer {
   background-image: url('../images/footer3.png');
   background-repeat: repeat-x;
   height: 128px;
   margin-top: -128px;
   position: relative;
-  clear:both;
+  clear: both;
 }
 
 #footercontent {
