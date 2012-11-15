@@ -259,8 +259,8 @@ if the running time has become stable.
 The initial warmup done by `LocalExecutor` runs all the warmups for all the tests,
 ensuring that all the classes are loaded.
 In this case we only have a single test, but in general changing the order of the
-tests might result in entirely different running times -- remember, we're running
-these tests in the same JVM.
+tests without loading classes for all the tests might result in entirely different
+running times -- remember, we're running these tests in the same JVM.
 
 Next comes a warmup before each test:
 

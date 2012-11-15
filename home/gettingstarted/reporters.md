@@ -45,26 +45,24 @@ intervals, a 3D chart or something else.
 A PNG file is created for each chart.
 
 
-### Constructor arguments:
+Constructor arguments:
 
 - `drawer` -- a `ChartFactory` determines the type of a chart to render
 
 
-### Configuration:
+Configuration:
 
 - `reports.resultDir` -- the directory in which the PNG files are generated
 
 
-### `ChartFactory`
+### Chart factories
 
-This is a common supertrait for objects which create charts.
+`ChartFactory` is a common supertrait for objects that create charts.
 You can define your own chart factories by implementing this
 trait.
 There are also several predefined types of chart factories.
 
-`ChartFactory.XYLine`
-<br/>
-Renders a line chart for each curve in the test group.
+`ChartFactory.XYLine` renders a line chart for each curve in the test group.
 This factory only works correctly for data which depends on a single
 input axis which represents numeric value.
 For example, it works for the following generator:
@@ -82,10 +80,8 @@ where there is a single input axis `"size"`, but it does not work for:
 
 where there are two input axes `"size"` and `"offset"`.
 
-`ChartFactory.ConfidenceIntervals`
-<br/>
-Renders a confidence interval for each curve and the cummulative confidence
-interval of the previous runs of the same benchmarks.
+`ChartFactory.ConfidenceIntervals` renders a confidence interval for each curve
+and the cummulative confidence interval of the previous runs of the same benchmarks.
 This is very useful when visually comparing the two alternatives since it
 gives insight not only in the mean value of each run, but also in the
 variance in the measurements.
@@ -106,6 +102,10 @@ In the next section we examine different [executors](/home/gettingstarted/execut
 
 
 
+
+<div class="imagenoframe">
+  <img src="/resources/images/logo-yellow-small.png"></img>
+</div>
 
 
 
