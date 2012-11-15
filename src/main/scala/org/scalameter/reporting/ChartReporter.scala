@@ -83,7 +83,7 @@ object ChartReporter {
       }
     }
 
-    case class Regression(showLatestCi: Boolean, showHistoryCi: Boolean, alpha: Double) extends ChartFactory {
+    case class ConfidenceIntervals(showLatestCi: Boolean, showHistoryCi: Boolean, alpha: Double) extends ChartFactory {
       /**
        *
        *
