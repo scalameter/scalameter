@@ -38,7 +38,10 @@ class ScalaMeterFramework extends Framework {
       def warn(msg: String) = l.warn(msg)
       def trace(t: Throwable) = l.trace(t)
       def info(msg: String) = l.info(msg)
-      def debug(msg: String) = l.debug(msg)
+      def debug(msg: String) = if (initialContext.goe(Key.verbose, false)) {
+        // if verbose is on, treat this as a normal message
+        info(msg)
+      } else l.debug(msg)
     }
 
     def computeClasspath = testClassLoader match {

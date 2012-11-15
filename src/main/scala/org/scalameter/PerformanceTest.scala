@@ -91,7 +91,7 @@ object PerformanceTest {
     }
 
     trait Chart extends PerformanceTest {
-      lazy val reporter = new ChartReporter("", ChartReporter.ChartFactory.XYLine())
+      lazy val reporter = new ChartReporter(ChartReporter.ChartFactory.XYLine())
     }
 
     trait Html extends PerformanceTest {

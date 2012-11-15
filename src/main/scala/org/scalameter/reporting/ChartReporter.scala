@@ -23,10 +23,7 @@ import Key.reports._
 
 
 
-case class ChartReporter(fileNamePrefix: String, drawer: ChartReporter.ChartFactory) extends Reporter {
-
-  private[reporting] val defaultChartWidth = 1600
-  private[reporting] val defaultChartHeight = 1200
+case class ChartReporter(drawer: ChartReporter.ChartFactory, fileNamePrefix: String = "", wdt: Int = 1600, hgt: Int = 1200) extends Reporter {
 
   def report(result: CurveData, persistor: Persistor) {
     // nothing - the charts are generated only at the end
@@ -39,7 +36,7 @@ case class ChartReporter(fileNamePrefix: String, drawer: ChartReporter.ChartFact
     val dir = result.context.goe(resultDir, "tmp")
     new File(dir).mkdir()
     val chartfile = new File(s"$dir/$fileNamePrefix$scopename.png")
-    ChartUtilities.saveChartAsPNG(chartfile, chart, defaultChartWidth, defaultChartHeight)
+    ChartUtilities.saveChartAsPNG(chartfile, chart, wdt, hgt)
   } 
 
 }

@@ -11,7 +11,8 @@ class ChartReporterTest extends PerformanceTest {
 
   lazy val executor = execution.LocalExecutor(Aggregator.complete(Aggregator.average), new Executor.Measurer.Default)
   lazy val reporter = Reporter.Composite(
-    ChartReporter("chart_", ChartReporter.ChartFactory.Regression(true, true, 0.001)),
+    //ChartReporter(ChartReporter.ChartFactory.Regression(true, true, 0.001), "chart_"),
+    HtmlReporter(HtmlReporter.Renderer.Info(), HtmlReporter.Renderer.Regression()),
     RegressionReporter(RegressionReporter.Tester.Accepter(), RegressionReporter.Historian.Complete())
   )
   lazy val persistor = new persistance.SerializationPersistor()
