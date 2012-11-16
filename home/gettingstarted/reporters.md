@@ -24,17 +24,35 @@ are, as well as how other important ScalaMeter datatypes work.
 Otherwise, there are plenty of predefined reporters to choose from.
 
 
+## Null reporter
+
+This reporter does not report anything at all.
+Any test result it receives will be ignored.
+If for whatever reason you don't want any reports, use this reporter.
+
+
+## Composite reporter
+
+This reporter is simply a composition of several reporters -- when you need to report
+results with more than a single reporter, e.g. if you'd like command-line output as well
+as chart images for the tests, use this reporter.
+
+Constructor arguments:
+
+- `rs` -- a sequence of other reporters this reporter will
+
+Configuration depends on the test parameters of the reporters in `rs`.
+
+
 ## Logging reporter
 
 Outputs the results of the tests into the terminal.
 This reporter is a fine choice when you need to output the results
 of your benchmark somewhere quickly.
 
+Constructor arguments: (none)
 
-### Constructor arguments: (none)
-
-
-### Configuration: (none)
+Configuration: (none)
 
 
 ## Chart reporter
@@ -47,7 +65,7 @@ A PNG file is created for each chart.
 
 Constructor arguments:
 
-- `drawer` -- a `ChartFactory` determines the type of a chart to render
+- `drawer` -- a `ChartFactory` that determines the type of a chart to render
 
 
 Configuration:
@@ -57,9 +75,8 @@ Configuration:
 
 ### Chart factories
 
-`ChartFactory` is a common supertrait for objects that create charts.
-You can define your own chart factories by implementing this
-trait.
+`ChartReporter.ChartFactory` is a common supertrait for objects that create charts.
+You can define your own chart factories by implementing this trait.
 There are also several predefined types of chart factories.
 
 `ChartFactory.XYLine` renders a line chart for each curve in the test group.
@@ -91,15 +108,147 @@ This factory also only works correctly only for 2D data.
 
 ## HTML reporter
 
+Creates an HTML document with reports for all the tests.
+The report is configurable with different HTML renderers.
+This reporter is useful when you need multiple test results to be displayed in some way
+on the same HTML document.
+
+Constructor arguments:
+
+- `renderers` -- a sequence of renderers for different components of the HTML document
+
+Configuration:
+
+- `reports.resultDir` -- the directory in which the report page and its resources are generated
+- this reporter may show the values of various other test parameters as part of the report
+
+
+### Renderers
+
+`HtmlReporter.Renderer` is a common supertrait of all renderers.
+It is responsible for generating some part of the content on the HTML report.
+You can define your own renderers for custom content by implementing this trait.
+There are several predefined types of renderers.
+
+`Renderer.Info` creates some generic information about the test, such as the executor
+and measuring methodology that was used, the number of benchmark repetitions and so on.
+
+`Renderer.Chart` creates a chart for the test and embeds it into the HTML report.
+This gives a graphical representation of the test results.
 
 
 ## Regression reporter
 
+The `RegressionReporter` is a reporter that does performance regression testing.
+It compares the running time of each snippet against the previous running times and
+does some statistical analysis to decide whether the performance has changed.
+
+If the reporter concludes there are no performance regressions, the running times of
+the test are persisted, to be taken into consideration during the subsequent runs of
+the test.
+
+This reporter has to be used with a persistor different than `Persistor.None`.
+Otherwise, it will have nothing to compare the results against, and it will not be able
+to persist the results if the tests are successful.
+
+We will get back to this reporter in the section on [performance regression testing](/home/gettingstarted/regressions/),
+where we show how to do performance regression tests on a concrete example.
+In the meanwhile, we note that a regression reporter takes two parameters, namely, the
+`Tester` and the `Historian`.
+The former abstracts away the testing methodology, while the latter can prune the running time
+history so that it does not grow too large.
+
+Constructor arguments:
+
+- `test` -- the methodology used to detect performance regressions
+- `historian` -- the policy used to prune old results
+
+Configuration:
+
+- `reports.resultDir` -- the directory in which the performance results are persisted
+- `reports.regression.significance` -- the significance level for the statistical test, which
+is equal to `1 - confidenceLevel`, where a confidence level is the probability that the real running
+time is in the computed confidence interval (the bottomline is -- the smaller the significance
+level, the less likely the test reports false regressions, but may fail to report some real
+regressions)
 
 
-In the next section we examine different [executors](/home/gettingstarted/executors/) in more detail.
+### Testers
+
+The `RegressionReporter.Tester` trait represents the methodology used to test the results.
+There are several predefined implementations.
+
+`Tester.Accepter` just accepts the test results each time.
+If you need to build a history of running times for the test, this is a tester of choice.
+
+`Tester.ANOVA` applies the [analysis of variance](http://en.wikipedia.org/wiki/Analysis_of_variance)
+technique to detect whether there is at least one alternative in the history
+which is statistically different from all the other alternatives.
+This tester is very sensitive and is particularly applicable if your running time history
+has a fixed size (i.e. the oldest results are thrown away -- see historians below).
+For unlimited history sizes, it might produce unreliable test results.
+
+`Tester.ConfidenceIntervals` computes the confidence interval for each of the
+alternatives in the history and the most recent alternative, as well as the
+confidence interval of the difference between the most recent and any previous alternative.
+If the confidence interval of the difference includes zero, the performance
+test is successful.
+The `strict` parameter can be set to `false`, in which case this tester also
+passes the test if the confidence intervals of the most recent alternative
+and any previous alternative overlap.
+This makes the tests more solid and reliable, but the drawback is that certain
+types of regressions are harder or impossible to detect.
+<br/>
+This is a recommended tester, and the one we will use in this overview -- it works well
+for histories of any size.
 
 
+### Historians
+
+The `RegressionReporter.Historian` trait represents the policy for removing the old
+test results from the history.
+Typically, the history grows every time a test is run, so we may want to limit it
+in practice.
+
+`Historian.Complete` preserves the entire history.
+If you run the tests relatively rarely or you really want to preserve your entire
+history, this simple historian is ideal.
+
+`Historian.Window` maintains a sliding window of the history.
+The `size` parameter determines the size of the sliding window -- the number of
+previous results is always fixed.
+This historian is ideal if you run your tests very often.
+The downside is that it may not detect very slow performance regression trends -- if
+each running time is only slightly slower than the previous one, the overall regression
+trend may be undetected.
+
+`Historian.ExponentialBackoff` prunes the history exponentially.
+Assuming that the previous test runs are labeled `0` through `16`, `0` being the oldest:
+
+         1  2  3  4  5  6  7  8  9 10 11 12 13 14 15 16
+
+Then the actual running times history that this historian actually preserves is:
+
+         1                       9          13    15 16
+
+If we add an additional measurement labeled `17`, the history becomes:
+
+       1                      9          13    15 16 17
+
+Adding another measurement labeled `18` now eliminates the measurement labeled `16`
+because there are "two many" recent measurements:
+
+     1                     9          13    15    17 18
+
+This historian yields histories with unlimited size, but the size of the history
+is logarithmic in the number of the tests run.
+This detects slow regression trends accurately, while consuming very little space
+with each newly run test.
+We will mostly be using this historian.
+
+Since performance regression testing may not be completely clear after this high
+level overview of the regression reporter, we show a coding example in the next
+[section](/home/gettingstarted/regressions).
 
 
 

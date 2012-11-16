@@ -351,7 +351,7 @@ For example, all the parameters which have something to do with test execution
 will begin with the `exec` prefix.
 There are many different parameters you can configure -- we will enumerate them
 as we describe different parts of the pipeline.
-In the next section we talk in more detail about [Generators](/home/gettingstarted/generators/).
+In the next section we talk in more detail about [generators](/home/gettingstarted/generators/).
 
 
 <div class="imagenoframe">
