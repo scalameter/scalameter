@@ -183,6 +183,13 @@ object HtmlReporter {
       }
     }
 
+    case class Histogram(factory: ChartReporter.ChartFactory, colors: Seq[Color]) extends Renderer {
+      def render(context: Context, curves: Seq[CurveData], h: History): Node = {
+        <div>
+        </div>
+      }
+    }
+
   }
 
 }
