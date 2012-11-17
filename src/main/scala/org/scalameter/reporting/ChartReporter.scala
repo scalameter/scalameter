@@ -144,13 +144,14 @@ object ChartReporter {
         }
         /* We may want to call other methods from the JFreeChart API, as there are a
            lot of them related to appearance in class DeviationRenderer and in its parent classes */
-        def colorCurves(renderer: DeviationRenderer) {
+        def paintCurves(renderer: DeviationRenderer) {
           //val test = List(new Color(255, 200, 200), new Color(200, 200, 255))
-          for(i <- 0 to (colors.size - 1)) {
-            // for instance, to further configure appearance :
-            // renderer.setSeriesStroke(i, new BasicStroke(3F, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND))
-            renderer.setSeriesFillPaint(i, colors(i))
+          for((color, i) <- colors.zipWithIndex) {
+            renderer.setSeriesStroke(i, new BasicStroke(3F, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND))
+            renderer.setSeriesPaint(i, color)
+            renderer.setSeriesFillPaint(i, color)
           }
+          renderer.setAlpha(0.25F)
         }
 
         val dataset = createDataset
@@ -159,7 +160,7 @@ object ChartReporter {
 
         // instantiate a DeviationRenderer (lines, shapes)
         val renderer = new DeviationRenderer(true, true)
-        colorCurves(renderer)
+        paintCurves(renderer)
     
         //String title, String xAxisLabel, String yAxisLabel, XYDataset dataset, PlotOrientation orientation, boolean legend,boolean tooltips, boolean urls
         val chart = JFreeChartFactory.createXYLineChart(chartName, xAxisName, "time", dataset, PlotOrientation.VERTICAL, true, true, false)

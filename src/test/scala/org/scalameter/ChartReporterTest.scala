@@ -4,15 +4,16 @@ package org.scalameter
 
 import collection._
 import reporting._
-
+import java.awt.Color
 
 
 class ChartReporterTest extends PerformanceTest {
 
   lazy val executor = execution.LocalExecutor(Aggregator.complete(Aggregator.average), new Executor.Measurer.Default)
+  lazy val colorsTestSample = List(new Color(0, 0, 255), new Color(255, 255, 0))
   lazy val reporter = Reporter.Composite(
     //ChartReporter(ChartReporter.ChartFactory.Regression(true, true, 0.001), "chart_"),
-    HtmlReporter(HtmlReporter.Renderer.Info(), HtmlReporter.Renderer.Regression()),
+    HtmlReporter(HtmlReporter.Renderer.Info(), HtmlReporter.Renderer.Regression(ChartReporter.ChartFactory.ConfidenceIntervals(true, true, 0.001), colorsTestSample)),
     RegressionReporter(RegressionReporter.Tester.Accepter(), RegressionReporter.Historian.Complete())
   )
   lazy val persistor = new persistance.SerializationPersistor()
