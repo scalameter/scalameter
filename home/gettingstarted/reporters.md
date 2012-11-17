@@ -151,7 +151,7 @@ This reporter has to be used with a persistor different than `Persistor.None`.
 Otherwise, it will have nothing to compare the results against, and it will not be able
 to persist the results if the tests are successful.
 
-We will get back to this reporter in the section on [performance regression testing](/home/gettingstarted/regressions/),
+We will explain this reporter in more detail in the section on [performance regression testing](/home/gettingstarted/regressions/),
 where we show how to do performance regression tests on a concrete example.
 In the meanwhile, we note that a regression reporter takes two parameters, namely, the
 `Tester` and the `Historian`.
