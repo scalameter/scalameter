@@ -5,6 +5,8 @@ permalink: /regressions/index.html
 ---
 
 
+Lets write a benchmark to test the `foreach` method on the `ArrayBuffer` class.
+
 
 
 
