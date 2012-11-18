@@ -2,6 +2,9 @@
 layout: default
 title: Generators
 permalink: /generators/index.html
+
+partof: getting-started
+num: 4
 ---
 
 
@@ -97,6 +100,9 @@ In the next section we take a look at the different [reporters](/home/gettingsta
 
 
 
+<div class="imagenoframe">
+  <img src="/resources/images/logo-yellow-small.png"></img>
+</div>
 
 
 

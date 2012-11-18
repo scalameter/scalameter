@@ -2,6 +2,9 @@
 layout: default
 title: Test configuration
 permalink: /configuration/index.html
+
+partof: getting-started
+num: 3
 ---
 
 

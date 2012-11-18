@@ -2,6 +2,9 @@
 layout: default
 title: Simple benchmark
 permalink: /simplemicrobenchmark/index.html
+
+partof: getting-started
+num: 2
 ---
 
 

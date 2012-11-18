@@ -1,7 +1,11 @@
 ---
 layout: default
-title: Getting Started
+title: Introduction
 permalink: /index.html
+
+partof: getting-started
+num: 1
+outof: 8
 ---
 
 
@@ -15,7 +19,7 @@ If you already understand the underpinnings of microbenchmarking and want to jum
 into coding, you can skip this section and go to [Simple Microbenchmark](/home/gettingstarted/simplemicrobenchmark).
 
 
-## Microbenchmarking 101
+## Microbenchmarking
 
 A microbenchmark is a measurement of the running time of some isolated piece of code.
 Typically, this is a method in your API, an operation on a data structure or an algorithm that

@@ -2,6 +2,9 @@
 layout: default
 title: SBT integration
 permalink: /sbt/index.html
+
+partof: getting-started
+num: 8
 ---
 
 

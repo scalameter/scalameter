@@ -2,6 +2,9 @@
 layout: default
 title: Reporters
 permalink: /reporters/index.html
+
+partof: getting-started
+num: 5
 ---
 
 
