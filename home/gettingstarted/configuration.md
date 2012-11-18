@@ -13,7 +13,7 @@ how results are reported as well as tweak a range of test parameters
 selectively.
 Before we start, we note that we will be running all the tests from within
 an SBT project from now on.
-This might be a good idea to read up on [SBT integration](/home/gettingstarted/sbt/)
+This might be a good idea to read up on [SBT integration](/scalameter/home/gettingstarted/sbt/)
 if you haven't already.
 
 ## Execution
@@ -29,7 +29,7 @@ following order:
 4. Persisting test results with a **persistor**
 
 To explore these parts in more depth, we will modify the `RangeBenchmark`
-from the <a href="/home/gettingstarted/simplemicrobenchmark">Simple benchmark</a> section.
+from the <a href="/scalameter/home/gettingstarted/simplemicrobenchmark">Simple benchmark</a> section.
 We focus on the executor part first.
 We will no longer inherit the `PerformanceTest.Quickbenchmark` class,
 but `PerformanceTest` directly.
@@ -196,7 +196,7 @@ The `ChartReporter` constructor takes several parameters, the most important of 
 the `ChartFactory`.
 The same test data can be presented in many different ways -- as a histogram, confidence
 interval comparison, a 3D chart, and so on.
-These are described in more detail in the [Reporters](/home/gettingstarted/reporters/) section.
+These are described in more detail in the [Reporters](/scalameter/home/gettingstarted/reporters/) section.
 We want a simple XY line chart now, so we create a `ChartFactory.XYLine()` object.
 
 Running the benchmark from SBT like before will not produce any terminal output.
@@ -204,8 +204,8 @@ Instead, a PNG file like the one below is generated in the `tmp` directory
 (click to enlarge).
 
 <div class="imageframe">
-  <a href="/resources/images/range-chart.png">
-    <img src="/resources/images/range-chart.png" width="480" height="360"></img>
+  <a href="/scalameter/resources/images/range-chart.png">
+    <img src="/scalameter/resources/images/range-chart.png" width="480" height="360"></img>
   </a>
 </div>
 
@@ -354,11 +354,11 @@ For example, all the parameters which have something to do with test execution
 will begin with the `exec` prefix.
 There are many different parameters you can configure -- we will enumerate them
 as we describe different parts of the pipeline.
-In the next section we talk in more detail about [generators](/home/gettingstarted/generators/).
+In the next section we talk in more detail about [generators](/scalameter/home/gettingstarted/generators/).
 
 
 <div class="imagenoframe">
-  <img src="/resources/images/logo-yellow-small.png"></img>
+  <img src="/scalameter/resources/images/logo-yellow-small.png"></img>
 </div>
 
 

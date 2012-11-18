@@ -22,7 +22,7 @@ ScalaMeter requires at least JRE 7 update 4 and Scala 2.10 to be run.
 2. Make sure you have at least Scala 2.10 installed on your machine.<br/>
 [Download](http://www.scala-lang.org/downloads) and install Scala 2.10 if you don't have a newer version.
 
-3. Go to the [download](/home/download/) section and download the latest release of ScalaMeter.
+3. Go to the [download](/scalameter/home/download/) section and download the latest release of ScalaMeter.
 
 4. Create a new project and a new file named `RangeMicrobenchmark.scala` in your editor.
 
@@ -162,7 +162,7 @@ way to run ScalaMeter tests in larger projects.
 A huge benefit of doing so is that you don't have to manually pick the correct Scala version and the ScalaMeter
 artifact - SBT does this for you automatically.
 Also, with SBT you can run the tests directly from the SBT shell.
-See the section [SBT integration](/home/gettingstarted/sbt/) for details. 
+See the section [SBT integration](/scalameter/home/gettingstarted/sbt/) for details. 
 
 After running the test, you should get an output similar to the following one:
 
@@ -202,12 +202,12 @@ Statistically, a mean running time gives much more insight into performance char
 we will see how to obtain it later.
 
 And that's it -- you just wrote your first ScalaMeter microbenchmark.
-Next, you will see how to <a href="/home/gettingstarted/configuration/">configure test execution and
+Next, you will see how to <a href="/scalameter/home/gettingstarted/configuration/">configure test execution and
 test reporting</a>.
 
 
 <div class="imagenoframe">
-  <img src="/resources/images/logo-yellow-small.png"></img>
+  <img src="/scalameter/resources/images/logo-yellow-small.png"></img>
 </div>
 
 

@@ -5,7 +5,7 @@ permalink: /license/index.html
 ---
 
 
-![Logo](/resources/images/logo-yellow-small.png)
+![Logo](/scalameter/resources/images/logo-yellow-small.png)
 
 ScalaMeter is Open Source Software and is available under the New BSD License.
 Roughly, this means that you can use it freely in any commercial or non-commercial
