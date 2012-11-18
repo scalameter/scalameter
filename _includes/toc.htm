@@ -9,7 +9,7 @@
     {% endif %}
   {% endfor %}
 
-  <h3><a href="/">ScalaMeter</a></h3>
+  <h3><a href="/scalameter/">ScalaMeter</a></h3>
 
   <ul class="bullets">
     <li><a href="/scalameter/home/news/">News</a></li>
@@ -22,7 +22,7 @@
     {% for i in (1..totalPagesTour) %}
       {% for pg in site.pages %}
         {% if pg.partof == "getting-started" and pg.num and pg.num == i %}
-          <li><a href="{{ pg.url }}">{{ pg.title }}</a></li>
+          <li><a href="/scalameter/{{ pg.url }}">{{ pg.title }}</a></li>
         {% endif %}
       {% endfor %}
     {% endfor %}
