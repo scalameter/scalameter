@@ -5,6 +5,7 @@ package reporting
 
 import java.util.Date
 import java.io._
+import java.awt.Color
 import org.jfree.chart._
 import collection._
 import xml._
@@ -165,10 +166,25 @@ object HtmlReporter {
       }
     }
 
-    case class Regression() extends Renderer {
+    case class Regression(factory: ChartReporter.ChartFactory, colors: Seq[Color]) extends Renderer {
       def render(context: Context, curves: Seq[CurveData], h: History): Node = {
-        // TODO
+        val resultdir = context.goe(reports.resultDir, "tmp")
+        val scopename = context.scope
+        val chart = factory.createChart(scopename, curves, h, colors)
+        val chartfile = new File(s"$resultdir${File.separator}report${File.separator}images${File.separator}$scopename.png")
+        ChartUtilities.saveChartAsPNG(chartfile, chart, 1600, 1200)
 
+        <div>
+        <p>Chart:</p>
+        <a href={"images/" + scopename + ".png"}>
+        <img src={"images/" + scopename + ".png"} alt={scopename} width="800" height="600"></img>
+        </a>
+        </div>
+      }
+    }
+
+    case class Histogram(factory: ChartReporter.ChartFactory, colors: Seq[Color]) extends Renderer {
+      def render(context: Context, curves: Seq[CurveData], h: History): Node = {
         <div>
         </div>
       }
