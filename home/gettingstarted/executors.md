@@ -80,7 +80,7 @@ perform a GC cycle if `exec.reinstantiation.fullGC` is set to `true`.
 
 - `Measurer.OutlierElimination` is another mixin measurer, which analyzes the measurements returned by other
 measurers and possibly discards and repeats measurements.
-It is described in more detail in the [regression testing section](/scalameter/home/gettingstarted/regressions/)
+It is described in more detail in the [regression testing section](/scalameter/home/gettingstarted/regressions/).
 
 - `Measurer.AbsoluteNoise` is a mixin measurer which adds absolute noise to measurements.
 
