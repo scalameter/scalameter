@@ -33,6 +33,8 @@ Just like normal unit testing does not test your code against your specification
 and inevidably leaves some of the cases left out, the performance regression testing
 is likely to overlook certain kinds of performance regressions, depending on how you
 write your tests.
+The goal of this section is to show how you can achieve reasonable test coverage, while
+having repeatable and reliable tests, with as few false positives as possible.
 </p>
 </div>
 
