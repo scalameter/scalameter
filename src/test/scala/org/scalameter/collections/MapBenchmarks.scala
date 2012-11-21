@@ -10,7 +10,7 @@ import Key._
 
 class MapBenchmarks extends PerformanceTest.Regression with Collections {
 
-  def persistor = new persistance.SerializationPersistor()
+  def persistor = new persistence.SerializationPersistor()
 
   /* tests */
 

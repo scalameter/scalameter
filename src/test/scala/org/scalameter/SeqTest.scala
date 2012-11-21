@@ -39,7 +39,7 @@ class RegressionSeqTest extends SeqTesting with PerformanceTest.Regression
 
 abstract class SeqTesting extends PerformanceTest {
 
-  def persistor = new persistance.SerializationPersistor()
+  def persistor = new persistence.SerializationPersistor()
 
   /* data */
 

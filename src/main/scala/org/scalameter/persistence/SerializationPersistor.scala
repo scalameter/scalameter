@@ -1,5 +1,5 @@
 package org.scalameter
-package persistance
+package persistence
 
 
 

@@ -19,7 +19,7 @@ class ChartReporterTest extends PerformanceTest {
     HtmlReporter(HtmlReporter.Renderer.Info(), HtmlReporter.Renderer.Regression(ChartReporter.ChartFactory.ConfidenceIntervals(true, true, 0.001), colorsTestSample)),
     RegressionReporter(RegressionReporter.Tester.Accepter(), RegressionReporter.Historian.Complete())
   )
-  lazy val persistor = new persistance.SerializationPersistor()
+  lazy val persistor = new persistence.SerializationPersistor()
 
   val sizes = Gen.range("size")(300000, 1500000, 300000)
 
@@ -61,7 +61,7 @@ class ChartReporterTest0 extends PerformanceTest {
     //HtmlReporter(HtmlReporter.Renderer.Info(), HtmlReporter.Renderer.Histogram(ChartReporter.ChartFactory.Histogram(), colorsTestSample)),
     RegressionReporter(RegressionReporter.Tester.Accepter(), RegressionReporter.Historian.Complete())
   )
-  lazy val persistor = new persistance.SerializationPersistor()
+  lazy val persistor = new persistence.SerializationPersistor()
 
   val sizes = Gen.range("size")(300000, 1500000, 300000)
 

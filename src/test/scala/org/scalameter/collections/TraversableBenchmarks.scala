@@ -10,7 +10,7 @@ import Key._
 
 class TraversableBenchmarks extends PerformanceTest.Regression with Collections {
 
-  def persistor = new persistance.SerializationPersistor()
+  def persistor = new persistence.SerializationPersistor()
 
   /* traversable collections */
 

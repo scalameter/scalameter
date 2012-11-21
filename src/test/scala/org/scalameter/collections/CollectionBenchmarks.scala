@@ -8,7 +8,7 @@ package collections
 
 class CollectionBenchmarks extends PerformanceTest.Regression {
 
-  def persistor = new persistance.SerializationPersistor
+  def persistor = new persistence.SerializationPersistor
 
   include[TraversableBenchmarks]
   include[SeqBenchmarks]

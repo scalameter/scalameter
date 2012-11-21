@@ -315,7 +315,7 @@ package scalameter {
    *  - all the context map keys
    *  - contents of the `execution` package
    *  - contents of the `reporting` package
-   *  - contents of the `persistance` package
+   *  - contents of the `persistence` package
    *  - the `Executor.Measurer` object
    *  - the `RegressionReporter.Tester` object
    *  - the `RegressionReporter.Historian` object
@@ -365,10 +365,10 @@ package scalameter {
     val ChartFactory = reporting.ChartReporter.ChartFactory
     val Renderer = reporting.HtmlReporter.Renderer
 
-    /* persistance */
+    /* persistence */
 
-    type SerializationPersistor = persistance.SerializationPersistor
-    val SerializationPersistor = persistance.SerializationPersistor
+    type SerializationPersistor = persistence.SerializationPersistor
+    val SerializationPersistor = persistence.SerializationPersistor
 
   }
 
