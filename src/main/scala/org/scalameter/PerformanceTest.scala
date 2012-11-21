@@ -51,71 +51,40 @@ object PerformanceTest {
 
   }
 
-  object Executor {
-    import org.scalameter.Executor.Measurer
-
-    trait BigOh extends PerformanceTest {
-      lazy val aggregator = Aggregator.min
-      lazy val measurer = new Measurer.Default()
-      lazy val executor = execution.LocalExecutor(aggregator, measurer)
-    }
-
-    trait MinimalTime extends PerformanceTest {
-      lazy val aggregator = Aggregator.min
-      lazy val measurer = new Measurer.IgnoringGC with Measurer.PeriodicReinstantiation {
-        def frequency = 12
-        def fullGC = true
-      }
-      lazy val executor = execution.JvmPerSetupExecutor(aggregator, measurer)
-    }
-
-    trait OptimalAllocation extends PerformanceTest {
-      lazy val aggregator = Aggregator.median
-      lazy val measurer = new Measurer.OptimalAllocation(new Measurer.IgnoringGC, aggregator)
-      lazy val executor = new execution.JvmPerSetupExecutor(aggregator, measurer)
-    }
-
-    trait Regression extends PerformanceTest {
-      lazy val aggregator = Aggregator.complete(Aggregator.average)
-      lazy val measurer = new Measurer.IgnoringGC with Measurer.PeriodicReinstantiation with Measurer.OutlierElimination with Measurer.RelativeNoise
-      lazy val executor = new execution.MultipleJvmPerSetupExecutor(aggregator, measurer)
-    }
-
+  trait Quickbenchmark extends PerformanceTest {
+    def executor = new execution.LocalExecutor(
+      Executor.Warmer.Default(),
+      Aggregator.min,
+      new Executor.Measurer.Default
+    )
+    def reporter = new reporting.LoggingReporter
+    def persistor = Persistor.None
   }
 
-  object Reporter {
+  trait Microbenchmark extends PerformanceTest {
+    import Executor.Measurer
+    def warmer = Executor.Warmer.Default()
+    def aggregator = Aggregator.min
+    def measurer = new Measurer.IgnoringGC with Measurer.PeriodicReinstantiation {
+      def frequency = 12
+      def fullGC = true
+    }
+    def executor = execution.SeparateJvmsExecutor(warmer, aggregator, measurer)
+    def reporter = new reporting.LoggingReporter
+    def persistor = Persistor.None
+  }
+
+  trait Regression extends PerformanceTest {
+    import Executor.Measurer
     import reporting._
-
-    trait Logging extends PerformanceTest {
-      lazy val reporter = new LoggingReporter
-    }
-
-    trait Chart extends PerformanceTest {
-      lazy val reporter = new ChartReporter(ChartReporter.ChartFactory.XYLine())
-    }
-
-    trait Html extends PerformanceTest {
-      lazy val reporter = new HtmlReporter(HtmlReporter.Renderer.basic: _*)
-    }
-
-    trait Regression extends PerformanceTest {
-      lazy val reporter = org.scalameter.Reporter.Composite(
-        RegressionReporter(RegressionReporter.Tester.ConfidenceIntervals(), RegressionReporter.Historian.ExponentialBackoff()),
-        new HtmlReporter(HtmlReporter.Renderer.regression: _*)
-      )
-    }
-
-  }
-
-  trait Regression extends Executor.Regression with Reporter.Regression
-
-  trait Microbenchmark extends Executor.MinimalTime with Reporter.Logging {
-    def persistor = Persistor.None
-  }
-
-  trait Quickbenchmark extends PerformanceTest with Reporter.Logging {
-    def executor = new execution.LocalExecutor(Aggregator.min, new org.scalameter.Executor.Measurer.Default)
-    def persistor = Persistor.None
+    def warmer = Executor.Warmer.Default()
+    def aggregator = Aggregator.complete(Aggregator.average)
+    def measurer = new Measurer.IgnoringGC with Measurer.PeriodicReinstantiation with Measurer.OutlierElimination with Measurer.RelativeNoise
+    def executor = new execution.SeparateJvmsExecutor(warmer, aggregator, measurer)
+    def reporter = org.scalameter.Reporter.Composite(
+      new RegressionReporter(RegressionReporter.Tester.ConfidenceIntervals(), RegressionReporter.Historian.ExponentialBackoff()),
+      new HtmlReporter(HtmlReporter.Renderer.regression: _*)
+    )
   }
 
 }

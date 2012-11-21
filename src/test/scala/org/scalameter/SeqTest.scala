@@ -6,34 +6,6 @@ import collection._
 
 
 
-class NewJvmMedianNoGcSeqTest extends SeqTesting with PerformanceTest.Reporter.Html {
-  lazy val executor = new execution.JvmPerSetupExecutor(Aggregator.median, new Executor.Measurer.IgnoringGC)
-}
-
-
-class NewJvmMinNoGcSeqTest extends SeqTesting with PerformanceTest.Reporter.Html {
-  lazy val executor = new execution.JvmPerSetupExecutor(Aggregator.min, new Executor.Measurer.IgnoringGC)
-}
-
-
-class NewJvmMinNoGcReinstSeqTest extends SeqTesting with PerformanceTest.Reporter.Html {
-  lazy val executor = new execution.JvmPerSetupExecutor(Aggregator.min, new Executor.Measurer.IgnoringGC with Executor.Measurer.PeriodicReinstantiation {
-    def frequency = 20
-    def fullGC = true
-  })
-}
-
-
-class NewJvmMedianNoGcFinderSeqTest extends SeqTesting with PerformanceTest.Reporter.Html {
-  lazy val aggregator = Aggregator.median
-  lazy val measurer = new Executor.Measurer.OptimalAllocation(new Executor.Measurer.IgnoringGC, aggregator)
-  lazy val executor = new execution.JvmPerSetupExecutor(aggregator, measurer)
-}
-
-
-class NewJvmRegressionSeqTest extends SeqTesting with PerformanceTest.Executor.Regression with PerformanceTest.Reporter.Html
-
-
 class RegressionSeqTest extends SeqTesting with PerformanceTest.Regression
 
 

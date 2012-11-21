@@ -15,7 +15,7 @@ import utils.Tree
  *  This produces more stable results, as the performance related effects of each JVM instantiation
  *  are averaged.
  */
-class MultipleJvmPerSetupExecutor(val aggregator: Aggregator, val measurer: Executor.Measurer) extends Executor {
+class SeparateJvmsExecutor(val warmer: Executor.Warmer, val aggregator: Aggregator, val measurer: Executor.Measurer) extends Executor {
 
   import Key._
 
@@ -46,7 +46,7 @@ class MultipleJvmPerSetupExecutor(val aggregator: Aggregator, val measurer: Exec
           for (i <- 0 until warmups) warmup()
         case _ =>
           for (x <- gen.warmupset) {
-            for (i <- Warmer(context, setupFor(x), teardownFor(x))) snippet(x)
+            for (i <- warmer.warming(context, setupFor(x), teardownFor(x))) snippet(x)
           }
       }
 
@@ -107,9 +107,9 @@ class MultipleJvmPerSetupExecutor(val aggregator: Aggregator, val measurer: Exec
 }
 
 
-object MultipleJvmPerSetupExecutor extends Executor.Factory[MultipleJvmPerSetupExecutor] {
+object SeparateJvmsExecutor extends Executor.Factory[SeparateJvmsExecutor] {
 
-  def apply(agg: Aggregator, m: Executor.Measurer) = new MultipleJvmPerSetupExecutor(agg, m)
+  def apply(w: Executor.Warmer, agg: Aggregator, m: Executor.Measurer) = new SeparateJvmsExecutor(w, agg, m)
 
 }
 

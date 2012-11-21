@@ -331,6 +331,9 @@ package scalameter {
     type PerformanceTest = org.scalameter.PerformanceTest
     val PerformanceTest = org.scalameter.PerformanceTest
 
+    type Executor = org.scalameter.Executor
+    val Executor = org.scalameter.Executor
+
     type Reporter = org.scalameter.Reporter
     val Reporter = org.scalameter.Reporter
 
@@ -340,8 +343,7 @@ package scalameter {
     /* execution */
 
     val LocalExecutor = execution.LocalExecutor
-    val JvmPerSetupExecutor = execution.JvmPerSetupExecutor
-    val MultipleJvmPerSetupExecutor = execution.MultipleJvmPerSetupExecutor
+    val SeparateJvmsExecutor = execution.SeparateJvmsExecutor
 
     val Aggregator = org.scalameter.Aggregator
     val Measurer = Executor.Measurer

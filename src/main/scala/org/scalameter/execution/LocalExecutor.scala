@@ -26,7 +26,7 @@ import utils.Tree
  *  most triggered GC cycles are fast because they collect only
  *  the young generation.
  */
-class LocalExecutor(val aggregator: Aggregator, val measurer: Executor.Measurer) extends Executor {
+class LocalExecutor(val warmer: Executor.Warmer, val aggregator: Aggregator, val measurer: Executor.Measurer) extends Executor {
 
   import Key._
 
@@ -37,7 +37,7 @@ class LocalExecutor(val aggregator: Aggregator, val measurer: Executor.Measurer)
       for (x <- gen.warmupset) {
         val warmups = context.goe(exec.maxWarmupRuns, 10)
         customwarmup.map(_())
-        for (_ <- Warmer(context, setupFor(x), teardownFor(x))) snippet(x)
+        for (_ <- warmer.warming(context, setupFor(x), teardownFor(x))) snippet(x)
       }
     }
 
@@ -61,7 +61,7 @@ class LocalExecutor(val aggregator: Aggregator, val measurer: Executor.Measurer)
         for (i <- 0 until warmups) warmup()
       case _ =>
         for (x <- gen.warmupset) {
-          for (i <- Warmer(context, setupFor(x), teardownFor(x))) snippet(x)
+          for (i <- warmer.warming(context, setupFor(x), teardownFor(x))) snippet(x)
         }
     }
 
@@ -95,7 +95,7 @@ class LocalExecutor(val aggregator: Aggregator, val measurer: Executor.Measurer)
 
 object LocalExecutor extends Executor.Factory[LocalExecutor] {
 
-  def apply(a: Aggregator, m: Executor.Measurer) = new LocalExecutor(a, m)
+  def apply(w: Executor.Warmer, a: Aggregator, m: Executor.Measurer) = new LocalExecutor(w, a, m)
 
 }
 

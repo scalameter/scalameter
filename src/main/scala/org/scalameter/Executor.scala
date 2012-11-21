@@ -32,17 +32,63 @@ object Executor {
   }
 
   trait Factory[E <: Executor] {
-    def apply(aggregator: Aggregator, m: Measurer): E
+    def apply(warmer: Warmer, aggregator: Aggregator, m: Measurer): E
+  }
 
-    def min = apply(Aggregator.min, new Measurer.Default)
+  trait Warmer extends Serializable {
+    def name: String
+    def warming(ctx: Context, setup: () => Any, teardown: () => Any): Foreach[Int]
+  }
 
-    def max = apply(Aggregator.max, new Measurer.Default)
+  object Warmer {
 
-    def average = apply(Aggregator.average, new Measurer.Default)
+    case class Default() extends Warmer {
+      def name = "Warmer.Default"
+      def warming(ctx: Context, setup: () => Any, teardown: () => Any) = new Foreach[Int] {
+        val minwarmups = ctx.goe(exec.minWarmupRuns, 10)
+        val maxwarmups = ctx.goe(exec.maxWarmupRuns, 50)
 
-    def median = apply(Aggregator.median, new Measurer.Default)
+        def foreach[U](f: Int => U): Unit = {
+          val withgc = new utils.SlidingWindow(minwarmups)
+          val withoutgc = new utils.SlidingWindow(minwarmups)
+          @volatile var nogc = true
 
-    def complete(a: Aggregator) = apply(Aggregator.complete(a), new Measurer.Default)
+          log.verbose(s"Starting warmup.")
+
+          withGCNotification { n =>
+            nogc = false
+            log.verbose("GC detected.")
+          } apply {
+            setup()
+            var i = 0
+            while (i < maxwarmups) {
+              nogc = true
+
+              val start = Platform.currentTime
+              f(i)
+              val end = Platform.currentTime
+              val runningtime = end - start
+
+              if (nogc) withoutgc.add(runningtime)
+              withgc.add(runningtime)
+              teardown()
+              setup()
+
+              val covNoGC = withoutgc.cov
+              val covGC = withgc.cov
+
+              log.verbose(s"$i. warmup run running time: $runningtime (covNoGC: $covNoGC, covGC: $covGC)")
+              if ((withoutgc.size >= minwarmups && covNoGC < 0.1) || (withgc.size >= minwarmups && covGC < 0.1)) {
+                log.verbose(s"Steady-state detected.")
+                i = maxwarmups
+              } else i += 1
+            }
+            log.verbose(s"Ending warmup.")
+          }
+        }
+      }
+    }
+
   }
 
   trait Measurer extends Serializable {

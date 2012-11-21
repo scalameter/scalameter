@@ -69,6 +69,112 @@ object Gen {
     def generate(params: Parameters) = params[Int](axisName)
   }
 
+  /** Provides most collection generators given that a size generator is defined.
+   */
+  trait Collections {
+
+    def sizes: Gen[Int]
+
+    /* sequences */
+
+    def lists = for {
+      size <- sizes
+    } yield (0 until size).toList
+  
+    def arrays = for {
+      size <- sizes
+    } yield (0 until size).toArray
+  
+    def vectors = for {
+      size <- sizes
+    } yield (0 until size).toVector
+  
+    def arraybuffers = for {
+      size <- sizes
+    } yield mutable.ArrayBuffer(0 until size: _*)
+  
+    def ranges = for {
+      size <- sizes
+    } yield 0 until size
+  
+    /* maps */
+  
+    def hashtablemaps = for {
+      size <- sizes
+    } yield {
+      val hm = mutable.HashMap[Int, Int]()
+      for (x <- 0 until size) hm(x) = x
+      hm
+    }
+  
+    def linkedhashtablemaps = for {
+      size <- sizes
+    } yield {
+      val hm = mutable.LinkedHashMap[Int, Int]()
+      for (x <- 0 until size) hm(x) = x
+      hm
+    }
+  
+    def hashtriemaps = for {
+      size <- sizes
+    } yield {
+      var hm = immutable.HashMap[Int, Int]()
+      for (x <- 0 until size) hm += ((x, x))
+      hm
+    }
+  
+    def redblackmaps = for {
+      size <- sizes
+    } yield {
+      var am = immutable.TreeMap[Int, Int]()
+      for (x <- 0 until size) am += ((x, x))
+      am
+    }
+  
+    /* sets */
+  
+    def hashtablesets = for {
+      size <- sizes
+    } yield {
+      val hs = mutable.HashSet[Int]()
+      for (x <- 0 until size) hs.add(x)
+      hs
+    }
+  
+    def linkedhashtablesets = for {
+      size <- sizes
+    } yield {
+      val hs = mutable.LinkedHashSet[Int]()
+      for (x <- 0 until size) hs.add(x)
+      hs
+    }
+  
+    def avlsets = for {
+      size <- sizes
+    } yield {
+      val as = mutable.TreeSet[Int]()
+      for (x <- 0 until size) as.add(x)
+      as
+    }
+  
+    def redblacksets = for {
+      size <- sizes
+    } yield {
+      var as = immutable.TreeSet[Int]()
+      for (x <- 0 until size) as += x
+      as
+    }
+  
+    def hashtriesets = for {
+      size <- sizes
+    } yield {
+      var hs = immutable.HashSet[Int]()
+      for (x <- 0 until size) hs += x
+      hs
+    }
+
+  }
+
 }
 
 

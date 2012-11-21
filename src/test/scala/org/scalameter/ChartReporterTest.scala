@@ -12,7 +12,7 @@ import java.awt.Color
  */
 class ChartReporterTest extends PerformanceTest {
 
-  lazy val executor = execution.LocalExecutor(Aggregator.complete(Aggregator.average), new Executor.Measurer.Default)
+  lazy val executor = execution.LocalExecutor(Executor.Warmer.Default(), Aggregator.complete(Aggregator.average), new Executor.Measurer.Default)
   lazy val colorsTestSample = List(new Color(0, 0, 255), new Color(255, 255, 0))
   lazy val reporter = Reporter.Composite(
     //ChartReporter(ChartReporter.ChartFactory.Regression(true, true, 0.001), "chart_"),
@@ -54,7 +54,7 @@ class ChartReporterTest extends PerformanceTest {
  */
 class ChartReporterTest0 extends PerformanceTest {
 
-  lazy val executor = execution.LocalExecutor(Aggregator.complete(Aggregator.average), new Executor.Measurer.Default)
+  lazy val executor = execution.LocalExecutor(Executor.Warmer.Default(), Aggregator.complete(Aggregator.average), new Executor.Measurer.Default)
   lazy val colorsTestSample = List(new Color(0, 0, 255), new Color(255, 255, 0))
   lazy val reporter = Reporter.Composite(
     ChartReporter(ChartReporter.ChartFactory.Histogram(), "chart_"),
