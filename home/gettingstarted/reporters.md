@@ -2,6 +2,9 @@
 layout: default
 title: Reporters
 permalink: /reporters/index.html
+
+partof: getting-started
+num: 5
 ---
 
 
@@ -18,7 +21,7 @@ any single test.
 The second `report` method is invoked at the end when all of the tests are finished
 executing.
 If you plan to implement your own `Reporter` from scratch, then you should take
-a look at the [ScalaMeter API](/home/api) to better understand what the parameters
+a look at the [ScalaMeter API](/scalameter/home/api) to better understand what the parameters
 are, as well as how other important ScalaMeter datatypes work.
 <br/>
 Otherwise, there are plenty of predefined reporters to choose from.
@@ -151,7 +154,7 @@ This reporter has to be used with a persistor different than `Persistor.None`.
 Otherwise, it will have nothing to compare the results against, and it will not be able
 to persist the results if the tests are successful.
 
-We will explain this reporter in more detail in the section on [performance regression testing](/home/gettingstarted/regressions/),
+We will explain this reporter in more detail in the section on [performance regression testing](/scalameter/home/gettingstarted/regressions/),
 where we show how to do performance regression tests on a concrete example.
 In the meanwhile, we note that a regression reporter takes two parameters, namely, the
 `Tester` and the `Historian`.
@@ -248,12 +251,12 @@ We will mostly be using this historian.
 
 Since performance regression testing may not be completely clear after this high
 level overview of the regression reporter, we show a coding example in the next
-[section](/home/gettingstarted/regressions).
+[section](/scalameter/home/gettingstarted/regressions).
 
 
 
 <div class="imagenoframe">
-  <img src="/resources/images/logo-yellow-small.png"></img>
+  <img src="/scalameter/resources/images/logo-yellow-small.png"></img>
 </div>
 
 

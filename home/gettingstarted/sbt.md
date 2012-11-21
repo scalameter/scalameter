@@ -2,6 +2,9 @@
 layout: default
 title: SBT integration
 permalink: /sbt/index.html
+
+partof: getting-started
+num: 8
 ---
 
 
@@ -14,10 +17,10 @@ Open `build.sbt` and add the following line:
 
 Where `[version]` should be the desired ScalaMeter release.
 You can find the exact maven dependencies for each ScalaMeter release
-in the [download section](/home/download).
+in the [download section](/scalameter/home/download).
 Alternatively, you can include ScalaMeter library as a manual dependency
 by downloading it and placing it into the `lib` directory of your project.
-See the [download section](/home/download) for instructions on how to download
+See the [download section](/scalameter/home/download) for instructions on how to download
 the JAR file manually.
 
 * SBT needs to know that there is a new test interface in your project.
@@ -44,7 +47,7 @@ To run tests with arguments:
 
 
 <div class="imagenoframe">
-  <img src="/resources/images/logo-yellow-small.png"></img>
+  <img src="/scalameter/resources/images/logo-yellow-small.png"></img>
 </div>
 
 

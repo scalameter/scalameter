@@ -1,7 +1,11 @@
 ---
 layout: default
-title: Getting Started
+title: Introduction
 permalink: /index.html
+
+partof: getting-started
+num: 1
+outof: 8
 ---
 
 
@@ -12,10 +16,10 @@ We start by explaining what microbenchmarking is in a nutshell and pointing out 
 important aspects.
 
 If you already understand the underpinnings of microbenchmarking and want to jump right
-into coding, you can skip this section and go to [Simple Microbenchmark](/home/gettingstarted/simplemicrobenchmark).
+into coding, you can skip this section and go to [Simple Microbenchmark](/scalameter/home/gettingstarted/simplemicrobenchmark).
 
 
-## Microbenchmarking 101
+## Microbenchmarking
 
 A microbenchmark is a measurement of the running time of some isolated piece of code.
 Typically, this is a method in your API, an operation on a data structure or an algorithm that
@@ -53,7 +57,7 @@ momentum measurement gets higher. You could completely accurately measure one of
 you end up with no information about the other.
 
 <div class="imageframe">
-  <img src="/resources/images/heisenberg.jpg"></img>
+  <img src="/scalameter/resources/images/heisenberg.jpg"></img>
 </div>
 
 But this is not the only example. In thermodynamics, taking a temperature reading gives you an inaccurate
@@ -139,7 +143,7 @@ for maintenance and portability reasons.
 Otherwise, your code might end up looking something like the Rube Goldberg device below:
 
 <div class="imageframe">
-  <img src="/resources/images/rubegoldberg.jpg"></img>
+  <img src="/scalameter/resources/images/rubegoldberg.jpg"></img>
 </div>
 
 The picture shows a device used to remind the wearer that a letter should be left in the letterbox.
@@ -174,7 +178,7 @@ The idea is to closely supervise what kind of changes go in, and what their effe
 A red flag is raised quickly if you try to do something you're not supposed to.
 
 <div class="imageframe">
-  <img src="/resources/images/santa.png"></img>
+  <img src="/scalameter/resources/images/santa.png"></img>
 </div>
 
 A snippet of code which tests a certain feature or functionality in an application which is known to have previously
@@ -211,10 +215,10 @@ ScalaMeter exists -- to allow you to write and run performance tests in a reliab
 regressions can be detected deterministically and running times reproduced under the same conditions.
 
 Now that we've covered all the theoretical aspects we need, it's time to get practical and do some
-[coding](/home/gettingstarted/simplemicrobenchmark).
+[coding](/scalameter/home/gettingstarted/simplemicrobenchmark).
 
 <div class="imagenoframe">
-  <img src="/resources/images/logo-yellow-small.png"></img>
+  <img src="/scalameter/resources/images/logo-yellow-small.png"></img>
 </div>
 
 

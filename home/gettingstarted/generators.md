@@ -2,6 +2,9 @@
 layout: default
 title: Generators
 permalink: /generators/index.html
+
+partof: getting-started
+num: 4
 ---
 
 
@@ -92,11 +95,14 @@ of a benchmark run using it will depend on two input parameters.
 <br/>
 Such data dependency is best displayed using a 3D chart.
 
-In the next section we take a look at the different [reporters](/home/gettingstarted/reporters/).
+In the next section we take a look at the different [reporters](/scalameter/home/gettingstarted/reporters/).
 
 
 
 
+<div class="imagenoframe">
+  <img src="/scalameter/resources/images/logo-yellow-small.png"></img>
+</div>
 
 
 
