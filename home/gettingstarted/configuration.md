@@ -128,12 +128,12 @@ how the performance was linear when running from SBT, while it degraded in the p
 for larger `Range`s, indicating that memory allocations took more time on average.
 
 To ensure that the tests are run in a separate JVM, we only need to change the `executor`
-to a special `MultipleJvmPerSetupExecutor`. This executor will start at least one new JVM instance
+to a special `SeparateJvmsExecutor`. This executor will start at least one new JVM instance
 for each test and run the tests from the new JVM.
 The new JVM has the default heap size set to 2GB.
 This way:
 
-    lazy val executor = MultipleJvmPerSetupExecutor(
+    lazy val executor = SeparateJvmsExecutor(
       Aggregator.min,
       new Measurer.Default
     )
@@ -176,7 +176,7 @@ even with relatively simple code.
 An additional observation is that the `Range` class behaves very differently depending
 on the program in which it is used.
 
-We will use the `MultipleJvmPerSetupExecutor` unless we say otherwise, since its results are the
+We will use the `SeparateJvmsExecutor` unless we say otherwise, since its results are the
 easiest to reproduce.
 We remarked above that each executor takes additional 2 parameters, namely, the
 `Aggregator` and a `Measurer`.
