@@ -33,6 +33,7 @@ class SeparateJvmsExecutor(val warmer: Executor.Warmer, val aggregator: Aggregat
     }
 
     val m = measurer
+    val w = warmer
     val jvmContext = createJvmContext(context)
 
     def sample(idx: Int, reps: Int): Seq[(Parameters, Seq[Long])] = runner.run(jvmContext) {
@@ -46,7 +47,7 @@ class SeparateJvmsExecutor(val warmer: Executor.Warmer, val aggregator: Aggregat
           for (i <- 0 until warmups) warmup()
         case _ =>
           for (x <- gen.warmupset) {
-            for (i <- warmer.warming(context, setupFor(x), teardownFor(x))) snippet(x)
+            for (i <- w.warming(context, setupFor(x), teardownFor(x))) snippet(x)
           }
       }
 

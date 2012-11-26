@@ -79,9 +79,9 @@ object PerformanceTest {
     import reporting._
     def warmer = Executor.Warmer.Default()
     def aggregator = Aggregator.complete(Aggregator.average)
-    def measurer = new Measurer.IgnoringGC with Measurer.PeriodicReinstantiation with Measurer.OutlierElimination with Measurer.RelativeNoise
-    def executor = new execution.SeparateJvmsExecutor(warmer, aggregator, measurer)
-    def reporter = org.scalameter.Reporter.Composite(
+    def measurer: Measurer = new Measurer.IgnoringGC with Measurer.PeriodicReinstantiation with Measurer.OutlierElimination with Measurer.RelativeNoise
+    def executor: Executor = new execution.SeparateJvmsExecutor(warmer, aggregator, measurer)
+    def reporter: Reporter = org.scalameter.Reporter.Composite(
       new RegressionReporter(RegressionReporter.Tester.ConfidenceIntervals(), RegressionReporter.Historian.ExponentialBackoff()),
       new HtmlReporter(HtmlReporter.Renderer.regression: _*)
     )
