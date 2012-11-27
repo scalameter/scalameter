@@ -87,7 +87,7 @@ class SeparateJvmsExecutor(val warmer: Executor.Warmer, val aggregator: Aggregat
     }
 
     def nice(ts: Seq[(Parameters, Seq[Double])]) = ts map {
-      case (params, seq) => params.axisData.mkString(", ") + ": " + seq.mkString(", ")
+      case (params, seq) => params.axisData.mkString(", ") + ": " + seq.map(t => f"$t%.3f").mkString(", ")
     } mkString("\n")
 
     log.verbose(s"Obtained measurements:\n${nice(timeseq)}")

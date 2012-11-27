@@ -19,12 +19,14 @@ class SetBenchmarks extends PerformanceTest.Regression with Collections {
     measure method "apply" config (
       exec.minWarmupRuns -> 25,
       exec.benchRuns -> 40,
-      exec.independentSamples -> 10,
+      exec.independentSamples -> 6,
+      exec.outliers.suspectPercent -> 50,
+      exec.noise.magnitude -> 1.0,
       reports.regression.significance -> 1e-13
     ) in {
-      val from = 50000
-      val to = 500000
-      val by = 100000
+      val from = 20000
+      val to = 100000
+      val by = 20000
       
       using(hashtablesets(from, to, by)) curve("mutable.HashSet") in { xs =>
         var i = 0
@@ -58,7 +60,7 @@ class SetBenchmarks extends PerformanceTest.Regression with Collections {
 
       using(hashtriesets(from, to, by)) curve("immutable.HashSet") config (
         exec.benchRuns -> 36,
-        exec.independentSamples -> 6,
+        exec.independentSamples -> 5,
         exec.reinstantiation.frequency -> 1,
         exec.reinstantiation.fullGC -> true,
         exec.noise.magnitude -> 1.0
@@ -90,9 +92,9 @@ class SetBenchmarks extends PerformanceTest.Regression with Collections {
       exec.independentSamples -> 8,
       reports.regression.significance -> 1e-13
     ) in {
-      val from = 100000
-      val to = 750000
-      val by = 150000
+      val from = 40000
+      val to = 160000
+      val by = 40000
       
       using(sizes(from, to, by)) curve("mutable.HashSet") in { sz =>
         var i = 0
@@ -126,12 +128,12 @@ class SetBenchmarks extends PerformanceTest.Regression with Collections {
     measure method "update" config (
       exec.minWarmupRuns -> 15,
       exec.benchRuns -> 32,
-      exec.independentSamples -> 8,
+      exec.independentSamples -> 4,
       reports.regression.significance -> 1e-13
     ) in {
-      val from = 25000
-      val to = 125000
-      val by = 25000
+      val from = 10000
+      val to = 100000
+      val by = 30000
       
       using(sized(hashtablesets(from, to, by))) curve("mutable.HashSet") tearDown {
         case (sz, xs) => for (i <- 0 until sz) xs.add(i)
@@ -168,9 +170,9 @@ class SetBenchmarks extends PerformanceTest.Regression with Collections {
       exec.independentSamples -> 5,
       reports.regression.significance -> 1e-13
     ) in {
-      val from = 50000
-      val to = 500000
-      val by = 100000
+      val from = 40000
+      val to = 160000
+      val by = 40000
       
       using(sized(hashtablesets(from, to, by))) curve("mutable.HashSet") tearDown {
         case (sz, xs) => for (i <- 0 until sz) xs.add(i)
@@ -203,9 +205,9 @@ class SetBenchmarks extends PerformanceTest.Regression with Collections {
       exec.independentSamples -> 5,
       reports.regression.significance -> 1e-13
     ) in {
-      val from = 50000
-      val to = 500000
-      val by = 100000
+      val from = 10000
+      val to = 100000
+      val by = 30000
       
       using(sizes(from, to, by)) curve("immutable.HashSet") in { sz =>
         var i = 0
@@ -228,15 +230,17 @@ class SetBenchmarks extends PerformanceTest.Regression with Collections {
     }
 
     measure method "-" config (
-      exec.minWarmupRuns -> 15,
-      exec.benchRuns -> 35,
-      exec.independentSamples -> 5,
-      reports.regression.significance -> 1e-13,
-      exec.noise.magnitude -> 0.5
+      exec.minWarmupRuns -> 25,
+      exec.benchRuns -> 64,
+      exec.independentSamples -> 8,
+      exec.outliers.suspectPercent -> 75,
+      exec.outliers.retries -> 16,
+      exec.noise.magnitude -> 1.0,
+      reports.regression.significance -> 1e-13
     ) in {
-      val from = 50000
-      val to = 500000
-      val by = 100000
+      val from = 10000
+      val to = 100000
+      val by = 30000
       
       using(hashtriesets(from, to, by)) curve("immutable.HashSet") in { xs =>
         var i = 0

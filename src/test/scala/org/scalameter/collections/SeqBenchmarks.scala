@@ -21,9 +21,9 @@ class SeqBenchmarks extends PerformanceTest.Regression with Collections {
       exec.independentSamples -> 9,
       reports.regression.significance -> 1e-13
     ) in {
-      val from = 1000000
-      val to = 5000000
-      val by = 1000000
+      val from = 100000
+      val to = 1000000
+      val by = 200000
       var sideeffect = 0
 
       using(arrays(from, to, by)) curve("Array") in { xs =>
@@ -81,9 +81,9 @@ class SeqBenchmarks extends PerformanceTest.Regression with Collections {
       exec.independentSamples -> 9,
       reports.regression.significance -> 1e-13
     ) in {
-      val from = 1000000
-      val to = 5000000
-      val by = 1000000
+      val from = 100000
+      val to = 1000000
+      val by = 200000
       var sideeffect = 0
 
       using(arrays(from, to, by)) curve("Array") in { xs =>
@@ -117,9 +117,9 @@ class SeqBenchmarks extends PerformanceTest.Regression with Collections {
       exec.independentSamples -> 9,
       reports.regression.significance -> 1e-13
     ) in {
-      val from = 200000
-      val to = 2200000
-      val by = 400000
+      val from = 50000
+      val to = 500000
+      val by = 100000
 
       using(sizes(from, to, by)) curve("Vector") config (
         exec.benchRuns -> 32,
@@ -139,13 +139,14 @@ class SeqBenchmarks extends PerformanceTest.Regression with Collections {
     }
 
     measure method "prepend" config (
+      exec.minWarmupRuns -> 20,
       exec.benchRuns -> 36,
       exec.independentSamples -> 9,
       reports.regression.significance -> 1e-13
     ) in {
-      val from = 200000
-      val to = 2200000
-      val by = 400000
+      val from = 50000
+      val to = 1000000
+      val by = 200000
 
       using(sizes(from, to, by)) curve("Vector") config (
         exec.benchRuns -> 32,
@@ -162,7 +163,12 @@ class SeqBenchmarks extends PerformanceTest.Regression with Collections {
         }
       }
 
-      using(sizes(from, to, by)) curve("List") in { len =>
+      using(sizes(from, to, by)) curve("List") config (
+        exec.independentSamples -> 6,
+        exec.outliers.suspectPercent -> 60,
+        exec.outliers.covMultiplier -> 1.4,
+        exec.noise.magnitude -> 1.0
+      ) in { len =>
         var i = 0
         var list = List.empty[Int]
         while (i < len) {
@@ -174,13 +180,14 @@ class SeqBenchmarks extends PerformanceTest.Regression with Collections {
     }
 
     measure method "sorted" config (
+      exec.minWarmupRuns -> 20,
       exec.benchRuns -> 36,
       exec.independentSamples -> 9,
       reports.regression.significance -> 1e-13
     ) in {
-      val from = 800000
-      val to = 4000000
-      val by = 600000
+      val from = 400000
+      val to = 1000000
+      val by = 200000
 
       using(arrays(from, to, by)) curve("Array") in {
         _.sorted

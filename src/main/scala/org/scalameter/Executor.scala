@@ -270,7 +270,8 @@ object Executor {
         var best = results
         while (outlierExists(results) && retleft > 0) {
           val suffixlen = outlierSuffixLength(results)
-          log.verbose(s"Detected $suffixlen outlier(s): ${results.mkString(", ")}")
+          val formatted = results.map(t => f"$t%.3f")
+          log.verbose(s"Detected $suffixlen outlier(s): ${formatted.mkString(", ")}")
           results = (results.dropRight(suffixlen) ++ super.measure(context, suffixlen, setup, tear, regen, snippet)).sorted
           if (CoV(results) < CoV(best)) best = results
           retleft -= 1
@@ -302,7 +303,8 @@ object Executor {
           x => (x + 0.49 + noise(x))
         }
 
-        log.verbose("After applying noise: " + withnoise.mkString(", "))
+        val formatted = withnoise.map(t => f"$t%.3f")
+        log.verbose("After applying noise: " + formatted.mkString(", "))
 
         withnoise
       }

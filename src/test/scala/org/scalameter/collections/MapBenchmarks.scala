@@ -22,9 +22,9 @@ class MapBenchmarks extends PerformanceTest.Regression with Collections {
       exec.independentSamples -> 6,
       reports.regression.significance -> 1e-13
     ) in {
-      val from = 50000
-      val to = 500000
-      val by = 100000
+      val from = 40000
+      val to = 160000
+      val by = 40000
       var sideeffect = 0
 
       using(hashtablemaps(from, to, by)) curve("mutable.HashMap") in { xs =>
@@ -96,9 +96,9 @@ class MapBenchmarks extends PerformanceTest.Regression with Collections {
       exec.independentSamples -> 6,
       reports.regression.significance -> 1e-13
     ) in {
-      val from = 50000
-      val to = 500000
-      val by = 100000
+      val from = 40000
+      val to = 160000
+      val by = 40000
 
       using(hashtablemaps(from, to, by)) curve("mutable.HashMap") in { xs =>
         var i = 0
@@ -164,9 +164,9 @@ class MapBenchmarks extends PerformanceTest.Regression with Collections {
       exec.reinstantiation.fullGC -> true,
       reports.regression.significance -> 1e-13
     ) in {
-      val from = 50000
-      val to = 500000
-      val by = 100000
+      val from = 40000
+      val to = 160000
+      val by = 40000
 
       using(hashtablemaps(from, to, by)) curve("mutable.HashMap") in { xs =>
         var i = 0
@@ -197,9 +197,9 @@ class MapBenchmarks extends PerformanceTest.Regression with Collections {
       exec.reinstantiation.fullGC -> true,
       reports.regression.significance -> 1e-13
     ) in {
-      val from = 50000
-      val to = 500000
-      val by = 100000
+      val from = 40000
+      val to = 160000
+      val by = 40000
 
       using(sized(hashtablemaps(from, to, by))) curve("mutable.HashMap") tearDown {
         case (sz, xs) => for (i <- 0 until sz) xs(i) = i
@@ -234,9 +234,9 @@ class MapBenchmarks extends PerformanceTest.Regression with Collections {
       exec.outliers.covMultiplier -> 1.5,
       exec.noise.magnitude -> 0.5
     ) in {
-      val from = 50000
-      val to = 300000
-      val by = 50000
+      val from = 25000
+      val to = 100000
+      val by = 25000
 
       using(sizes(from, to, by)) curve("immutable.HashMap") in { sz =>
         var i = 0
@@ -268,9 +268,9 @@ class MapBenchmarks extends PerformanceTest.Regression with Collections {
       exec.outliers.covMultiplier -> 1.5,
       exec.noise.magnitude -> 0.5
     ) in {
-      val from = 50000
-      val to = 300000
-      val by = 50000
+      val from = 25000
+      val to = 100000
+      val by = 25000
 
       using(hashtriemaps(from, to, by)) curve("immutable.HashMap") in { xs =>
         var i = 0
