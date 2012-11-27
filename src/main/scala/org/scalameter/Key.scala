@@ -49,6 +49,7 @@ class Key {
     val benchRuns = "runs"
     val minWarmupRuns = "min-warmups"
     val maxWarmupRuns = "max-warmups"
+    val warmupCovThreshold = "cov-warmup"
     val independentSamples = "independent-samples"
     val jvmflags = "jvm-flags"
 

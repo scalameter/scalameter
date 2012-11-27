@@ -174,7 +174,7 @@ object RegressionReporter {
             log(s"$color  - at ${measurement.params.axisData.mkString(", ")}, ${alternatives.size} alternatives: $passed${ansi.reset}")
             log(f"$color    (SSA: ${ftest.ssa}%.2f, SSE: ${ftest.sse}%.2f, F: ${ftest.F}%.2f, qf: ${ftest.quantile}%.2f, significance: $significance)${ansi.reset}")
             if (!ftest) {
-              def logalt(a: Seq[Long]) = log(s"$color      ${a.mkString(", ")}${ansi.reset}")
+              def logalt(a: Seq[Double]) = log(s"$color      ${a.mkString(", ")}${ansi.reset}")
               log(s"$color    History:")
               for (a <- alternatives.init) logalt(a)
               log(s"$color    Latest:")
@@ -210,9 +210,12 @@ object RegressionReporter {
               f"$color      Latest   (mean = ${citest.m2}%.2f, stdev = ${citest.s2}%.2f, ci = $cilate): ${latest.complete.mkString(", ")}${ansi.reset}"
             }
             (false, msg)
-          } else (true, "")
+          } else {
+            (true, "")
+          }
         } catch {
-          case e: Exception => (false, s"${ansi.red}    Error in confidence interval test: ${e.getMessage}${ansi.reset}")
+          case e: Exception =>
+          (false, s"${ansi.red}    Error in confidence interval test: ${e.getMessage}${ansi.reset}")
         }
       }
 

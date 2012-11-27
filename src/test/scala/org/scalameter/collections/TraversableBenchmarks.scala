@@ -23,7 +23,7 @@ class TraversableBenchmarks extends PerformanceTest.Regression with Collections 
     ) in {
       val from = 1000000
       val to = 5000000
-      val by = 1000000
+      val by = 2000000
 
       using(arrays(from, to, by)) curve("Array") in { xs =>
         var sum = 0
@@ -59,13 +59,14 @@ class TraversableBenchmarks extends PerformanceTest.Regression with Collections 
     }
   
     measure method "reduce" config (
+      exec.minWarmupRuns -> 20,
       exec.benchRuns -> 36,
       exec.independentSamples -> 9,
       reports.regression.significance -> 1e-13
     ) in {
       val from = 500000
-      val to = 5000000
-      val by = 1000000
+      val to = 1500000
+      val by = 500000
 
       using(arrays(from, to, by)) curve("Array") in {
         _.reduce(_ + _)
@@ -100,7 +101,7 @@ class TraversableBenchmarks extends PerformanceTest.Regression with Collections 
       exec.independentSamples -> 9
     ) in {
       val from = 500000
-      val to = 2500000
+      val to = 2000000
       val by = 500000
 
       using(arrays(from, to, by)) curve("Array") in {
@@ -125,7 +126,9 @@ class TraversableBenchmarks extends PerformanceTest.Regression with Collections 
         _.filter(_ % 2 == 0)
       }
 
-      using(ranges(from, to, by)) curve("Range") in {
+      using(ranges(from, to, by)) curve("Range") config (
+        exec.minWarmupRuns -> 25
+      ) in {
         _.filter(_ % 2 == 0)
       }
     }
@@ -136,8 +139,8 @@ class TraversableBenchmarks extends PerformanceTest.Regression with Collections 
       exec.independentSamples -> 9
     ) in {
       val from = 100000
-      val to = 2000000
-      val by = 400000
+      val to = 600000
+      val by = 200000
 
       using(arrays(from, to, by)) curve("Array") in {
         _.groupBy(_ % 10)
@@ -175,7 +178,7 @@ class TraversableBenchmarks extends PerformanceTest.Regression with Collections 
     ) in {
       val from = 500000
       val to = 2000000
-      val by = 400000
+      val by = 600000
 
       using(arrays(from, to, by)) curve("Array") in {
         _.map(_ * 2)
@@ -210,7 +213,7 @@ class TraversableBenchmarks extends PerformanceTest.Regression with Collections 
       exec.independentSamples -> 9
     ) in {
       val from = 250000
-      val to = 1250000
+      val to = 750000
       val by = 250000
 
       using(arrays(from, to, by)) curve("Array") in {

@@ -36,7 +36,7 @@ class SeparateJvmsExecutor(val warmer: Executor.Warmer, val aggregator: Aggregat
     val w = warmer
     val jvmContext = createJvmContext(context)
 
-    def sample(idx: Int, reps: Int): Seq[(Parameters, Seq[Long])] = runner.run(jvmContext) {
+    def sample(idx: Int, reps: Int): Seq[(Parameters, Seq[Double])] = runner.run(jvmContext) {
       dyn.initialContext.value = context
       
       log.verbose(s"Sampling $reps measurements in separate JVM invocation $idx - ${context.scope}, ${context.goe(dsl.curve, "")}.")
@@ -62,7 +62,7 @@ class SeparateJvmsExecutor(val warmer: Executor.Warmer, val aggregator: Aggregat
       observations.toBuffer
     }
 
-    def sampleReport(idx: Int, reps: Int): Seq[(Parameters, Seq[Long])] = try {
+    def sampleReport(idx: Int, reps: Int): Seq[(Parameters, Seq[Double])] = try {
       sample(idx, reps)
     } catch {
       case e: Exception =>
@@ -86,7 +86,7 @@ class SeparateJvmsExecutor(val warmer: Executor.Warmer, val aggregator: Aggregat
       }
     }
 
-    def nice(ts: Seq[(Parameters, Seq[Long])]) = ts map {
+    def nice(ts: Seq[(Parameters, Seq[Double])]) = ts map {
       case (params, seq) => params.axisData.mkString(", ") + ": " + seq.mkString(", ")
     } mkString("\n")
 

@@ -30,7 +30,7 @@ object Statistics {
 	 *  scalar parameter θ. A confidence interval (B_i, B_s) is a statistic
 	 *  in the form of an interval containing θ with a specified probability.
 	 */
-	def confidenceInterval(seq: Seq[Long], alpha: Double): (Double, Double) = {
+	def confidenceInterval(seq: Seq[Double], alpha: Double): (Double, Double) = {
 		val n = seq.length
 		val xbar = mean(seq)
 		val S = stdev(seq)
@@ -50,7 +50,7 @@ object Statistics {
 	 *                  of the alternatives will not be additionally compared
 	 *  @return         returns `true` if there is no statistical difference for s.l. `alpha`
 	 */
-	case class ConfidenceIntervalTest(strict: Boolean, alt1: Seq[Long], alt2: Seq[Long], alpha: Double) extends Test {
+	case class ConfidenceIntervalTest(strict: Boolean, alt1: Seq[Double], alt2: Seq[Double], alpha: Double) extends Test {
 		val m1 = mean(alt1)
 		val m2 = mean(alt2)
 		val s1 = stdev(alt1)
@@ -83,7 +83,7 @@ object Statistics {
 	}
 
 	/** Computes sum-of-squares due to differences between alternatives. */
-	def SSA(alternatives: Seq[Seq[Long]]): Double = {
+	def SSA(alternatives: Seq[Seq[Double]]): Double = {
 		val means: Seq[Double] = for(a <- alternatives) yield mean(a)
 		val overallMean: Double = means.reduceLeft(_ + _) / means.length
 
@@ -95,7 +95,7 @@ object Statistics {
 	}
 
 	/** Computes sum-of-squares due to errors in measurements. */
-	def SSE(alternatives: Seq[Seq[Long]]): Double = {
+	def SSE(alternatives: Seq[Seq[Double]]): Double = {
 		val means: Seq[Double] = for(a <- alternatives) yield mean(a)
 		val doubleSumTerms = for ((alternative, mean) <- alternatives zip means; yij <- alternative) yield (yij - mean) * (yij - mean)
 		doubleSumTerms reduceLeft (_ + _)
@@ -110,7 +110,7 @@ object Statistics {
 	 *  For more information see:
 	 *  Andy Georges, Dries Buytaert, Lieven Eeckhout - Statistically Rigorous Java Performance Evaluation
 	 */
-	case class ANOVAFTest(alternatives: Seq[Seq[Long]], alpha: Double) extends Test {
+	case class ANOVAFTest(alternatives: Seq[Seq[Double]], alpha: Double) extends Test {
 		/* Computation of SSA */
 		val ssa = SSA(alternatives)
 
@@ -125,24 +125,24 @@ object Statistics {
 		def passed = F <= quantile || sse == 0.0
 	}
 
-	def CoV(measurements: Seq[Long]) = stdev(measurements) / mean(measurements)
+	def CoV(measurements: Seq[Double]) = stdev(measurements) / mean(measurements)
 
 	/** Compares the coefficient of variance to some `threshold` value.
 	 *  
 	 *  This heuristic can be used to detect if the measurement has stabilized.
 	 */
-	case class CoVTest(measurements: Seq[Long], threshold: Double) extends Test {
+	case class CoVTest(measurements: Seq[Double], threshold: Double) extends Test {
 		val cov = CoV(measurements)
 
 		def passed = cov <= threshold
 	}
 
 	/** Computes the mean of the sequence of measurements. */
-	def mean(seq : Seq[Long]): Double = seq.sum * 1.0 / seq.length
+	def mean(seq : Seq[Double]): Double = seq.sum * 1.0 / seq.length
 
 	/** The sample standard sample deviation. It is the square root of S², unbiased estimator for the variance.
 	 */
-	def stdev(seq: Seq[Long]): Double = {
+	def stdev(seq: Seq[Double]): Double = {
 		val xbar = mean(seq)
 		val squaresum: Double = seq.foldLeft(0.0)((sum, xi) => sum + (xi - xbar) * (xi - xbar))
 		sqrt(squaresum / (seq.length - 1))

@@ -34,18 +34,18 @@ package object scalameter {
 
   /* decorators */
 
-  implicit def fun2ops(f: Seq[Long] => Double) = new {
+  implicit def fun2ops(f: Seq[Double] => Double) = new {
     def toAggregator(n: String) = {
       val function = f
       new Aggregator {
         def name = n
-        def apply(times: Seq[Long]) = function(times)
-        def data(times: Seq[Long]) = None
+        def apply(times: Seq[Double]) = function(times)
+        def data(times: Seq[Double]) = None
       }
     }
   }
 
-  implicit final class SeqLongOps(val sq: Seq[Long]) extends AnyVal {
+  implicit final class SeqDoubleOps(val sq: Seq[Double]) extends AnyVal {
     def stdev: Double = {
       val m = 1.0 * sq.sum / sq.size
       var s = 0.0
@@ -220,7 +220,7 @@ package scalameter {
 
   @SerialVersionUID(-2541697615491239986L)
   case class Measurement(time: Double, params: Parameters, data: Option[Any]) {
-    def complete: Seq[Long] = data.get.asInstanceOf[Seq[Long]]
+    def complete: Seq[Double] = data.get.asInstanceOf[Seq[Double]]
   }
 
   object Measurement {
@@ -249,10 +249,10 @@ package scalameter {
     def regenerateFor(params: Parameters): () => T = () => gen.generate(params)
   }
 
-  trait Aggregator extends (Seq[Long] => Double) with Serializable {
+  trait Aggregator extends (Seq[Double] => Double) with Serializable {
     def name: String
-    def apply(times: Seq[Long]): Double
-    def data(times: Seq[Long]): Option[Any]
+    def apply(times: Seq[Double]): Double
+    def data(times: Seq[Double]): Option[Any]
   }
 
   object Aggregator {
@@ -260,27 +260,27 @@ package scalameter {
     case class Statistic(min: Double, max: Double, average: Double, stdev: Double, median: Double)
 
     def min = {
-      xs: Seq[Long] => xs.min.toDouble
+      xs: Seq[Double] => xs.min.toDouble
     } toAggregator "min"
 
     def max = {
-      xs: Seq[Long] => xs.max.toDouble
+      xs: Seq[Double] => xs.max.toDouble
     } toAggregator "max"
 
     def median = {
-      xs: Seq[Long] =>
+      xs: Seq[Double] =>
       val sorted = xs.sorted
       sorted(sorted.size / 2).toDouble
     } toAggregator "median"
 
-    def average = { xs: Seq[Long] => xs.sum.toDouble / xs.size } toAggregator "average"
+    def average = { xs: Seq[Double] => xs.sum.toDouble / xs.size } toAggregator "average"
 
-    def stdev = { xs: Seq[Long] => xs.stdev } toAggregator "stdev"
+    def stdev = { xs: Seq[Double] => xs.stdev } toAggregator "stdev"
 
     def statistic(a: Aggregator) = new Aggregator {
       def name = a.name
-      def apply(times: Seq[Long]) = a(times)
-      def data(times: Seq[Long]) = Some(Statistic(
+      def apply(times: Seq[Double]) = a(times)
+      def data(times: Seq[Double]) = Some(Statistic(
         min = Aggregator.min(times),
         max = Aggregator.max(times),
         average = Aggregator.average(times),
@@ -291,14 +291,14 @@ package scalameter {
 
     def complete(a: Aggregator) = new Aggregator {
       def name = s"complete(${a.name})"
-      def apply(times: Seq[Long]) = a(times)
-      def data(times: Seq[Long]) = Some(times)
+      def apply(times: Seq[Double]) = a(times)
+      def data(times: Seq[Double]) = Some(times)
     }
 
     def withData(a: Aggregator)(as: Aggregator*) = new Aggregator {
       def name = a.name
-      def apply(times: Seq[Long]) = a(times)
-      def data(times: Seq[Long]) = Some((for (a <- as) yield {
+      def apply(times: Seq[Double]) = a(times)
+      def data(times: Seq[Double]) = Some((for (a <- as) yield {
         (a.name, a.apply(times))
       }).toMap)
     }

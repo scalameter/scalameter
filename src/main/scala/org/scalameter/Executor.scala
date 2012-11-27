@@ -47,6 +47,7 @@ object Executor {
       def warming(ctx: Context, setup: () => Any, teardown: () => Any) = new Foreach[Int] {
         val minwarmups = ctx.goe(exec.minWarmupRuns, 10)
         val maxwarmups = ctx.goe(exec.maxWarmupRuns, 50)
+        val covThreshold = ctx.goe(exec.warmupCovThreshold, 0.1)
 
         def foreach[U](f: Int => U): Unit = {
           val withgc = new utils.SlidingWindow(minwarmups)
@@ -64,10 +65,10 @@ object Executor {
             while (i < maxwarmups) {
               nogc = true
 
-              val start = Platform.currentTime
+              val start = System.nanoTime
               f(i)
-              val end = Platform.currentTime
-              val runningtime = end - start
+              val end = System.nanoTime
+              val runningtime = (end - start) / 1000000.0
 
               if (nogc) withoutgc.add(runningtime)
               withgc.add(runningtime)
@@ -77,8 +78,8 @@ object Executor {
               val covNoGC = withoutgc.cov
               val covGC = withgc.cov
 
-              log.verbose(s"$i. warmup run running time: $runningtime (covNoGC: $covNoGC, covGC: $covGC)")
-              if ((withoutgc.size >= minwarmups && covNoGC < 0.1) || (withgc.size >= minwarmups && covGC < 0.1)) {
+              log.verbose(f"$i. warmup run running time: $runningtime (covNoGC: ${covNoGC}%.4f, covGC: ${covGC}%.4f)")
+              if ((withoutgc.size >= minwarmups && covNoGC < covThreshold) || (withgc.size >= minwarmups && covGC < covThreshold)) {
                 log.verbose(s"Steady-state detected.")
                 i = maxwarmups
               } else i += 1
@@ -93,7 +94,7 @@ object Executor {
 
   trait Measurer extends Serializable {
     def name: String
-    def measure[T, U](context: Context, measurements: Int, setup: T => Any, tear: T => Any, regen: () => T, snippet: T => Any): Seq[Long]
+    def measure[T, U](context: Context, measurements: Int, setup: T => Any, tear: T => Any, regen: () => T, snippet: T => Any): Seq[Double]
   }
 
   object Measurer {
@@ -115,19 +116,19 @@ object Executor {
     class Default extends Measurer with IterationBasedValue {
       def name = "Measurer.Default"
 
-      def measure[T, U](context: Context, measurements: Int, setup: T => Any, tear: T => Any, regen: () => T, snippet: T => Any): Seq[Long] = {
+      def measure[T, U](context: Context, measurements: Int, setup: T => Any, tear: T => Any, regen: () => T, snippet: T => Any): Seq[Double] = {
         var iteration = 0
-        var times = List[Long]()
+        var times = List[Double]()
         var value = regen()
 
         while (iteration < measurements) {
           value = valueAt(context, iteration, regen, value)
           setup(value)
 
-          val start = Platform.currentTime
+          val start = System.nanoTime
           snippet(value)
-          val end = Platform.currentTime
-          val time = end - start
+          val end = System.nanoTime
+          val time = (end - start) / 1000000.0
 
           tear(value)
 
@@ -150,8 +151,8 @@ object Executor {
     class IgnoringGC extends Measurer with IterationBasedValue {
       override def name = "Measurer.IgnoringGC"
 
-      def measure[T, U](context: Context, measurements: Int, setup: T => Any, tear: T => Any, regen: () => T, snippet: T => Any): Seq[Long] = {
-        var times = List[Long]()
+      def measure[T, U](context: Context, measurements: Int, setup: T => Any, tear: T => Any, regen: () => T, snippet: T => Any): Seq[Double] = {
+        var times = List[Double]()
         var okcount = 0
         var gccount = 0
         var ignoring = true
@@ -166,10 +167,10 @@ object Executor {
             gc = true
             log.verbose("GC detected.")
           } apply {
-            val start = Platform.currentTime
+            val start = System.nanoTime
             snippet(value)
-            val end = Platform.currentTime
-            end - start
+            val end = System.nanoTime
+            (end - start) / 1000000.0
           }
 
           tear(value)
@@ -241,7 +242,7 @@ object Executor {
 
       abstract override def name = s"${super.name}+OutlierElimination"
 
-      abstract override def measure[T, U](context: Context, measurements: Int, setup: T => Any, tear: T => Any, regen: () => T, snippet: T => Any): Seq[Long] = {
+      abstract override def measure[T, U](context: Context, measurements: Int, setup: T => Any, tear: T => Any, regen: () => T, snippet: T => Any): Seq[Double] = {
         import utils.Statistics._
 
         var results = super.measure(context, measurements, setup, tear, regen, snippet).sorted
@@ -250,7 +251,7 @@ object Executor {
         val suspectnum = math.max(1, results.length * suspectp / 100)
         var retleft = context.goe(retries, 8)
 
-        def outlierSuffixLength(rs: Seq[Long]): Int = {
+        def outlierSuffixLength(rs: Seq[Double]): Int = {
           var minlen = 1
           while (minlen <= suspectnum) {
             val cov = CoV(rs)
@@ -264,7 +265,7 @@ object Executor {
           0
         }
 
-        def outlierExists(rs: Seq[Long]) = outlierSuffixLength(rs) > 0
+        def outlierExists(rs: Seq[Double]) = outlierSuffixLength(rs) > 0
 
         var best = results
         while (outlierExists(results) && retleft > 0) {
@@ -291,14 +292,14 @@ object Executor {
 
       import exec.noise._
 
-      def noiseFunction(observations: Seq[Long], magnitude: Double): Long => Double
+      def noiseFunction(observations: Seq[Double], magnitude: Double): Double => Double
 
-      abstract override def measure[T, U](context: Context, measurements: Int, setup: T => Any, tear: T => Any, regen: () => T, snippet: T => Any): Seq[Long] = {
+      abstract override def measure[T, U](context: Context, measurements: Int, setup: T => Any, tear: T => Any, regen: () => T, snippet: T => Any): Seq[Double] = {
         val observations = super.measure(context, measurements, setup, tear, regen, snippet)
         val magni = context.goe(magnitude, 0.0)
         val noise = noiseFunction(observations, magni)
         val withnoise = observations map {
-          x => (x + 0.49 + noise(x)).toLong
+          x => (x + 0.49 + noise(x))
         }
 
         log.verbose("After applying noise: " + withnoise.mkString(", "))
@@ -324,7 +325,7 @@ object Executor {
 
       abstract override def name = s"${super.name}+AbsoluteNoise"
 
-      def noiseFunction(observations: Seq[Long], m: Double) = (x: Long) => {
+      def noiseFunction(observations: Seq[Double], m: Double) = (x: Double) => {
         clamp(m * util.Random.nextGaussian(), -m, +m)
       }
 
@@ -347,72 +348,12 @@ object Executor {
 
       abstract override def name = s"${super.name}+RelativeNoise"
 
-      def noiseFunction(observations: Seq[Long], magnitude: Double) = {
+      def noiseFunction(observations: Seq[Double], magnitude: Double) = {
         val m = utils.Statistics.mean(observations)
-        (x: Long) => {
+        (x: Double) => {
           val f = m / 10.0 * magnitude
           clamp(f * util.Random.nextGaussian(), -f, +f)
         }
-      }
-
-    }
-
-    /** Eliminates performance measurements tied to certain particularly bad allocation patterns, typically
-     *  occurring immediately before the next major GC cycle.
-     *  Useful for "flattening" out the curves.
-     */
-    case class OptimalAllocation(delegate: Measurer, aggregator: Aggregator, retries: Int = 5, confidence: Double = 0.8) extends Measurer {
-
-      def name = s"Measurer.OptimalAllocation(retries: $retries, confidence: $confidence, aggregator: ${aggregator.name}, delegate: ${delegate.name})"
-
-      val checkfactor = 8
-
-      def measure[T, U](context: Context, measurements: Int, setup: T => Any, tear: T => Any, regen: () => T, snippet: T => Any): Seq[Long] = {
-        import utils.Statistics._
-
-        def sample(num: Int, value: T): Seq[Long] = delegate.measure(context, num, setup, tear, () => value, snippet)
-
-        def different(observations: Seq[Long], checks: Seq[Long]): Boolean = {
-          !ConfidenceIntervalTest(false, observations, checks, 1.0 - confidence)
-        }
-
-        def worse(observations: Seq[Long], checks: Seq[Long]): Boolean = {
-          aggregator(checks) < aggregator(observations)
-        }
-
-        def potential(observations: Seq[Long], checks: Seq[Long]): Boolean = {
-          different(observations, checks) && worse(observations, checks)
-        }
-
-        log.verbose("Taking initial set of measurements.")
-        var last = sample(measurements, regen())
-        var best = last
-        var i = 0
-        while (i < retries) {
-          log.verbose("Taking another sample.")
-          val value = regen()
-          last = sample(measurements / checkfactor, value)
-
-          if (potential(best, last)) {
-            log.verbose("Found a potentially better sample, incrementally taking more samples of the same value.")
-
-            var totalmeasurements = measurements / checkfactor
-            do {
-              val step = measurements / checkfactor * 2
-              last = last ++ sample(step, value)
-              totalmeasurements += step
-            } while (totalmeasurements < measurements && potential(best, last))
-
-            if (worse(best, last) && totalmeasurements >= measurements) {
-              log.verbose("Better sample confirmed: " + last.mkString(", "))
-              best = last
-            } else log.verbose("Potentially better sample is false positive: " + last.mkString(", "))
-          }
-
-          i += 1
-        }
-
-        best
       }
 
     }

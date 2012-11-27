@@ -10,11 +10,11 @@ final class SlidingWindow(_cap: Int) {
 
   val capacity = _cap + 1
 
-  private val store = new Array[Long](capacity)
+  private val store = new Array[Double](capacity)
   private var first = 0
   private var next = 0
 
-  def add(t: Long) {
+  def add(t: Double) {
     store(next) = t
     val inc = (next + 1) % capacity
     next = inc
@@ -27,7 +27,7 @@ final class SlidingWindow(_cap: Int) {
     else next + capacity - first
   }
 
-  class Iterator extends scala.Iterator[Long] {
+  class Iterator extends scala.Iterator[Double] {
     var i = first
     def hasNext = i != SlidingWindow.this.next
     def next() = {
@@ -42,9 +42,9 @@ final class SlidingWindow(_cap: Int) {
 
   override def toString = s"SlidingWindow(first: $first, next: $next, raw: ${store.mkString(", ")})"
 
-  def sum: Long = {
+  def sum: Double = {
     var i = first
-    var s = 0L
+    var s = 0.0
     while (i != next) {
       s += store(i)
       i = (i + 1) % capacity
