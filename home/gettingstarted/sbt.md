@@ -13,7 +13,9 @@ Running ScalaMeter tests from SBT is easy -- just follow these simple steps.
 * Add a ScalaMeter dependency to your project in SBT.
 Open `build.sbt` and add the following line:
 
-      libraryDependencies += "org.scalameter" %% "scalameter" % "[version]"
+    resolvers += "Sonatype OSS Snapshots" at "https://oss.sonatype.org/content/repositories/snapshots"
+
+    libraryDependencies ++= "com.github.axel22" %% "scalameter" % "[version]"
 
 Where `[version]` should be the desired ScalaMeter release.
 You can find the exact maven dependencies for each ScalaMeter release
