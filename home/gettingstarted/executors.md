@@ -43,6 +43,7 @@ Configuration:
 
 - `exec.minWarmupRuns` -- the minimum number of warmup runs to perform
 - `exec.maxWarmupRuns` -- the maximum number of warmup runs to perform
+- `exec.warmupCovThreshold` -- the CoV threshold for the `Warmer.Default` stabilization detection
 - `exec.benchRuns` -- the desired number of measurements
 
 
