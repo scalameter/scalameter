@@ -2,9 +2,9 @@
 
 name := "scalameter"
 
-organization := "org.scalameter"
+organization := "com.github.axel22"
 
-version := "0.1"
+version := "0.2"
 
 scalaVersion := "2.10.0-RC2"
 
