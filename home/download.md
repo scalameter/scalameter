@@ -25,7 +25,8 @@ ScalaMeter is available for download from [Sonatype](https://oss.sonatype.org/in
 
 If you're using [SBT](/home/gettingstarted/sbt/), just add the following lines to `build.sbt`:
 
-    resolvers += "Sonatype OSS Snapshots" at "https://oss.sonatype.org/content/repositories/snapshots"
+    resolvers += "Sonatype OSS Snapshots" at
+      "https://oss.sonatype.org/content/repositories/snapshots"
 
     libraryDependencies += "com.github.axel22" %% "scalameter" % "0.2"
 

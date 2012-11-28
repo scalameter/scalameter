@@ -330,7 +330,9 @@ img.footer {
   text-shadow: 1px 1px #000000;
 }
 
-
+li.newstitle span {
+  font-size: 24px;
+}
 
 
 
