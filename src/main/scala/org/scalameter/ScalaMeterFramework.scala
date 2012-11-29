@@ -71,7 +71,7 @@ class ScalaMeterFramework extends Framework {
           println("Test threw exception: " + e)
           e.printStackTrace()
           throw e
-      }  
+      }
     }
   }
 
