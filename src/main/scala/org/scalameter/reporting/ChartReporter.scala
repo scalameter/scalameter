@@ -29,14 +29,18 @@ case class ChartReporter(drawer: ChartReporter.ChartFactory, fileNamePrefix: Str
     // nothing - the charts are generated only at the end
   }
 
-  def report(result: Tree[CurveData], persistor: Persistor) = for ((ctx, curves) <- result.scopes if curves.nonEmpty) {
-    val scopename = ctx.scope
-    val history = persistor.load(ctx)
-    val chart = drawer.createChart(scopename, curves, history)
-    val dir = result.context.goe(resultDir, "tmp")
-    new File(dir).mkdir()
-    val chartfile = new File(s"$dir/$fileNamePrefix$scopename.png")
-    ChartUtilities.saveChartAsPNG(chartfile, chart, wdt, hgt)
+  def report(result: Tree[CurveData], persistor: Persistor) = {
+    for ((ctx, curves) <- result.scopes if curves.nonEmpty) {
+      val scopename = ctx.scope
+      val history = persistor.load(ctx)
+      val chart = drawer.createChart(scopename, curves, history)
+      val dir = result.context.goe(resultDir, "tmp")
+      new File(dir).mkdir()
+      val chartfile = new File(s"$dir/$fileNamePrefix$scopename.png")
+      ChartUtilities.saveChartAsPNG(chartfile, chart, wdt, hgt)
+    }
+    
+    true
   } 
 
 }

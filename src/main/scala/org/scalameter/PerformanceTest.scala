@@ -11,9 +11,11 @@ abstract class PerformanceTest extends PerformanceTest.Initialization {
 
   def main(args: Array[String]) {
     val ctx = Main.Configuration.fromCommandLineArgs(args).context
-    dyn.initialContext.withValue(ctx) {
+    val ok = dyn.initialContext.withValue(ctx) {
       executeTests()
     }
+
+    if (!ok) sys.exit(1)
   }
 
 }
@@ -33,7 +35,7 @@ object PerformanceTest {
 
     type SameType
 
-    def executeTests() {
+    def executeTests(): Boolean = {
       val datestart = new java.util.Date
       DSL.setupzipper.value = Tree.Zipper.root[Setup[_]]
       testbody.value.apply()

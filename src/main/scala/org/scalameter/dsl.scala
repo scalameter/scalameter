@@ -54,7 +54,7 @@ trait DSL {
 
   /** Runs all the tests in this test class or singleton object.
    */
-  def executeTests(): Unit
+  def executeTests(): Boolean
 
 }
 

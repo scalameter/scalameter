@@ -22,10 +22,12 @@ object Main {
       import configuration._
 
       // schedule benchmarks
-      for (benchname <- benches) {
+      val testResults = for (benchname <- benches) yield {
         val bench = Class.forName(benchname).newInstance.asInstanceOf[PerformanceTest]
         bench.executeTests()
       }
+
+      if (testResults.exists(_ == false)) sys.exit(1)
     }
   }
 

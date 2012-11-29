@@ -69,7 +69,7 @@ case class HtmlReporter(val renderers: HtmlReporter.Renderer*) extends Reporter 
     // nothing - the charts are generated only at the end
   }
 
-  def report(results: Tree[CurveData], persistor: Persistor) {
+  def report(results: Tree[CurveData], persistor: Persistor) = {
     val resultdir = results.context.goe(reports.resultDir, "tmp")
 
     new File(s"$resultdir").mkdir()
@@ -96,6 +96,8 @@ case class HtmlReporter(val renderers: HtmlReporter.Renderer*) extends Reporter 
     printToFile(new File(s"$resultdir${sep}report${sep}index.html")) {
       _.println(report.toString)
     }
+
+    true
   }
 
   def printToFile(f: java.io.File)(op: java.io.PrintWriter => Unit) {

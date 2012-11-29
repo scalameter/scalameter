@@ -30,7 +30,7 @@ case class RegressionReporter(test: RegressionReporter.Tester, historian: Regres
     test(ctx, curvedata, corresponding)
   }
 
-  def report(results: Tree[CurveData], persistor: Persistor) {
+  def report(results: Tree[CurveData], persistor: Persistor) = {
     log("")
     log(s"${ansi.green}:::Summary of regression test results - $test:::${ansi.reset}")
 
@@ -65,6 +65,8 @@ case class RegressionReporter(test: RegressionReporter.Tester, historian: Regres
     val success = oks.count(_ == true)
     val color = if (failure == 0) ansi.green else ansi.red
     log(s"${color} Summary: $success tests passed, $failure tests failed.")
+
+    failure == 0
   }
 
 }
