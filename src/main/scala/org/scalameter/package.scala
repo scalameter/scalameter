@@ -185,7 +185,7 @@ package scalameter {
       exec.benchRuns -> 36,
       exec.minWarmupRuns -> 10,
       exec.maxWarmupRuns -> 50,
-      exec.jvmflags -> "-Xmx2048m -Xms2048m -XX:CompileThreshold=1",
+      exec.jvmflags -> "-Xmx2048m -Xms2048m -XX:CompileThreshold=100",
       classpath -> defaultClasspath,
       reports.resultDir -> "tmp",
       reports.regression.significance -> 1e-10
