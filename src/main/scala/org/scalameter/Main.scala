@@ -43,7 +43,7 @@ object Main {
           case (acc, x) => Configuration(acc.benches ++ x.benches, acc.context ++ x.context)
         }
       }
-      def arg: Parser[Configuration] = benches | intsetting | stringsetting | flag
+      def arg: Parser[Configuration] = benches | intsetting | resdir | flag
       def listOf(flagname: String, shorthand: String): Parser[Seq[String]] = "-" ~ (flagname | shorthand) ~ classnames ^^ {
         case _ ~ _ ~ classnames => classnames
       }
@@ -57,8 +57,11 @@ object Main {
         case _ ~ "Cmaxwarmups" ~ num => Configuration(Nil, Context(exec.maxWarmupRuns -> num.toInt))
         case _ ~ "Cruns" ~ num => Configuration(Nil, Context(exec.benchRuns -> num.toInt))
       }
-      def stringsetting: Parser[Configuration] = "-" ~ ident ~ ident ^^ {
-        case _ ~ "CresultDir" ~ s => Configuration(Nil, Context(reports.resultDir -> s))
+      def path: Parser[String] = opt("/") ~ repsep(ident, "/") ~ opt("/") ^^ {
+        case lead ~ ps ~ trail => lead.getOrElse("") + ps.mkString("/") + trail.getOrElse("")
+      }
+      def resdir: Parser[Configuration] = "-" ~ "CresultDir" ~ path ^^ {
+        case _ ~ _ ~ s => Configuration(Nil, Context(reports.resultDir -> s))
       }
       def flag: Parser[Configuration] = "-" ~ ident ^^ {
         case _ ~ "verbose" => Configuration(Nil, Context(Key.verbose -> true))
