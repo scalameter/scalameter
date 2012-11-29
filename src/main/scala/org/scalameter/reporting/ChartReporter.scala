@@ -188,9 +188,9 @@ object ChartReporter {
             // addValue params : Double value, String series_name (eg. ArrayBuffer), category name (should be a date or a size)
             // addValue(double value, java.lang.Comparable rowKey, java.lang.Comparable columnKey)
             val curveName = curve.context.goe(dsl.curve, curveIndex.toString)
-            val measurementParams = measurement.params.axisData.values.toString
-            val seriesName: String = curveName + measurementParams
-            val categoryName = curve.context.goe(reports.endDate, "?")
+            val measurementParams = (for(p <- measurement.params.axisData) yield (p._1.toString + " : " + p._2.toString)).mkString("[", ", ", "]")
+            val seriesName: String = curveName + " " + measurementParams
+            val categoryName = curve.context.goe(reports.endDate, "Date for curve " + curveIndex.toString)
 
             dataset.addValue(measurement.time, seriesName, categoryName)
           }
