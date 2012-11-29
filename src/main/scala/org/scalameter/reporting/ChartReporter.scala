@@ -177,31 +177,32 @@ object ChartReporter {
       }
     }
 
-    case class Histogram() extends ChartFactory {
+    case class TrendHistogram() extends ChartFactory {
       def createChart(scopename: String, cs: Seq[CurveData], history: History, colors: Seq[Color] = Seq()): JFreeChart = {
         val chartName = scopename
-        val xAxisName = cs.head.measurements.head.params.axisData.head._1 //date (for trend histogram), or size (for normal histogram)
+        val xAxisName = "Date" //date (for trend histogram), or size (for normal histogram)
         val dataset = new DefaultCategoryDataset
-        // 1 curve is 1 category here
         // REMOVE WHEN DONE : http://www.java2s.com/Code/Java/Chart/JFreeChartBarChartDemo.htm
         for((curve, curveIndex) <- cs.zipWithIndex) {
           for((measurement, measurementIndex) <- curve.measurements.zipWithIndex) {
             // addValue params : Double value, String series_name (eg. ArrayBuffer), category name (should be a date or a size)
             // addValue(double value, java.lang.Comparable rowKey, java.lang.Comparable columnKey)
-            // We need to decide if we put the series_name in the CurveData's info or maybe the Measurement's params
-            // if 1 curve is 1 category, categoryName should be curve.context.goe(dsl.curve, curveIndex.toString)
-            dataset.addValue(measurement.time, (curve.info("seriesNames").asInstanceOf[Map[Int, String]])(measurementIndex),
-              curve.context.goe(dsl.curve, curveIndex.toString)/*curve.info("categoryName").asInstanceOf[String]*/)
+            val curveName = curve.context.goe(dsl.curve, curveIndex.toString)
+            val measurementParams = measurement.params.axisData.values.toString
+            val seriesName: String = curveName + measurementParams
+            val categoryName = curve.context.goe(reports.endDate, "?")
+
+            dataset.addValue(measurement.time, seriesName, categoryName)
           }
         }
         val chart = JFreeChartFactory.createBarChart(chartName, xAxisName, "time", dataset, PlotOrientation.VERTICAL, true, true, false)
         val plot: CategoryPlot = chart.getPlot.asInstanceOf[CategoryPlot]
         val renderer: BarRenderer = plot.getRenderer.asInstanceOf[BarRenderer]
         renderer.setDrawBarOutline(false)
-        for (seriesIndex <- 0 to cs.head.info("seriesNames").asInstanceOf[Map[Int, String]].size) {
+        /*for (seriesIndex <- 0 to cs.head.info("seriesNames").asInstanceOf[Map[Int, String]].size) {
           // create new gradient paint ... colors parameter to be used here
           // renderer.setSeriesPaint(seriesIndex, gradientPaint)
-        }
+        }*/
         plot.setBackgroundPaint(new java.awt.Color(200, 200, 200))
         plot.setDomainGridlinePaint(Color.white)
         plot.setRangeGridlinePaint(Color.white)
