@@ -90,6 +90,7 @@ class SetBenchmarks extends PerformanceTest.Regression with Collections {
       exec.minWarmupRuns -> 15,
       exec.benchRuns -> 32,
       exec.independentSamples -> 8,
+      exec.noise.magnitude -> 1.0,
       reports.regression.significance -> 1e-13
     ) in {
       val from = 40000
