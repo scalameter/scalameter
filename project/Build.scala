@@ -40,7 +40,8 @@ object ScalaMeterBuild extends Build {
       val javacommand = jc
       val comm = javacommand + " " + "org.scalameter.Main" + " " + args.mkString(" ")
       println("Executing: " + comm)
-      comm!
+      val exitcode = comm!;
+      if (exitcode != 0) error("Tests not passing.")
     }
   }
   
