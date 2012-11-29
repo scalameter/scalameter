@@ -57,7 +57,7 @@ object Main {
         case _ ~ "Cmaxwarmups" ~ num => Configuration(Nil, Context(exec.maxWarmupRuns -> num.toInt))
         case _ ~ "Cruns" ~ num => Configuration(Nil, Context(exec.benchRuns -> num.toInt))
       }
-      def path: Parser[String] = opt("/") ~ repsep(ident, "/") ~ opt("/") ^^ {
+      def path: Parser[String] = opt("/") ~ repsep("""[\w\d-\.]+""".r, "/") ~ opt("/") ^^ {
         case lead ~ ps ~ trail => lead.getOrElse("") + ps.mkString("/") + trail.getOrElse("")
       }
       def resdir: Parser[Configuration] = "-" ~ "CresultDir" ~ path ^^ {
