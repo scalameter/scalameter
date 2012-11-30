@@ -44,21 +44,29 @@ object Statistics {
 		}
 	}
 
-	/** Compares two alternative sets of measurements given a significance level `alpha`.
-	 *  
-	 *  @param strict   if `true`, the confidence interval test is strict - the confidence interval overlap
-	 *                  of the alternatives will not be additionally compared
-	 *  @return         returns `true` if there is no statistical difference for s.l. `alpha`
-	 */
-	case class ConfidenceIntervalTest(strict: Boolean, alt1: Seq[Double], alt2: Seq[Double], alpha: Double) extends Test {
+	abstract class Standard2WayTest extends Test {
+		def alpha: Double
+		def alt1: Seq[Double]
+		def alt2: Seq[Double]
+
 		val m1 = mean(alt1)
 		val m2 = mean(alt2)
 		val s1 = stdev(alt1)
 		val s2 = stdev(alt2)
 		val n1 = alt1.length
 		val n2 = alt2.length
-		lazy val ci1 = confidenceInterval(alt1, alpha)
-		lazy val ci2 = confidenceInterval(alt2, alpha)
+
+		def ci1 = confidenceInterval(alt1, alpha)
+		def ci2 = confidenceInterval(alt2, alpha)
+	}
+
+	/** Compares two alternative sets of measurements given a significance level `alpha`.
+	 *  
+	 *  @param strict   if `true`, the confidence interval test is strict - the confidence interval overlap
+	 *                  of the alternatives will not be additionally compared
+	 *  @return         returns `true` if there is no statistical difference for s.l. `alpha`
+	 */
+	case class ConfidenceIntervalTest(strict: Boolean, alt1: Seq[Double], alt2: Seq[Double], alpha: Double) extends Standard2WayTest {
 		val diffM = m1 - m2
 		val diffS = sqrt(s1 * s1 / n1 + s2 * s2 / n2)
 		val ndf = math.round(pow(pow(s1, 2) / n1 + pow(s2, 2) / n2, 2) / (pow(pow(s1, 2) / n1, 2) / (n1 - 1) + pow(pow(s2, 2) / n2, 2) / (n2 - 1)))
@@ -68,18 +76,37 @@ object Statistics {
 			(diffM - qsnorm(1 - alpha / 2) * diffS, diffM + qsnorm(1 - alpha / 2) * diffS)
 		}
 
-		private def in(x: Double, int: (Double, Double)) = x >= int._1 && x <= int._2
+		val overlapping = OverlapTest(alt1, alt2, alpha, 0.0).passed
 
-		def overlapping = in(ci1._1, ci2) || in(ci1._2, ci2) || in(ci2._1, ci1) || in(ci2._2, ci1)
+		val strictPassed = ci._1 <= 0 && 0 <= ci._2
 
-		def strictPassed = ci._1 <= 0 && 0 <= ci._2
-
-		def relaxedPassed = strictPassed || overlapping
+		val relaxedPassed = strictPassed || overlapping
 
     /** If 0 is within the confidence interval of the mean difference, or confidence intervals overlap,
-     *  we conclude that there is no statiscal difference between the two alternatives.
+     *  we conclude that there is no statistical difference between the two alternatives.
      */
-		def passed = if (strict) strictPassed else relaxedPassed
+		val passed = if (strict) strictPassed else relaxedPassed
+	}
+
+	/** Computes the confidence interval of the two alternatives.
+	 *  Passes if the confidence intervals overlap at the given significance level `alpha`.
+	 *
+	 *  Applies relative noise before doing the actual overlap test - the relative noise may
+	 *  increase the confidence interval further, but it will not shrink it.
+	 */
+	case class OverlapTest(alt1: Seq[Double], alt2: Seq[Double], alpha: Double, noiseMagnitude: Double) extends Standard2WayTest {
+		def noised(ci: (Double, Double)) = {
+			val mean = (ci._1 + ci._2) / 2
+			val n = noiseMagnitude * mean
+			(math.min(ci._1, mean - n), math.max(ci._2, mean + n))
+		}
+
+		override def ci1 = noised(super.ci1)
+		override def ci2 = noised(super.ci2)
+
+		private def in(x: Double, int: (Double, Double)) = x >= int._1 && x <= int._2
+
+		val passed = in(ci1._1, ci2) || in(ci1._2, ci2) || in(ci2._1, ci1) || in(ci2._2, ci1)
 	}
 
 	/** Computes sum-of-squares due to differences between alternatives. */

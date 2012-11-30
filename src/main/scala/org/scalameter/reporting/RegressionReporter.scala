@@ -255,6 +255,63 @@ object RegressionReporter {
       }
     }
 
+    case class OverlapIntervals() extends Tester {
+      def cistr(ci: (Double, Double)) = f"<${ci._1}%.2f, ${ci._2}%.2f>"
+
+      def single(previous: Measurement, latest: Measurement, sig: Double, noiseMagnitude: Double): (Boolean, String) = {
+        try {
+          val citest = OverlapTest(previous.complete, latest.complete, sig, noiseMagnitude)
+          
+          if (!citest) {
+            val color = ansi.red
+            val ciprev = cistr(citest.ci1)
+            val cilate = cistr(citest.ci2)
+            val prevform = previous.complete.map(v => f"$v%.2f")
+            val lateform = latest.complete.map(v => f"$v%.2f")
+            val msg = {
+              f"$color      Failed overlap interval test. ${ansi.reset}\n" +
+              f"$color      Previous (mean = ${citest.m1}%.2f, stdev = ${citest.s1}%.2f, ci = $ciprev): ${prevform.mkString(", ")}${ansi.reset}\n" +
+              f"$color      Latest   (mean = ${citest.m2}%.2f, stdev = ${citest.s2}%.2f, ci = $cilate): ${lateform.mkString(", ")}${ansi.reset}"
+            }
+            (false, msg)
+          } else {
+            (true, "")
+          }
+        } catch {
+          case e: Exception =>
+          (false, s"${ansi.red}    Error in overlap interval test: ${e.getMessage}${ansi.reset}")
+        }
+      }
+
+      def multiple(previouss: Seq[Measurement], latest: Measurement, sig: Double, noiseMagnitude: Double): Seq[Boolean] = {
+        val passes = for (previous <- previouss) yield single(previous, latest, sig, noiseMagnitude)
+        val allpass = passes.forall(_._1 == true)
+        val color = if (allpass) ansi.green else ansi.red
+        val passed = if (allpass) "passed" else "failed"
+        val ci = OverlapTest(latest.complete, latest.complete, sig, noiseMagnitude).ci1
+        val cis = cistr(ci)
+        log(s"$color  - at ${latest.params.axisData.mkString(", ")}, ${previouss.size} alternatives: $passed${ansi.reset}")
+        log(s"$color    (ci = $cis, significance = $sig)${ansi.reset}")
+        for ((false, msg) <- passes) log.error(msg)
+        passes.map(_._1)
+      }
+
+      def apply(context: Context, curvedata: CurveData, corresponding: Seq[CurveData]): Boolean = {
+        log(s"${ansi.green}- ${context.scope}.${curvedata.context.curve} measurements:${ansi.reset}")
+
+        val significance = curvedata.context.goe(reports.regression.significance, 1e-10)
+        val previousmeasurements = corresponding map (_.measurements)
+        val measurementtable = previousmeasurements.flatten.groupBy(_.params)
+        val pointspassed = for {
+          measurement <- curvedata.measurements
+        } yield {
+          multiple(measurementtable(measurement.params), measurement, significance, context.goe(Key.reports.regression.noiseMagnitude, 0.0))
+        }
+
+        pointspassed.flatten.forall(_ == true)
+      }
+    }
+
   }
 
 }

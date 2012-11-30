@@ -43,6 +43,7 @@ class Key {
     object regression {
       val significance = "significance"
       val timeIndices = "time-indices"
+      val noiseMagnitude = "regression-noise-magnitude"
     }
   }
 
