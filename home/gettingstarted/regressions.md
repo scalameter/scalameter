@@ -95,7 +95,7 @@ multiple instances of the JVM, warms up each one and runs the tests.
 The tests are by default divided between `9` JVM instances.
 You can set the number of JVM instances with the `exec.independentSamples` parameter.
 
-    :::Summary of regression test results - ConfidenceIntervals(true):::
+    :::Summary of regression test results - OverlapIntervals():::
     Test group: Array.foreach
     - Array.foreach.Test-0 measurements:
       - at size -> 1000000, 1 alternatives: passed
@@ -109,7 +109,7 @@ The first time we run the test, there is not history for it yet.
 This means that the test will be successful irrespective of the running time.
 The next time we run the test, we might get entirely different running times:
 
-    :::Summary of regression test results - ConfidenceIntervals(true):::
+    :::Summary of regression test results - OverlapIntervals():::
     Test group: Array.foreach
     - Array.foreach.Test-0 measurements:
       - at size -> 1000000, 1 alternatives: passed
@@ -121,7 +121,7 @@ The next time we run the test, we might get entirely different running times:
 
 However, after a few runs of the test on our machine, the test fails!
 
-    :::Summary of regression test results - ConfidenceIntervals(true):::
+    :::Summary of regression test results - OverlapIntervals():::
     Test group: Array.foreach
     - Array.foreach.Test-0 measurements:
       - at size -> 1000000, 5 alternatives: passed
@@ -163,9 +163,14 @@ The probability that each of them will perform badly greatly decreases.
 2. We can reinstantiate the data for the test (in this case the array), multiple times.
 Different allocation patterns can yield very different results.
 
-3. We can add artificial Gaussian noise to each measurement in the series.
+3. We can add artificial Gaussian noise to each measurement in the series (this is
+controlled by the `exec.noise.magnitude` parameter).
 As a result, the confidence interval of each test will increase, making the tests less
 sensitive to random variations.
+
+4. We can artifically increase confidence intervals while doing a regression check (this
+is controlled by the `reports.regression.noiseMagnitude` parameter).
+This again results in the tests being less sensitive to random variations.
 
 We can experiment easily with the first option.
 After setting the number of independent samples to `6` we are no longer able to reproduce
@@ -200,7 +205,7 @@ Note that we now do `20` repetitions within `1` JVM instance.
 
 Running this test yields:
 
-    :::Summary of regression test results - ConfidenceIntervals(false):::
+    :::Summary of regression test results - OverlapIntervals():::
     Test group: List.map
     - List.map.Test-0 measurements:
       - at size -> 1000000, 1 alternatives: passed
@@ -244,7 +249,7 @@ but you can customize this:
 By instantiating the list more often running times stabilize, as we can see from
 the confidence intervals:
 
-    :::Summary of regression test results - ConfidenceIntervals(false):::
+    :::Summary of regression test results - OverlapIntervals():::
     Test group: List.map
     - List.map.Test-0 measurements:
       - at size -> 1000000, 1 alternatives: passed
@@ -293,7 +298,7 @@ should be very allocation intensive, and lets increase the input test size:
 
 The output is:
 
-    :::Summary of regression test results - ConfidenceIntervals(false):::
+    :::Summary of regression test results - OverlapIntervals():::
     Test group: List.groupBy
     - List.groupBy.Test-0 measurements:
       - at size -> 5000000, 1 alternatives: passed
@@ -369,7 +374,7 @@ We show the result below:
 
 At the expense of an increased running time, we've obtained more stable results:
 
-    :::Summary of regression test results - ConfidenceIntervals(false):::
+    :::Summary of regression test results - OverlapIntervals():::
     Test group: List.groupBy
     - List.groupBy.Test-0 measurements:
       - at size -> 5000000, 1 alternatives: passed
