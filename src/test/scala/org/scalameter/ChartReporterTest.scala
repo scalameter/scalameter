@@ -1,9 +1,9 @@
 package org.scalameter
 
 
-
+import org.scalameter.api._
 import collection._
-import reporting._
+//import reporting._
 import java.awt.Color
 
 
@@ -52,15 +52,11 @@ class ChartReporterTest extends PerformanceTest {
 /**
  * Test for the Histograms chart factory
  */
-class ChartReporterTest0 extends PerformanceTest {
+class TrendHistogramTest extends PerformanceTest {
 
   lazy val executor = execution.LocalExecutor(Executor.Warmer.Default(), Aggregator.complete(Aggregator.average), new Executor.Measurer.Default)
   lazy val colorsTestSample = List(new Color(0, 0, 255), new Color(255, 255, 0))
-  lazy val reporter = Reporter.Composite(
-    ChartReporter(ChartReporter.ChartFactory.Histogram(), "chart_"),
-    //HtmlReporter(HtmlReporter.Renderer.Info(), HtmlReporter.Renderer.Histogram(ChartReporter.ChartFactory.Histogram(), colorsTestSample)),
-    RegressionReporter(RegressionReporter.Tester.Accepter(), RegressionReporter.Historian.Complete())
-  )
+  lazy val reporter: Reporter = ChartReporter(ChartFactory.TrendHistogram())
   lazy val persistor = new persistence.SerializationPersistor()
 
   val sizes = Gen.range("size")(300000, 1500000, 300000)
