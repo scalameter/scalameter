@@ -38,6 +38,7 @@ class Key {
     val endDate = "date-end"
     val bigO = "big-o"
     val resultDir = "result-dir"
+    val colors = "false"
 
     object regression {
       val significance = "significance"

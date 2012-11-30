@@ -52,10 +52,11 @@ object Main {
       def benches: Parser[Configuration] = listOf("benches", "b") ^^ {
         case names => Configuration(names, Context.empty)
       }
-      def intsetting: Parser[Configuration] = "-" ~ ident ~ decimalNumber ^^ {
+      def intsetting: Parser[Configuration] = "-" ~ ident ~ (decimalNumber | "true" | "false") ^^ {
         case _ ~ "Cminwarmups" ~ num => Configuration(Nil, Context(exec.minWarmupRuns -> num.toInt))
         case _ ~ "Cmaxwarmups" ~ num => Configuration(Nil, Context(exec.maxWarmupRuns -> num.toInt))
         case _ ~ "Cruns" ~ num => Configuration(Nil, Context(exec.benchRuns -> num.toInt))
+        case _ ~ "Ccolors" ~ flag => Configuration(Nil, Context(reports.colors -> flag.toBoolean))
       }
       def path: Parser[String] = opt("/") ~ repsep("""[\w\d-\.]+""".r, "/") ~ opt("/") ^^ {
         case lead ~ ps ~ trail => lead.getOrElse("") + ps.mkString("/") + trail.getOrElse("")

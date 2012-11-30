@@ -77,10 +77,13 @@ object RegressionReporter {
   import Key._
 
   object ansi {
-    val red = "\u001B[31m"
-    val green = "\u001B[32m"
-    val yellow = "\u001B[33m"
-    val reset = "\u001B[0m"
+    val colors = initialContext.goe(Key.reports.colors, true)
+    def ifcolor(s: String) = if (colors) s else ""
+
+    val red = ifcolor("\u001B[31m")
+    val green = ifcolor("\u001B[32m")
+    val yellow = ifcolor("\u001B[33m")
+    val reset = ifcolor("\u001B[0m")
   }
 
   trait Historian {
