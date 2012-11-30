@@ -56,7 +56,11 @@ class TrendHistogramTest extends PerformanceTest {
 
   lazy val executor = execution.LocalExecutor(Executor.Warmer.Default(), Aggregator.complete(Aggregator.average), new Executor.Measurer.Default)
   lazy val colorsTestSample = List(new Color(0, 0, 255), new Color(255, 255, 0))
-  lazy val reporter: Reporter = ChartReporter(ChartFactory.TrendHistogram())
+  //lazy val reporter: Reporter = ChartReporter(ChartFactory.TrendHistogram())
+  lazy val = Reporter.Composite(
+    ChartReporter(ChartFactory.TrendHistogram())
+    RegressionReporter(RegressionReporter.Tester.Accepter(), RegressionReporter.Historian.Window(5))
+  )
   lazy val persistor = new persistence.SerializationPersistor()
 
   val sizes = Gen.range("size")(300000, 1500000, 300000)
