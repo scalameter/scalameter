@@ -55,40 +55,42 @@ class ChartReporterTest extends PerformanceTest {
 class TrendHistogramTest extends PerformanceTest {
 
   lazy val executor = execution.LocalExecutor(Executor.Warmer.Default(), Aggregator.complete(Aggregator.average), new Executor.Measurer.Default)
-  lazy val colorsTestSample = List(new Color(0, 0, 255), new Color(255, 255, 0))
   //lazy val reporter: Reporter = ChartReporter(ChartFactory.TrendHistogram())
   lazy val reporter = Reporter.Composite(
     ChartReporter(ChartFactory.TrendHistogram()),
     RegressionReporter(RegressionReporter.Tester.Accepter(), RegressionReporter.Historian.Window(5))
   )
+
   lazy val persistor = new persistence.SerializationPersistor()
 
-  val sizes = Gen.range("size")(300000, 1500000, 300000)
+  val sizes = Gen.range("size")(300000, 900000, 300000)
+  
+  val ranges = for(sz <- sizes) yield (0 until sz)
+  val arrays = for (sz <- sizes) yield (0 until sz).toArray
+  val lists = for (sz <- sizes) yield (0 until sz).toList
 
-  performance of "Range" config {
+  performance of "CollectionMethods" config {
+
     Key.exec.jvmflags -> "-Xmx1024m -Xms1024m"
+
   } in {
 
     measure method "map" in {
 
-      using(sizes) curve("Range") in { sz =>
-        val range = 0 until sz
+      using(ranges) curve("Ranges") in { range =>
         range.map(_ + 1)
       }
 
-    }
+      using(arrays) curve("Arrays") in { array =>
+        array.map(_ + 1)
+      }
 
-    measure method "filter" in {
-
-      using(sizes) curve("Range") in { sz =>
-        val range = 0 until sz
-        range.filter(_ % 2 == 0)
+      using(lists) curve("Lists") in { list =>
+        list.map(_ + 1)
       }
 
     }
-
   }
-
 }
 
 
