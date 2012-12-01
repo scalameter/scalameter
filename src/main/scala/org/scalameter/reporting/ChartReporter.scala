@@ -226,6 +226,23 @@ object ChartReporter {
         renderer.setDrawBarOutline(false)
         renderer.setItemMargin(0D) // to have no space between bars of a same category
         
+        /*val numberOfCurves = cs.size
+        val numberOfSeriesPerCategory = dataset.getRowCount*/
+
+        def paintCurves = {
+          var seriesIndex = 0
+          for(curve <- cs) {
+            val seriesPaint = renderer.lookupSeriesPaint(seriesIndex);
+            val numberOfMeasurements = curve.measurements.size
+            for (i <- (0 until numberOfMeasurements)) {
+              renderer.setSeriesPaint(seriesIndex + i, seriesPaint)
+            }
+            seriesIndex += numberOfMeasurements
+          }
+        }
+
+        paintCurves
+
         plot.setBackgroundPaint(new java.awt.Color(200, 200, 200))
         plot.setDomainGridlinePaint(Color.white)
         plot.setRangeGridlinePaint(Color.white)
