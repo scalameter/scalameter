@@ -42,16 +42,16 @@ case class RegressionReporter(test: RegressionReporter.Tester, historian: Regres
     } yield {
       log(s"${ansi.green}Test group: ${context.scope}${ansi.reset}")
 
-      val curvespassed = for (curvedata <- curves) yield {
+      val testedcurves = for (curvedata <- curves) yield {
         val corresponding = curvetable.getOrElse(curvedata.context.curve, Seq(curvedata))
         test(context, curvedata, corresponding)
       }
 
       log("")
 
-      historian.persist(persistor, context, history, curves)
+      historian.persist(persistor, context, history, testedcurves)
 
-      val allpassed = curvespassed.forall(_ == true)
+      val allpassed = testedcurves.forall(_.measurements.forall(_.success))
       if (allpassed) events.emit(Event(context.scope, "Test succeeded", Events.Success, null))
       else events.emit(Event(context.scope, "Test failed", Events.Failure, null))
 
@@ -143,28 +143,39 @@ object RegressionReporter {
 
   }
 
+  /** Performance regression testing mechanism.
+   */
   trait Tester {
-    def apply(context: Context, curvedata: CurveData, corresponding: Seq[CurveData]): Boolean
+    /** Given a test performed in a specific `context`, the latest curve (set of measurements) `curvedata`
+     *  and previous curves (sets of measurements) for this test `corresponding`, yields a new version
+     *  of the latest curve, such that if any of the tests fail, the new sequence of curves will have the
+     *  `success` field set to `false` for those measurements that are considered to fail the test.
+     */
+    def apply(context: Context, curvedata: CurveData, corresponding: Seq[CurveData]): CurveData
   }
 
   object Tester {
 
+    /** Accepts any test result.
+     */
     case class Accepter() extends Tester {
-      def apply(context: Context, curvedata: CurveData, corresponding: Seq[CurveData]): Boolean = {
+      def apply(context: Context, curvedata: CurveData, corresponding: Seq[CurveData]): CurveData = {
         log(s"${ansi.green}- ${context.scope}.${curvedata.context.curve} measurements:${ansi.reset}")
 
-        true
+        curvedata
       }
     }
 
+    /** Applies analysis of variance to determine whether some test is statistically different.
+     */
     case class ANOVA() extends Tester {
-      def apply(context: Context, curvedata: CurveData, corresponding: Seq[CurveData]): Boolean = {
+      def apply(context: Context, curvedata: CurveData, corresponding: Seq[CurveData]): CurveData = {
         log(s"${ansi.green}- ${context.scope}.${curvedata.context.curve} measurements:${ansi.reset}")
 
         val significance = curvedata.context.goe(reports.regression.significance, 1e-10)
         val allmeasurements = (corresponding :+ curvedata) map (_.measurements)
         val measurementtable = allmeasurements.flatten.groupBy(_.params)
-        val pointspassed = for {
+        val testedmeasurements = for {
           measurement <- curvedata.measurements.sorted
         } yield {
           val alternatives = measurementtable(measurement.params).filter(_.success).map(_.complete)
@@ -183,22 +194,23 @@ object RegressionReporter {
               logalt(alternatives.last)
             }
 
-            ftest.passed
+            if (ftest.passed) measurement else measurement.failed
           } catch {
             case e: Exception =>
               log(s"${ansi.red}    Error in ANOVA F-test: ${e.getMessage}${ansi.reset}")
-              false
+              measurement.failed
           }
         }
+        val newcurvedata = curvedata.copy(measurements = testedmeasurements)
 
-        pointspassed.forall(_ == true)
+        newcurvedata
       }
     }
 
     case class ConfidenceIntervals(strict: Boolean = false) extends Tester {
       def cistr(ci: (Double, Double)) = f"<${ci._1}%.2f, ${ci._2}%.2f>"
 
-      def single(previous: Measurement, latest: Measurement, sig: Double): (Boolean, String) = {
+      def single(previous: Measurement, latest: Measurement, sig: Double): Measurement = {
         try {
           val citest = ConfidenceIntervalTest(strict, previous.complete, latest.complete, sig)
           
@@ -208,54 +220,52 @@ object RegressionReporter {
             val cilate = cistr(citest.ci2)
             val prevform = previous.complete.map(v => f"$v%.2f")
             val lateform = latest.complete.map(v => f"$v%.2f")
-            val msg = {
+            log.error(
               f"$color      Failed confidence interval test: <${citest.ci._1}%.2f, ${citest.ci._2}%.2f> ${ansi.reset}\n" +
               f"$color      Previous (mean = ${citest.m1}%.2f, stdev = ${citest.s1}%.2f, ci = $ciprev): ${prevform.mkString(", ")}${ansi.reset}\n" +
               f"$color      Latest   (mean = ${citest.m2}%.2f, stdev = ${citest.s2}%.2f, ci = $cilate): ${lateform.mkString(", ")}${ansi.reset}"
-            }
-            (false, msg)
-          } else {
-            (true, "")
-          }
+            )
+            latest.failed
+          } else latest
         } catch {
           case e: Exception =>
-          (false, s"${ansi.red}    Error in confidence interval test: ${e.getMessage}${ansi.reset}")
+            log.error(s"${ansi.red}    Error in confidence interval test: ${e.getMessage}${ansi.reset}")
+            latest.failed
         }
       }
 
-      def multiple(previouss: Seq[Measurement], latest: Measurement, sig: Double): Seq[Boolean] = {
-        val passes = for (previous <- previouss if previous.success) yield single(previous, latest, sig)
-        val allpass = passes.forall(_._1 == true)
+      def multiple(previouss: Seq[Measurement], latest: Measurement, sig: Double): Measurement = {
+        val tests = for (previous <- previouss if previous.success) yield single(previous, latest, sig)
+        val allpass = tests.forall(_.success)
         val color = if (allpass) ansi.green else ansi.red
         val passed = if (allpass) "passed" else "failed"
         val ci = confidenceInterval(latest.complete, sig)
         val cis = cistr(ci)
         log(s"$color  - at ${latest.params.axisData.mkString(", ")}, ${previouss.size} alternatives: $passed${ansi.reset}")
         log(s"$color    (ci = $cis, significance = $sig)${ansi.reset}")
-        for ((false, msg) <- passes) log.error(msg)
-        passes.map(_._1)
+        tests.find(!_.success).getOrElse(latest)
       }
 
-      def apply(context: Context, curvedata: CurveData, corresponding: Seq[CurveData]): Boolean = {
+      def apply(context: Context, curvedata: CurveData, corresponding: Seq[CurveData]): CurveData = {
         log(s"${ansi.green}- ${context.scope}.${curvedata.context.curve} measurements:${ansi.reset}")
 
         val significance = curvedata.context.goe(reports.regression.significance, 1e-10)
         val previousmeasurements = corresponding map (_.measurements)
         val measurementtable = previousmeasurements.flatten.groupBy(_.params)
-        val pointspassed = for {
+        val newmeasurements = for {
           measurement <- curvedata.measurements
         } yield {
           multiple(measurementtable(measurement.params), measurement, significance)
         }
 
-        pointspassed.flatten.forall(_ == true)
+        curvedata.copy(measurements = newmeasurements)
       }
     }
 
     case class OverlapIntervals() extends Tester {
       def cistr(ci: (Double, Double)) = f"<${ci._1}%.2f, ${ci._2}%.2f>"
 
-      def single(previous: Measurement, latest: Measurement, sig: Double, noiseMagnitude: Double): (Boolean, String) = {
+      def single(previous: Measurement, latest: Measurement, sig: Double, noiseMagnitude: Double): Measurement = {
         try {
           val citest = OverlapTest(previous.complete, latest.complete, sig, noiseMagnitude)
           
@@ -270,42 +280,41 @@ object RegressionReporter {
               f"$color      Previous (mean = ${citest.m1}%.2f, stdev = ${citest.s1}%.2f, ci = $ciprev): ${prevform.mkString(", ")}${ansi.reset}\n" +
               f"$color      Latest   (mean = ${citest.m2}%.2f, stdev = ${citest.s2}%.2f, ci = $cilate): ${lateform.mkString(", ")}${ansi.reset}"
             }
-            (false, msg)
-          } else {
-            (true, "")
-          }
+            log.error(msg)
+            latest.failed
+          } else latest
         } catch {
           case e: Exception =>
-          (false, s"${ansi.red}    Error in overlap interval test: ${e.getMessage}${ansi.reset}")
+            log.error(s"${ansi.red}    Error in overlap interval test: ${e.getMessage}${ansi.reset}")
+            latest.failed
         }
       }
 
-      def multiple(previouss: Seq[Measurement], latest: Measurement, sig: Double, noiseMagnitude: Double): Seq[Boolean] = {
-        val passes = for (previous <- previouss) yield single(previous, latest, sig, noiseMagnitude)
-        val allpass = passes.forall(_._1 == true)
+      def multiple(previouss: Seq[Measurement], latest: Measurement, sig: Double, noiseMagnitude: Double): Measurement = {
+        val tests = for (previous <- previouss if previous.success) yield single(previous, latest, sig, noiseMagnitude)
+        val allpass = tests.forall(_.success)
         val color = if (allpass) ansi.green else ansi.red
         val passed = if (allpass) "passed" else "failed"
         val ci = OverlapTest(latest.complete, latest.complete, sig, noiseMagnitude).ci1
         val cis = cistr(ci)
         log(s"$color  - at ${latest.params.axisData.mkString(", ")}, ${previouss.size} alternatives: $passed${ansi.reset}")
         log(s"$color    (ci = $cis, significance = $sig)${ansi.reset}")
-        for ((false, msg) <- passes) log.error(msg)
-        passes.map(_._1)
+        tests.find(!_.success).getOrElse(latest)
       }
 
-      def apply(context: Context, curvedata: CurveData, corresponding: Seq[CurveData]): Boolean = {
+      def apply(context: Context, curvedata: CurveData, corresponding: Seq[CurveData]): CurveData = {
         log(s"${ansi.green}- ${context.scope}.${curvedata.context.curve} measurements:${ansi.reset}")
 
         val significance = curvedata.context.goe(reports.regression.significance, 1e-10)
         val previousmeasurements = corresponding map (_.measurements)
         val measurementtable = previousmeasurements.flatten.groupBy(_.params)
-        val pointspassed = for {
+        val newmeasurements = for {
           measurement <- curvedata.measurements
         } yield {
           multiple(measurementtable(measurement.params), measurement, significance, context.goe(Key.reports.regression.noiseMagnitude, 0.0))
         }
 
-        pointspassed.flatten.forall(_ == true)
+        curvedata.copy(measurements = newmeasurements)
       }
     }
 

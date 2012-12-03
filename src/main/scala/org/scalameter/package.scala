@@ -222,6 +222,8 @@ package scalameter {
   case class Measurement(time: Double, params: Parameters, data: Option[Measurement.Data]) {
     def complete: Seq[Double] = data.get.complete
     def success: Boolean = data.get.success
+
+    def failed = this.copy(data = Some(data.get.copy(success = false)))
   }
 
   object Measurement {
