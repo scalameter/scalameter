@@ -25,8 +25,8 @@ case class RegressionReporter(test: RegressionReporter.Tester, historian: Regres
 
   def report(curvedata: CurveData, persistor: Persistor) {
     val ctx = curvedata.context
-    val curvetable = loadHistory(ctx, persistor).curveTable
-    val corresponding = curvetable.getOrElse(curvedata.context.curve, Seq(curvedata))
+    val history = loadHistory(ctx, persistor)
+    val corresponding = if (history.curves.nonEmpty) history.curves else Seq(curvedata)
     test(ctx, curvedata, corresponding)
   }
 
@@ -37,19 +37,22 @@ case class RegressionReporter(test: RegressionReporter.Tester, historian: Regres
     val oks = for {
       (context, curves) <- results.scopes
       if curves.nonEmpty
-      history = loadHistory(context, persistor)
-      curvetable = history.curveTable
     } yield {
       log(s"${ansi.green}Test group: ${context.scope}${ansi.reset}")
 
       val testedcurves = for (curvedata <- curves) yield {
-        val corresponding = curvetable.getOrElse(curvedata.context.curve, Seq(curvedata))
-        test(context, curvedata, corresponding)
+        val history = loadHistory(curvedata.context, persistor)
+        val corresponding = if (history.curves.nonEmpty) history.curves else Seq(curvedata)
+
+        val testedcurve = test(context, curvedata, corresponding)
+
+        val newhistory = historian.bookkeep(curvedata.context, history, testedcurve)
+        persistor.save(curvedata.context, newhistory)
+
+        testedcurve
       }
 
       log("")
-
-      historian.persist(persistor, context, history, testedcurves)
 
       val allpassed = testedcurves.forall(_.measurements.forall(_.success))
       if (allpassed) events.emit(Event(context.scope, "Test succeeded", Events.Success, null))
@@ -83,27 +86,36 @@ object RegressionReporter {
     val reset = ifcolor("\u001B[0m")
   }
 
+  /** Represents a policy for adding the newest result to the history of results.
+   */
   trait Historian {
-    def persist(p: Persistor, ctx: Context, h: History, newest: Seq[CurveData]): Unit
+    /** Given an old history and the latest curve, returns a new history,
+     *  possibly discarding some of the entries.
+     */
+    def bookkeep(ctx: Context, h: History, newest: CurveData): History
   }
 
   object Historian {
 
+    /** Preserves all historic results.
+     */
     case class Complete() extends Historian {
-      def persist(p: Persistor, ctx: Context, h: History, newest: Seq[CurveData]) {
-        val newhistory = History(h.results :+ ((new Date, ctx, newest)))
-        p.save(ctx, newhistory)
-      }
+      def bookkeep(ctx: Context, h: History, newest: CurveData) = History(h.results :+ ((new Date, ctx, newest)))
     }
 
+    /** Preserves only last `size` results.
+     */
     case class Window(size: Int) extends Historian {
-      def persist(p: Persistor, ctx: Context, h: History, newest: Seq[CurveData]) {
+      def bookkeep(ctx: Context, h: History, newest: CurveData) = {
         val newseries = h.results :+ ((new Date, ctx, newest))
-        val prunedhistory = History(newseries.takeRight(size))
-        p.save(ctx, prunedhistory)
+        val prunedhistory = h.copy(results = newseries.takeRight(size))
+        prunedhistory
       }
     }
 
+    /** Implements a checkpointing strategy such that the number of preserved results
+     *  decreases exponentially with the age of the result.
+     */
     case class ExponentialBackoff() extends Historian {
 
       def push(series: Seq[History.Entry], indices: Seq[Long], newest: History.Entry): History = {
@@ -135,10 +147,7 @@ object RegressionReporter {
         newhistory
       }
 
-      def persist(p: Persistor, ctx: Context, h: History, newest: Seq[CurveData]) {
-        val newhistory = push(h, (new Date, ctx, newest))
-        p.save(ctx, newhistory)
-      }
+      def bookkeep(ctx: Context, h: History, newest: CurveData) = push(h, (new Date, ctx, newest))
     }
 
   }

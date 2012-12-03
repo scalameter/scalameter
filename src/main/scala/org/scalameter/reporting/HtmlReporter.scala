@@ -33,8 +33,8 @@ case class HtmlReporter(val renderers: HtmlReporter.Renderer*) extends Reporter 
         for ((ctx, scoperesults) <- result.scopes; if scoperesults.nonEmpty) yield <p><div>
           <h2>Performance test group: {ctx.scope}</h2>
           {
-            val history = persistor.load(ctx)
-            for (r <- renderers) yield r.render(ctx, scoperesults, history)
+            val histories = scoperesults.map(cd => persistor.load(cd.context))
+            for (r <- renderers) yield r.render(ctx, scoperesults, histories)
           }
         </div></p>
       }
@@ -111,7 +111,7 @@ case class HtmlReporter(val renderers: HtmlReporter.Renderer*) extends Reporter 
 object HtmlReporter {
 
   trait Renderer {
-    def render(context: Context, curves: Seq[CurveData], h: History): Node
+    def render(context: Context, curves: Seq[CurveData], hs: Seq[History]): Node
   }
 
   object Renderer {
@@ -120,7 +120,7 @@ object HtmlReporter {
     def basic = Seq(Info(), BigO(), Chart(ChartReporter.ChartFactory.XYLine()))
 
     case class Info() extends Renderer {
-      def render(context: Context, curves: Seq[CurveData], h: History): Node = 
+      def render(context: Context, curves: Seq[CurveData], hs: Seq[History]): Node = 
       <div>Info:
       <ul>
       <li>Number of runs: {context.goe(exec.benchRuns, "")}</li>
@@ -130,7 +130,7 @@ object HtmlReporter {
     }
 
     case class BigO() extends Renderer {
-      def render(context: Context, curves: Seq[CurveData], h: History): Node = 
+      def render(context: Context, curves: Seq[CurveData], hs: Seq[History]): Node = 
       <div>Big O analysis:
       <ul>
       {
@@ -143,10 +143,10 @@ object HtmlReporter {
     }
 
     case class Chart(factory: ChartReporter.ChartFactory) extends Renderer {
-      def render(context: Context, curves: Seq[CurveData], h: History): Node = {
+      def render(context: Context, curves: Seq[CurveData], hs: Seq[History]): Node = {
         val resultdir = context.goe(reports.resultDir, "tmp")
         val scopename = context.scope
-        val chart = factory.createChart(scopename, curves, h)
+        val chart = factory.createChart(scopename, curves, hs)
         val chartfile = new File(s"$resultdir${File.separator}report${File.separator}images${File.separator}$scopename.png")
         ChartUtilities.saveChartAsPNG(chartfile, chart, 1600, 1200)
 
@@ -160,7 +160,7 @@ object HtmlReporter {
     }
 
     case class HistoryList() extends Renderer {
-      def render(context: Context, curves: Seq[CurveData], h: History): Node = {
+      def render(context: Context, curves: Seq[CurveData], hs: Seq[History]): Node = {
         // TODO
 
         <div>
@@ -169,10 +169,10 @@ object HtmlReporter {
     }
 
     case class Regression(factory: ChartReporter.ChartFactory, colors: Seq[Color]) extends Renderer {
-      def render(context: Context, curves: Seq[CurveData], h: History): Node = {
+      def render(context: Context, curves: Seq[CurveData], hs: Seq[History]): Node = {
         val resultdir = context.goe(reports.resultDir, "tmp")
         val scopename = context.scope
-        val chart = factory.createChart(scopename, curves, h, colors)
+        val chart = factory.createChart(scopename, curves, hs, colors)
         val chartfile = new File(s"$resultdir${File.separator}report${File.separator}images${File.separator}$scopename.png")
         ChartUtilities.saveChartAsPNG(chartfile, chart, 1600, 1200)
 
@@ -186,7 +186,7 @@ object HtmlReporter {
     }
 
     case class Histogram(factory: ChartReporter.ChartFactory, colors: Seq[Color]) extends Renderer {
-      def render(context: Context, curves: Seq[CurveData], h: History): Node = {
+      def render(context: Context, curves: Seq[CurveData], hs: Seq[History]): Node = {
         <div>
         </div>
       }

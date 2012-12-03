@@ -234,16 +234,21 @@ package scalameter {
 
   case class CurveData(measurements: Seq[Measurement], info: Map[String, Any], context: Context)
 
+  object CurveData {
+    def empty = CurveData(Seq(), Map(), initialContext)
+  }
+
   @SerialVersionUID(-2666789428423525666L)
   case class History(results: Seq[History.Entry], infomap: Map[String, Any] = Map.empty) {
     def info[T](key: String, fallback: T) = infomap.getOrElse(key, fallback).asInstanceOf[T]
-    def curveTable: Map[String, Seq[CurveData]] = results.map(_._3).flatten.groupBy(_.context.curve)
+    def curves = results.map(_._3)
+    def dates = results.map(_._1)
 
     override def toString = s"History(${results.mkString("\n")},\ninfo: $infomap)"
   }
 
   object History {
-    type Entry = (Date, Context, Seq[CurveData])
+    type Entry = (Date, Context, CurveData)
   }
 
   case class Setup[T](context: Context, gen: Gen[T], setup: Option[T => Any], teardown: Option[T => Any], customwarmup: Option[() => Any], snippet: T => Any) {

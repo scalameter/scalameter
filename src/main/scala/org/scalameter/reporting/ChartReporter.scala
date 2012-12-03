@@ -35,8 +35,8 @@ case class ChartReporter(drawer: ChartReporter.ChartFactory, fileNamePrefix: Str
   def report(result: Tree[CurveData], persistor: Persistor) = {
     for ((ctx, curves) <- result.scopes if curves.nonEmpty) {
       val scopename = ctx.scope
-      val history = persistor.load(ctx)
-      val chart = drawer.createChart(scopename, curves, history)
+      val histories = curves.map(c => persistor.load(c.context))
+      val chart = drawer.createChart(scopename, curves, histories)
       val dir = result.context.goe(resultDir, "tmp")
       new File(dir).mkdir()
       val chartfile = new File(s"$dir/$fileNamePrefix$scopename.png")
@@ -59,14 +59,16 @@ object ChartReporter {
      *  @param scopename      name of the chart
      *  @param cs             a list of curves that should appear on the chart
      *  @param history        previous chart data for the same set of curves
+     *  @param colors        specifies the colors assigned to the the first `colors.size` curves from `cs`.
+     *                        The rest of the curves are assigned some default set of colors.
      */
-    def createChart(scopename: String, cs: Seq[CurveData], history: History, colors: Seq[Color] = Seq()): JFreeChart
+    def createChart(scopename: String, cs: Seq[CurveData], histories: Seq[History], colors: Seq[Color] = Seq()): JFreeChart
   }
 
   object ChartFactory {
 
     case class XYLine() extends ChartFactory {
-      def createChart(scopename: String, cs: Seq[CurveData], history: History, colors: Seq[Color] = Seq()): JFreeChart = {
+      def createChart(scopename: String, cs: Seq[CurveData], histories: Seq[History], colors: Seq[Color] = Seq()): JFreeChart = {
         val seriesCollection = new XYSeriesCollection
         val chartName = scopename
         val xAxisName = cs.head.measurements.head.params.axisData.head._1
@@ -91,39 +93,32 @@ object ChartReporter {
     }
 
     case class ConfidenceIntervals(showLatestCi: Boolean, showHistoryCi: Boolean, alpha: Double) extends ChartFactory {
-      /**
-       *
-       *
-       * @param colors        specifies the colors assigned to the the first `colors.size` curves from `cs`.
-                              The rest of the curves are assigned some default set of colors.
-       */
-      def createChart(scopename: String, cs: Seq[CurveData], history: History, colors: Seq[Color] = Seq()): JFreeChart = {
+
+      def createChart(scopename: String, cs: Seq[CurveData], histories: Seq[History], colors: Seq[Color] = Seq()): JFreeChart = {
 
         def createDataset = {
           val dataset = new YIntervalSeriesCollection
-          if(history.results.isEmpty) {
-              for ((curve, curveIndex) <- cs.zipWithIndex) {
-                val series = new YIntervalSeries(curve.context.goe(dsl.curve, curveIndex.toString))
-                for (measurement <- curve.measurements) {
-                  val ciForThisPoint = if (showLatestCi) {
-                    confidenceInterval(measurement.complete, alpha)
-                  } else {
-                    (0D, 0D)
-                  }
-                series.add(measurement.params.axisData.head._2.asInstanceOf[Int], measurement.time, ciForThisPoint._1, ciForThisPoint._2)
+          for ((curve, history) <- cs zip histories) {
+            if (history.results.isEmpty) {
+              val series = new YIntervalSeries(curve.context.goe(dsl.curve, ""))
+              for (measurement <- curve.measurements) {
+                val ciForThisPoint = if (showLatestCi) {
+                  confidenceInterval(measurement.complete, alpha)
+                } else {
+                  (0D, 0D)
                 }
+                series.add(measurement.params.axisData.head._2.asInstanceOf[Int], measurement.time, ciForThisPoint._1, ciForThisPoint._2)
               }
-          } else {
-            for ((curve, curveIndex) <- cs.zipWithIndex) {
-              val newestSeries = new YIntervalSeries(curve.context.goe(dsl.curve, curveIndex.toString))
-              val historySeries = new YIntervalSeries(curve.context.goe(dsl.curve, curveIndex.toString))
+            } else {
+              val newestSeries = new YIntervalSeries(curve.context.goe(dsl.curve, ""))
+              val historySeries = new YIntervalSeries(curve.context.goe(dsl.curve, ""))
 
               for ((measurement, measurementIndex) <- curve.measurements.zipWithIndex) {
                 /* Fetch, for each corresponding curve in history, the measurements that were at the same position (same size for instance)
                 on x-axis, and make a list of them */
                 val previousMeasurements = for {
                   pastResult <- history.results
-                  correspondingCurveInHistory = pastResult._3(curveIndex) //._3 to access the Seq[CurveData]  
+                  correspondingCurveInHistory = pastResult._3
                 } yield correspondingCurveInHistory.measurements(measurementIndex)
                 // We then take all observations that gave the time measurement (by calling complete) of each point, and concat them
                 val previousMeasurementsObservations = previousMeasurements flatMap(m => m.complete)
@@ -134,10 +129,10 @@ object ChartReporter {
                 historySeries.add(measurement.params.axisData.head._2.asInstanceOf[Int], meanForThisPoint, ciForThisPoint._1, ciForThisPoint._2)
 
                 val ciForNewestPoint = if (showLatestCi) {
-                    confidenceInterval(measurement.complete, alpha)
-                  } else {
-                    (0D, 0D)
-                  }
+                  confidenceInterval(measurement.complete, alpha)
+                } else {
+                  (0D, 0D)
+                }
 
                 newestSeries.add(measurement.params.axisData.head._2.asInstanceOf[Int], measurement.time, ciForNewestPoint._1, ciForNewestPoint._2)
               }
@@ -147,7 +142,6 @@ object ChartReporter {
           }
 
           dataset
-
         }
         /* We may want to call other methods from the JFreeChart API, as there are a
            lot of them related to appearance in class DeviationRenderer and in its parent classes */
@@ -181,43 +175,25 @@ object ChartReporter {
     }
 
     case class TrendHistogram() extends ChartFactory {
-      def createChart(scopename: String, cs: Seq[CurveData], history: History, colors: Seq[Color] = Seq()): JFreeChart = {
+      def createChart(scopename: String, cs: Seq[CurveData], histories: Seq[History], colors: Seq[Color] = Seq()): JFreeChart = {
         val chartName = scopename
         val xAxisName = "Date"
         val now = new Date
         val df = getDateTimeInstance(MEDIUM, MEDIUM)
         val currentDate = df format now
         val dataset = new DefaultCategoryDataset
-        
-        if(!history.results.isEmpty) {
-          for(historyResult <- history.results) {
-            val date = historyResult._1
-            val context = historyResult._2
-            val curves = historyResult._3
 
-            for((curve, curveIndex) <- curves.zipWithIndex) {
-              for((measurement, measurementIndex) <- curve.measurements.zipWithIndex) {
-                val curveName = curve.context.goe(dsl.curve, curveIndex.toString)
-                val measurementParams = (for(p <- measurement.params.axisData) yield (p._1.toString + " : " + p._2.toString)).mkString("[", ", ", "]")
-                val seriesName: String = curveName + " " + measurementParams
-                val categoryName = df format date
-                dataset.addValue(measurement.time, seriesName, categoryName)
-              }
+        for ((c, history) <- cs zip histories) {
+          val curves = history.curves :+ c
+          val dates = history.dates :+ now
+          val categoryNames = dates.map(df format _)
+          for ((curve, categoryName) <- curves zip categoryNames) {
+            for((measurement, measurementIndex) <- curve.measurements.zipWithIndex) {
+              val curveName = curve.context.goe(dsl.curve, "")
+              val measurementParams = (for(p <- measurement.params.axisData) yield (p._1.toString + " : " + p._2.toString)).mkString("[", ", ", "]")
+              val seriesName: String = curveName + " " + measurementParams
+              dataset.addValue(measurement.time, seriesName, categoryName)
             }
-          }
-        }
-
-        for((curve, curveIndex) <- cs.zipWithIndex) {
-          for((measurement, measurementIndex) <- curve.measurements.zipWithIndex) {
-            // addValue params : Double value, String series_name (eg. ArrayBuffer), category name (should be a date or a size)
-            // addValue(double value, java.lang.Comparable rowKey, java.lang.Comparable columnKey)
-            val curveName = curve.context.goe(dsl.curve, curveIndex.toString)
-            val measurementParams = (for(p <- measurement.params.axisData) yield (p._1.toString + " : " + p._2.toString)).mkString("[", ", ", "]")
-            val seriesName: String = curveName + " " + measurementParams
-            val categoryName = currentDate
-            //curve.context.goe(reports.startDate, "Date for curve " + curveIndex.toString)
-
-            dataset.addValue(measurement.time, seriesName, categoryName)
           }
         }
 
