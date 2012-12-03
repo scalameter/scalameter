@@ -49,14 +49,11 @@ case class RegressionReporter(test: RegressionReporter.Tester, historian: Regres
 
       log("")
 
-      val allpassed = curvespassed.forall(_ == true)
+      historian.persist(persistor, context, history, curves)
 
-      if (allpassed) {
-        historian.persist(persistor, context, history, curves)
-        events.emit(Event(context.scope, "Test succeeded", Events.Success, null))
-      } else {
-        events.emit(Event(context.scope, "Test failed", Events.Failure, null))
-      }
+      val allpassed = curvespassed.forall(_ == true)
+      if (allpassed) events.emit(Event(context.scope, "Test succeeded", Events.Success, null))
+      else events.emit(Event(context.scope, "Test failed", Events.Failure, null))
 
       allpassed
     }
@@ -170,7 +167,7 @@ object RegressionReporter {
         val pointspassed = for {
           measurement <- curvedata.measurements.sorted
         } yield {
-          val alternatives = measurementtable(measurement.params).map(_.complete)
+          val alternatives = measurementtable(measurement.params).filter(_.success).map(_.complete)
           try {
             val ftest = ANOVAFTest(alternatives, significance)
             val color = if (ftest) ansi.green else ansi.red
@@ -227,7 +224,7 @@ object RegressionReporter {
       }
 
       def multiple(previouss: Seq[Measurement], latest: Measurement, sig: Double): Seq[Boolean] = {
-        val passes = for (previous <- previouss) yield single(previous, latest, sig)
+        val passes = for (previous <- previouss if previous.success) yield single(previous, latest, sig)
         val allpass = passes.forall(_._1 == true)
         val color = if (allpass) ansi.green else ansi.red
         val passed = if (allpass) "passed" else "failed"

@@ -219,12 +219,15 @@ package scalameter {
   }
 
   @SerialVersionUID(-2541697615491239986L)
-  case class Measurement(time: Double, params: Parameters, data: Option[Any]) {
-    def complete: Seq[Double] = data.get.asInstanceOf[Seq[Double]]
+  case class Measurement(time: Double, params: Parameters, data: Option[Measurement.Data]) {
+    def complete: Seq[Double] = data.get.complete
+    def success: Boolean = data.get.success
   }
 
   object Measurement {
     implicit val ordering = Ordering.by[Measurement, Parameters](_.params)
+
+    case class Data(complete: Seq[Double], success: Boolean)
   }
 
   case class CurveData(measurements: Seq[Measurement], info: Map[String, Any], context: Context)
@@ -252,7 +255,7 @@ package scalameter {
   trait Aggregator extends (Seq[Double] => Double) with Serializable {
     def name: String
     def apply(times: Seq[Double]): Double
-    def data(times: Seq[Double]): Option[Any]
+    def data(times: Seq[Double]): Option[Measurement.Data]
   }
 
   object Aggregator {
@@ -277,30 +280,10 @@ package scalameter {
 
     def stdev = { xs: Seq[Double] => xs.stdev } toAggregator "stdev"
 
-    def statistic(a: Aggregator) = new Aggregator {
-      def name = a.name
-      def apply(times: Seq[Double]) = a(times)
-      def data(times: Seq[Double]) = Some(Statistic(
-        min = Aggregator.min(times),
-        max = Aggregator.max(times),
-        average = Aggregator.average(times),
-        stdev = Aggregator.stdev(times),
-        median = Aggregator.median(times)
-      ))
-    }
-
     def complete(a: Aggregator) = new Aggregator {
       def name = s"complete(${a.name})"
       def apply(times: Seq[Double]) = a(times)
-      def data(times: Seq[Double]) = Some(times)
-    }
-
-    def withData(a: Aggregator)(as: Aggregator*) = new Aggregator {
-      def name = a.name
-      def apply(times: Seq[Double]) = a(times)
-      def data(times: Seq[Double]) = Some((for (a <- as) yield {
-        (a.name, a.apply(times))
-      }).toMap)
+      def data(times: Seq[Double]) = Some(Measurement.Data(times, true))
     }
   }
 
