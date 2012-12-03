@@ -9,6 +9,7 @@ class Key {
 
   val verbose = "verbose"
   val classpath = "classpath"
+  val preJDK7 = "pre-jdk-7"
 
   object dsl {
     val curve = "curve"

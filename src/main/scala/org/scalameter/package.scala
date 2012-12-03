@@ -170,6 +170,7 @@ package scalameter {
     def ++(that: Seq[(String, Any)]) = Context(this.properties ++ that)
     def get[T](key: String) = properties.get(key).asInstanceOf[Option[T]]
     def goe[T](key: String, v: T) = properties.getOrElse(key, v).asInstanceOf[T]
+    def apply[T](key: String) = properties.apply(key).asInstanceOf[T]
 
     def scope = properties(dsl.scope).asInstanceOf[List[String]].reverse.mkString(".")
     def curve = goe(dsl.curve, "")
@@ -181,6 +182,7 @@ package scalameter {
     val empty = new Context(immutable.Map())
 
     val topLevel = machine ++ List(
+      preJDK7 -> false,
       dsl.scope -> Nil,
       exec.benchRuns -> 36,
       exec.minWarmupRuns -> 10,
