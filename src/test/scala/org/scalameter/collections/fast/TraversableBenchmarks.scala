@@ -246,7 +246,10 @@ class TraversableBenchmarks extends PerformanceTest.Regression with Collections 
         _.flatMap(x => 0 until 2)
       }
       
-      using(vectors(from, to, by)) curve("Vector") in {
+      using(vectors(from, to, by)) curve("Vector") config (
+        exec.minWarmupRuns -> 240,
+        exec.maxWarmupRuns -> 480
+      ) in {
         _.flatMap(x => 0 until 2)
       }
 

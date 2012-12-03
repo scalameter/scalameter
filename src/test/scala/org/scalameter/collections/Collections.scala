@@ -16,6 +16,8 @@ trait Collections extends PerformanceTest {
 
   def sized[T, Repr](g: Gen[Repr])(implicit ev: Repr <:< Traversable[T]): Gen[(Int, Repr)] = for (xs <- g) yield (xs.size, xs)
 
+  def sized[K, V](g: Gen[java.util.HashMap[K, V]]): Gen[(Int, java.util.HashMap[K, V])] = for (xs <- g) yield (xs.size, xs)
+
   /* sequences */
 
   def lists(from: Int, to: Int, by: Int) = for {
@@ -53,6 +55,14 @@ trait Collections extends PerformanceTest {
   } yield {
     val hm = mutable.LinkedHashMap[Int, Int]()
     for (x <- 0 until size) hm(x) = x
+    hm
+  }
+
+  def juhashmaps(from: Int, to: Int, by: Int) = for {
+    size <- sizes(from, to, by)
+  } yield {
+    val hm = new java.util.HashMap[Int, Int]
+    for (x <- 0 until size) hm.put(x, x)
     hm
   }
 
