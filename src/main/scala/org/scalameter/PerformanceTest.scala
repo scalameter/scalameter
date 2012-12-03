@@ -84,7 +84,7 @@ object PerformanceTest {
     def measurer: Measurer = new Measurer.IgnoringGC with Measurer.PeriodicReinstantiation with Measurer.OutlierElimination with Measurer.RelativeNoise
     def executor: Executor = new execution.SeparateJvmsExecutor(warmer, aggregator, measurer)
     def reporter: Reporter = org.scalameter.Reporter.Composite(
-      new RegressionReporter(RegressionReporter.Tester.ConfidenceIntervals(), RegressionReporter.Historian.ExponentialBackoff()),
+      new RegressionReporter(RegressionReporter.Tester.OverlapIntervals(), RegressionReporter.Historian.ExponentialBackoff()),
       new HtmlReporter(HtmlReporter.Renderer.regression: _*)
     )
   }

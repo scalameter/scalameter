@@ -300,7 +300,7 @@ object Executor {
         val magni = context.goe(magnitude, 0.0)
         val noise = noiseFunction(observations, magni)
         val withnoise = observations map {
-          x => (x + 0.49 + noise(x))
+          x => (x + noise(x))
         }
 
         val formatted = withnoise.map(t => f"$t%.3f")

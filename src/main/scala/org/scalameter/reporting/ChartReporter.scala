@@ -22,6 +22,7 @@ import java.awt.Color
 import Key.reports._
 import java.text.DateFormat.{getDateTimeInstance, MEDIUM}
 import java.util.Date
+import org.jfree.chart.{LegendItemCollection, LegendItem}
 
 
 
@@ -226,6 +227,37 @@ object ChartReporter {
         renderer.setDrawBarOutline(false)
         renderer.setItemMargin(0D) // to have no space between bars of a same category
         
+        /*val numberOfCurves = cs.size
+        val numberOfSeriesPerCategory = dataset.getRowCount*/
+
+        def paintCurves = {
+          var seriesIndex = 0
+          for(curve <- cs) {
+            val seriesPaint = renderer.lookupSeriesPaint(seriesIndex)
+            val numberOfMeasurements = curve.measurements.size
+            for (i <- (0 until numberOfMeasurements)) {
+              renderer.setSeriesPaint(seriesIndex + i, seriesPaint)
+            }
+            seriesIndex += numberOfMeasurements
+          }
+        }
+
+        def setChartLegend = {
+          var seriesIndex = 0
+          val legendItems = new LegendItemCollection
+          for((curve, curveIndex) <- cs.zipWithIndex) {
+            val curveName = curve.context.goe(dsl.curve, curveIndex.toString)
+            val seriesPaint = renderer.lookupSeriesPaint(seriesIndex)
+            val numberOfMeasurements = curve.measurements.size
+            legendItems.add(new LegendItem(curveName, seriesPaint))
+            seriesIndex += numberOfMeasurements
+          }
+          plot.setFixedLegendItems(legendItems)
+        }
+
+        paintCurves
+        setChartLegend
+
         plot.setBackgroundPaint(new java.awt.Color(200, 200, 200))
         plot.setDomainGridlinePaint(Color.white)
         plot.setRangeGridlinePaint(Color.white)
