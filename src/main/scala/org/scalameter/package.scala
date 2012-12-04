@@ -354,6 +354,9 @@ package scalameter {
     type RegressionReporter = reporting.RegressionReporter
     val RegressionReporter = reporting.RegressionReporter
 
+    type DsvReporter = reporting.DsvReporter
+    val DsvReporter = reporting.DsvReporter
+
     val Tester = reporting.RegressionReporter.Tester
     val Historian = reporting.RegressionReporter.Historian
     val ChartFactory = reporting.ChartReporter.ChartFactory

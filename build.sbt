@@ -8,6 +8,8 @@ version := "0.2"
 
 scalaVersion := "2.10.0-RC2"
 
+resolvers += "Sonatype OSS Snapshots" at "https://oss.sonatype.org/content/repositories/snapshots"
+
 libraryDependencies ++= List(
   "org.scalatest" % "scalatest_2.10.0-RC2" % "1.8-B2",
   "jfree" % "jfreechart" % "1.0.12",
