@@ -34,6 +34,7 @@ case class RegressionReporter(test: RegressionReporter.Tester, historian: Regres
     log("")
     log(s"${ansi.green}:::Summary of regression test results - $test:::${ansi.reset}")
 
+    val currentDate = new Date
     val oks = for {
       (context, curves) <- results.scopes
       if curves.nonEmpty
@@ -46,7 +47,7 @@ case class RegressionReporter(test: RegressionReporter.Tester, historian: Regres
 
         val testedcurve = test(context, curvedata, corresponding)
 
-        val newhistory = historian.bookkeep(curvedata.context, history, testedcurve)
+        val newhistory = historian.bookkeep(curvedata.context, history, testedcurve, currentDate)
         persistor.save(curvedata.context, newhistory)
 
         testedcurve
@@ -89,10 +90,10 @@ object RegressionReporter {
   /** Represents a policy for adding the newest result to the history of results.
    */
   trait Historian {
-    /** Given an old history and the latest curve, returns a new history,
+    /** Given an old history and the latest curve and its date, returns a new history,
      *  possibly discarding some of the entries.
      */
-    def bookkeep(ctx: Context, h: History, newest: CurveData): History
+    def bookkeep(ctx: Context, h: History, newest: CurveData, d: Date): History
   }
 
   object Historian {
@@ -100,14 +101,14 @@ object RegressionReporter {
     /** Preserves all historic results.
      */
     case class Complete() extends Historian {
-      def bookkeep(ctx: Context, h: History, newest: CurveData) = History(h.results :+ ((new Date, ctx, newest)))
+      def bookkeep(ctx: Context, h: History, newest: CurveData, d: Date) = History(h.results :+ ((d, ctx, newest)))
     }
 
     /** Preserves only last `size` results.
      */
     case class Window(size: Int) extends Historian {
-      def bookkeep(ctx: Context, h: History, newest: CurveData) = {
-        val newseries = h.results :+ ((new Date, ctx, newest))
+      def bookkeep(ctx: Context, h: History, newest: CurveData, d: Date) = {
+        val newseries = h.results :+ ((d, ctx, newest))
         val prunedhistory = h.copy(results = newseries.takeRight(size))
         prunedhistory
       }
@@ -147,7 +148,7 @@ object RegressionReporter {
         newhistory
       }
 
-      def bookkeep(ctx: Context, h: History, newest: CurveData) = push(h, (new Date, ctx, newest))
+      def bookkeep(ctx: Context, h: History, newest: CurveData, d: Date) = push(h, (d, ctx, newest))
     }
 
   }
