@@ -149,7 +149,6 @@ object ChartReporter {
         /* We may want to call other methods from the JFreeChart API, as there are a
            lot of them related to appearance in class DeviationRenderer and in its parent classes */
         def paintCurves(renderer: DeviationRenderer) {
-          //val test = List(new Color(255, 200, 200), new Color(200, 200, 255))
           for((color, i) <- colors.zipWithIndex) {
             renderer.setSeriesStroke(i, new BasicStroke(3F, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND))
             renderer.setSeriesPaint(i, color)
@@ -206,7 +205,7 @@ object ChartReporter {
           val dates = history.dates :+ now
           val categoryNames = dates.map(df format _)
           for ((curve, categoryName) <- curves zip categoryNames) {
-            for((measurement, measurementIndex) <- curve.measurements.zipWithIndex) {
+            for(measurement <- curve.measurements) {
               val curveName = curve.context.goe(dsl.curve, "")
               val measurementParams = (for(p <- measurement.params.axisData) yield (p._1.toString + " : " + p._2.toString)).mkString("[", ", ", "]")
               val seriesName: String = curveName + " " + measurementParams
@@ -220,9 +219,6 @@ object ChartReporter {
         val renderer: BarRenderer = plot.getRenderer.asInstanceOf[BarRenderer]
         renderer.setDrawBarOutline(false)
         renderer.setItemMargin(0D) // to have no space between bars of a same category
-        
-        /*val numberOfCurves = cs.size
-        val numberOfSeriesPerCategory = dataset.getRowCount*/
 
         def paintCurves = {
           var seriesIndex = 0
@@ -240,7 +236,7 @@ object ChartReporter {
           var seriesIndex = 0
           val legendItems = new LegendItemCollection
           for((curve, curveIndex) <- cs.zipWithIndex) {
-            val curveName = curve.context.goe(dsl.curve, curveIndex.toString)
+            val curveName = curve.context.goe(dsl.curve, "Curve " + curveIndex.toString)
             val seriesPaint = renderer.lookupSeriesPaint(seriesIndex)
             val numberOfMeasurements = curve.measurements.size
             legendItems.add(new LegendItem(curveName, seriesPaint))
@@ -255,12 +251,14 @@ object ChartReporter {
         class LabelGenerator extends StandardCategoryItemLabelGenerator {
           val serialVersionUID = -7553175765030937177L
           override def generateLabel(categorydataset: CategoryDataset, i: Int, j: Int) = {
-            categorydataset.getRowKey(i).toString()
+            val rowKey = categorydataset.getRowKey(i).toString
+            rowKey.substring(rowKey.indexOf("["))
           }
         }
 
         renderer.setBaseItemLabelGenerator(new LabelGenerator)
         renderer.setBaseItemLabelsVisible(true)
+        // ItemLabelPosition params : 1. item label anchor, 2. text anchor, 3. rotation anchor, 4. rotation angle
         val itemLabelPosition = new ItemLabelPosition(ItemLabelAnchor.INSIDE12, TextAnchor.CENTER_RIGHT, TextAnchor.CENTER_RIGHT, -Pi / 2)
         renderer.setBasePositiveItemLabelPosition(itemLabelPosition)
         val altItemLabelPosition = new ItemLabelPosition(ItemLabelAnchor.OUTSIDE12, TextAnchor.CENTER_LEFT, TextAnchor.CENTER_LEFT, -Pi / 2)
