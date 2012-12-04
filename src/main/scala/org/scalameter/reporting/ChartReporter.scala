@@ -11,7 +11,7 @@ import org.jfree.chart.plot.{XYPlot, CategoryPlot}
 import org.jfree.data.statistics._
 import org.jfree.chart.{ChartFactory => JFreeChartFactory}
 import org.jfree.chart.plot.PlotOrientation
-import org.jfree.data.category.DefaultCategoryDataset
+import org.jfree.data.category.{CategoryDataset, DefaultCategoryDataset}
 import org.jfree.chart._
 import java.io._
 import collection._
@@ -23,6 +23,9 @@ import Key.reports._
 import java.text.DateFormat.{getDateTimeInstance, MEDIUM}
 import java.util.Date
 import org.jfree.chart.{LegendItemCollection, LegendItem}
+import org.jfree.chart.labels.{ItemLabelAnchor, ItemLabelPosition, StandardCategoryItemLabelGenerator}
+import org.jfree.ui.TextAnchor
+import scala.math.Pi
 
 
 
@@ -183,7 +186,22 @@ object ChartReporter {
         val currentDate = df format now
         val dataset = new DefaultCategoryDataset
 
+        /*
+         * An History here contains the previous curves for a curve in cs. For instance, if we have three dates (categories) on the chart, and for instance
+         * three curves for the most recent measurements (so cs has size 3), then histories will have length 3 too (because there are 3 curves), and each
+         * History in histories will contain 2 Entry because there are 3 dates (categories).
+         *
+         * cs and zip will always have the same length here
+         *
+         * 
+         */
         for ((c, history) <- cs zip histories) {
+          /*
+           * case class History(results: Seq[History.Entry], ...)
+           * type Entry = (Date, Context, CurveData)
+           * def curves = results.map(_._3)
+           * def dates = results.map(_._1)
+           */
           val curves = history.curves :+ c
           val dates = history.dates :+ now
           val categoryNames = dates.map(df format _)
@@ -233,6 +251,20 @@ object ChartReporter {
 
         paintCurves
         setChartLegend
+
+        class LabelGenerator extends StandardCategoryItemLabelGenerator {
+          val serialVersionUID = -7553175765030937177L
+          override def generateLabel(categorydataset: CategoryDataset, i: Int, j: Int) = {
+            categorydataset.getRowKey(i).toString()
+          }
+        }
+
+        renderer.setBaseItemLabelGenerator(new LabelGenerator)
+        renderer.setBaseItemLabelsVisible(true)
+        val itemLabelPosition = new ItemLabelPosition(ItemLabelAnchor.INSIDE12, TextAnchor.CENTER_RIGHT, TextAnchor.CENTER_RIGHT, -Pi / 2)
+        renderer.setBasePositiveItemLabelPosition(itemLabelPosition)
+        val altItemLabelPosition = new ItemLabelPosition(ItemLabelAnchor.OUTSIDE12, TextAnchor.CENTER_LEFT, TextAnchor.CENTER_LEFT, -Pi / 2)
+        renderer.setPositiveItemLabelPositionFallback(altItemLabelPosition)
 
         plot.setBackgroundPaint(new java.awt.Color(200, 200, 200))
         plot.setDomainGridlinePaint(Color.white)
