@@ -66,6 +66,7 @@ object Main {
       }
       def flag: Parser[Configuration] = "-" ~ ident ^^ {
         case _ ~ "verbose" => Configuration(Nil, Context(Key.verbose -> true))
+        case _ ~ "preJDK7" => Configuration(Nil, Context(Key.preJDK7 -> true))
         case _ ~ unknownFlag => sys.error(s"Unknown flag '$unknownFlag'")
       }
 

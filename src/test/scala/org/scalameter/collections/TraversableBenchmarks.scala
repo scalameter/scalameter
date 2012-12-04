@@ -17,6 +17,8 @@ class TraversableBenchmarks extends PerformanceTest.Regression with Collections 
   performance of "Traversable" in {
 
     measure method "foreach" config (
+      exec.minWarmupRuns -> 50,
+      exec.maxWarmupRuns -> 150,
       exec.benchRuns -> 36,
       exec.independentSamples -> 9,
       reports.regression.significance -> 1e-13

@@ -18,8 +18,8 @@ case class SerializationPersistor(path: File) extends Persistor {
 
   def sep = File.separator
 
-  private def loadHistory(dir: String, scope: String): History = {
-    val file = new File(s"$path$sep$scope")
+  private def loadHistory(dir: String, scope: String, curve: String): History = {
+    val file = new File(s"$path$sep$scope.$curve.dat")
     if (!file.exists || !file.isFile) History(Nil)
     else {
       val fis = new FileInputStream(file)
@@ -34,9 +34,9 @@ case class SerializationPersistor(path: File) extends Persistor {
     }
   }
 
-  private def saveHistory(dir: String, scope: String, h: History) {
+  private def saveHistory(dir: String, scope: String, curve: String, h: History) {
     path.mkdir()
-    val file = new File(s"$path$sep$scope")
+    val file = new File(s"$path$sep$scope.$curve.dat")
     val fos = new FileOutputStream(file)
     val oos = new ObjectOutputStream(fos)
     try {
@@ -48,14 +48,16 @@ case class SerializationPersistor(path: File) extends Persistor {
 
   def load(context: Context): History = {
     val scope = context.scope
+    val curve = context.curve
     val resultdir = context.goe(resultDir, "tmp")
-    loadHistory(resultdir, scope)
+    loadHistory(resultdir, scope, curve)
   }
 
   def save(context: Context, h: History) {
     val scope = context.scope
+    val curve = context.curve
     val resultdir = context.goe(resultDir, "tmp")
-    saveHistory(resultdir, scope, h)
+    saveHistory(resultdir, scope, curve, h)
   }
 }
 
