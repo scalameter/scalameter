@@ -93,4 +93,45 @@ class TrendHistogramTest extends PerformanceTest {
   }
 }
 
+class NormalHistogramTest extends PerformanceTest {
+
+  lazy val executor = execution.LocalExecutor(Executor.Warmer.Default(), Aggregator.complete(Aggregator.average), new Executor.Measurer.Default)
+  //lazy val reporter: Reporter = ChartReporter(ChartFactory.NormalHistogram())
+  lazy val reporter = Reporter.Composite(
+    ChartReporter(ChartFactory.NormalHistogram()),
+    RegressionReporter(RegressionReporter.Tester.Accepter(), RegressionReporter.Historian.Window(5))
+  )
+
+  lazy val persistor = new persistence.SerializationPersistor()
+
+  val sizes = Gen.range("size")(300000, 900000, 300000)
+  
+  val ranges = for(sz <- sizes) yield (0 until sz)
+  val arrays = for (sz <- sizes) yield (0 until sz).toArray
+  val lists = for (sz <- sizes) yield (0 until sz).toList
+
+  performance of "CollectionMethods" config {
+
+    Key.exec.jvmflags -> "-Xmx1024m -Xms1024m"
+
+  } in {
+
+    measure method "map" in {
+
+      using(ranges) curve("Ranges") in { range =>
+        range.map(_ + 1)
+      }
+
+      using(arrays) curve("Arrays") in { array =>
+        array.map(_ + 1)
+      }
+
+      using(lists) curve("Lists") in { list =>
+        list.map(_ + 1)
+      }
+
+    }
+  }
+}
+
 

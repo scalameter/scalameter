@@ -214,7 +214,7 @@ object ChartReporter {
           }
         }
 
-        val chart = JFreeChartFactory.createBarChart(chartName, xAxisName, "time", dataset, PlotOrientation.VERTICAL, true, true, false)
+        val chart = JFreeChartFactory.createBarChart(chartName, xAxisName, "Time", dataset, PlotOrientation.VERTICAL, true, true, false)
         val plot: CategoryPlot = chart.getPlot.asInstanceOf[CategoryPlot]
         val renderer: BarRenderer = plot.getRenderer.asInstanceOf[BarRenderer]
         renderer.setDrawBarOutline(false)
@@ -253,6 +253,89 @@ object ChartReporter {
           override def generateLabel(categorydataset: CategoryDataset, i: Int, j: Int) = {
             val rowKey = categorydataset.getRowKey(i).toString
             rowKey.substring(rowKey.indexOf("["))
+          }
+        }
+
+        renderer.setBaseItemLabelGenerator(new LabelGenerator)
+        renderer.setBaseItemLabelsVisible(true)
+        // ItemLabelPosition params : 1. item label anchor, 2. text anchor, 3. rotation anchor, 4. rotation angle
+        val itemLabelPosition = new ItemLabelPosition(ItemLabelAnchor.INSIDE12, TextAnchor.CENTER_RIGHT, TextAnchor.CENTER_RIGHT, -Pi / 2)
+        renderer.setBasePositiveItemLabelPosition(itemLabelPosition)
+        val altItemLabelPosition = new ItemLabelPosition(ItemLabelAnchor.OUTSIDE12, TextAnchor.CENTER_LEFT, TextAnchor.CENTER_LEFT, -Pi / 2)
+        renderer.setPositiveItemLabelPositionFallback(altItemLabelPosition)
+
+        plot.setBackgroundPaint(new java.awt.Color(200, 200, 200))
+        plot.setDomainGridlinePaint(Color.white)
+        plot.setRangeGridlinePaint(Color.white)
+        chart.setBackgroundPaint(Color.white)
+        
+        chart.setAntiAlias(true)
+        chart
+      }
+    }
+
+    case class NormalHistogram() extends ChartFactory {
+      def createChart(scopename: String, cs: Seq[CurveData], histories: Seq[History], colors: Seq[Color] = Seq()): JFreeChart = {
+        val chartName = scopename
+        val xAxisName = "Parameters"
+        val now = new Date
+        val df = getDateTimeInstance(MEDIUM, MEDIUM)
+        val currentDate = df format now
+        val dataset = new DefaultCategoryDataset
+
+        for ((c, history) <- cs zip histories) {
+          val curves = history.curves :+ c
+          val dates = history.dates :+ now
+          val formattedDates = dates.map(df format _)
+          for ((curve, formattedDate) <- curves zip formattedDates) {
+            for(measurement <- curve.measurements) {
+              val curveName = curve.context.goe(dsl.curve, "")
+              val measurementParams = (for(p <- measurement.params.axisData) yield (p._1.toString + " : " + p._2.toString)).mkString("[", ", ", "]")
+              val seriesName: String = curveName + "#" + formattedDate
+              dataset.addValue(measurement.time, seriesName, measurementParams)
+            }
+          }
+        }
+
+        val chart = JFreeChartFactory.createBarChart(chartName, xAxisName, "Time", dataset, PlotOrientation.VERTICAL, true, true, false)
+        val plot: CategoryPlot = chart.getPlot.asInstanceOf[CategoryPlot]
+        val renderer: BarRenderer = plot.getRenderer.asInstanceOf[BarRenderer]
+        renderer.setDrawBarOutline(false)
+        renderer.setItemMargin(0D) // to have no space between bars of a same category
+
+        def paintCurves = {
+          var seriesIndex = 0
+          for ((curve, history) <- cs zip histories) {
+            val seriesPaint = renderer.lookupSeriesPaint(seriesIndex)
+            for (i <- (0 to history.results.size)) {
+              renderer.setSeriesPaint(seriesIndex + i, seriesPaint)
+            }
+            seriesIndex += (history.results.size + 1)
+          }
+        }
+
+        def setChartLegend = {
+          var seriesIndex = 0
+          var curveIndex = 0
+          val legendItems = new LegendItemCollection
+          for ((curve, history) <- cs zip histories) {
+            val curveName = curve.context.goe(dsl.curve, "Curve " + curveIndex.toString)
+            val seriesPaint = renderer.lookupSeriesPaint(seriesIndex)
+            legendItems.add(new LegendItem(curveName, seriesPaint))
+            seriesIndex += (history.results.size + 1)
+            curveIndex += 1
+          }
+          plot.setFixedLegendItems(legendItems)
+        }
+
+        paintCurves
+        setChartLegend
+
+        class LabelGenerator extends StandardCategoryItemLabelGenerator {
+          val serialVersionUID = -7553175765030937177L
+          override def generateLabel(categorydataset: CategoryDataset, i: Int, j: Int) = {
+            val rowKey = categorydataset.getRowKey(i).toString
+            rowKey.substring(rowKey.indexOf("#") + 1)
           }
         }
 
