@@ -10,7 +10,7 @@ import java.awt.Color
 /**
  * Test for the ConfidenceIntervals (Regression) chart factory
  */
-class ChartReporterTest extends PerformanceTest {
+class ConfidenceIntervalsChartTest extends PerformanceTest {
 
   lazy val executor = execution.LocalExecutor(Executor.Warmer.Default(), Aggregator.complete(Aggregator.average), new Executor.Measurer.Default)
   lazy val colorsTestSample = List(new Color(0, 0, 255), new Color(255, 255, 0))
@@ -35,12 +35,21 @@ class ChartReporterTest extends PerformanceTest {
       }
 
     }
-
+    
     measure method "filter" in {
 
       using(sizes) curve("Range") in { sz =>
         val range = 0 until sz
         range.filter(_ % 2 == 0)
+      }
+
+    }
+
+    measure method "zipWithIndex" in {
+
+      using(sizes) curve("Range") in { sz =>
+        val range = 0 until sz
+        range.zipWithIndex
       }
 
     }
@@ -55,9 +64,11 @@ class ChartReporterTest extends PerformanceTest {
 class TrendHistogramTest extends PerformanceTest {
 
   lazy val executor = execution.LocalExecutor(Executor.Warmer.Default(), Aggregator.complete(Aggregator.average), new Executor.Measurer.Default)
+  lazy val colorsTestSample = List(new Color(194, 27, 227), new Color(196, 214, 0), new Color(14, 201, 198), new Color(212, 71, 11))
   //lazy val reporter: Reporter = ChartReporter(ChartFactory.TrendHistogram())
   lazy val reporter = Reporter.Composite(
-    ChartReporter(ChartFactory.TrendHistogram()),
+    //ChartReporter(ChartFactory.TrendHistogram()),
+    HtmlReporter(HtmlReporter.Renderer.Info(), HtmlReporter.Renderer.Histogram(ChartReporter.ChartFactory.TrendHistogram(), colorsTestSample)),
     RegressionReporter(RegressionReporter.Tester.Accepter(), RegressionReporter.Historian.Window(5))
   )
 

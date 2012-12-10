@@ -187,7 +187,17 @@ object HtmlReporter {
 
     case class Histogram(factory: ChartReporter.ChartFactory, colors: Seq[Color]) extends Renderer {
       def render(context: Context, curves: Seq[CurveData], hs: Seq[History]): Node = {
+        val resultdir = context.goe(reports.resultDir, "tmp")
+        val scopename = context.scope
+        val chart = factory.createChart(scopename, curves, hs, colors)
+        val chartfile = new File(s"$resultdir${File.separator}report${File.separator}images${File.separator}$scopename.png")
+        ChartUtilities.saveChartAsPNG(chartfile, chart, 1600, 1200)
+
         <div>
+        <p>Chart:</p>
+        <a href={"images/" + scopename + ".png"}>
+        <img src={"images/" + scopename + ".png"} alt={scopename} width="800" height="600"></img>
+        </a>
         </div>
       }
     }

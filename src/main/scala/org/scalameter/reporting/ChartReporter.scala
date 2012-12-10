@@ -186,11 +186,11 @@ object ChartReporter {
         val dataset = new DefaultCategoryDataset
 
         /*
-         * An History here contains the previous curves for a curve in cs. For instance, if we have three dates (categories) on the chart, and for instance
+         * An History contains the previous curves for a curve in cs. For instance, if we have three dates (categories) on the chart, and for instance
          * three curves for the most recent measurements (so cs has size 3), then histories will have length 3 too (because there are 3 curves), and each
          * History in histories will contain 2 Entry because there are 3 dates (categories).
          *
-         * cs and zip will always have the same length here
+         * cs and histories will always have the same length here
          *
          * 
          */
@@ -220,6 +220,8 @@ object ChartReporter {
         renderer.setDrawBarOutline(false)
         renderer.setItemMargin(0D) // to have no space between bars of a same category
 
+        // old version of paintCurves, does not allow custom colors
+        /*
         def paintCurves = {
           var seriesIndex = 0
           for(curve <- cs) {
@@ -230,6 +232,33 @@ object ChartReporter {
             }
             seriesIndex += numberOfMeasurements
           }
+        }*/
+
+        /*
+         * new version. If there are not enough colors specified, the rest are default colors assigned by JFreeChart
+         */
+        def paintCurves = {
+
+          def loop(numbersOfMeasurements: Seq[Int], colors: Seq[Color], seriesIndex: Int): Unit = (numbersOfMeasurements, colors) match {
+
+            case (Nil, _) => // do nothing
+
+            case (hn :: tn, Nil) =>
+              for (i <- (0 until hn)) {
+                val seriesPaint = renderer.lookupSeriesPaint(seriesIndex)
+                renderer.setSeriesPaint(seriesIndex + i, seriesPaint)
+              }
+              loop(tn, Nil, seriesIndex + hn)
+
+            case (hn :: tn, hc :: tc) =>
+              for (i <- (0 until hn)) {
+                renderer.setSeriesPaint(seriesIndex + i, hc)
+              }
+              loop(tn, tc, seriesIndex + hn)
+          }
+
+          val numbersOfMeasurementsPerCurve = cs map (c => c.measurements.size)
+          loop(numbersOfMeasurementsPerCurve, colors, 0)
         }
 
         def setChartLegend = {
