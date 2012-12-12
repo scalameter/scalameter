@@ -113,9 +113,11 @@ class NormalHistogramTest extends PerformanceTest {
 
   lazy val tester = RegressionReporter.Tester.Accepter()
   lazy val executor = execution.LocalExecutor(Executor.Warmer.Default(), Aggregator.complete(Aggregator.average), new Executor.Measurer.Default)
+  lazy val colorsTestSample = List(new Color(194, 27, 227), new Color(196, 214, 0))//, new Color(14, 201, 198), new Color(212, 71, 11))
   //lazy val reporter: Reporter = ChartReporter(ChartFactory.NormalHistogram())
   lazy val reporter = Reporter.Composite(
-    ChartReporter(ChartFactory.NormalHistogram()),
+    //ChartReporter(ChartFactory.NormalHistogram()),
+    HtmlReporter(HtmlReporter.Renderer.Info(), HtmlReporter.Renderer.Histogram(ChartReporter.ChartFactory.NormalHistogram(), colorsTestSample)),
     RegressionReporter(tester, RegressionReporter.Historian.Window(5))
   )
 

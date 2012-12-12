@@ -332,7 +332,7 @@ object ChartReporter {
         renderer.setDrawBarOutline(false)
         renderer.setItemMargin(0D) // to have no space between bars of a same category
 
-        def paintCurves = {
+        /*def paintCurves = {
           var seriesIndex = 0
           for ((curve, history) <- cs zip histories) {
             val seriesPaint = renderer.lookupSeriesPaint(seriesIndex)
@@ -341,6 +341,30 @@ object ChartReporter {
             }
             seriesIndex += (history.results.size + 1)
           }
+        }*/
+
+        def paintCurves = {
+
+          def loop(numbersOfEntries: Seq[Int], colors: Seq[Color], seriesIndex: Int): Unit = (numbersOfEntries, colors) match {
+
+            case (Nil, _) => // do nothing
+
+            case (hn :: tn, Nil) =>
+              for (i <- (0 until hn)) {
+                val seriesPaint = renderer.lookupSeriesPaint(seriesIndex)
+                renderer.setSeriesPaint(seriesIndex + i, seriesPaint)
+              }
+              loop(tn, Nil, seriesIndex + hn)
+
+            case (hn :: tn, hc :: tc) =>
+              for (i <- (0 until hn)) {
+                renderer.setSeriesPaint(seriesIndex + i, hc)
+              }
+              loop(tn, tc, seriesIndex + hn)
+          }
+
+          val numbersOfEntries = histories map (h => h.results.size + 1)
+          loop(numbersOfEntries, colors, 0)
         }
 
         def setChartLegend = {
