@@ -115,7 +115,7 @@ object HtmlReporter {
   }
 
   object Renderer {
-    def regression = Seq(Info(), Chart(ChartReporter.ChartFactory.XYLine()))
+    def regression = Seq(Info(), Chart(ChartReporter.ChartFactory.XYLine()), Chart(ChartReporter.ChartFactory.TrendHistogram()))
 
     def basic = Seq(Info(), BigO(), Chart(ChartReporter.ChartFactory.XYLine()))
 
@@ -168,16 +168,30 @@ object HtmlReporter {
       }
     }
 
-    case class Regression(factory: ChartReporter.ChartFactory, colors: Seq[Color]) extends Renderer {
+    case class Regression(colors: Seq[Color], tester: RegressionReporter.Tester) extends Renderer {
       def render(context: Context, curves: Seq[CurveData], hs: Seq[History]): Node = {
+        val factory = ChartReporter.ChartFactory.ConfidenceIntervals(true, true, tester)
         val resultdir = context.goe(reports.resultDir, "tmp")
         val scopename = context.scope
         val chart = factory.createChart(scopename, curves, hs, colors)
         val chartfile = new File(s"$resultdir${File.separator}report${File.separator}images${File.separator}$scopename.png")
         ChartUtilities.saveChartAsPNG(chartfile, chart, 1600, 1200)
 
+        for {
+          (curve, history) <- curves zip hs
+          (prevdate, prevctx, previousCurve) <- history.results
+        } yield {
+          val checkedCurve = dyn.log.withValue(Log.None) {
+            tester.apply(curve.context, curve, Seq(previousCurve))
+          }
+          if (!checkedCurve.success) {
+            // draw a graph
+            History(Seq((prevdate, prevctx, previousCurve)))
+          }
+        }
+
         <div>
-        <p>Chart:</p>
+        <p>Failed tests:</p>
         <a href={"images/" + scopename + ".png"}>
         <img src={"images/" + scopename + ".png"} alt={scopename} width="800" height="600"></img>
         </a>

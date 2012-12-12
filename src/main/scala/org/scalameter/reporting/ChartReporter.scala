@@ -95,7 +95,7 @@ object ChartReporter {
       }
     }
 
-    case class ConfidenceIntervals(showLatestCi: Boolean, showHistoryCi: Boolean, alpha: Double) extends ChartFactory {
+    case class ConfidenceIntervals(showLatestCi: Boolean, showHistoryCi: Boolean, t: RegressionReporter.Tester) extends ChartFactory {
 
       def createChart(scopename: String, cs: Seq[CurveData], histories: Seq[History], colors: Seq[Color] = Seq()): JFreeChart = {
 
@@ -106,7 +106,7 @@ object ChartReporter {
               val series = new YIntervalSeries(curve.context.goe(dsl.curve, ""))
               for (measurement <- curve.measurements) {
                 val ciForThisPoint = if (showLatestCi) {
-                  confidenceInterval(measurement.complete, alpha)
+                  t.confidenceInterval(curve.context, measurement.complete)
                 } else {
                   (0D, 0D)
                 }
@@ -126,13 +126,13 @@ object ChartReporter {
                 // We then take all observations that gave the time measurement (by calling complete) of each point, and concat them
                 val previousMeasurementsObservations = previousMeasurements flatMap(m => m.complete)
 
-                val ciForThisPoint = if (showHistoryCi) { confidenceInterval(previousMeasurementsObservations, alpha) } else { (0D, 0D) }
+                val ciForThisPoint = if (showHistoryCi) { t.confidenceInterval(curve.context, previousMeasurementsObservations) } else { (0D, 0D) }
                 val meanForThisPoint = mean(previousMeasurementsObservations)
                 // Params : x - the x-value, y - the y-value, yLow - the lower bound of the y-interval, yHigh - the upper bound of the y-interval.
                 historySeries.add(measurement.params.axisData.head._2.asInstanceOf[Int], meanForThisPoint, ciForThisPoint._1, ciForThisPoint._2)
 
                 val ciForNewestPoint = if (showLatestCi) {
-                  confidenceInterval(measurement.complete, alpha)
+                  t.confidenceInterval(curve.context, measurement.complete)
                 } else {
                   (0D, 0D)
                 }
