@@ -162,6 +162,10 @@ object RegressionReporter {
      *  `success` field set to `false` for those measurements that are considered to fail the test.
      */
     def apply(context: Context, curvedata: CurveData, corresponding: Seq[CurveData]): CurveData
+
+    /** Returns a confidence interval for a given set of observations.
+     */
+    def confidenceInterval(ctx: Context, alt: Seq[Double]): (Double, Double) = sys.error("Confidence intervals can only be computed by testers which use them.")
   }
 
   object Tester {
@@ -244,12 +248,13 @@ object RegressionReporter {
         }
       }
 
-      def multiple(previouss: Seq[Measurement], latest: Measurement, sig: Double): Measurement = {
+      def multiple(context: Context, previouss: Seq[Measurement], latest: Measurement): Measurement = {
+        val sig = context.goe(reports.regression.significance, 1e-10)
         val tests = for (previous <- previouss if previous.success) yield single(previous, latest, sig)
         val allpass = tests.forall(_.success)
         val color = if (allpass) ansi.green else ansi.red
         val passed = if (allpass) "passed" else "failed"
-        val ci = confidenceInterval(latest.complete, sig)
+        val ci = confidenceInterval(context, latest.complete)
         val cis = cistr(ci)
         log(s"$color  - at ${latest.params.axisData.mkString(", ")}, ${previouss.size} alternatives: $passed${ansi.reset}")
         log(s"$color    (ci = $cis, significance = $sig)${ansi.reset}")
@@ -259,16 +264,22 @@ object RegressionReporter {
       def apply(context: Context, curvedata: CurveData, corresponding: Seq[CurveData]): CurveData = {
         log(s"${ansi.green}- ${context.scope}.${curvedata.context.curve} measurements:${ansi.reset}")
 
-        val significance = curvedata.context.goe(reports.regression.significance, 1e-10)
         val previousmeasurements = corresponding map (_.measurements)
         val measurementtable = previousmeasurements.flatten.groupBy(_.params)
         val newmeasurements = for {
           measurement <- curvedata.measurements
         } yield {
-          multiple(measurementtable(measurement.params), measurement, significance)
+          multiple(curvedata.context, measurementtable(measurement.params), measurement)
         }
 
         curvedata.copy(measurements = newmeasurements)
+      }
+
+      override def confidenceInterval(context: Context, alt: Seq[Double]): (Double, Double) = {
+        val significance = context.goe(reports.regression.significance, 1e-10)
+
+        val citest = ConfidenceIntervalTest(strict, alt, alt, significance)
+        citest.ci1
       }
     }
 
@@ -300,12 +311,14 @@ object RegressionReporter {
         }
       }
 
-      def multiple(previouss: Seq[Measurement], latest: Measurement, sig: Double, noiseMagnitude: Double): Measurement = {
+      def multiple(context: Context, previouss: Seq[Measurement], latest: Measurement): Measurement = {
+        val sig = context.goe(reports.regression.significance, 1e-10)
+        val noiseMagnitude = context.goe(Key.reports.regression.noiseMagnitude, 0.0)
         val tests = for (previous <- previouss if previous.success) yield single(previous, latest, sig, noiseMagnitude)
         val allpass = tests.forall(_.success)
         val color = if (allpass) ansi.green else ansi.red
         val passed = if (allpass) "passed" else "failed"
-        val ci = OverlapTest(latest.complete, latest.complete, sig, noiseMagnitude).ci1
+        val ci = confidenceInterval(context, latest.complete)
         val cis = cistr(ci)
         log(s"$color  - at ${latest.params.axisData.mkString(", ")}, ${previouss.size} alternatives: $passed${ansi.reset}")
         log(s"$color    (ci = $cis, significance = $sig)${ansi.reset}")
@@ -315,16 +328,23 @@ object RegressionReporter {
       def apply(context: Context, curvedata: CurveData, corresponding: Seq[CurveData]): CurveData = {
         log(s"${ansi.green}- ${context.scope}.${curvedata.context.curve} measurements:${ansi.reset}")
 
-        val significance = curvedata.context.goe(reports.regression.significance, 1e-10)
         val previousmeasurements = corresponding map (_.measurements)
         val measurementtable = previousmeasurements.flatten.groupBy(_.params)
         val newmeasurements = for {
           measurement <- curvedata.measurements
         } yield {
-          multiple(measurementtable(measurement.params), measurement, significance, context.goe(Key.reports.regression.noiseMagnitude, 0.0))
+          multiple(context, measurementtable(measurement.params), measurement)
         }
 
         curvedata.copy(measurements = newmeasurements)
+      }
+
+      override def confidenceInterval(context: Context, alt: Seq[Double]): (Double, Double) = {
+        val significance = context.goe(reports.regression.significance, 1e-10)
+        val noisemag = context.goe(Key.reports.regression.noiseMagnitude, 0.0)
+
+        val test = OverlapTest(alt, alt, significance, noisemag)
+        test.ci1
       }
     }
 

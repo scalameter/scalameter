@@ -16,7 +16,8 @@ package object scalameter {
 
   class MonadicDynVar[T](v: T) extends DynamicVariable(v) {
     def using(nv: T) = new Foreach[Unit] {
-      def foreach[U](f: Unit => U) = withValue(nv)(f())
+      def foreach[U](f: Unit => U): Unit = withValue(nv)(f())
+      def map[S](f: Unit => S): S = withValue(nv)(f())
     }
   }
 
@@ -234,7 +235,9 @@ package scalameter {
     case class Data(complete: Seq[Double], success: Boolean)
   }
 
-  case class CurveData(measurements: Seq[Measurement], info: Map[String, Any], context: Context)
+  case class CurveData(measurements: Seq[Measurement], info: Map[String, Any], context: Context) {
+    def success = measurements.forall(_.success)
+  }
 
   object CurveData {
     def empty = CurveData(Seq(), Map(), initialContext)
@@ -353,6 +356,9 @@ package scalameter {
 
     type RegressionReporter = reporting.RegressionReporter
     val RegressionReporter = reporting.RegressionReporter
+
+    type DsvReporter = reporting.DsvReporter
+    val DsvReporter = reporting.DsvReporter
 
     val Tester = reporting.RegressionReporter.Tester
     val Historian = reporting.RegressionReporter.Historian

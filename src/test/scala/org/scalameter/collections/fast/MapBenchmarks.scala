@@ -266,7 +266,7 @@ class MapBenchmarks extends PerformanceTest.Regression with Collections {
       exec.outliers.suspectPercent -> 60,
       exec.outliers.covMultiplier -> 1.5,
       reports.regression.significance -> 1e-13,
-      reports.regression.noiseMagnitude -> 0.2
+      reports.regression.noiseMagnitude -> 0.25
     ) in {
       val from = 5000
       val to = 25000
