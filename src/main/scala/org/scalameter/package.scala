@@ -2,6 +2,7 @@ package org
 
 
 
+import java.io.File
 import java.util.Date
 import collection._
 import scala.util.DynamicVariable
@@ -153,7 +154,7 @@ package object scalameter {
     val files = urlclassloader.getURLs.map(_.toString) collect {
       case fileResource(file) => file
     }
-    files.mkString(":")
+    files.mkString(File.pathSeparator)
   }
 
   def singletonInstance[C](module: Class[C]) = module.getField("MODULE$").get(null).asInstanceOf[PerformanceTest]
