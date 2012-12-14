@@ -42,7 +42,10 @@ namely, the members `executor`, `reporter` and `persistor`.
     
       /* configuration */
     
-      lazy val executor = LocalExecutor(Aggregator.min, new Measurer.Default)
+      lazy val executor = LocalExecutor(
+        Executor.Warmer.Default(),
+        Aggregator.min,
+        new Measurer.Default)
       lazy val reporter = new LoggingReporter
       lazy val persistor = Persistor.None
     
