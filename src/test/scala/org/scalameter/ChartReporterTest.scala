@@ -19,7 +19,7 @@ class ConfidenceIntervalsChartTest extends PerformanceTest {
   lazy val colorsTestSample = List(new Color(0, 0, 255), new Color(255, 255, 0))
   lazy val reporter = Reporter.Composite(
     //ChartReporter(ChartReporter.ChartFactory.Regression(true, true, 0.001), "chart_"),
-    HtmlReporter(HtmlReporter.Renderer.Info(), HtmlReporter.Renderer.Regression(colorsTestSample, tester)),
+    HtmlReporter(HtmlReporter.Renderer.Info(), HtmlReporter.Renderer.Regression(tester, colorsTestSample)),
     RegressionReporter(tester, RegressionReporter.Historian.Complete())
   )
   lazy val persistor = new persistence.SerializationPersistor()
@@ -72,7 +72,7 @@ class TrendHistogramTest extends PerformanceTest {
   //lazy val reporter: Reporter = ChartReporter(ChartFactory.TrendHistogram())
   lazy val reporter = Reporter.Composite(
     //ChartReporter(ChartFactory.TrendHistogram()),
-    HtmlReporter(HtmlReporter.Renderer.Info(), HtmlReporter.Renderer.Histogram(ChartReporter.ChartFactory.TrendHistogram(), colorsTestSample)),
+    HtmlReporter(HtmlReporter.Renderer.Info(), HtmlReporter.Renderer.Chart(ChartReporter.ChartFactory.TrendHistogram(), "Trend Histogram", colorsTestSample)),
     RegressionReporter(RegressionReporter.Tester.Accepter(), RegressionReporter.Historian.Window(5))
   )
 
@@ -117,7 +117,7 @@ class NormalHistogramTest extends PerformanceTest {
   //lazy val reporter: Reporter = ChartReporter(ChartFactory.NormalHistogram())
   lazy val reporter = Reporter.Composite(
     //ChartReporter(ChartFactory.NormalHistogram()),
-    HtmlReporter(HtmlReporter.Renderer.Info(), HtmlReporter.Renderer.Histogram(ChartReporter.ChartFactory.NormalHistogram(), colorsTestSample)),
+    HtmlReporter(HtmlReporter.Renderer.Info(), HtmlReporter.Renderer.Chart(ChartReporter.ChartFactory.NormalHistogram(), "Normal Histogram", colorsTestSample)),
     RegressionReporter(tester, RegressionReporter.Historian.Window(5))
   )
 

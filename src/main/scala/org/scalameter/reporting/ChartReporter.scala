@@ -62,7 +62,7 @@ object ChartReporter {
      *  @param scopename      name of the chart
      *  @param cs             a list of curves that should appear on the chart
      *  @param history        previous chart data for the same set of curves
-     *  @param colors        specifies the colors assigned to the the first `colors.size` curves from `cs`.
+     *  @param colors         specifies the colors assigned to the the first `colors.size` curves from `cs`.
      *                        The rest of the curves are assigned some default set of colors.
      */
     def createChart(scopename: String, cs: Seq[CurveData], histories: Seq[History], colors: Seq[Color] = Seq()): JFreeChart
