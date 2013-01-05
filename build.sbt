@@ -4,14 +4,16 @@ name := "scalameter"
 
 organization := "com.github.axel22"
 
-version := "0.2"
+version := "0.2.1-SNAPSHOT"
 
-scalaVersion := "2.10.0-RC2"
+scalaVersion := "2.10.0"
+
+scalacOptions ++= Seq("-deprecation", "-unchecked")
 
 resolvers += "Sonatype OSS Snapshots" at "https://oss.sonatype.org/content/repositories/snapshots"
 
 libraryDependencies ++= List(
-  "org.scalatest" % "scalatest_2.10.0-RC2" % "1.8-B2",
+  "org.scalatest" % "scalatest_2.10" % "1.9.1",
   "jfree" % "jfreechart" % "1.0.12",
   "org.apache.commons" % "commons-math3" % "3.0",
   "org.scala-tools.testing" % "test-interface" % "0.5"
