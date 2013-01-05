@@ -200,9 +200,12 @@ object Executor {
 
       abstract override def name = s"${super.name}+PeriodicReinstantiation"
 
+      def defaultFrequency = 10
+      def defaultFullGC = false
+
       protected override def valueAt[T](context: Context, iteration: Int, regen: () => T, v: T) = {
-        val freq = context.goe(frequency, 10)
-        val fullgc = context.goe(fullGC, false)
+        val freq = context.goe(frequency, defaultFrequency)
+        val fullgc = context.goe(fullGC, defaultFullGC)
 
         if ((iteration + 1) % freq == 0) {
           log.verbose("Reinstantiating benchmark value.")
