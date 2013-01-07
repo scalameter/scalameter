@@ -15,6 +15,8 @@ on the techniques used in ScalaMeter.
 ## Committers
 
 - [Roger Vion](https://github.com/vrepfl)
+- [Eugene Platonov](https://github.com/jozic)
+- [Lukas Rytz](https://github.com/lrytz)
 
 
 
