@@ -57,8 +57,9 @@ object PerformanceTest {
     def executor = new execution.LocalExecutor(
       Executor.Warmer.Default(),
       Aggregator.min,
-      new Executor.Measurer.Default
+      measurer
     )
+    def measurer = new Executor.Measurer.Default
     def reporter = new reporting.LoggingReporter
     def persistor = Persistor.None
   }
@@ -68,8 +69,8 @@ object PerformanceTest {
     def warmer = Executor.Warmer.Default()
     def aggregator = Aggregator.min
     def measurer = new Measurer.IgnoringGC with Measurer.PeriodicReinstantiation {
-      def frequency = 12
-      def fullGC = true
+      override val defaultFrequency = 12
+      override val defaultFullGC = true
     }
     def executor = execution.SeparateJvmsExecutor(warmer, aggregator, measurer)
     def reporter = new reporting.LoggingReporter
