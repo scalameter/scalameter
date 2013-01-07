@@ -16,7 +16,7 @@ Open `build.sbt` and add the following line:
       resolvers += "Sonatype OSS Snapshots" at
         "https://oss.sonatype.org/content/repositories/snapshots"
 
-      libraryDependencies ++= "com.github.axel22" %% "scalameter" % "[version]"
+      libraryDependencies += "com.github.axel22" %% "scalameter" % "[version]"
 
 Where `[version]` should be the desired ScalaMeter release.
 You can find the exact maven dependencies for each ScalaMeter release
