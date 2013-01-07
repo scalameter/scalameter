@@ -59,13 +59,15 @@ class ScalaMeterFramework extends Framework {
         _ <- dyn.events.using(tievents)
         _ <- dyn.initialContext.using(initialContext ++ Main.Configuration.fromCommandLineArgs(args).context + (Key.classpath -> testcp))
       } try fingerprint match {
-        case PerformanceTestClassFingerprint =>
-          val ptest = testClassLoader.loadClass(testClassName).newInstance.asInstanceOf[PerformanceTest]
-          ptest.executeTests()
-        case PerformanceTestModuleFingerprint =>
-          val module = Class.forName(testClassName + "$", true, testClassLoader)
-          val ptest = singletonInstance(module)
-          ptest.executeTests()
+        case fp: SubclassFingerprint =>
+          if (!fp.isModule) {
+            val ptest = testClassLoader.loadClass(testClassName).newInstance.asInstanceOf[PerformanceTest]
+            ptest.executeTests()
+          } else {
+            val module = Class.forName(testClassName + "$", true, testClassLoader)
+            val ptest = singletonInstance(module)
+            ptest.executeTests()
+          }
       } catch {
         case e: Exception =>
           println("Test threw exception: " + e)
