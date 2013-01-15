@@ -17,6 +17,6 @@ on the techniques used in ScalaMeter.
 - [Roger Vion](https://github.com/vrepfl)
 - [Eugene Platonov](https://github.com/jozic)
 - [Lukas Rytz](https://github.com/lrytz)
-
+- [Vlad Ureche](https://github.com/VladUreche)
 
 
