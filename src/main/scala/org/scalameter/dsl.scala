@@ -2,7 +2,6 @@ package org.scalameter
 
 
 
-import collection._
 import scala.util.DynamicVariable
 import utils.Tree
 
@@ -48,8 +47,8 @@ trait DSL {
   def isModule = this.getClass.getSimpleName.endsWith("$")
 
   def include[T <: PerformanceTest.Initialization: Manifest] = {
-    if (isModule) singletonInstance(manifest[T].erasure).testbody.value.apply()
-    else manifest[T].erasure.newInstance.asInstanceOf[PerformanceTest].testbody.value.apply()
+    if (isModule) singletonInstance(manifest[T].runtimeClass).testbody.value.apply()
+    else manifest[T].runtimeClass.newInstance.asInstanceOf[PerformanceTest].testbody.value.apply()
   }
 
   /** Runs all the tests in this test class or singleton object.
