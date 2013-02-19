@@ -5,3 +5,8 @@ tmp*
 
 *.*~
 .history
+
+.classpath
+.project
+.settings
+project/plugins.sbt
