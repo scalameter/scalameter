@@ -22,21 +22,25 @@ case class HtmlReporter(val renderers: HtmlReporter.Renderer*) extends Reporter 
     <head>
       <title>Performance report</title>
       <link type="text/css" media="screen" rel="stylesheet" href="lib/index.css"/>
+      <script type="text/javascript" src="lib/d3.v3.min.js"></script>
+  	  <script type="text/javascript" src="lib/parse.js"></script>
     </head>
 
   def body(result: Tree[CurveData], persistor: Persistor) = {
     <body>
       {machineInformation}
       {date(result)}
+      <div class="tree"></div>
+      <div class="chart"></div>
       <h1>Performance test charts</h1>
       {
-        for ((ctx, scoperesults) <- result.scopes; if scoperesults.nonEmpty) yield <p><div>
+        for ((ctx, scoperesults) <- result.scopes; if scoperesults.nonEmpty) yield <div>
           <h2>Performance test group: {ctx.scope}</h2>
           {
             val histories = scoperesults.map(cd => persistor.load(cd.context))
             for (r <- renderers) yield r.render(ctx, scoperesults, histories)
           }
-        </div></p>
+        </div>
       }
     </body>
   }
@@ -44,13 +48,13 @@ case class HtmlReporter(val renderers: HtmlReporter.Renderer*) extends Reporter 
   def machineInformation =
     <div>
       <h1>Machine information</h1>
-      <p><ul>
+      <ul>
       {
         for ((k, v) <- Context.machine.properties.toList.sortBy(_._1)) yield <li>
         {k + ": " + v}
         </li>
       }
-      </ul></p>
+      </ul>
     </div>
 
   def date(results: Tree[CurveData]) = {
@@ -68,6 +72,22 @@ case class HtmlReporter(val renderers: HtmlReporter.Renderer*) extends Reporter 
   def report(result: CurveData, persistor: Persistor) {
     // nothing - the charts are generated only at the end
   }
+  
+  def copyResource(from: String, to: File) {
+    val res = getClass.getClassLoader.getResourceAsStream(from)
+    try {
+      val reader = new BufferedReader(new InputStreamReader(res))
+      printToFile(to) { p =>
+        var line = ""
+        while (line != null) {
+          p.println(line)
+          line = reader.readLine()
+        }
+      }
+    } finally {
+      res.close()
+    }
+  }
 
   def report(results: Tree[CurveData], persistor: Persistor) = {
     val resultdir = results.context.goe(reports.resultDir, "tmp")
@@ -79,19 +99,10 @@ case class HtmlReporter(val renderers: HtmlReporter.Renderer*) extends Reporter 
 
     val report = <html>{head ++ body(results, persistor)}</html>
 
-    val css = getClass.getClassLoader.getResourceAsStream("css/index.css")
-    try {
-      val reader = new BufferedReader(new InputStreamReader(css))
-      printToFile(new File(s"$resultdir${sep}report${sep}lib${sep}index.css")) { p =>
-        var line = ""
-        while (line != null) {
-          p.println(line)
-          line = reader.readLine()
-        }
-      }
-    } finally {
-      css.close()
-    }
+    val libdir = new File(s"$resultdir${sep}report${sep}lib")
+    copyResource("css/index.css", new File(libdir, "index.css"))
+    copyResource("js/d3.v3.min.js", new File(libdir, "d3.v3.min.js"))
+    copyResource("js/parse.js", new File(libdir, "parse.js"))
 
     printToFile(new File(s"$resultdir${sep}report${sep}index.html")) {
       _.println("<!DOCTYPE html>\n" + report.toString)
@@ -156,6 +167,25 @@ object HtmlReporter {
         <img src={"images/" + scopename + ".png"} alt={scopename} width="800" height="600"></img>
         </a>
         </div>
+      }
+    }
+    
+    case class JSChart() extends Renderer {
+      def render(context: Context, curves: Seq[CurveData], hs: Seq[History]): Node = {
+        val resultdir = ".." //context.goe(reports.resultDir, "tmp")
+        val group = context.scope
+        val sep = "/"
+
+        def addCurve(curve: CurveData): Node = {
+          val curveName = curve.context.curve
+          val filename = s"$resultdir$sep$group.$curveName.dsv"
+          <script type="text/javascript">
+            addGraph({ s"'$group'" }, { s"'$curveName'" }, { s"'$filename'" })
+          </script>
+        }
+        <div> {
+          for (c <- curves) yield addCurve(c)
+        } </div>
       }
     }
 

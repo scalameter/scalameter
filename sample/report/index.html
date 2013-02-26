@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html><head>
+      <title>Performance report</title>
+      <link type="text/css" media="screen" rel="stylesheet" href="lib/index.css"/>
+      <script type="text/javascript" src="lib/d3.v3.min.js"></script>
+  	  <script type="text/javascript" src="lib/parse.js"></script>
+    </head><body>
+      <div>
+      <h1>Machine information</h1>
+      <ul>
+      <li>
+        cores: 4
+        </li><li>
+        hostname: T410
+        </li><li>
+        jvm-name: Java HotSpot(TM) 64-Bit Server VM
+        </li><li>
+        jvm-vendor: Oracle Corporation
+        </li><li>
+        jvm-version: 22.0-b10
+        </li><li>
+        os-arch: amd64
+        </li><li>
+        os-name: Windows 7
+        </li>
+      </ul>
+    </div>
+      <div>
+      <div>Started: Tue Feb 26 21:50:41 CET 2013</div>
+      <div>Finished: Tue Feb 26 21:51:05 CET 2013</div>
+      <div>Running time: 23 seconds</div>
+    </div>
+      <div class="tree"></div>
+      <div class="chart"></div>
+      <h1>Performance test charts</h1>
+      <div>
+          <h2>Performance test group: CollectionMethods.map</h2>
+          <div>Info:
+      <ul>
+      <li>Number of runs: 36</li>
+      <li>Executor: </li>
+      </ul>
+      </div><div> <script type="text/javascript">
+            addGraph('CollectionMethods.map', 'Ranges', '../CollectionMethods.map.Ranges.dsv')
+          </script><script type="text/javascript">
+            addGraph('CollectionMethods.map', 'Arrays', '../CollectionMethods.map.Arrays.dsv')
+          </script><script type="text/javascript">
+            addGraph('CollectionMethods.map', 'Lists', '../CollectionMethods.map.Lists.dsv')
+          </script> </div>
+        </div><div>
+          <h2>Performance test group: CollectionMethods.sum</h2>
+          <div>Info:
+      <ul>
+      <li>Number of runs: 36</li>
+      <li>Executor: </li>
+      </ul>
+      </div><div> <script type="text/javascript">
+            addGraph('CollectionMethods.sum', 'Ranges', '../CollectionMethods.sum.Ranges.dsv')
+          </script><script type="text/javascript">
+            addGraph('CollectionMethods.sum', 'Arrays', '../CollectionMethods.sum.Arrays.dsv')
+          </script><script type="text/javascript">
+            addGraph('CollectionMethods.sum', 'Lists', '../CollectionMethods.sum.Lists.dsv')
+          </script> </div>
+        </div>
+    </body></html>

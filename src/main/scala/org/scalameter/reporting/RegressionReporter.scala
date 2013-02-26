@@ -65,7 +65,7 @@ case class RegressionReporter(test: RegressionReporter.Tester, historian: Regres
     val failure = oks.count(_ == false)
     val success = oks.count(_ == true)
     val color = if (failure == 0) ansi.green else ansi.red
-    log(s"${color} Summary: $success tests passed, $failure tests failed.")
+    log(s"${color} Summary: $success tests passed, $failure tests failed.${ansi.reset}")
 
     failure == 0
   }
