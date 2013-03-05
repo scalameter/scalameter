@@ -94,7 +94,7 @@ case class HtmlReporter(val renderers: HtmlReporter.Renderer*) extends Reporter 
     }
 
     printToFile(new File(s"$resultdir${sep}report${sep}index.html")) {
-      _.println(report.toString)
+      _.println("<!DOCTYPE html>\n" + report.toString)
     }
 
     true
@@ -142,16 +142,16 @@ object HtmlReporter {
       </div>
     }
 
-    case class Chart(factory: ChartReporter.ChartFactory) extends Renderer {
+    case class Chart(factory: ChartReporter.ChartFactory, title: String = "Chart", colors: Seq[Color] = Seq()) extends Renderer {
       def render(context: Context, curves: Seq[CurveData], hs: Seq[History]): Node = {
         val resultdir = context.goe(reports.resultDir, "tmp")
         val scopename = context.scope
-        val chart = factory.createChart(scopename, curves, hs)
+        val chart = factory.createChart(scopename, curves, hs, colors)
         val chartfile = new File(s"$resultdir${File.separator}report${File.separator}images${File.separator}$scopename.png")
         ChartUtilities.saveChartAsPNG(chartfile, chart, 1600, 1200)
 
         <div>
-        <p>Chart:</p>
+        <p>{s"$title :"}</p>
         <a href={"images/" + scopename + ".png"}>
         <img src={"images/" + scopename + ".png"} alt={scopename} width="800" height="600"></img>
         </a>
@@ -168,14 +168,12 @@ object HtmlReporter {
       }
     }
 
-    case class Regression(colors: Seq[Color], tester: RegressionReporter.Tester) extends Renderer {
+    case class Regression(tester: RegressionReporter.Tester, colors: Seq[Color] = Seq()) extends Renderer {
       def render(context: Context, curves: Seq[CurveData], hs: Seq[History]): Node = {
+
         val factory = ChartReporter.ChartFactory.ConfidenceIntervals(true, true, tester)
         val resultdir = context.goe(reports.resultDir, "tmp")
         val scopename = context.scope
-        val chart = factory.createChart(scopename, curves, hs, colors)
-        val chartfile = new File(s"$resultdir${File.separator}report${File.separator}images${File.separator}$scopename.png")
-        ChartUtilities.saveChartAsPNG(chartfile, chart, 1600, 1200)
 
         for {
           (curve, history) <- curves zip hs
@@ -186,7 +184,9 @@ object HtmlReporter {
           }
           if (!checkedCurve.success) {
             // draw a graph
-            History(Seq((prevdate, prevctx, previousCurve)))
+            val chart = factory.createChart(scopename, Seq(checkedCurve), Seq(History(Seq((prevdate, prevctx, previousCurve)))))
+            val chartfile = new File(s"$resultdir${File.separator}report${File.separator}images${File.separator}$scopename.png")
+            ChartUtilities.saveChartAsPNG(chartfile, chart, 1600, 1200)
           }
         }
 
@@ -198,28 +198,9 @@ object HtmlReporter {
         </div>
       }
     }
-
-    case class Histogram(factory: ChartReporter.ChartFactory, colors: Seq[Color]) extends Renderer {
-      def render(context: Context, curves: Seq[CurveData], hs: Seq[History]): Node = {
-        val resultdir = context.goe(reports.resultDir, "tmp")
-        val scopename = context.scope
-        val chart = factory.createChart(scopename, curves, hs, colors)
-        val chartfile = new File(s"$resultdir${File.separator}report${File.separator}images${File.separator}$scopename.png")
-        ChartUtilities.saveChartAsPNG(chartfile, chart, 1600, 1200)
-
-        <div>
-        <p>Chart:</p>
-        <a href={"images/" + scopename + ".png"}>
-        <img src={"images/" + scopename + ".png"} alt={scopename} width="800" height="600"></img>
-        </a>
-        </div>
-      }
-    }
-
   }
 
 }
-
 
 
 

@@ -2,6 +2,7 @@ package org
 
 
 
+import java.io.File
 import java.util.Date
 import collection._
 import scala.util.DynamicVariable
@@ -153,7 +154,7 @@ package object scalameter {
     val files = urlclassloader.getURLs.map(_.toString) collect {
       case fileResource(file) => file
     }
-    files.mkString(":")
+    files.mkString(File.pathSeparator)
   }
 
   def singletonInstance[C](module: Class[C]) = module.getField("MODULE$").get(null).asInstanceOf[PerformanceTest]
@@ -221,11 +222,25 @@ package scalameter {
     }
   }
 
+  class Errors(measurement: Measurement) {
+    import measurement._
+
+    /** [[http://en.wikipedia.org/wiki/Average Average]] of the set of measurements */
+    lazy val average = complete.sum / complete.length
+    /** [[http://en.wikipedia.org/wiki/Standard_deviation Standard deviation]] of the set of measurements*/
+    lazy val sdeviation = math.sqrt(variance)
+    /** [[http://en.wikipedia.org/wiki/Variance Variance]] of the set of measurements */
+    lazy val variance   = complete.map(_ - average).map(x => x * x).sum / (complete.length - 1)
+  }
+
   @SerialVersionUID(-2541697615491239986L)
   case class Measurement(time: Double, params: Parameters, data: Option[Measurement.Data]) {
     def complete: Seq[Double] = data.get.complete
     def success: Boolean = data.get.success
-
+    def errors: Errors = data match {
+      case None    => throw new Exception("The complete data is not available. Please wrap your current aggregator in Aggregator.complete: `Aggregator.complete(Aggregator.average)")
+      case Some(_) => new Errors(this)
+    }
     def failed = this.copy(data = Some(data.get.copy(success = false)))
   }
 
@@ -271,7 +286,7 @@ package scalameter {
   }
 
   object Aggregator {
-    
+
     case class Statistic(min: Double, max: Double, average: Double, stdev: Double, median: Double)
 
     def min = {

@@ -25,7 +25,7 @@ object ScalaMeterBuild extends Build {
     //val cp = dp.map("\"" + _.data + "\"") :+ ("\"" + jar +"\"") :+ ("\"" + testjar + "\"")
     val cp = dp.map(_.data) :+ jar :+ testjar
     val javacommand = "java -Xmx2048m -Xms2048m -XX:+UseCondCardMark -verbose:gc -server -cp %s".format(
-      cp.mkString(":")
+      cp.mkString(File.pathSeparator)
     )
     javacommand
   }

@@ -259,8 +259,8 @@ class MapBenchmarks extends PerformanceTest.Regression with Collections {
     measure method "+" config (
       exec.minWarmupRuns -> 60,
       exec.maxWarmupRuns -> 180,
-      exec.benchRuns -> 60,
-      exec.independentSamples -> 5,
+      exec.benchRuns -> 64,
+      exec.independentSamples -> 8,
       exec.reinstantiation.frequency -> 2,
       exec.reinstantiation.fullGC -> true,
       exec.outliers.suspectPercent -> 60,
@@ -295,8 +295,8 @@ class MapBenchmarks extends PerformanceTest.Regression with Collections {
     measure method "-" config (
       exec.minWarmupRuns -> 80,
       exec.maxWarmupRuns -> 240,
-      exec.benchRuns -> 60,
-      exec.independentSamples -> 5,
+      exec.benchRuns -> 64,
+      exec.independentSamples -> 8,
       exec.reinstantiation.frequency -> 2,
       exec.reinstantiation.fullGC -> true,
       exec.outliers.suspectPercent -> 60,
