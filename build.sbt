@@ -4,7 +4,7 @@ name := "scalameter"
 
 organization := "com.github.axel22"
 
-version := "0.2.1-SNAPSHOT"
+version := "0.3"
 
 scalaVersion := "2.10.0"
 
