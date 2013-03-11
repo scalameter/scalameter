@@ -62,8 +62,8 @@ class SetBenchmarks extends PerformanceTest.Regression with Collections {
       }
 
       using(hashtriesets(from, to, by)) curve("immutable.HashSet") config (
-        exec.benchRuns -> 40,
-        exec.independentSamples -> 4,
+        exec.benchRuns -> 56,
+        exec.independentSamples -> 8,
         exec.reinstantiation.frequency -> 4,
         exec.reinstantiation.fullGC -> true
       ) in { xs =>
@@ -79,6 +79,8 @@ class SetBenchmarks extends PerformanceTest.Regression with Collections {
       using(redblacksets(from, to, by)) curve("immutable.TreeSet") config (
         exec.minWarmupRuns -> 100,
         exec.maxWarmupRuns -> 300,
+        exec.benchRuns -> 56,
+        exec.independentSamples -> 8,
         exec.reinstantiation.frequency -> 3,
         exec.reinstantiation.fullGC -> true
       ) in { xs =>
