@@ -255,7 +255,7 @@ class TraversableBenchmarks extends PerformanceTest.Regression with Collections 
 
       using(lists(from, to, by)) curve("List") config (
         exec.benchRuns -> 64,
-        exec.independentSamples -> 6,
+        exec.independentSamples -> 10,
         exec.reinstantiation.fullGC -> true,
         exec.reinstantiation.frequency -> 6
       ) in {
