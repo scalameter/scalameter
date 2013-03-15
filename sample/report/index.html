@@ -3,6 +3,7 @@
       <title>Performance report</title>
       <link type="text/css" media="screen" rel="stylesheet" href="lib/index.css"/>
       <script type="text/javascript" src="lib/d3.v3.min.js"></script>
+  	  <script type="text/javascript" src="lib/crossfilter.js"></script>
   	  <script type="text/javascript" src="lib/parse.js"></script>
     </head><body>
       <div>
@@ -32,34 +33,66 @@
     </div>
       <div class="tree"></div>
       <div class="chart"></div>
-      <h1>Performance test charts</h1>
-      <div>
-          <h2>Performance test group: CollectionMethods.map</h2>
-          <div>Info:
-      <ul>
-      <li>Number of runs: 36</li>
-      <li>Executor: </li>
-      </ul>
       </div><div> <script type="text/javascript">
-            addGraph('CollectionMethods.map', 'Ranges', '../CollectionMethods.map.Ranges.dsv')
+			var cd = curvedata().rawdata(".rawdata");
+
+            cd.addGraph('CollectionMethods.map', 'Ranges', '../CollectionMethods.map.Ranges.dsv');
+			console.log("1");
           </script><script type="text/javascript">
-            addGraph('CollectionMethods.map', 'Arrays', '../CollectionMethods.map.Arrays.dsv')
+            cd.addGraph('CollectionMethods.map', 'Arrays', '../CollectionMethods.map.Arrays.dsv');
           </script><script type="text/javascript">
-            addGraph('CollectionMethods.map', 'Lists', '../CollectionMethods.map.Lists.dsv')
-          </script> </div>
-        </div><div>
-          <h2>Performance test group: CollectionMethods.sum</h2>
-          <div>Info:
-      <ul>
-      <li>Number of runs: 36</li>
-      <li>Executor: </li>
-      </ul>
-      </div><div> <script type="text/javascript">
-            addGraph('CollectionMethods.sum', 'Ranges', '../CollectionMethods.sum.Ranges.dsv')
-          </script><script type="text/javascript">
-            addGraph('CollectionMethods.sum', 'Arrays', '../CollectionMethods.sum.Arrays.dsv')
-          </script><script type="text/javascript">
-            addGraph('CollectionMethods.sum', 'Lists', '../CollectionMethods.sum.Lists.dsv')
+            cd.addGraph('CollectionMethods.map', 'Lists', '../CollectionMethods.map.Lists.dsv');
           </script> </div>
         </div>
+		<div> <script type="text/javascript">
+            cd.addGraph('CollectionMethods.sum', 'Ranges', '../CollectionMethods.sum.Ranges.dsv');
+          </script><script type="text/javascript">
+            cd.addGraph('CollectionMethods.sum', 'Arrays', '../CollectionMethods.sum.Arrays.dsv');
+          </script><script type="text/javascript">
+            cd.addGraph('CollectionMethods.sum', 'Lists', '../CollectionMethods.sum.Lists.dsv');
+          </script> </div>
+        </div>
+<h1>Filters</h1>        
+<div id="filters">
+  <div id="selectdate" class="filter">
+    <div class="title">Date</div>
+  </div>
+  <div id="selectparam" class="filter">
+    <div class="title">param-size</div>
+  </div>
+</div>
+<h1>Raw data</h1>
+<table class="rawdata"></table>
+<script type="text/javascript">
+
+cd.setReady();
+
+/*
+var datechart = barChart()
+//				.dimension(date)
+//				.group(dates)
+				.round(d3.time.day.round)
+				.x(d3.time.scale()
+				.domain([new Date(2001, 0, 1), new Date(2001, 3, 1)])
+				.rangeRound([0, 10 * 90]))
+				.filter([new Date(2001, 1, 1), new Date(2001, 2, 1)]);
+
+var chart = d3.select(".datechart").data([datechart])
+      .each(function(chart) { chart.on("brush", renderAll).on("brushend", renderAll); });
+      
+renderAll();
+
+// Renders the specified chart or list.
+function render(method) {
+    d3.select(this).call(method);
+}
+
+function renderAll() {
+    chart.each(render);
+    //list.each(render);
+    //d3.select("#active").text(formatNumber(all.value()));
+    console.log('render');
+}
+*/
+</script>
     </body></html>
