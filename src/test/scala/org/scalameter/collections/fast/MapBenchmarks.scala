@@ -209,8 +209,8 @@ class MapBenchmarks extends PerformanceTest.Regression with Collections {
     measure method "remove" config (
       exec.minWarmupRuns -> 80,
       exec.maxWarmupRuns -> 200,
-      exec.benchRuns -> 40,
-      exec.independentSamples -> 5,
+      exec.benchRuns -> 50,
+      exec.independentSamples -> 10,
       exec.reinstantiation.frequency -> 3,
       exec.reinstantiation.fullGC -> true,
       exec.outliers.suspectPercent -> 60,
