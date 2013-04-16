@@ -1,9 +1,10 @@
 <!DOCTYPE html>
 <html><head>
       <title>Performance report</title>
+      <link type="text/css" media="screen" rel="stylesheet" href="lib/bootstrap.min.css"/>
       <link type="text/css" media="screen" rel="stylesheet" href="lib/index.css"/>
       <script type="text/javascript" src="lib/d3.v3.min.js"></script>
-  	  <script type="text/javascript" src="lib/crossfilter.js"></script>
+      <script type="text/javascript" src="lib/crossfilter.js"></script>
   	  <script type="text/javascript" src="lib/parse.js"></script>
     </head><body>
       <div>
@@ -18,7 +19,7 @@
         </li><li>
         jvm-vendor: Oracle Corporation
         </li><li>
-        jvm-version: 22.0-b10
+        jvm-version: 23.7-b01
         </li><li>
         os-arch: amd64
         </li><li>
@@ -27,72 +28,47 @@
       </ul>
     </div>
       <div>
-      <div>Started: Tue Feb 26 21:50:41 CET 2013</div>
-      <div>Finished: Tue Feb 26 21:51:05 CET 2013</div>
-      <div>Running time: 23 seconds</div>
+      <div>Started: Thu Mar 28 13:21:02 CET 2013</div>
+      <div>Finished: Thu Mar 28 13:21:23 CET 2013</div>
+      <div>Running time: 20 seconds</div>
     </div>
+      <div>
+        <br><br>
+        <a href="javascript:cd.chartType('line')">line</a>
+        <a href="javascript:cd.chartType('bar')">bar</a>
+      </div>
+      <div>
       <div class="tree"></div>
       <div class="chart"></div>
-      </div><div> <script type="text/javascript">
-			var cd = curvedata().rawdata(".rawdata");
-
-            cd.addGraph('CollectionMethods.map', 'Ranges', '../CollectionMethods.map.Ranges.dsv');
-			console.log("1");
-          </script><script type="text/javascript">
-            cd.addGraph('CollectionMethods.map', 'Arrays', '../CollectionMethods.map.Arrays.dsv');
-          </script><script type="text/javascript">
-            cd.addGraph('CollectionMethods.map', 'Lists', '../CollectionMethods.map.Lists.dsv');
-          </script> </div>
+      <h1>Filters</h1>        
+      <div id="filters">
+        <div id="selectdate" class="filter">
+          <div class="title">Date</div>
         </div>
-		<div> <script type="text/javascript">
-            cd.addGraph('CollectionMethods.sum', 'Ranges', '../CollectionMethods.sum.Ranges.dsv');
-          </script><script type="text/javascript">
-            cd.addGraph('CollectionMethods.sum', 'Arrays', '../CollectionMethods.sum.Arrays.dsv');
-          </script><script type="text/javascript">
-            cd.addGraph('CollectionMethods.sum', 'Lists', '../CollectionMethods.sum.Lists.dsv');
-          </script> </div>
+        <div id="selectparam" class="filter">
+          <div class="title">param-size</div>
         </div>
-<h1>Filters</h1>        
-<div id="filters">
-  <div id="selectdate" class="filter">
-    <div class="title">Date</div>
-  </div>
-  <div id="selectparam" class="filter">
-    <div class="title">param-size</div>
-  </div>
-</div>
-<h1>Raw data</h1>
-<table class="rawdata"></table>
-<script type="text/javascript">
-
-cd.setReady();
-
-/*
-var datechart = barChart()
-//				.dimension(date)
-//				.group(dates)
-				.round(d3.time.day.round)
-				.x(d3.time.scale()
-				.domain([new Date(2001, 0, 1), new Date(2001, 3, 1)])
-				.rangeRound([0, 10 * 90]))
-				.filter([new Date(2001, 1, 1), new Date(2001, 2, 1)]);
-
-var chart = d3.select(".datechart").data([datechart])
-      .each(function(chart) { chart.on("brush", renderAll).on("brushend", renderAll); });
-      
-renderAll();
-
-// Renders the specified chart or list.
-function render(method) {
-    d3.select(this).call(method);
-}
-
-function renderAll() {
-    chart.each(render);
-    //list.each(render);
-    //d3.select("#active").text(formatNumber(all.value()));
-    console.log('render');
-}
-*/
-</script>
+      </div>
+      <h1>Raw data</h1>
+      <table class="table rawdata"></table>
+    </div>
+      <script type="text/javascript">
+        var cd = curvedata().rawdata('.rawdata');
+      </script>
+      <div> <script type="text/javascript">
+            cd.addGraph(["CollectionMethods", "Group 1", "map"], 'Ranges', '../CollectionMethods.Group 1.map.Ranges.dsv');
+          </script><script type="text/javascript">
+            cd.addGraph(["CollectionMethods", "Group 1", "map"], 'Arrays', '../CollectionMethods.Group 1.map.Arrays.dsv');
+          </script><script type="text/javascript">
+            cd.addGraph(["CollectionMethods", "Group 1", "map"], 'Lists', '../CollectionMethods.Group 1.map.Lists.dsv');
+          </script> </div><div> <script type="text/javascript">
+            cd.addGraph(["CollectionMethods", "sum"], 'Ranges', '../CollectionMethods.sum.Ranges.dsv');
+          </script><script type="text/javascript">
+            cd.addGraph(["CollectionMethods", "sum"], 'Arrays', '../CollectionMethods.sum.Arrays.dsv');
+          </script><script type="text/javascript">
+            cd.addGraph(["CollectionMethods", "sum"], 'Lists', '../CollectionMethods.sum.Lists.dsv');
+          </script> </div>
+      <script type="text/javascript">
+        cd.setReady();
+      </script>
     </body></html>
