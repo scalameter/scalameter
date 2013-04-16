@@ -175,6 +175,7 @@ package scalameter {
     def apply[T](key: String) = properties.apply(key).asInstanceOf[T]
 
     def scope = properties(dsl.scope).asInstanceOf[List[String]].reverse.mkString(".")
+    def scopeList = properties(dsl.scope).asInstanceOf[List[String]].reverse
     def curve = goe(dsl.curve, "")
   }
 

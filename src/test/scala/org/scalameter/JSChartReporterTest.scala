@@ -18,7 +18,7 @@ class JSChartTest extends PerformanceTest {
   //lazy val reporter: Reporter = ChartReporter(ChartFactory.NormalHistogram())
   lazy val reporter = Reporter.Composite(
     new DsvReporter('\t'),
-    HtmlReporter(HtmlReporter.Renderer.Info(), HtmlReporter.Renderer.JSChart()),
+    HtmlReporter(HtmlReporter.Renderer.JSChart()),
     RegressionReporter(tester, RegressionReporter.Historian.Window(5))
   )
 
@@ -41,20 +41,20 @@ class JSChartTest extends PerformanceTest {
     Key.exec.jvmflags -> "-Xmx1024m -Xms1024m"
   } in {
 
-    measure method "map" in {
+    performance of "Group 1" in {
+      measure method "map" in {
+        using(ranges) curve("Ranges") in { range =>
+          range.map(_ + 1)
+        }
 
-      using(ranges) curve("Ranges") in { range =>
-        range.map(_ + 1)
+        using(arrays) curve("Arrays") in { array =>
+          array.map(_ + 1)
+        }
+
+        using(lists) curve("Lists") in { list =>
+          list.map(_ + 1)
+        }
       }
-
-      using(arrays) curve("Arrays") in { array =>
-        array.map(_ + 1)
-      }
-
-      using(lists) curve("Lists") in { list =>
-        list.map(_ + 1)
-      }
-
     }
     
     measure method "sum" in {

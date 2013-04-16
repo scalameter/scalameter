@@ -23,6 +23,7 @@ case class HtmlReporter(val renderers: HtmlReporter.Renderer*) extends Reporter 
       <title>Performance report</title>
       <link type="text/css" media="screen" rel="stylesheet" href="lib/index.css"/>
       <script type="text/javascript" src="lib/d3.v3.min.js"></script>
+      <script type="text/javascript" src="lib/crossfilter.js"></script>
   	  <script type="text/javascript" src="lib/parse.js"></script>
     </head>
 
@@ -30,20 +31,39 @@ case class HtmlReporter(val renderers: HtmlReporter.Renderer*) extends Reporter 
     <body>
       {machineInformation}
       {date(result)}
-      <div class="tree"></div>
-      <div class="chart"></div>
-      <h1>Performance test charts</h1>
+      {skeleton}
+      <script type="text/javascript">
+        var cd = curvedata().rawdata('.rawdata');
+      </script>
       {
-        for ((ctx, scoperesults) <- result.scopes; if scoperesults.nonEmpty) yield <div>
-          <h2>Performance test group: {ctx.scope}</h2>
+        for ((ctx, scoperesults) <- result.scopes; if scoperesults.nonEmpty) yield
           {
             val histories = scoperesults.map(cd => persistor.load(cd.context))
             for (r <- renderers) yield r.render(ctx, scoperesults, histories)
           }
-        </div>
       }
+      <script type="text/javascript">
+        cd.setReady();
+      </script>
     </body>
   }
+
+  def skeleton =
+    <div>
+      <div class="tree"></div>
+      <div class="chart"></div>
+      <h1>Filters</h1>        
+      <div id="filters">
+        <div id="selectdate" class="filter">
+          <div class="title">Date</div>
+        </div>
+        <div id="selectparam" class="filter">
+          <div class="title">param-size</div>
+        </div>
+      </div>
+      <h1>Raw data</h1>
+      <table class="rawdata"></table>
+    </div>
 
   def machineInformation =
     <div>
@@ -102,6 +122,7 @@ case class HtmlReporter(val renderers: HtmlReporter.Renderer*) extends Reporter 
     val libdir = new File(s"$resultdir${sep}report${sep}lib")
     copyResource("css/index.css", new File(libdir, "index.css"))
     copyResource("js/d3.v3.min.js", new File(libdir, "d3.v3.min.js"))
+    copyResource("js/crossfilter.js", new File(libdir, "crossfilter.js"))
     copyResource("js/parse.js", new File(libdir, "parse.js"))
 
     printToFile(new File(s"$resultdir${sep}report${sep}index.html")) {
@@ -178,9 +199,10 @@ object HtmlReporter {
 
         def addCurve(curve: CurveData): Node = {
           val curveName = curve.context.curve
+          val scope = scala.xml.Unparsed(new scala.util.parsing.json.JSONArray(curve.context.scopeList).toString())
           val filename = s"$resultdir$sep$group.$curveName.dsv"
           <script type="text/javascript">
-            addGraph({ s"'$group'" }, { s"'$curveName'" }, { s"'$filename'" })
+            cd.addGraph({ scope }, { s"'$curveName'" }, { s"'$filename'" });
           </script>
         }
         <div> {

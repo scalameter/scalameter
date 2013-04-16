@@ -5,6 +5,8 @@ package reporting
 
 import java.io._
 import java.util.Date
+import java.util.TimeZone
+import java.text.SimpleDateFormat
 import utils.Tree
 
 
@@ -14,6 +16,12 @@ import utils.Tree
 case class DsvReporter(delimiter: Char) extends Reporter {
 
   val sep = File.separator
+
+  val dateISO: (Date => String) = {
+    val df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'")
+    df.setTimeZone(TimeZone.getTimeZone("UTC"))
+    (date) => df.format(date)
+  }
 
   def report(result: CurveData, persistor: Persistor) {
   }
@@ -54,7 +62,7 @@ case class DsvReporter(delimiter: Char) extends Reporter {
 
         def output(cd: CurveData, date: Date) {
           for (m <- cd.measurements) {
-            p("\"" + date + "\"")
+            p("\"" + dateISO(date) + "\"")
             p(delimiter)
             for (v <- m.params.axisData.values) {
               p(v)
