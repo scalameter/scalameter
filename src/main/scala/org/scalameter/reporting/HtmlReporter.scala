@@ -20,20 +20,26 @@ case class HtmlReporter(val renderers: HtmlReporter.Renderer*) extends Reporter 
 
   def head = 
     <head>
-      <title>Performance report</title>
-      <link type="text/css" media="screen" rel="stylesheet" href="lib/index.css"/>
-      <script type="text/javascript" src="lib/d3.v3.min.js"></script>
-      <script type="text/javascript" src="lib/crossfilter.js"></script>
-  	  <script type="text/javascript" src="lib/parse.js"></script>
+      <title>Performance Report</title>
+      <link type="text/css" media="screen" rel="stylesheet" href="css/bootstrap.min.css" />
+      <link type="text/css" media="screen" rel="stylesheet" href="css/index.css" />
+      <link type="text/css" media="screen" rel="stylesheet" href="css/ui.dynatree.css" />
+      <script type="text/javascript" src="js/d3.v3.min.js"></script>
+      <script type="text/javascript" src="js/crossfilter.min.js"></script>
+      <script type="text/javascript" src="js/jquery-1.9.1.js"></script>
+      <script type="text/javascript" src="js/jquery-ui.custom.min.js"></script>
+      <script type="text/javascript" src="js/jquery.dynatree.js"></script>
+      <script type="text/javascript" src="js/bootstrap.min.js"></script>
+      <script type="text/javascript" src="js/parse.js"></script>
     </head>
 
   def body(result: Tree[CurveData], persistor: Persistor) = {
     <body>
+      {skeleton}
       {machineInformation}
       {date(result)}
-      {skeleton}
       <script type="text/javascript">
-        var cd = curvedata().rawdata('.rawdata');
+        var cd = curvedata.rawdata('.rawdata');
       </script>
       {
         for ((ctx, scoperesults) <- result.scopes; if scoperesults.nonEmpty) yield
@@ -50,8 +56,16 @@ case class HtmlReporter(val renderers: HtmlReporter.Renderer*) extends Reporter 
 
   def skeleton =
     <div>
+      <h1>Performance Report</h1>        
       <div class="tree"></div>
-      <div class="chart"></div>
+      <div class="chartholder">
+        <ul class="nav nav-tabs">
+          <li class="active"><a onclick="cd.chartType('line');" data-toggle="tab">Line Chart</a></li>
+          <li><a onclick="cd.chartType('line_ci');" data-toggle="tab">Line Chart with CI</a></li>
+          <li><a onclick="cd.chartType('bar');" data-toggle="tab">Bar Chart</a></li>
+        </ul>
+        <div class="chart"></div>
+      </div>
       <h1>Filters</h1>        
       <div id="filters">
         <div id="selectdate" class="filter">
@@ -62,7 +76,7 @@ case class HtmlReporter(val renderers: HtmlReporter.Renderer*) extends Reporter 
         </div>
       </div>
       <h1>Raw data</h1>
-      <table class="rawdata"></table>
+      <table class="table rawdata"></table>
     </div>
 
   def machineInformation =
@@ -113,17 +127,31 @@ case class HtmlReporter(val renderers: HtmlReporter.Renderer*) extends Reporter 
     val resultdir = results.context.goe(reports.resultDir, "tmp")
 
     new File(s"$resultdir").mkdir()
-    new File(s"$resultdir${sep}report").mkdir()
-    new File(s"$resultdir${sep}report${sep}images").mkdir()
-    new File(s"$resultdir${sep}report${sep}lib").mkdir()
+
+    val root = new File(s"$resultdir${sep}report")
+
+    root.mkdir()
+    new File(root, "css").mkdir()
+    new File(root, "js").mkdir()
 
     val report = <html>{head ++ body(results, persistor)}</html>
 
-    val libdir = new File(s"$resultdir${sep}report${sep}lib")
-    copyResource("css/index.css", new File(libdir, "index.css"))
-    copyResource("js/d3.v3.min.js", new File(libdir, "d3.v3.min.js"))
-    copyResource("js/crossfilter.js", new File(libdir, "crossfilter.js"))
-    copyResource("js/parse.js", new File(libdir, "parse.js"))
+    List(
+      "css/bootstrap.min.css",
+      "css/icons.gif",
+      "css/index.css",
+      "css/ui.dynatree.css",
+      "css/vline.gif",
+      "js/bootstrap.min.js",
+      "js/crossfilter.min.js",
+      "js/d3.v3.min.js",
+      "js/jquery-1.9.1.js",
+      "js/jquery-ui.custom.min.js",
+      "js/jquery.dynatree.js",
+      "js/parse.js"
+    ).foreach { filename =>
+      copyResource(filename, new File(root, filename))
+    }
 
     printToFile(new File(s"$resultdir${sep}report${sep}index.html")) {
       _.println("<!DOCTYPE html>\n" + report.toString)
