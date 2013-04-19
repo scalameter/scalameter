@@ -2,7 +2,7 @@ function isDef(value) {
 	return typeof value !== 'undefined'; 
 }
 
-function id(d) {
+function ident(d) {
 	return d;
 }
 
@@ -16,6 +16,7 @@ var curvedata = (function() {
 		chartType = "line",
 		rawdata,
 		filter,
+		svg = null,
 		dKey = {
 			date: "date",
 			param: "param-size",
@@ -28,7 +29,13 @@ var curvedata = (function() {
 			index: "index"
 		};
 
+	function fnKey(d) {
+		return d.key;
+	}
 
+	function fnIndex(d) {
+		return d[dKey.index];
+	}
 	
 	function init() {
 		// init filter once all files have been added to the queue and processed
@@ -57,7 +64,7 @@ var curvedata = (function() {
 			.domain([dateMin, d3.time.day.offset(dateMax, 1)]).rangeRound([0, 500]));
 			
 		var dim_param = filter.dimension(function(d) { return d[dKey.param]; });
-		var group_param = dim_param.group(id);
+		var group_param = dim_param.group(ident);
 		var paramAll = [];
 		var group_all = group_param.all();
 		for(var i = 0; i < group_all.length; i++) {
@@ -69,7 +76,7 @@ var curvedata = (function() {
 			.x(d3.scale.ordinal().domain(paramAll).rangeBands([0, 500]));
 			
 		var dim_colors = filter.dimension(function(d) { return d[dKey.date]; });
-		dim_colors.grouped = dim_colors.group(id);
+		dim_colors.grouped = dim_colors.group(ident);
 
 		
 		function render(method) {
@@ -93,7 +100,7 @@ var curvedata = (function() {
 	}
 
 	function setGraph(dim_colors, dim_order) {
-		d3.select(".chart").selectAll("*").remove();
+		// d3.select(".chart").selectAll("*").remove();
 		switch (chartType) {
 			case "line":
 				lineGraph(dim_colors, ".chart", "value [ms]");
@@ -115,11 +122,11 @@ var curvedata = (function() {
 				headers.push(key);
 				rowValues.push(row[key]);
 			}
-			header.selectAll("th").data(headers).enter().append("th").text(id);
+			header.selectAll("th").data(headers).enter().append("th").text(ident);
 			d3.select(this).selectAll("td")
 				.data(rowValues)
 				.enter()
-				.append("td").text(id);
+				.append("td").text(ident);
 		}
 		
 		var container = d3.select(rawdata);
@@ -129,9 +136,7 @@ var curvedata = (function() {
 			header = container.append("tr").attr("class", "dataheader");
 		}
 		
-		var rows = container.selectAll(".datavalues").data(data, function(d) {
-			return d.index;
-		});
+		var rows = container.selectAll(".datavalues").data(data, fnIndex);
 		
 		rows.enter().append("tr").attr("class", "datavalues").each(addCols);
 		rows.exit().remove();
@@ -172,7 +177,6 @@ var curvedata = (function() {
 				var selectedKeys = $.map(selectedNodes, function(node){
 					return +node.data.key;
 				});
-				console.log("Selected keys: " + selectedKeys.join(", "));
 				setFilter(selectedKeys);
 			},
 			onQueryActivate: function(flag, node) {
@@ -408,41 +412,46 @@ var curvedata = (function() {
 
 		var yAxis = d3.svg.axis().scale(y).orient("left");
 		var yGrid = d3.svg.axis().scale(y).orient("left").tickSize(-w, 0, 0).tickFormat("");
+
+		var fnParam = function(d) {	return d[dKey.param];	};
 		
-		var svg = d3.select(node).append("svg").attr("width", width).attr("height", height)
-			.append("g").attr("transform", "translate(" + margin.left + "," + margin.top + ")");
-
-		x.domain(d3.extent(data, function(d) {
-			return d[dKey.param];
-		}));
-		y.domain(d3.extent(data, function(d) {
+		x.domain(d3.extent(data, fnParam));
+		y.domain([0, d3.max(data, function(d) {
 			return d[dKey.value];
-		}));
+		})]);
+		// y.domain(d3.extent(data, function(d) {
+		// 	return d[dKey.value];
+		// }));
 
-		// grid
-		svg.append("g")         
-        .attr("class", "grid")
-        .attr("transform", "translate(0," + h + ")")
-        .call(xGrid);
-		svg.append("g")         
-        .attr("class", "grid")
-        .call(yGrid);
+		if (svg === null) {
+			svg = d3.select(node).append("svg").attr("width", width).attr("height", height)
+				.append("g").attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
-		// x axis
-		svg.append("g")
-			.attr("class", "x axis")
-			.attr("transform", "translate(0," + h + ")")
-			.call(xAxis);
+			// grid
+			svg.append("g")         
+	        .attr("class", "x grid")
+	        .attr("transform", "translate(0," + h + ")");
+	        // .call(xGrid);
+			svg.append("g")         
+	        .attr("class", "y grid");
+	        // .call(yGrid);
 
-		// y axis
-		svg.append("g")
-			.attr("class", "y axis")
-			.call(yAxis)
-			.append("text")
-				.attr("transform", "rotate(-90)")
-				.attr("y", 6).attr("dy", ".71em")
-				.style("text-anchor", "end")
-				.text(ylabel);
+			// x axis
+			svg.append("g")
+				.attr("class", "x axis")
+				.attr("transform", "translate(0," + h + ")");
+				// .call(xAxis);
+
+			// y axis
+			svg.append("g")
+				.attr("class", "y axis")
+				// .call(yAxis)
+				.append("text")
+					.attr("transform", "rotate(-90)")
+					.attr("y", 6).attr("dy", ".71em")
+					.style("text-anchor", "end")
+					.text(ylabel);
+		}
 
 		var colors = d3.scale.category10();
 
@@ -467,12 +476,8 @@ var curvedata = (function() {
 		var data_inner = group_inner.entries(data);
 		var data_outer = group_outer.entries(data);
 
-		var keys_inner = data_inner.map(function(d) {
-			return d.key;
-		});
-		var keys_outer = data_outer.map(function(d) {
-			return d.key;
-		});
+		var keys_inner = data_inner.map(fnKey);
+		var keys_outer = data_outer.map(fnKey);
 
 		var colorMap = createColorMap(keys_inner);
 
@@ -487,21 +492,26 @@ var curvedata = (function() {
 			var g = d3.select(this);
 			var cls = "line line-" +d.key;
 			var color = colorMap(key1(d.values[0]), d.key);
-			g.append("path")
-				.attr("d", line(d.values))
+			g.select("path")
 				.attr("class", cls)
 				.attr("style", "stroke-opacity:0.7;stroke:" + color)
 				.on("mouseover", function(d) { mover(d.key); })
-				.on("mouseout", function(d) { mout(d.key); });
+				.on("mouseout", function(d) { mout(d.key); })
+				.transition()
+				.attr("d", line(d.values));
+			
+			var datapoints = g.selectAll('circle').data(d.values, fnParam);
 
-			g.selectAll('circle')
-				.data(d.values)
-				.enter().append('circle')
+			datapoints.enter().append('circle')
 				.attr("class", cls)
-				.attr('cx', function (d) { return x(d[dKey.param]); })
-				.attr('cy', function (d) { return y(d[dKey.value]); })
 				.attr('r', 5)
 				.style("stroke", color);
+
+			datapoints.transition()
+				.attr('cx', function (d) { return x(d[dKey.param]); })
+				.attr('cy', function (d) { return y(d[dKey.value]); });
+
+			datapoints.exit().remove();
 		}
 
 		var area_ci = function(d, i) {
@@ -515,68 +525,102 @@ var curvedata = (function() {
 
 			var g = d3.select(this);
 			var color = colorMap(key1(d.values[0]), d.key);
-			g.append("path")
-				.attr("d", area(d.values))
+			g.select("path")
 				.attr("class", "area-" + d.key)
-				.attr("style", "stroke-opacity:0.2;stroke:" + color + ";fill-opacity:0.1;fill:" + color);
+				.attr("style", "stroke-opacity:0.2;stroke:" + color + ";fill-opacity:0.1;fill:" + color)
+				.transition()
+				.attr("d", area(d.values));
 		}
 
 		function curveFn(fn) {
 			return function(d) {
-				d3.select(this).selectAll(".group")
-					.data(d.values).enter()
+				var groups = d3.select(this).selectAll(".group").data(d.values, fnKey);
+
+				groups.enter()
 					.append("g")
 					.attr("class", "group")
-					.each(fn);
+					.append("path");
+
+				groups.each(fn);
+
+				groups.exit().remove();
 			}
 		}
 
-		svg.selectAll(".curve")
-			.data(data_outer).enter()
-			.append("g")
-			.attr("class", "curve")
-			.each(curveFn(path));
+		// d3.transition().ease("bounce").duration(750).each(function() {
+		d3.transition().duration(2000).each(function() {
+			svg.select(".x.grid").transition().call(xGrid);
+			svg.select(".y.grid").transition().call(yGrid);
+			svg.select(".x.axis").transition().call(xAxis);
+			svg.select(".y.axis").transition().call(yAxis);
 
-		if (showCi) {
-			svg.selectAll(".curve_ci")
-				.data(data_outer).enter()
-				.insert("g", ":first-child")
-				.attr("class", "curve_ci")
-				.each(curveFn(area_ci));
-		}
+			var curves = svg.selectAll(".curve").data(data_outer, fnKey);
 
-		legend(svg, w + legend_width, keys_inner, keys_outer, colorMap);
+			curves.enter()
+				.append("g")
+				.attr("class", "curve");
+			
+			curves.each(curveFn(path));
+
+			curves.exit().remove();
+
+			if (showCi) {
+				var curves_ci = svg.selectAll(".curve_ci").data(data_outer, fnKey);
+
+				curves_ci.enter()
+					.insert("g", ":first-child")
+					.attr("class", "curve_ci");
+				
+				curves_ci.each(curveFn(area_ci));
+
+				curves_ci.exit().remove();
+			}
+
+			legend(svg, w + legend_width, keys_inner, keys_outer, colorMap);
+		});
 	}
 
 	function legend(svg, x, rows, cols, colorMap) {
+		//TODO handle date formatting globally
 		var dateformat = function(d) { return d3.time.format("%Y-%m-%d %H:%M:%S")(new Date(+d)) };
 		function row(d) {
 			var g = d3.select(this);
-			g.selectAll("rect")
-				.data(cols)
-				.enter().append("rect")
-				.attr("x", function(d, i) { return 20 * i + 2; } )
-				.attr("width", 18)
-				.attr("height", 18)
-				.style("fill", function(d0) { return colorMap(d0, d); } );
-			g.append("text")
+
+			g.select("text")
 				.attr("x", -4)
 				.attr("y", 9)
 				.attr("dy", ".35em")
 				.text(dateformat(d));
+
+			var rects = g.selectAll("rect").data(cols, ident);
+			rects.enter().append("rect")
+				.attr("width", 18)
+				.attr("height", 18)
+				.style("fill", function(d0) { return colorMap(d0, d); } );
+			rects.attr("x", function(d, i) { return 20 * i + 2; } );
+			rects.exit().remove();
 		}
 
-		var legend = svg.selectAll(".legend")
-			.data(rows)
-			.enter().append("g")
+		var legend = svg.selectAll(".legend").data(rows, ident);
+
+		legend.enter()
+			.append("g")
 			.attr("class", function(d) { return "legend legend-" + d; })
-			.attr("transform", function(d, i) { return "translate(" + (x - 20 * cols.length) + ", " + i * 20 + ")"; })
 			.on("mouseover", function(d) { mover(d); })
 			.on("mouseout", function(d) { mout(d); })
+			.append("text");
+		
+		legend
+			.attr("transform", function(d, i) { return "translate(" + (x - 20 * cols.length) + ", " + i * 20 + ")"; })
 			.each(row);
+
+		legend.exit().remove();
 	}
 
-
+	function clearChart() {
+		d3.select(".chart").selectAll("*").remove();
+		svg = null;
+	}
 
 
 
@@ -600,7 +644,7 @@ var curvedata = (function() {
 			data.forEach(function(d, i) {
 				d[dKey.param] = +d[dKey.param];
 				d[dKey.value] = +d[dKey.value];			
-				d[dKey.date] = dateformat.parse(d[dKey.date]).valueOf();
+				d[dKey.date] = +dateformat.parse(d[dKey.date]);
 				d[dKey.curve] = scopeId;
 				d[dKey.index] = offset + i;
 			});
@@ -619,11 +663,9 @@ var curvedata = (function() {
 	}
 	
 	function setFilter(curves) {
-		console.log(curves);
 		var curveSet = d3.set(curves);
 		filter.dim_curve.filterAll();
 		filter.dim_curve.filterFunction(function (d) {
-			// console.log("has? : " + d);
 			return curveSet.has(d);
 		});
 		filter.updateAll();
@@ -637,6 +679,7 @@ var curvedata = (function() {
 	my.chartType = function(_) {
 		if (!arguments.length) return chartType;
 		chartType = _;
+		clearChart();
 		filter.updateAll();
 		return my;
 	}
@@ -649,6 +692,9 @@ var curvedata = (function() {
 	
 	return my;
 }())
+
+
+
 
 
 
