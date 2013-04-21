@@ -17,9 +17,11 @@
       <div class="tree"></div>
       <div class="chartholder">
         <ul class="nav nav-tabs">
-          <li class="active"><a onclick="cd.chartType('line');" data-toggle="tab">Line Chart</a></li>
-          <li><a onclick="cd.chartType('line_ci');" data-toggle="tab">Line Chart with CI</a></li>
-          <li><a onclick="cd.chartType('bar');" data-toggle="tab">Bar Chart</a></li>
+          <li class="active"><a onclick="cd.setChartType(cd.tChart().lineParam);" data-toggle="tab">Line Chart (param)</a></li>
+          <li><a onclick="cd.setChartType(cd.tChart().lineDate);" data-toggle="tab">Line Chart (date)</a></li>
+          <li><a onclick="cd.setChartType(cd.tChart().lineParam, true);" data-toggle="tab">Line Chart (param) with CI</a></li>
+          <li><a onclick="cd.setChartType('bar');" data-toggle="tab">Bar Chart (old)</a></li>
+          <li><a onclick="cd.setChartType(cd.tChart().bar);" data-toggle="tab">Bar Chart</a></li>
         </ul>
         <div class="chart"></div>
       </div>

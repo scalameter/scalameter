@@ -13,7 +13,6 @@ var curvedata = (function() {
 		ready = false,
 		scopeTree = { children: [] },
 		scopeId = 0,
-		chartType = "line",
 		rawdata,
 		filter,
 		svg = null,
@@ -26,15 +25,37 @@ var curvedata = (function() {
 			cihi: "cihi",
 			complete: "complete",
 			curve: "curve",
-			index: "index"
-		};
+			index: "index",
+			get: function(key) {
+				return function(d) { return d[key] };
+			}
+		},
+		tChart = {
+			lineParam: { value: "lineParam", name: "Line Chart (param)" },
+			lineDate: { value: "lineDate", name: "Line Chart (date)" },
+			bar: { value: "bar", name: "Bar Chart" }
+		},
+		chartType = tChart.lineParam,
+		showCI = false;
+
 
 	function fnKey(d) {
 		return d.key;
 	}
 
-	function fnIndex(d) {
-		return d[dKey.index];
+	function sortBy(fn) {
+		return function(a, b) {
+			return d3.ascending(fn(a), fn(b));
+		};
+	}
+
+	function unique(data, key, sort){
+		var values = d3.nest().key(key).map(data, d3.map).keys();
+		if (isDef(sort)) {
+			return values.sort(sort);
+		} else {
+			return values;
+		}
 	}
 	
 	function init() {
@@ -85,7 +106,12 @@ var curvedata = (function() {
 		
 		filter.updateAll = function() {
 			chart.each(render);
-			setGraph(dim_colors, dim_param);
+			// d3.select(".chart").selectAll("*").remove();
+			if (chartType == "bar") {
+				barGraph(dim_colors, dim_param, ".chart", "value [ms]");
+			} else {
+				updateChart(dim_colors, chartType, ".chart", "value [ms]", showCI);
+			}
 			if (isDef(rawdata)) {
 				showdata(dim_datetime.top(Infinity));
 			}
@@ -95,23 +121,7 @@ var curvedata = (function() {
 			.data([selectdate, selectparam])
 			.each(function(chart) { chart.on("brush", filter.updateAll).on("brushend", filter.updateAll); });
 			
-		filter.updateAll();
 		return filter;
-	}
-
-	function setGraph(dim_colors, dim_order) {
-		// d3.select(".chart").selectAll("*").remove();
-		switch (chartType) {
-			case "line":
-				lineGraph(dim_colors, ".chart", "value [ms]");
-			break;
-			case "line_ci":
-				lineGraph(dim_colors, ".chart", "value [ms]", true);
-			break;
-			case "bar":
-				barGraph(dim_colors, dim_order, ".chart", "value [ms]");
-			break;
-		}
 	}
 
 	function showdata(data) {
@@ -136,7 +146,7 @@ var curvedata = (function() {
 			header = container.append("tr").attr("class", "dataheader");
 		}
 		
-		var rows = container.selectAll(".datavalues").data(data, fnIndex);
+		var rows = container.selectAll(".datavalues").data(data, dKey.get(dKey.index));
 		
 		rows.enter().append("tr").attr("class", "datavalues").each(addCols);
 		rows.exit().remove();
@@ -391,37 +401,100 @@ var curvedata = (function() {
 		});
 	}
 
-	function lineGraph(dim_colors, node, ylabel, showCi, width, height, margin, legend_width) {
-		showCi = isDef(showCi) ? showCi : false;
+	function updateChart(dim_colors, chartType, node, ylabel, showCi, width, height, margin, legend_width) {
 		width = isDef(width) ? width : STD_WIDTH;
 		height = isDef(height) ? height : STD_HEIGHT;
 		margin = isDef(margin) ? margin : STD_MARGIN;
 		legend_width = isDef(legend_width) ? legend_width : STD_LEGEND_WIDTH;
 
-		var data = dim_colors.top(Infinity);
-
 		var w = width - margin.left - margin.right - legend_width;
 		var h = height - margin.top - margin.bottom;
 
-		var x = d3.scale.linear().range([ 0, w ]);
+		var data = dim_colors.top(Infinity);
 
-		var y = d3.scale.linear().range([ h, 0 ]);
+		var keyCurve = {
+			get: dKey.get(dKey.curve),
+			sort: d3.ascending
+		};
 
-		var xAxis = d3.svg.axis().scale(x).orient("bottom");
-		var xGrid = d3.svg.axis().scale(x).orient("bottom").tickSize(-h, 0, 0).tickFormat("");
+		var keyAbscissa,
+				keyLegend,
+				isBar = false;
 
-		var yAxis = d3.svg.axis().scale(y).orient("left");
-		var yGrid = d3.svg.axis().scale(y).orient("left").tickSize(-w, 0, 0).tickFormat("");
+		// scales
+		var x,
+				y = d3.scale.linear()
+			.domain([0, d3.max(data, dKey.get(dKey.value))])
+			.range([h, 0]);
 
-		var fnParam = function(d) {	return d[dKey.param];	};
-		
-		x.domain(d3.extent(data, fnParam));
-		y.domain([0, d3.max(data, function(d) {
-			return d[dKey.value];
-		})]);
-		// y.domain(d3.extent(data, function(d) {
-		// 	return d[dKey.value];
-		// }));
+		switch(chartType) {
+			case tChart.lineParam:
+				keyAbscissa = dKey.get(dKey.param);
+
+				keyLegend = {
+					get: dKey.get(dKey.date),
+					sort: d3.descending,
+					format: function(d) { return d3.time.format("%Y-%m-%d %H:%M:%S")(new Date(+d)) }
+				};
+
+				x = d3.scale.linear()
+							.domain(d3.extent(data, keyAbscissa))
+							.range([0, w]);
+				break;
+			case tChart.lineDate:
+				keyAbscissa = dKey.get(dKey.date);
+
+				keyLegend = {
+					get: dKey.get(dKey.param),
+					sort: d3.descending,
+					format: ident
+				};
+
+				var keys_abscissa = unique(data, keyAbscissa, d3.ascending);
+				x = d3.scale.ordinal()
+							.domain(keys_abscissa)
+							.rangePoints([0, w]);
+				break;
+			case tChart.bar:
+				isBar = true;
+
+				keyLegend = {
+					get: dKey.get(dKey.param),
+					sort: d3.ascending,
+					format: ident
+				};
+
+				keyAbscissa0 = dKey.get(dKey.date);
+				keyAbscissa1 = dKey.get(dKey.param);
+				keyAbscissa2 = dKey.get(dKey.curve);
+
+				var x = d3.scale.ordinal()
+										.domain(unique(data, keyAbscissa0, d3.ascending))
+										.rangeRoundBands([0, w], 0.1);
+
+				var x1 = d3.scale.ordinal()
+										.domain(unique(data, keyAbscissa1, d3.ascending))
+										.rangeRoundBands([0, x.rangeBand()], 0.1);
+
+				var x2 = d3.scale.ordinal()
+										.domain(unique(data, keyAbscissa2, d3.ascending))
+										.rangeRoundBands([0, x1.rangeBand()]);
+		}
+
+		if (!isBar) {
+			// group by keyCurve, keyLegend
+			var group_outer = d3.nest()
+				.key(keyCurve.get).sortKeys(keyCurve.sort)
+				.key(keyLegend.get).sortKeys(keyLegend.sort)
+				.sortValues(sortBy(keyAbscissa));
+			var data_outer = group_outer.entries(data);
+
+			var keys_outer = data_outer.map(fnKey);
+		}
+
+		var keys_inner = unique(data, keyLegend.get, keyLegend.sort);
+
+		var colorMap = createColorMap(keys_inner);
 
 		if (svg === null) {
 			svg = d3.select(node).append("svg").attr("width", width).attr("height", height)
@@ -431,21 +504,17 @@ var curvedata = (function() {
 			svg.append("g")         
 	        .attr("class", "x grid")
 	        .attr("transform", "translate(0," + h + ")");
-	        // .call(xGrid);
 			svg.append("g")         
 	        .attr("class", "y grid");
-	        // .call(yGrid);
 
 			// x axis
 			svg.append("g")
 				.attr("class", "x axis")
 				.attr("transform", "translate(0," + h + ")");
-				// .call(xAxis);
 
 			// y axis
 			svg.append("g")
 				.attr("class", "y axis")
-				// .call(yAxis)
 				.append("text")
 					.attr("transform", "rotate(-90)")
 					.attr("y", 6).attr("dy", ".71em")
@@ -453,45 +522,16 @@ var curvedata = (function() {
 					.text(ylabel);
 		}
 
-		var colors = d3.scale.category10();
-
-		var key1 = function(d) { return d[dKey.curve]; };
-		var key2 = function(d) { return d[dKey.date] };
-
-		var innerSort = function(a, b) {
-			return d3.ascending(a[dKey.param], b[dKey.param]);
-		};
-
-		// group by key2
-		var group_inner = d3.nest()
-			.key(key2).sortKeys(d3.descending)
-			.sortValues(innerSort);
-
-		// group by key1, key2
-		var group_outer = d3.nest()
-			.key(key1).sortKeys(d3.ascending)
-			.key(key2).sortKeys(d3.descending)
-			.sortValues(innerSort);
-
-		var data_inner = group_inner.entries(data);
-		var data_outer = group_outer.entries(data);
-
-		var keys_inner = data_inner.map(fnKey);
-		var keys_outer = data_outer.map(fnKey);
-
-		var colorMap = createColorMap(keys_inner);
-
-
-		var path = function(d, i) {
+		var path = function(d) {
 			var line = d3.svg.line().x(function(d) {
-				return x(d[dKey.param]);
+				return x(keyAbscissa(d));
 			}).y(function(d) {
 				return y(d[dKey.value]);
 			});
 
 			var g = d3.select(this);
 			var cls = "line line-" +d.key;
-			var color = colorMap(key1(d.values[0]), d.key);
+			var color = colorMap(keyCurve.get(d.values[0]), d.key);
 			g.select("path")
 				.attr("class", cls)
 				.attr("style", "stroke-opacity:0.7;stroke:" + color)
@@ -500,23 +540,23 @@ var curvedata = (function() {
 				.transition()
 				.attr("d", line(d.values));
 			
-			var datapoints = g.selectAll('circle').data(d.values, fnParam);
+			// var datapoints = g.selectAll('circle').data(d.values, keyAbscissa);
 
-			datapoints.enter().append('circle')
-				.attr("class", cls)
-				.attr('r', 5)
-				.style("stroke", color);
+			// datapoints.enter().append('circle')
+			// 	.attr("class", cls)
+			// 	.attr('r', 5)
+			// 	.style("stroke", color);
 
-			datapoints.transition()
-				.attr('cx', function (d) { return x(d[dKey.param]); })
-				.attr('cy', function (d) { return y(d[dKey.value]); });
+			// datapoints.transition()
+			// 	.attr('cx', function (d) { return x(keyAbscissa(d)); })
+			// 	.attr('cy', function (d) { return y(d[dKey.value]); });
 
-			datapoints.exit().remove();
+			// datapoints.exit().remove();
 		}
 
-		var area_ci = function(d, i) {
+		var area_ci = function(d) {
 			var area = d3.svg.area().x(function(d) {
-				return x(d[dKey.param]);
+				return x(keyAbscissa(d));
 			}).y0(function(d) {
 				return y(d[dKey.cilo]);
 			}).y1(function(d) {
@@ -524,7 +564,7 @@ var curvedata = (function() {
 			});
 
 			var g = d3.select(this);
-			var color = colorMap(key1(d.values[0]), d.key);
+			var color = colorMap(keyCurve.get(d.values[0]), d.key);
 			g.select("path")
 				.attr("class", "area-" + d.key)
 				.attr("style", "stroke-opacity:0.2;stroke:" + color + ";fill-opacity:0.1;fill:" + color)
@@ -547,52 +587,16 @@ var curvedata = (function() {
 			}
 		}
 
-		// d3.transition().ease("bounce").duration(750).each(function() {
-		d3.transition().duration(2000).each(function() {
-			svg.select(".x.grid").transition().call(xGrid);
-			svg.select(".y.grid").transition().call(yGrid);
-			svg.select(".x.axis").transition().call(xAxis);
-			svg.select(".y.axis").transition().call(yAxis);
-
-			var curves = svg.selectAll(".curve").data(data_outer, fnKey);
-
-			curves.enter()
-				.append("g")
-				.attr("class", "curve");
-			
-			curves.each(curveFn(path));
-
-			curves.exit().remove();
-
-			if (showCi) {
-				var curves_ci = svg.selectAll(".curve_ci").data(data_outer, fnKey);
-
-				curves_ci.enter()
-					.insert("g", ":first-child")
-					.attr("class", "curve_ci");
-				
-				curves_ci.each(curveFn(area_ci));
-
-				curves_ci.exit().remove();
-			}
-
-			legend(svg, w + legend_width, keys_inner, keys_outer, colorMap);
-		});
-	}
-
-	function legend(svg, x, rows, cols, colorMap) {
-		//TODO handle date formatting globally
-		var dateformat = function(d) { return d3.time.format("%Y-%m-%d %H:%M:%S")(new Date(+d)) };
-		function row(d) {
+		function legendRow(d) {
 			var g = d3.select(this);
 
 			g.select("text")
 				.attr("x", -4)
 				.attr("y", 9)
 				.attr("dy", ".35em")
-				.text(dateformat(d));
+				.text(keyLegend.format(d));
 
-			var rects = g.selectAll("rect").data(cols, ident);
+			var rects = g.selectAll("rect").data(keys_outer, ident);
 			rects.enter().append("rect")
 				.attr("width", 18)
 				.attr("height", 18)
@@ -601,21 +605,96 @@ var curvedata = (function() {
 			rects.exit().remove();
 		}
 
-		var legend = svg.selectAll(".legend").data(rows, ident);
+		d3.transition()/*.duration(2000)*/.each(function() {
+			// axis and grid
+			if (!isBar) {
+				var xGrid = d3.svg.axis().scale(x).orient("bottom").tickSize(-h, 0, 0).tickFormat("");
+				svg.select(".x.grid").transition().call(xGrid);
+			}
 
-		legend.enter()
-			.append("g")
-			.attr("class", function(d) { return "legend legend-" + d; })
-			.on("mouseover", function(d) { mover(d); })
-			.on("mouseout", function(d) { mout(d); })
-			.append("text");
-		
-		legend
-			.attr("transform", function(d, i) { return "translate(" + (x - 20 * cols.length) + ", " + i * 20 + ")"; })
-			.each(row);
+			var yGrid = d3.svg.axis().scale(y).orient("left").tickSize(-w, 0, 0).tickFormat("");
+			svg.select(".y.grid").transition().call(yGrid);
 
-		legend.exit().remove();
+			var xAxis = d3.svg.axis().scale(x).orient("bottom");
+			svg.select(".x.axis").transition().call(xAxis);
+
+			var yAxis = d3.svg.axis().scale(y).orient("left");
+			svg.select(".y.axis").transition().call(yAxis);
+
+			if (isBar) {
+				var bars = svg.selectAll("rect").data(data, dKey.get(dKey.index));
+
+				bars.enter()
+					.append("rect")
+					.style("fill-opacity", 0);
+
+				bars
+					.style("fill", function(d) { return colorMap(keyCurve.get(d), keyAbscissa1(d)); })
+					.transition()
+					.attr("width", x2.rangeBand())
+					.attr("x", function(d) { return x(keyAbscissa0(d)) + x1(keyAbscissa1(d)) + x2(keyAbscissa2(d)); })
+					.attr("y", function(d) { return y(d[dKey.value]); })
+					.attr("height", function(d) { return h - y(d[dKey.value]); })
+					.transition()
+					.style("fill-opacity", 1);
+
+				bars.exit().remove();
+			} else {
+				// data points
+				var points = svg.selectAll('circle').data(data, dKey.get(dKey.index));
+
+				points.enter().append('circle')
+					.attr("class", function(d) { return "line line-" + keyLegend.get(d); })
+					.attr('r', 5);
+
+				points.transition()
+					.style("stroke",  function(d) { return colorMap(keyCurve.get(d), keyLegend.get(d)); })
+					.attr('cx', function (d) { return x(keyAbscissa(d)); })
+					.attr('cy', function (d) { return y(d[dKey.value]); });
+
+				points.exit().remove();
+
+				// data paths
+				var curves = svg.selectAll(".curve").data(data_outer, fnKey);
+
+				curves.enter()
+					.append("g")
+					.attr("class", "curve");
+				
+				curves.each(curveFn(path));
+
+				curves.exit().remove();
+
+				// confidence intervals (areas)
+				var curves_ci = svg.selectAll(".curve_ci").data(showCi ? data_outer : [], fnKey);
+
+				curves_ci.enter()
+					.insert("g", ":first-child")
+					.attr("class", "curve_ci");
+				
+				curves_ci.each(curveFn(area_ci));
+
+				curves_ci.exit().remove();
+
+				// legend
+				var legend = svg.selectAll(".legend").data(keys_inner, ident);
+
+				legend.enter()
+					.append("g")
+					.attr("class", function(d) { return "legend legend-" + d; })
+					.on("mouseover", mover)
+					.on("mouseout", mout)
+					.append("text");
+				
+				legend
+					.attr("transform", function(d, i) { return "translate(" + (w + legend_width - 20 * keys_outer.length) + ", " + i * 20 + ")"; })
+					.each(legendRow);
+
+				legend.exit().remove();
+			}
+		});
 	}
+
 
 	function clearChart() {
 		d3.select(".chart").selectAll("*").remove();
@@ -676,9 +755,9 @@ var curvedata = (function() {
 		filter.updateAll();
 	}
 
-	my.chartType = function(_) {
-		if (!arguments.length) return chartType;
-		chartType = _;
+	my.setChartType = function(_chartType, _showCI) {
+		chartType = _chartType;
+		showCI = isDef(_showCI) ? _showCI : false;
 		clearChart();
 		filter.updateAll();
 		return my;
@@ -688,6 +767,10 @@ var curvedata = (function() {
 		if (!arguments.length) return rawdata;
 		rawdata = _;
 		return my;
+	}
+
+	my.tChart = function() {
+		return tChart;
 	}
 	
 	return my;
