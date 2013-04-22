@@ -30,7 +30,9 @@ case class HtmlReporter(val renderers: HtmlReporter.Renderer*) extends Reporter 
       <script type="text/javascript" src="js/jquery-ui.custom.min.js"></script>
       <script type="text/javascript" src="js/jquery.dynatree.js"></script>
       <script type="text/javascript" src="js/bootstrap.min.js"></script>
-      <script type="text/javascript" src="js/parse.js"></script>
+      <script type="text/javascript" src="js/helper.js"></script>
+      <script type="text/javascript" src="js/chart.js"></script>
+      <script type="text/javascript" src="js/filter.js"></script>
     </head>
 
   def body(result: Tree[CurveData], persistor: Persistor) = {
@@ -40,6 +42,7 @@ case class HtmlReporter(val renderers: HtmlReporter.Renderer*) extends Reporter 
       {date(result)}
       <script type="text/javascript">
         var cd = curvedata.rawdata('.rawdata');
+        var gc = genericChart;
       </script>
       {
         for ((ctx, scoperesults) <- result.scopes; if scoperesults.nonEmpty) yield
@@ -60,10 +63,10 @@ case class HtmlReporter(val renderers: HtmlReporter.Renderer*) extends Reporter 
       <div class="tree"></div>
       <div class="chartholder">
         <ul class="nav nav-tabs">
-          <li class="active"><a onclick="cd.chartType('line');" data-toggle="tab">Line Chart</a></li>
-          <li><a onclick="cd.chartType('line_ci');" data-toggle="tab">Line Chart with CI</a></li>
-          <li><a onclick="cd.chartType('bar');" data-toggle="tab">Bar Chart</a></li>
-        </ul>
+          <li class="active"><a onclick="gc.setType(gc.cType.lineParam); gc.setShowCI(false); cd.update();" data-toggle="tab">Line Chart (param)</a></li>
+          <li><a onclick="gc.setType(gc.cType.lineDate); gc.setShowCI(false); cd.update();" data-toggle="tab">Line Chart (date)</a></li>
+          <li><a onclick="gc.setType(gc.cType.lineParam); gc.setShowCI(true); cd.update();" data-toggle="tab">Line Chart (param) with CI</a></li>
+          <li><a onclick="gc.setType(gc.cType.bar); gc.setShowCI(false); cd.update();" data-toggle="tab">Bar Chart</a></li>        </ul>
         <div class="chart"></div>
       </div>
       <h1>Filters</h1>        
@@ -143,12 +146,14 @@ case class HtmlReporter(val renderers: HtmlReporter.Renderer*) extends Reporter 
       "css/ui.dynatree.css",
       "css/vline.gif",
       "js/bootstrap.min.js",
+      "js/chart.js",
       "js/crossfilter.min.js",
       "js/d3.v3.min.js",
+      "js/filter.js",
+      "js/helper.js",
       "js/jquery-1.9.1.js",
       "js/jquery-ui.custom.min.js",
-      "js/jquery.dynatree.js",
-      "js/parse.js"
+      "js/jquery.dynatree.js"
     ).foreach { filename =>
       copyResource(filename, new File(root, filename))
     }
