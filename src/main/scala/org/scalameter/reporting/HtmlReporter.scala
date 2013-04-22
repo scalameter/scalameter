@@ -73,8 +73,8 @@ case class HtmlReporter(val renderers: HtmlReporter.Renderer*) extends Reporter 
       <h1>Filters</h1>        
       <div class="pagination">
         <ul>
-          <li><a onclick="cd.prevDay();">«</a></li>
-          <li><a onclick="cd.nextDay();">»</a></li>
+          <li><a onclick="cd.prevDay();">&laquo;</a></li>
+          <li><a onclick="cd.nextDay();">&raquo;</a></li>
         </ul>
       </div>
       <div class="filters"></div>

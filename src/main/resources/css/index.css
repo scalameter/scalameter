@@ -7,7 +7,14 @@ body {
 
 .legend,
 .dynatree-title,
-.nav-tabs a {
+.nav-tabs a,
+.pagination a {
+  cursor: pointer;
+}
+
+
+.badge {
+  margin-left: 5px;
   cursor: pointer;
 }
 
