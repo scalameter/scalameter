@@ -10,18 +10,19 @@
       <script type="text/javascript" src="js/jquery-ui.custom.min.js"></script>
       <script type="text/javascript" src="js/jquery.dynatree.js"></script>
       <script type="text/javascript" src="js/bootstrap.min.js"></script>
-      <script type="text/javascript" src="js/parse.js"></script>
+      <script type="text/javascript" src="js/helper.js"></script>
+      <script type="text/javascript" src="js/chart.js"></script>
+      <script type="text/javascript" src="js/filter.js"></script>
     </head><body>
       <div>
       <h1>Performance Report</h1>        
       <div class="tree"></div>
       <div class="chartholder">
         <ul class="nav nav-tabs">
-          <li class="active"><a onclick="cd.setChartType(cd.tChart().lineParam);" data-toggle="tab">Line Chart (param)</a></li>
-          <li><a onclick="cd.setChartType(cd.tChart().lineDate);" data-toggle="tab">Line Chart (date)</a></li>
-          <li><a onclick="cd.setChartType(cd.tChart().lineParam, true);" data-toggle="tab">Line Chart (param) with CI</a></li>
-          <li><a onclick="cd.setChartType('bar');" data-toggle="tab">Bar Chart (old)</a></li>
-          <li><a onclick="cd.setChartType(cd.tChart().bar);" data-toggle="tab">Bar Chart</a></li>
+          <li class="active"><a onclick="gc.setType(gc.cType.lineParam); gc.setShowCI(false); cd.update();" data-toggle="tab">Line Chart (param)</a></li>
+          <li><a onclick="gc.setType(gc.cType.lineDate); gc.setShowCI(false); cd.update();" data-toggle="tab">Line Chart (date)</a></li>
+          <li><a onclick="gc.setType(gc.cType.lineParam); gc.setShowCI(true); cd.update();" data-toggle="tab">Line Chart (param) with CI</a></li>
+          <li><a onclick="gc.setType(gc.cType.bar); gc.setShowCI(false); cd.update();" data-toggle="tab">Bar Chart</a></li>
         </ul>
         <div class="chart"></div>
       </div>
@@ -64,6 +65,7 @@
     </div>
       <script type="text/javascript">
         var cd = curvedata.rawdata('.rawdata');
+        var gc = genericChart;
       </script>
       <div> <script type="text/javascript">
             cd.addGraph(["Seq", "apply"], 'Array', '../Seq.apply.Array.dsv');
