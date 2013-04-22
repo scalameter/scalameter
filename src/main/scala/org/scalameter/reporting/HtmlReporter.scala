@@ -20,7 +20,7 @@ case class HtmlReporter(val renderers: HtmlReporter.Renderer*) extends Reporter 
 
   def head = 
     <head>
-      <meta charset="utf-8">
+      <meta charset="utf-8" />
       <title>Performance Report</title>
       <link type="text/css" media="screen" rel="stylesheet" href="css/bootstrap.min.css" />
       <link type="text/css" media="screen" rel="stylesheet" href="css/index.css" />
