@@ -113,14 +113,24 @@ case class HtmlReporter(val renderers: HtmlReporter.Renderer*) extends Reporter 
   def copyResource(from: String, to: File) {
     val res = getClass.getClassLoader.getResourceAsStream(from)
     try {
-      val reader = new BufferedReader(new InputStreamReader(res))
+      val buffer = new Array[Byte](1024)
+      val fos = new FileOutputStream(to)
+      var nBytesRead = 0
+      def read = { nBytesRead = res.read(buffer) }
+      while ({read; nBytesRead != -1}) {
+        fos.write(buffer, 0, nBytesRead)
+      }
+      if (fos != null) {
+        fos.close();
+      }
+      /* val reader = new BufferedReader(new InputStreamReader(res))
       printToFile(to) { p =>
         var line = ""
         while (line != null) {
           p.println(line)
           line = reader.readLine()
         }
-      }
+      } */
     } finally {
       res.close()
     }
