@@ -123,14 +123,6 @@ case class HtmlReporter(val renderers: HtmlReporter.Renderer*) extends Reporter 
       if (fos != null) {
         fos.close();
       }
-      /* val reader = new BufferedReader(new InputStreamReader(res))
-      printToFile(to) { p =>
-        var line = ""
-        while (line != null) {
-          p.println(line)
-          line = reader.readLine()
-        }
-      } */
     } finally {
       res.close()
     }

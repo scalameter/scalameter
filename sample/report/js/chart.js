@@ -136,7 +136,7 @@ var genericChart = (function() {
 		var h = height_ - margin_.top - margin_.bottom;
 
 		var keyCurve = {
-			get: dKey.get(dKey.curve),
+			get: mapKey(dKey.curve),
 			sort: d3.ascending
 		};
 
@@ -148,15 +148,15 @@ var genericChart = (function() {
 		// scales
 		var x,
 				y = d3.scale.linear()
-			.domain([0, d3.max(data, dKey.get(dKey.value))])
+			.domain([0, d3.max(data, mapKey(dKey.value))])
 			.range([h, 0]);
 
 		switch(chartType_) {
 			case CHART_TYPES.lineParam:
-				keyAbscissa = dKey.get(dKey.param);
+				keyAbscissa = mapKey(dKey.param);
 
 				keyLegend = {
-					get: dKey.get(dKey.date),
+					get: mapKey(dKey.date),
 					sort: d3.descending,
 					format: msToDateStr
 				};
@@ -166,10 +166,10 @@ var genericChart = (function() {
 							.range([0, w]);
 				break;
 			case CHART_TYPES.lineDate:
-				keyAbscissa = dKey.get(dKey.date);
+				keyAbscissa = mapKey(dKey.date);
 
 				keyLegend = {
-					get: dKey.get(dKey.param),
+					get: mapKey(dKey.param),
 					sort: d3.descending,
 					format: ident
 				};
@@ -185,14 +185,14 @@ var genericChart = (function() {
 				isBar = true;
 
 				keyLegend = {
-					get: dKey.get(dKey.param),
+					get: mapKey(dKey.param),
 					sort: d3.ascending,
 					format: ident
 				};
 
-				keyAbscissa0 = dKey.get(dKey.date);
-				keyAbscissa1 = dKey.get(dKey.param);
-				keyAbscissa2 = dKey.get(dKey.curve);
+				keyAbscissa0 = mapKey(dKey.date);
+				keyAbscissa1 = mapKey(dKey.param);
+				keyAbscissa2 = mapKey(dKey.curve);
 
 				var x = d3.scale.ordinal()
 										.domain(unique(data, keyAbscissa0, d3.ascending))
@@ -223,7 +223,7 @@ var genericChart = (function() {
 		var keys_outer = data_outer.map(fnKey);
 
 		var keysCurveColor = unique(data, keyCurve.get, keyCurve.sort);
-		console.log(keysCurveColor);
+
 		var keysGradient = unique(data, keyLegend.get, keyLegend.sort);
 
 		var colorMap = createColorMap(mainColors, keysGradient);
@@ -342,7 +342,7 @@ var genericChart = (function() {
 			var yAxis = d3.svg.axis().scale(y).orient("left");
 			svg_.select(".y.axis").transition().call(yAxis);
 
-			var bars = svg_.selectAll("rect").data(barData, dKey.get(dKey.index));
+			var bars = svg_.selectAll("rect").data(barData, mapKey(dKey.index));
 
 			bars.enter()
 				.append("rect")
@@ -364,7 +364,7 @@ var genericChart = (function() {
 			bars.exit().remove();
 
 			// data points
-			var points = svg_.selectAll('circle').data(lineData, dKey.get(dKey.index));
+			var points = svg_.selectAll('circle').data(lineData, mapKey(dKey.index));
 
 			points.enter().append('circle')
 				.attr("class", function(d) { return "line line-" + keyLegend.get(d); })

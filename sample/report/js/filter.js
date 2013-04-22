@@ -6,7 +6,7 @@ var curvedata = (function() {
 		scopeTree = { children: [] },
 		scopeId = 0,
 		rawdata,
-		filter;
+		filter_;
 
 	var mainColors = (function() {
 		var nGroups = 10;
@@ -19,14 +19,83 @@ var curvedata = (function() {
 	function init() {
 		// init filter once all files have been added to the queue and processed
 		if(ready && tsvWaiting == 0) {
-			filter = createFilter();
+			filter_ = createFilter();
 			initTree();
 		}
 	}
-	
+
 	function createFilter() {
-		var filter = crossfilter(dataconcat);
+		var my = {};
+
+		var cFilter_ = crossfilter(dataconcat),
+			filterDim_ = {};
+
+		function getDimension(key) {
+			if (!filterDim_.hasOwnProperty(key)) {
+				filterDim_[key] = cFilter_.dimension(mapKey(key));
+			}
+			return filterDim_[key];
+		}
+
+		my.getData = function() {
+			return getDimension(dKey.curve).top(Infinity);
+		};
+
+		my.getDim = getDimension;
+
+
+		// DATE SELECTION
+		var dateDim = getDimension(dKey.date);
+		var selectedDates = d3.set();
+
+		function toggleDate(date) {
+			console.log(date);
+			var wasSelected = selectedDates.has(date);
+			d3.select(".badge-" + date).classed("badge-info", !wasSelected);
+			if (wasSelected) {
+				selectedDates.remove(date);
+			} else {
+				selectedDates.add(date);
+			}
+			dateDim.filterFunction(function(d) {
+				return selectedDates.has(d);
+			});
+		}
+
+		var uniqueDates = unique(my.getData(), mapKey(dKey.date), d3.ascending);
+		var groupByDay = d3.nest().key(function (d) {
+			 return +d3.time.day(new Date(+d));
+		}).sortKeys(d3.descending);
+
+		function addBadges(d) {
+			var dateBadges = d3.select(this).selectAll(".badge").data(d.values);
+			var badgeFormat = d3.time.format("%H:%M:%S");
+
+			dateBadges.enter()
+				.append("span")
+				.text(function (d) { return badgeFormat(new Date(+d)); })
+				.attr("class", function(d) { return "badge badge-" + d; } )
+				.on("click", function(d) {
+					toggleDate(d);
+					update();
+				});
+		}
+
+		var dayDivs = d3.select(".filters").selectAll("div").data(groupByDay.entries(uniqueDates));
+		var divFormat = d3.time.format("%Y-%m-%d");
+
+		dayDivs.enter()
+			.append("div");
+
+		dayDivs
+			.text(function(d) { return divFormat(new Date(+d.key)); } )
+			.each(addBadges);
+
+		toggleDate(uniqueDates[0]);
+
+		return my;
 		
+		/*
 		filter.dim_curve = filter.dimension(function(d) { return d[dKey.curve]; });
 		
 		var dim_datetime = filter.dimension(function(d) { return d[dKey.date]; });
@@ -73,21 +142,15 @@ var curvedata = (function() {
 		var chart = d3.selectAll(".filter")
 			.data([selectdate, selectparam])
 			.each(function(chart) { chart.on("brush", filter.updateAll).on("brushend", filter.updateAll); });
-			
 		return filter;
+		*/
 	}
 
 	function showdata(data) {
 		function addCols(row) {
-			var rowValues = [];
-			var headers = [];
-			for (var key in row) {
-				headers.push(key);
-				rowValues.push(row[key]);
-			}
-			header.selectAll("th").data(headers).enter().append("th").text(ident);
+			header.selectAll("th").data(d3.keys(row)).enter().append("th").text(ident);
 			d3.select(this).selectAll("td")
-				.data(rowValues)
+				.data(d3.values(row))
 				.enter()
 				.append("td").text(ident);
 		}
@@ -99,7 +162,7 @@ var curvedata = (function() {
 			header = container.append("tr").attr("class", "dataheader");
 		}
 		
-		var rows = container.selectAll(".datavalues").data(data, dKey.get(dKey.index));
+		var rows = container.selectAll(".datavalues").data(data, mapKey(dKey.index));
 		
 		rows.enter().append("tr").attr("class", "datavalues").each(addCols);
 		rows.exit().remove();
@@ -178,7 +241,13 @@ var curvedata = (function() {
 		}
 	}
 
-
+	function update() {
+		var data = filter_.getData();
+		genericChart.update(data, ".chart", "value [ms]", mainColors);
+		if (isDef(rawdata)) {
+			showdata(data);
+		}
+	}
 
 
 	/*
@@ -205,31 +274,25 @@ var curvedata = (function() {
 		});
 		
 		return my;
-	}
+	};
 	
 	my.setReady = function() {
 		ready = true;
 		init();
 		return my;
-	}
+	};
 	
 	function setFilter(curves) {
 		var curveSet = d3.set(curves);
-		filter.dim_curve.filterAll();
-		filter.dim_curve.filterFunction(function (d) {
+		filter_.getDim(dKey.curve).filterFunction(function (d) {
 			return curveSet.has(d);
 		});
-		filter.updateAll();
-	}
-
-	my.setFilter = function(curve) {
-		filter.dim_curve.filter(curve);
-		filter.updateAll();
+		update();
 		return my;
-	}
+	};
 
 	my.update = function() {
-		filter.updateAll();
+		update();
 		return my;
 	}
 
@@ -237,7 +300,7 @@ var curvedata = (function() {
 		if (!arguments.length) return rawdata;
 		rawdata = _;
 		return my;
-	}
+	};
 
 	return my;
 }());

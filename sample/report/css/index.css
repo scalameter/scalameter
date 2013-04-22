@@ -11,6 +11,12 @@ body {
   cursor: pointer;
 }
 
+
+.badge {
+  margin-left: 5px;
+  cursor: pointer;
+}
+
 .dynatree-adjtext {
   position: relative;
   top: -3px;
