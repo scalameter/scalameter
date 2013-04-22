@@ -62,10 +62,6 @@ var genericChart = (function() {
 		return my;
 	};
 
-	function fnKey(d) {
-		return d.key;
-	}
-
 	function sortBy(fn) {
 		return function(a, b) {
 			return d3.ascending(fn(a), fn(b));
@@ -220,7 +216,7 @@ var genericChart = (function() {
 			.sortValues(sortBy(keyAbscissa));
 		var data_outer = group_outer.entries(lineData);
 
-		var keys_outer = data_outer.map(fnKey);
+		var keys_outer = data_outer.map(fKey);
 
 		var keysCurveColor = unique(data, keyCurve.get, keyCurve.sort);
 
@@ -293,7 +289,7 @@ var genericChart = (function() {
 
 		function curveFn(fn) {
 			return function(d) {
-				var groups = d3.select(this).selectAll(".group").data(d.values, fnKey);
+				var groups = d3.select(this).selectAll(".group").data(d.values, fKey);
 
 				groups.enter()
 					.append("g")
@@ -378,7 +374,7 @@ var genericChart = (function() {
 			points.exit().remove();
 
 			// data paths
-			var curves = svg_.selectAll(".curve").data(data_outer, fnKey);
+			var curves = svg_.selectAll(".curve").data(data_outer, fKey);
 
 			curves.enter()
 				.append("g")
@@ -389,7 +385,7 @@ var genericChart = (function() {
 			curves.exit().remove();
 
 			// confidence intervals (areas)
-			var curves_ci = svg_.selectAll(".curve_ci").data(showCI_ ? data_outer : [], fnKey);
+			var curves_ci = svg_.selectAll(".curve_ci").data(showCI_ ? data_outer : [], fKey);
 
 			curves_ci.enter()
 				.insert("g", ":first-child")

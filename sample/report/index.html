@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html><head>
+      <meta charset="utf-8">
       <title>Performance Report</title>
       <link type="text/css" media="screen" rel="stylesheet" href="css/bootstrap.min.css"/>
       <link type="text/css" media="screen" rel="stylesheet" href="css/index.css"/>
@@ -26,7 +27,13 @@
         </ul>
         <div class="chart"></div>
       </div>
-      <h1>Filters</h1>        
+      <h1>Filters</h1>
+      <div class="pagination">
+        <ul>
+          <li><a onclick="cd.prevDay();">«</a></li>
+          <li><a onclick="cd.nextDay();">»</a></li>
+        </ul>
+      </div>
       <div class="filters"></div>
       <h1>Raw data</h1>
       <table class="table rawdata"></table>
