@@ -6,6 +6,14 @@ function ident(d) {
 	return d;
 }
 
+function mapKey(key) {
+	return function(d) { return d[key] };
+}
+
+function fKey(d) {
+	return d.key;
+}
+
 function unique(data, key, sort){
 	var values = d3.nest().key(key).map(data, d3.map).keys();
 	if (isDef(sort)) {
@@ -24,10 +32,10 @@ var dKey = {
 	cihi: "cihi",
 	complete: "complete",
 	curve: "curve",
-	index: "index",
-	get: function(key) {
+	index: "index"
+	/*get: function(key) {
 		return function(d) { return d[key] };
-	}
+	}*/
 };
 
 /*

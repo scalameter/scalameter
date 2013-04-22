@@ -6,7 +6,7 @@ var curvedata = (function() {
 		scopeTree = { children: [] },
 		scopeId = 0,
 		rawdata,
-		filter;
+		filter_;
 
 	var mainColors = (function() {
 		var nGroups = 10;
@@ -19,75 +19,177 @@ var curvedata = (function() {
 	function init() {
 		// init filter once all files have been added to the queue and processed
 		if(ready && tsvWaiting == 0) {
-			filter = createFilter();
+			filter_ = createFilter();
 			initTree();
 		}
 	}
-	
-	function createFilter() {
-		var filter = crossfilter(dataconcat);
-		
-		filter.dim_curve = filter.dimension(function(d) { return d[dKey.curve]; });
-		
-		var dim_datetime = filter.dimension(function(d) { return d[dKey.date]; });
-		var group_date = dim_datetime.group(function(d) { return d3.time.day(new Date(d)) });
-		var dateMin = dim_datetime.bottom(1);
-		dateMin = d3.time.day(new Date(dateMin[0][dKey.date]));
-		var dateMax = dim_datetime.top(1);
-		dateMax = d3.time.day(new Date(dateMax[0][dKey.date]));
-		var selectdate = barChart()
-			.dimension(dim_datetime)
-			.group(group_date)
-			.interval(d3.time.day)
-			.x(d3.time.scale()
-			.domain([dateMin, d3.time.day.offset(dateMax, 1)]).rangeRound([0, 500]));
-			
-		var dim_param = filter.dimension(function(d) { return d[dKey.param]; });
-		var group_param = dim_param.group(ident);
-		var paramAll = [];
-		var group_all = group_param.all();
-		for(var i = 0; i < group_all.length; i++) {
-			paramAll.push(group_all[i].key);
-		}
-		var selectparam = barChart()
-			.dimension(dim_param)
-			.group(group_param)
-			.x(d3.scale.ordinal().domain(paramAll).rangeBands([0, 500]));
-			
-		var dim_colors = filter.dimension(function(d) { return d[dKey.date]; });
-		dim_colors.grouped = dim_colors.group(ident);
 
-		
-		function render(method) {
-			d3.select(this).call(method);
-		}
-		
-		filter.updateAll = function() {
-			chart.each(render);
-			genericChart.update(dim_colors.top(Infinity), ".chart", "value [ms]", mainColors);
-			if (isDef(rawdata)) {
-				showdata(dim_datetime.top(Infinity));
+	function createFilter() {
+		var my = {};
+
+		var cFilter_ = crossfilter(dataconcat),
+			filterDim_ = {};
+
+		function getDimension(key) {
+			if (!filterDim_.hasOwnProperty(key)) {
+				filterDim_[key] = cFilter_.dimension(mapKey(key));
 			}
+			return filterDim_[key];
 		}
-		
-		var chart = d3.selectAll(".filter")
-			.data([selectdate, selectparam])
-			.each(function(chart) { chart.on("brush", filter.updateAll).on("brushend", filter.updateAll); });
-			
-		return filter;
+
+		my.getData = function() {
+			return getDimension(dKey.curve).top(Infinity);
+		};
+
+		my.getDim = getDimension;
+
+
+		// DATE SELECTION
+		var dateDim = getDimension(dKey.date);
+		var uniqueDates = unique(my.getData(), mapKey(dKey.date), d3.descending);
+		var selectedDates = d3.set();
+
+		//generate random dates over the past 5 years
+		var testUniqueDates = [];
+		var today = +new Date();
+		for(i=0; i<1000; i++){
+		    testUniqueDates.push(today - Math.round(Math.random() * 5 * 365 * 86400 * 1000));
+		}
+		testUniqueDates.sort(d3.descending);
+
+		// uniqueDates = testUniqueDates;
+
+		function selectedDatesChanged() {
+			dateDim.filterFunction(function(d) {
+				return selectedDates.has(d);
+			});
+			my.updateDateFilter();
+		}
+
+		function toggleDate(date) {
+			if (selectedDates.has(date)) {
+				selectedDates.remove(date);
+			} else {
+				selectedDates.add(date);
+			}
+			selectedDatesChanged();
+		}
+
+		function selectAll() {
+			selectedDates = d3.set(uniqueDates);
+			selectedDatesChanged();
+			update();
+		}
+
+		function selectNone() {
+			selectedDates = d3.set();
+			selectedDatesChanged();
+			update();
+		}
+
+		function addBadges(d) {
+			var dateBadges = d3.select(this).selectAll(".badge").data(d.values, ident);
+			var badgeFormat = d3.time.format("%H:%M:%S");
+
+			dateBadges.enter()
+				.append("span")
+				.text(function (d) { return badgeFormat(new Date(+d)); })
+				.attr("class", function(d) { return "badge badge-" + d; } )
+				.on("click", function(d) {
+					toggleDate(d);
+					update();
+				});
+
+			dateBadges
+				.classed("badge-info", function(d) { return selectedDates.has(d) });
+
+			dateBadges.exit().remove();
+		}
+
+		function days(d) {
+			var g = d3.select(this).selectAll("div").data(d.values, fKey);
+
+			g.enter()
+				.append("div");
+			g
+				.text(function(d) { return d3.time.format("%d")(new Date(+d.key)); } )
+				.each(addBadges);
+			g.exit().remove();
+		}
+
+		function months(d) {
+			var g = d3.select(this).selectAll("div").data(d.values, fKey);
+
+			g.enter()
+				.append("div");
+			g
+				.text(function(d) { return d3.time.format("%b")(new Date(+d.key)); } )
+				.each(days);
+			g.exit().remove();
+		}
+
+		var keyDay = function (d) { return +d3.time.day(new Date(+d)); };
+
+		var uniqueDays = unique(uniqueDates, keyDay, d3.ascending);
+		var nDays = 20; //TODO cst
+		var dayFrom = uniqueDays.length - nDays;
+
+		var nestDates = d3.nest()
+			.key(function (d) { return +d3.time.year(new Date(+d)); }).sortKeys(d3.descending)
+			.key(function (d) { return +d3.time.month(new Date(+d)); }).sortKeys(d3.descending)
+			.key(keyDay).sortKeys(d3.descending).sortValues(d3.ascending);
+
+		function filterDates() {
+			var dateFrom = uniqueDays[dayFrom];
+			var dayTo = dayFrom + nDays;
+			var dateTo = dayTo < uniqueDays.length ? uniqueDays[dayTo] : Infinity;
+			console.log(dateFrom);
+			console.log(dateTo);
+			return uniqueDates.filter(function(d) {
+				return d >= dateFrom && d < dateTo;
+			});
+		}
+
+		my.updateDateFilter = function(offsetDay) {
+			offsetDay = isDef(offsetDay) ? offsetDay : 0;
+			dayFrom = dayFrom + offsetDay;
+			dayFrom = Math.max(0, Math.min(uniqueDays.length - nDays, dayFrom));
+
+			var nestedDates = nestDates.entries(filterDates());
+
+			console.log(nestedDates);
+			var g = d3.select(".filters").selectAll("div").data(nestedDates, fKey);
+
+			g.enter()
+				.append("div");
+			g
+				.text(function(d) { return d3.time.format("%Y")(new Date(+d.key)); } )
+				.each(months);
+			g.exit().remove();
+		}
+
+		var root = d3.select(".filters");
+
+		root.append("button")
+			.attr("class", "btn btn-small")
+			.text("All")
+			.on("click", selectAll);
+
+		root.append("button")
+			.attr("class", "btn btn-small")
+			.text("None")
+			.on("click", selectNone);
+
+		toggleDate(uniqueDates[0]);
+
+		return my;
 	}
 
 	function showdata(data) {
 		function addCols(row) {
-			var rowValues = [];
-			var headers = [];
-			for (var key in row) {
-				headers.push(key);
-				rowValues.push(row[key]);
-			}
-			header.selectAll("th").data(headers).enter().append("th").text(ident);
+			header.selectAll("th").data(d3.keys(row)).enter().append("th").text(ident);
 			d3.select(this).selectAll("td")
-				.data(rowValues)
+				.data(d3.values(row))
 				.enter()
 				.append("td").text(ident);
 		}
@@ -99,7 +201,7 @@ var curvedata = (function() {
 			header = container.append("tr").attr("class", "dataheader");
 		}
 		
-		var rows = container.selectAll(".datavalues").data(data, dKey.get(dKey.index));
+		var rows = container.selectAll(".datavalues").data(data, mapKey(dKey.index));
 		
 		rows.enter().append("tr").attr("class", "datavalues").each(addCols);
 		rows.exit().remove();
@@ -178,7 +280,13 @@ var curvedata = (function() {
 		}
 	}
 
-
+	function update() {
+		var data = filter_.getData();
+		genericChart.update(data, ".chart", "value [ms]", mainColors);
+		if (isDef(rawdata)) {
+			showdata(data);
+		}
+	}
 
 
 	/*
@@ -205,31 +313,35 @@ var curvedata = (function() {
 		});
 		
 		return my;
-	}
+	};
 	
 	my.setReady = function() {
 		ready = true;
 		init();
 		return my;
-	}
+	};
 	
 	function setFilter(curves) {
 		var curveSet = d3.set(curves);
-		filter.dim_curve.filterAll();
-		filter.dim_curve.filterFunction(function (d) {
+		filter_.getDim(dKey.curve).filterFunction(function (d) {
 			return curveSet.has(d);
 		});
-		filter.updateAll();
-	}
+		update();
+		return my;
+	};
 
-	my.setFilter = function(curve) {
-		filter.dim_curve.filter(curve);
-		filter.updateAll();
+	my.update = function() {
+		update();
 		return my;
 	}
 
-	my.update = function() {
-		filter.updateAll();
+	my.prevDay = function() {
+		filter_.updateDateFilter(1);
+		return my;
+	}
+
+	my.nextDay = function() {
+		filter_.updateDateFilter(-1);
 		return my;
 	}
 
@@ -237,239 +349,7 @@ var curvedata = (function() {
 		if (!arguments.length) return rawdata;
 		rawdata = _;
 		return my;
-	}
+	};
 
 	return my;
 }());
-
-
-
-
-
-
-
-/*
- * Adapted from http://square.github.com/crossfilter/
- */
-function barChart() {
-	if (!barChart.id) barChart.id = 0;
-
-	var margin = {top: 10, right: 10, bottom: 20, left: 10},
-		x,
-		y = d3.scale.linear().range([100, 0]),
-		id = barChart.id++,
-		axis = d3.svg.axis().orient("bottom"),
-		brush = d3.svg.brush(),
-		interval,
-		brushDirty,
-		dimension,
-		group,
-		round;
-
-	function chart(div) {
-		var width = 500;//TODO x.range()[1],
-				height = y.range()[0];
-
-		y.domain([0, group.top(1)[0].value]);
-
-		div.each(function() {
-			var div = d3.select(this),
-				g = div.select("g");
-
-			// Create the skeletal chart.
-			if (g.empty()) {
-				div.select(".title").append("a")
-						.attr("href", "javascript:reset(" + id + ")")
-						.attr("class", "reset")
-						.text("reset")
-						.style("display", "none");
-
-				g = div.append("svg")
-						.attr("width", width + margin.left + margin.right)
-						.attr("height", height + margin.top + margin.bottom)
-					.append("g")
-						.attr("transform", "translate(" + margin.left + "," + margin.top + ")");
-
-				g.append("clipPath")
-						.attr("id", "clip-" + id)
-					.append("rect")
-						.attr("width", width)
-						.attr("height", height);
-
-				g.selectAll(".bar")
-						.data(["background", "foreground"])
-					.enter().append("path")
-						.attr("class", function(d) { return d + " bar"; })
-						.datum(group.all());
-
-				g.selectAll(".foreground.bar")
-						.attr("clip-path", "url(#clip-" + id + ")");
-
-				g.append("g")
-						.attr("class", "axis")
-						.attr("transform", "translate(0," + height + ")")
-						.call(axis);
-
-				// Initialize the brush component with pretty resize handles.
-				var gBrush = g.append("g").attr("class", "brush").call(brush);
-				gBrush.selectAll("rect").attr("height", height);
-				gBrush.selectAll(".resize").append("path").attr("d", resizePath);
-			}
-
-			// Only redraw the brush if set externally.
-			if (brushDirty) {
-				brushDirty = false;
-				g.selectAll(".brush").call(brush);
-				div.select(".title a").style("display", brush.empty() ? "none" : null);
-				if (brush.empty()) {
-					g.selectAll("#clip-" + id + " rect")
-							.attr("x", 0)
-							.attr("width", width);
-				} else {
-					var extent = brush.extent();
-					g.selectAll("#clip-" + id + " rect")
-							.attr("x", x(extent[0]))
-							.attr("width", x(extent[1]) - x(extent[0]));
-				}
-			}
-
-			g.selectAll(".bar").attr("d", barPath);
-		});
-
-		function barPath(groups) {
-			var path = [],
-					i = -1,
-					n = groups.length,
-					d;
-		/*
-		firstKey = x.domain()[0],
-		secondKey = interval.offset(firstKey, 1),
-		barWidth = 0.9 * x(secondKey) - x(firstKey);
-		console.log(barWidth);
-		*/
-	while (++i < n) {
-				d = groups[i];
-		barWidth = isDef(interval) ? 0.9 * (x(interval.offset(d.key, 1)) - x(d.key)) : 100; //TODO
-				path.push("M", x(d.key), ",", height, "V", y(d.value), "h", barWidth, "V", height);
-			}
-			return path.join("");
-		}
-
-		function resizePath(d) {
-			var e = +(d == "e"),
-					x = e ? 1 : -1,
-					y = height / 3;
-			return "M" + (.5 * x) + "," + y
-					+ "A6,6 0 0 " + e + " " + (6.5 * x) + "," + (y + 6)
-					+ "V" + (2 * y - 6)
-					+ "A6,6 0 0 " + e + " " + (.5 * x) + "," + (2 * y)
-					+ "Z"
-					+ "M" + (2.5 * x) + "," + (y + 8)
-					+ "V" + (2 * y - 8)
-					+ "M" + (4.5 * x) + "," + (y + 8)
-					+ "V" + (2 * y - 8);
-		}
-	}
-
-	brush.on("brushstart.chart", function() {
-		var div = d3.select(this.parentNode.parentNode.parentNode);
-		div.select(".title a").style("display", null);
-	});
-
-	brush.on("brush.chart", function() {
-		var g = d3.select(this.parentNode),
-				extent = brush.extent();
-		if (isDef(x.rangeBand)) {
-		function invertScale(xPixels) {
-			var i = Math.round(xPixels / x.rangeBand());
-		if (i < group.size()) {
-			return group.all()[i].key;
-		} else {
-			return group.all()[i-1].key+1;
-		}
-		//return group.all()[Math.min(, group.size()-1)].key;
-		}
-		invExtent = [invertScale(extent[0]), invertScale(extent[1])];
-		/*
-		g.select(".brush")
-			.call(brush.extent(extent = [x(invExtent[0]), x(invExtent[1])]))
-			.selectAll(".resize")
-			.style("display", null);*/
-		g.select("#clip-" + id + " rect")
-			.attr("x", extent[0])
-			.attr("width", extent[1] - extent[0]);
-		dimension.filterRange(invExtent);
-	} else {
-		if (round) g.select(".brush")
-			.call(brush.extent(extent = extent.map(round)))
-			.selectAll(".resize")
-			.style("display", null);
-		g.select("#clip-" + id + " rect")
-			.attr("x", x(extent[0]))
-			.attr("width", x(extent[1]) - x(extent[0]));
-		dimension.filterRange(extent);
-	}
-	});
-
-	brush.on("brushend.chart", function() {
-		if (brush.empty()) {
-			var div = d3.select(this.parentNode.parentNode.parentNode);
-			div.select(".title a").style("display", "none");
-			div.select("#clip-" + id + " rect").attr("x", null).attr("width", "100%");
-			dimension.filterAll();
-		}
-	});
-
-	chart.margin = function(_) {
-		if (!arguments.length) return margin;
-		margin = _;
-		return chart;
-	};
-
-	chart.x = function(_) {
-		if (!arguments.length) return x;
-		x = _;
-		axis.scale(x);
-		brush.x(x);
-		return chart;
-	};
-
-	chart.y = function(_) {
-		if (!arguments.length) return y;
-		y = _;
-		return chart;
-	};
-
-	chart.dimension = function(_) {
-		if (!arguments.length) return dimension;
-		dimension = _;
-		return chart;
-	};
-
-	chart.filter = function(_) {
-		if (_) {
-			brush.extent(_);
-			dimension.filterRange(_);
-		} else {
-			brush.clear();
-			dimension.filterAll();
-		}
-		brushDirty = true;
-		return chart;
-	};
-
-	chart.group = function(_) {
-		if (!arguments.length) return group;
-		group = _;
-		return chart;
-	};
-
-	chart.interval = function(_) {
-		if (!arguments.length) return interval;
-	interval = _;
-		round = interval.round;
-		return chart;
-	};
-
-	return d3.rebind(chart, brush, "on");
-}

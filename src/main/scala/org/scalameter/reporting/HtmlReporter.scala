@@ -20,6 +20,7 @@ case class HtmlReporter(val renderers: HtmlReporter.Renderer*) extends Reporter 
 
   def head = 
     <head>
+      <meta charset="utf-8">
       <title>Performance Report</title>
       <link type="text/css" media="screen" rel="stylesheet" href="css/bootstrap.min.css" />
       <link type="text/css" media="screen" rel="stylesheet" href="css/index.css" />
@@ -70,14 +71,13 @@ case class HtmlReporter(val renderers: HtmlReporter.Renderer*) extends Reporter 
         <div class="chart"></div>
       </div>
       <h1>Filters</h1>        
-      <div id="filters">
-        <div id="selectdate" class="filter">
-          <div class="title">Date</div>
-        </div>
-        <div id="selectparam" class="filter">
-          <div class="title">param-size</div>
-        </div>
+      <div class="pagination">
+        <ul>
+          <li><a onclick="cd.prevDay();">«</a></li>
+          <li><a onclick="cd.nextDay();">»</a></li>
+        </ul>
       </div>
+      <div class="filters"></div>
       <h1>Raw data</h1>
       <table class="table rawdata"></table>
     </div>
