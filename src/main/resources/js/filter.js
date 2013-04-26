@@ -265,7 +265,7 @@ var curvedata = (function() {
 		var nodeName = scope[0];
 		var isLeaf = scope.length == 1;
 		var id = isLeaf ? scopeId : -1;
-		if (!isDef(node.children[nodeName])) {
+		if (!node.children.hasOwnProperty(nodeName)) {
 			node.children[nodeName] = {
 				"id": id,
 				"children": []

@@ -16,11 +16,16 @@ function fKey(d) {
 
 function unique(data, key, sort){
 	var values = d3.nest().key(key).map(data, d3.map).keys();
+	values = values.map(toInt);
 	if (isDef(sort)) {
 		return values.sort(sort);
 	} else {
 		return values;
 	}
+}
+
+function toInt(d) {
+	return +d;
 }
 
 var dKey = {
