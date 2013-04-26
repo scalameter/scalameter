@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html><head>
+      <meta charset="utf-8" />
+      <title>Performance Report</title>
+      <link type="text/css" media="screen" rel="stylesheet" href="css/bootstrap.min.css"/>
+      <link type="text/css" media="screen" rel="stylesheet" href="css/index.css"/>
+      <link type="text/css" media="screen" rel="stylesheet" href="css/ui.dynatree.css"/>
+      <script type="text/javascript" src="js/d3.v3.min.js"></script>
+      <script type="text/javascript" src="js/crossfilter.min.js"></script>
+      <script type="text/javascript" src="js/jquery-1.9.1.js"></script>
+      <script type="text/javascript" src="js/jquery-ui.custom.min.js"></script>
+      <script type="text/javascript" src="js/jquery.dynatree.js"></script>
+      <script type="text/javascript" src="js/bootstrap.min.js"></script>
+      <script type="text/javascript" src="js/helper.js"></script>
+      <script type="text/javascript" src="js/chart.js"></script>
+      <script type="text/javascript" src="js/filter.js"></script>
+    </head><body>
+      <div>
+      <h1>Performance Report</h1>        
+      <div class="tree"></div>
+      <div class="chartholder">
+        <ul class="nav nav-tabs">
+          <li class="active"><a onclick="gc.setType(gc.cType.lineParam); gc.setShowCI(false); cd.update();" data-toggle="tab">Line Chart (param)</a></li>
+          <li><a onclick="gc.setType(gc.cType.lineDate); gc.setShowCI(false); cd.update();" data-toggle="tab">Line Chart (date)</a></li>
+          <li><a onclick="gc.setType(gc.cType.lineParam); gc.setShowCI(true); cd.update();" data-toggle="tab">Line Chart (param) with CI</a></li>
+          <li><a onclick="gc.setType(gc.cType.bar); gc.setShowCI(false); cd.update();" data-toggle="tab">Bar Chart</a></li>
+        </ul>
+        <div class="chart"></div>
+      </div>
+      <h1>Filters</h1>
+      <div class="pagination">
+        <ul>
+          <li><a onclick="cd.prevDay();">&laquo;</a></li>
+          <li><a onclick="cd.nextDay();">&raquo;</a></li>
+        </ul>
+      </div>
+      <div class="filters"></div>
+      <h1>Raw data</h1>
+      <table class="table rawdata"></table>
+    </div>
+      <div>
+      <h1>Machine information</h1>
+      <ul>
+      <li>
+        cores: 4
+        </li><li>
+        hostname: T410
+        </li><li>
+        jvm-name: Java HotSpot(TM) 64-Bit Server VM
+        </li><li>
+        jvm-vendor: Oracle Corporation
+        </li><li>
+        jvm-version: 23.7-b01
+        </li><li>
+        os-arch: amd64
+        </li><li>
+        os-name: Windows 7
+        </li>
+      </ul>
+    </div>
+      <div>
+      <div>Started: Thu Apr 18 23:58:58 CEST 2013</div>
+      <div>Finished: Fri Apr 19 00:00:40 CEST 2013</div>
+      <div>Running time: 102 seconds</div>
+    </div>
+      <script type="text/javascript">
+        var cd = curvedata.rawdata('.rawdata');
+        var gc = genericChart;
+      </script>
+      <div> <script type="text/javascript">
+            cd.addGraph(["Seq", "apply"], 'Array', '../Seq.apply.Array.dsv');
+          </script><script type="text/javascript">
+            cd.addGraph(["Seq", "apply"], 'ArrayBuffer', '../Seq.apply.ArrayBuffer.dsv');
+          </script><script type="text/javascript">
+            cd.addGraph(["Seq", "apply"], 'Vector', '../Seq.apply.Vector.dsv');
+          </script><script type="text/javascript">
+            cd.addGraph(["Seq", "apply"], 'Range', '../Seq.apply.Range.dsv');
+          </script> </div><div> <script type="text/javascript">
+            cd.addGraph(["Seq", "update"], 'Array', '../Seq.update.Array.dsv');
+          </script><script type="text/javascript">
+            cd.addGraph(["Seq", "update"], 'ArrayBuffer', '../Seq.update.ArrayBuffer.dsv');
+          </script> </div><div> <script type="text/javascript">
+            cd.addGraph(["Seq", "append"], 'Vector', '../Seq.append.Vector.dsv');
+          </script> </div>
+      <script type="text/javascript">
+        cd.setReady();
+      </script>
+    </body></html>

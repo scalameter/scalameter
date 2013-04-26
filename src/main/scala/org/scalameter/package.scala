@@ -175,6 +175,7 @@ package scalameter {
     def apply[T](key: String) = properties.apply(key).asInstanceOf[T]
 
     def scope = properties(dsl.scope).asInstanceOf[List[String]].reverse.mkString(".")
+    def scopeList = properties(dsl.scope).asInstanceOf[List[String]].reverse
     def curve = goe(dsl.curve, "")
   }
 
@@ -236,7 +237,7 @@ package scalameter {
   @SerialVersionUID(-2541697615491239986L)
   case class Measurement(time: Double, params: Parameters, data: Option[Measurement.Data]) {
     def complete: Seq[Double] = data.get.complete
-    def success: Boolean = data.get.success
+    def success: Boolean = data.map(_.success).getOrElse(true)
     def errors: Errors = data match {
       case None    => throw new Exception("The complete data is not available. Please wrap your current aggregator in Aggregator.complete: `Aggregator.complete(Aggregator.average)")
       case Some(_) => new Errors(this)

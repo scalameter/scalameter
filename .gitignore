@@ -5,3 +5,9 @@ tmp*
 
 *.*~
 .history
+
+.classpath
+.project
+.settings
+
+.gitattributes

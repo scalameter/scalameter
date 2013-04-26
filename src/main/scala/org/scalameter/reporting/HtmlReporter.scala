@@ -20,37 +20,78 @@ case class HtmlReporter(val renderers: HtmlReporter.Renderer*) extends Reporter 
 
   def head = 
     <head>
-      <title>Performance report</title>
-      <link type="text/css" media="screen" rel="stylesheet" href="lib/index.css"/>
+      <meta charset="utf-8" />
+      <title>Performance Report</title>
+      <link type="text/css" media="screen" rel="stylesheet" href="css/bootstrap.min.css" />
+      <link type="text/css" media="screen" rel="stylesheet" href="css/index.css" />
+      <link type="text/css" media="screen" rel="stylesheet" href="css/ui.dynatree.css" />
+      <script type="text/javascript" src="js/d3.v3.min.js"></script>
+      <script type="text/javascript" src="js/crossfilter.min.js"></script>
+      <script type="text/javascript" src="js/jquery-1.9.1.js"></script>
+      <script type="text/javascript" src="js/jquery-ui.custom.min.js"></script>
+      <script type="text/javascript" src="js/jquery.dynatree.js"></script>
+      <script type="text/javascript" src="js/bootstrap.min.js"></script>
+      <script type="text/javascript" src="js/helper.js"></script>
+      <script type="text/javascript" src="js/chart.js"></script>
+      <script type="text/javascript" src="js/filter.js"></script>
     </head>
 
   def body(result: Tree[CurveData], persistor: Persistor) = {
     <body>
+      {skeleton}
       {machineInformation}
       {date(result)}
-      <h1>Performance test charts</h1>
+      <script type="text/javascript">
+        var cd = curvedata.rawdata('.rawdata');
+        var gc = genericChart;
+      </script>
       {
-        for ((ctx, scoperesults) <- result.scopes; if scoperesults.nonEmpty) yield <p><div>
-          <h2>Performance test group: {ctx.scope}</h2>
+        for ((ctx, scoperesults) <- result.scopes; if scoperesults.nonEmpty) yield
           {
             val histories = scoperesults.map(cd => persistor.load(cd.context))
             for (r <- renderers) yield r.render(ctx, scoperesults, histories)
           }
-        </div></p>
       }
+      <script type="text/javascript">
+        cd.setReady();
+      </script>
     </body>
   }
+
+  def skeleton =
+    <div>
+      <h1>Performance Report</h1>        
+      <div class="tree"></div>
+      <div class="chartholder">
+        <ul class="nav nav-tabs">
+          <li class="active"><a onclick="gc.setType(gc.cType.lineParam); gc.setShowCI(false); cd.update();" data-toggle="tab">Line Chart (param)</a></li>
+          <li><a onclick="gc.setType(gc.cType.lineDate); gc.setShowCI(false); cd.update();" data-toggle="tab">Line Chart (date)</a></li>
+          <li><a onclick="gc.setType(gc.cType.lineParam); gc.setShowCI(true); cd.update();" data-toggle="tab">Line Chart (param) with CI</a></li>
+          <li><a onclick="gc.setType(gc.cType.bar); gc.setShowCI(false); cd.update();" data-toggle="tab">Bar Chart</a></li>        </ul>
+        <div class="chart"></div>
+      </div>
+      <h1>Filters</h1>        
+      <div class="pagination">
+        <ul>
+          <li><a onclick="cd.prevDay();">&laquo;</a></li>
+          <li><a onclick="cd.nextDay();">&raquo;</a></li>
+        </ul>
+      </div>
+      <div class="filters"></div>
+      <h1>Raw data</h1>
+      <table class="table rawdata"></table>
+    </div>
 
   def machineInformation =
     <div>
       <h1>Machine information</h1>
-      <p><ul>
+      <ul>
       {
         for ((k, v) <- Context.machine.properties.toList.sortBy(_._1)) yield <li>
         {k + ": " + v}
         </li>
       }
-      </ul></p>
+      </ul>
     </div>
 
   def date(results: Tree[CurveData]) = {
@@ -68,29 +109,55 @@ case class HtmlReporter(val renderers: HtmlReporter.Renderer*) extends Reporter 
   def report(result: CurveData, persistor: Persistor) {
     // nothing - the charts are generated only at the end
   }
+  
+  def copyResource(from: String, to: File) {
+    val res = getClass.getClassLoader.getResourceAsStream(from)
+    try {
+      val buffer = new Array[Byte](1024)
+      val fos = new FileOutputStream(to)
+      var nBytesRead = 0
+      def read = { nBytesRead = res.read(buffer) }
+      while ({read; nBytesRead != -1}) {
+        fos.write(buffer, 0, nBytesRead)
+      }
+      if (fos != null) {
+        fos.close();
+      }
+    } finally {
+      res.close()
+    }
+  }
 
   def report(results: Tree[CurveData], persistor: Persistor) = {
     val resultdir = results.context.goe(reports.resultDir, "tmp")
 
     new File(s"$resultdir").mkdir()
-    new File(s"$resultdir${sep}report").mkdir()
-    new File(s"$resultdir${sep}report${sep}images").mkdir()
-    new File(s"$resultdir${sep}report${sep}lib").mkdir()
+
+    val root = new File(s"$resultdir${sep}report")
+
+    root.mkdir()
+    new File(root, "css").mkdir()
+    new File(root, "js").mkdir()
 
     val report = <html>{head ++ body(results, persistor)}</html>
 
-    val css = getClass.getClassLoader.getResourceAsStream("css/index.css")
-    try {
-      val reader = new BufferedReader(new InputStreamReader(css))
-      printToFile(new File(s"$resultdir${sep}report${sep}lib${sep}index.css")) { p =>
-        var line = ""
-        while (line != null) {
-          p.println(line)
-          line = reader.readLine()
-        }
-      }
-    } finally {
-      css.close()
+    List(
+      "css/bootstrap.min.css",
+      "css/icons.gif",
+      "css/index.css",
+      "css/ui.dynatree.css",
+      "css/vline.gif",
+      "js/bootstrap.min.js",
+      "js/chart.js",
+      "js/crossfilter.min.js",
+      "js/d3.v3.min.js",
+      "js/filter.js",
+      "js/helper.js",
+      "js/jquery-1.9.1.js",
+      "js/jquery-ui.custom.min.js",
+      "js/jquery.dynatree.js"
+    ).foreach { filename =>
+      copyResource(filename, new File(root, filename))
     }
 
     printToFile(new File(s"$resultdir${sep}report${sep}index.html")) {
@@ -156,6 +223,26 @@ object HtmlReporter {
         <img src={"images/" + scopename + ".png"} alt={scopename} width="800" height="600"></img>
         </a>
         </div>
+      }
+    }
+    
+    case class JSChart() extends Renderer {
+      def render(context: Context, curves: Seq[CurveData], hs: Seq[History]): Node = {
+        val resultdir = ".." //context.goe(reports.resultDir, "tmp")
+        val group = context.scope
+        val sep = "/"
+
+        def addCurve(curve: CurveData): Node = {
+          val curveName = curve.context.curve
+          val scope = scala.xml.Unparsed(new scala.util.parsing.json.JSONArray(curve.context.scopeList).toString())
+          val filename = s"$resultdir$sep$group.$curveName.dsv"
+          <script type="text/javascript">
+            cd.addGraph({ scope }, { s"'$curveName'" }, { s"'$filename'" });
+          </script>
+        }
+        <div> {
+          for (c <- curves) yield addCurve(c)
+        } </div>
       }
     }
 
