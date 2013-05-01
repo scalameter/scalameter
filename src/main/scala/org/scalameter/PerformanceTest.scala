@@ -39,7 +39,8 @@ object PerformanceTest {
       val datestart = new java.util.Date
       DSL.setupzipper.value = Tree.Zipper.root[Setup[_]]
       testbody.value.apply()
-      val setuptree = DSL.setupzipper.value.result
+      val rawsetuptree = DSL.setupzipper.value.result
+      val setuptree = rawsetuptree.filter(setupFilter)
       val resulttree = executor.run(setuptree.asInstanceOf[Tree[Setup[SameType]]], reporter, persistor)
       val dateend = new java.util.Date
 
@@ -51,6 +52,11 @@ object PerformanceTest {
       testbody.value = () => body
     }
 
+  }
+
+  private def setupFilter(setup: Setup[_]): Boolean = {
+    val sf = initialContext.goe(Key.scopeFilter, "")
+    setup.context.scope.startsWith(sf)
   }
 
   trait Quickbenchmark extends PerformanceTest {

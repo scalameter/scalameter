@@ -19,6 +19,12 @@ case class Tree[T](context: Context, items: Seq[T], children: Seq[Tree[T]]) {
     Tree(context, mappeditems, mappedchildren)
   }
 
+  def filter(p: T => Boolean): Tree[T] = {
+    val filtereditems = for (x <- items if p(x)) yield x
+    val filteredchildren = for (child <- children) yield child.filter(p)
+    Tree(context, filtereditems, filteredchildren)
+  }
+
   def scopes = new Traversable[(Context, Seq[T])] {
     private def recurse[U](f: ((Context, Seq[T])) => U, tree: Tree[T]) {
       f(tree.context -> tree.items)

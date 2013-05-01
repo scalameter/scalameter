@@ -10,6 +10,7 @@ class Key {
   val verbose = "verbose"
   val classpath = "classpath"
   val preJDK7 = "pre-jdk-7"
+  val scopeFilter = "scope-filter"
 
   object dsl {
     val curve = "curve"

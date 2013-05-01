@@ -43,7 +43,7 @@ object Main {
           case (acc, x) => Configuration(acc.benches ++ x.benches, acc.context ++ x.context)
         }
       }
-      def arg: Parser[Configuration] = benches | intsetting | resdir | flag
+      def arg: Parser[Configuration] = benches | intsetting | resdir | scopefilt | flag
       def listOf(flagname: String, shorthand: String): Parser[Seq[String]] = "-" ~ (flagname | shorthand) ~ classnames ^^ {
         case _ ~ _ ~ classnames => classnames
       }
@@ -63,6 +63,9 @@ object Main {
       }
       def resdir: Parser[Configuration] = "-" ~ "CresultDir" ~ path ^^ {
         case _ ~ _ ~ s => Configuration(Nil, Context(reports.resultDir -> s))
+      }
+      def scopefilt: Parser[Configuration] = "-" ~ "CscopeFilter" ~ ident ^^ {
+        case _ ~ _ ~ s => Configuration(Nil, Context(scopeFilter -> s))
       }
       def flag: Parser[Configuration] = "-" ~ ident ^^ {
         case _ ~ "verbose" => Configuration(Nil, Context(Key.verbose -> true))
