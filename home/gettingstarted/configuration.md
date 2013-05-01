@@ -43,7 +43,7 @@ namely, the members `executor`, `reporter` and `persistor`.
       /* configuration */
     
       lazy val executor = LocalExecutor(
-        Executor.Warmer.Default(),
+        new Executor.Warmer.Default,
         Aggregator.min,
         new Measurer.Default)
       lazy val reporter = new LoggingReporter
@@ -137,6 +137,7 @@ The new JVM has the default heap size set to 2GB.
 This way:
 
     lazy val executor = SeparateJvmsExecutor(
+      new Executor.Warmer.Default,
       Aggregator.min,
       new Measurer.Default
     )
