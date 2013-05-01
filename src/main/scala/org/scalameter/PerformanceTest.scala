@@ -56,7 +56,8 @@ object PerformanceTest {
 
   private def setupFilter(setup: Setup[_]): Boolean = {
     val sf = initialContext.goe(Key.scopeFilter, "")
-    setup.context.scope.startsWith(sf)
+    val fullname = setup.context.scope + "." + setup.context.curve
+    fullname.startsWith(sf)
   }
 
   trait Quickbenchmark extends PerformanceTest {
