@@ -201,7 +201,7 @@ object RegressionReporter {
             log(s"$color  - at ${measurement.params.axisData.mkString(", ")}, ${alternatives.size} alternatives: $passed${ansi.reset}")
             log(f"$color    (SSA: ${ftest.ssa}%.2f, SSE: ${ftest.sse}%.2f, F: ${ftest.F}%.2f, qf: ${ftest.quantile}%.2f, significance: $significance)${ansi.reset}")
             if (!ftest) {
-              def logalt(a: Seq[Double]) = log(s"$color      ${a.mkString(", ")}${ansi.reset}")
+              def logalt(a: Seq[Double]) = log(s"$color      ${a.map(_ + " ms").mkString(", ")}${ansi.reset}")
               log(s"$color    History:")
               for (a <- alternatives.init) logalt(a)
               log(s"$color    Latest:")
@@ -222,7 +222,7 @@ object RegressionReporter {
     }
 
     case class ConfidenceIntervals(strict: Boolean = false) extends Tester {
-      def cistr(ci: (Double, Double)) = f"<${ci._1}%.2f, ${ci._2}%.2f>"
+      def cistr(ci: (Double, Double)) = f"<${ci._1}%.2f ms, ${ci._2}%.2f ms>"
 
       def single(previous: Measurement, latest: Measurement, sig: Double): Measurement = {
         try {
@@ -236,8 +236,8 @@ object RegressionReporter {
             val lateform = latest.complete.map(v => f"$v%.2f")
             log.error(
               f"$color      Failed confidence interval test: <${citest.ci._1}%.2f, ${citest.ci._2}%.2f> ${ansi.reset}\n" +
-              f"$color      Previous (mean = ${citest.m1}%.2f, stdev = ${citest.s1}%.2f, ci = $ciprev): ${prevform.mkString(", ")}${ansi.reset}\n" +
-              f"$color      Latest   (mean = ${citest.m2}%.2f, stdev = ${citest.s2}%.2f, ci = $cilate): ${lateform.mkString(", ")}${ansi.reset}"
+              f"$color      Previous (mean = ${citest.m1}%.2f ms, stdev = ${citest.s1}%.2f ms, ci = $ciprev): ${prevform.mkString(", ")}${ansi.reset}\n" +
+              f"$color      Latest   (mean = ${citest.m2}%.2f ms, stdev = ${citest.s2}%.2f ms, ci = $cilate): ${lateform.mkString(", ")}${ansi.reset}"
             )
             latest.failed
           } else latest
@@ -284,7 +284,7 @@ object RegressionReporter {
     }
 
     case class OverlapIntervals() extends Tester {
-      def cistr(ci: (Double, Double)) = f"<${ci._1}%.2f, ${ci._2}%.2f>"
+      def cistr(ci: (Double, Double)) = f"<${ci._1}%.2f ms, ${ci._2}%.2f msxs>"
 
       def single(previous: Measurement, latest: Measurement, sig: Double, noiseMagnitude: Double): Measurement = {
         try {
@@ -298,8 +298,8 @@ object RegressionReporter {
             val lateform = latest.complete.map(v => f"$v%.2f")
             val msg = {
               f"$color      Failed overlap interval test. ${ansi.reset}\n" +
-              f"$color      Previous (mean = ${citest.m1}%.2f, stdev = ${citest.s1}%.2f, ci = $ciprev): ${prevform.mkString(", ")}${ansi.reset}\n" +
-              f"$color      Latest   (mean = ${citest.m2}%.2f, stdev = ${citest.s2}%.2f, ci = $cilate): ${lateform.mkString(", ")}${ansi.reset}"
+              f"$color      Previous (mean = ${citest.m1}%.2f ms, stdev = ${citest.s1}%.2f ms, ci = $ciprev ms): ${prevform.mkString(", ")}${ansi.reset}\n" +
+              f"$color      Latest   (mean = ${citest.m2}%.2f ms, stdev = ${citest.s2}%.2f ms, ci = $cilate ms): ${lateform.mkString(", ")}${ansi.reset}"
             }
             log.error(msg)
             latest.failed

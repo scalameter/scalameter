@@ -1,7 +1,7 @@
 package org.scalameter
 
 
-object RangeBenchmark
+class RangeBenchmark
 extends PerformanceTest.Microbenchmark {
   val ranges = for {
     size <- Gen.range("size")(300000, 1500000, 300000)

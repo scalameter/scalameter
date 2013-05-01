@@ -1,14 +1,16 @@
 package org.scalameter
 
+
+
 import org.scalatest.FunSuite
 import org.scalameter.api._
-
 import util.Properties.javaVersion
+
+
 
 class QuickbenchmarkTest extends FunSuite {
 
   object SomeBenchmark extends PerformanceTest.Quickbenchmark {
-
     performance of "single" in {
       using(Gen.single("single")(1)) in (_ + 0)
     }
