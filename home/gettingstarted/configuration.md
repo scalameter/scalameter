@@ -412,12 +412,10 @@ In the following example we have two test classes that define separate executors
 The enclosing class may look like this -- in this case it turns off the `persistor`s for the included tests.
 
     class TestSuite extends PerformanceTest.Regression {
-    
       def persistor = Persistor.None
     
       include[MemoryTest]
       include[RegressionTest]
-    
     }
 
 

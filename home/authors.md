@@ -9,7 +9,7 @@ permalink: /authors/index.html
 ScalaMeter was developed by [Aleksandar Prokopec](http://people.epfl.ch/aleksandar.prokopec) from the [Scala Team](http://lamp.epfl.ch/) at the [EPFL](http://epfl.ch/),
 and [Josh Suereth](http://jsuereth.com/) from [Typesafe](http://typesafe.com/).
 
-The HTML-based performance result visualizations have been designed and implemented by [Roman Zoller](https://github.com/rzoller).
+The interactive HTML-based performance result visualizations have been designed and implemented by [Roman Zoller](https://github.com/rzoller).
 
 Special thanks goes to [Ngoc Duy Pham](https://github.com/ngocduy-pham) for doing preliminary research
 on the techniques used in ScalaMeter.
