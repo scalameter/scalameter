@@ -42,18 +42,42 @@ To run all the tests:
 
 To run a single test:
 
-    > test-only org.mypackage.MyScalaMeterTestName
+    > test-only mypackage.MyScalaMeterTestName
 
 To run tests with arguments:
 
-    > test-only org.mypackage.MyScalaMeterTestName -- <arguments>
+    > test-only mypackage.MyScalaMeterTestName -- <arguments>
+
+## SBT/command line test arguments
+
+Below is a list of useful arguments.
+These can be used both from SBT and when running ScalaMeter from the command line.
+
+The `-verbose` flag produces verbose output.
+You will see information about running your benchmarks, warmup times, measuring time, etc.:
+
+    > test-only mypackage.MyScalaMeterTestName -- -verbose
+
+The `-CresultDir` option changes the directory the results are generated into:
+
+    > test-only mypackage.MyScalaMeterTestName -- -CresultDir tmp2
+
+Starting from ScalaMeter 0.3 you can selectively run only certain tests from your test suite.
+
+The `-CscopeFilter <test-name-prefix>` option runs only the benchmarks whose name starts with `<test-name-prefix>`.
+For example:
+
+    > test-only mypackage.MyScalaMeterTestName -- -CscopeFilter 'Seq'
+
+    > test-only mypackage.MyScalaMeterTestName -- -CscopeFilter 'Seq.foreach'
+
+    > test-only mypackage.MyScalaMeterTestName -- -CscopeFilter 'Seq.foreach.Array'
 
 
 
 <div class="imagenoframe">
   <img src="/scalameter/resources/images/logo-yellow-small.png"></img>
 </div>
-
 
 
 

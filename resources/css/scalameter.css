@@ -330,13 +330,31 @@ img.footer {
   text-shadow: 1px 1px #000000;
 }
 
-li.newstitle span {
-  font-size: 24px;
+div.newsentries {
 }
 
+h1.newstitle {
+  font-family: LiberationSans;
+  font-size: 24px;
+  padding-top: 10px;
+  border-bottom: 1px solid #cc7733;
+  text-shadow: none;
+}
 
+div.toc span {
+  padding-top: 10px;
+  font-size: 18px;
+  font-weight: bold;
+  color: #6a2a00;
+}
 
-
+div.toc-panel {
+  border: solid 1px #c0a090;
+  padding: 10px;
+  background-color: #f8f8e8;
+  -moz-border-radius: 5px;
+  border-radius: 5px;
+}
 
 
 

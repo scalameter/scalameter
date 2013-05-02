@@ -7,17 +7,21 @@ permalink: /news/index.html
 
 
 
-<ul class="entries">
+<div class="newsentries">
   {% for post in site.posts %}
   <a href="/scalameter/{{ post.url }}">
-    <li class="newstitle">
-      <span>{{ post.title }}</span>
-      <br/>
+    <br/>
+    <br/>
+    <div>
+    <h1 class="newstitle">
+      {{ post.title }}
+    </h1>
       {{ post.date | date: "%d.%m.%Y." }}
-    </li>
+    </div>
   </a>
+  {{ post.content }}
   {% endfor %}
-</ul>
+</div>
 
 
 
