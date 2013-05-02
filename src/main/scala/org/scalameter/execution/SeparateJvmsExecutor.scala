@@ -74,29 +74,29 @@ class SeparateJvmsExecutor(val warmer: Executor.Warmer, val aggregator: Aggregat
     log.verbose(s"Running test set for ${context.scope}, curve ${context.goe(dsl.curve, "")}")
     log.verbose(s"Starting $totalreps measurements across $independentSamples independent JVM runs.")
 
-    val timeseqs = for {
+    val valueseqs = for {
       idx <- 0 until independentSamples
       reps = repetitions(idx)
     } yield sampleReport(idx, reps)
 
-    // ugly as hell
-    val timeseq = timeseqs.reduceLeft { (accseq, timeseq) =>
-      accseq zip timeseq map {
+    val valueseq = valueseqs.reduceLeft { (accseq, vs) =>
+      accseq zip vs map {
         case ((k1, x), (k2, y)) => (k1, x ++ y)
       }
     }
 
-    def nice(ts: Seq[(Parameters, Seq[Double])]) = ts map {
+    def nice(vs: Seq[(Parameters, Seq[Double])]) = vs map {
       case (params, seq) => params.axisData.mkString(", ") + ": " + seq.map(t => f"$t%.3f").mkString(", ")
     } mkString("\n")
 
-    log.verbose(s"Obtained measurements:\n${nice(timeseq)}")
+    log.verbose(s"Obtained measurements:\n${nice(valueseq)}")
 
-    val measurements = timeseq map {
-      case (params, times) => Measurement(
-        aggregator(times),
+    val measurements = valueseq map {
+      case (params, values) => Measurement(
+        aggregator(values),
         params,
-        aggregator.data(times)
+        aggregator.data(values),
+        m.units
       )
     }
 

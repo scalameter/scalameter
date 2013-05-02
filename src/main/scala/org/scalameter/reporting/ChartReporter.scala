@@ -80,13 +80,13 @@ object ChartReporter {
         for ((curve, idx) <- cs.zipWithIndex) {
           val series = new XYSeries(curve.context.goe(dsl.curve, idx.toString), true, true)
           for (measurement <- curve.measurements) {
-            series.add(measurement.params.axisData.head._2.asInstanceOf[Int], measurement.time)
+            series.add(measurement.params.axisData.head._2.asInstanceOf[Int], measurement.value)
           }
           seriesCollection.addSeries(series)
           renderer.setSeriesShapesVisible(idx, true)
         }
 
-        val chart = JFreeChartFactory.createXYLineChart(chartName, xAxisName, "time", seriesCollection, PlotOrientation.VERTICAL, true, true, false)
+        val chart = JFreeChartFactory.createXYLineChart(chartName, xAxisName, "value", seriesCollection, PlotOrientation.VERTICAL, true, true, false)
         chart.getPlot.setBackgroundPaint(new java.awt.Color(180, 180, 180))
         chart.getPlot.asInstanceOf[XYPlot].setRenderer(renderer)
         chart.setAntiAlias(true)
@@ -110,7 +110,7 @@ object ChartReporter {
                 } else {
                   (0D, 0D)
                 }
-                series.add(measurement.params.axisData.head._2.asInstanceOf[Int], measurement.time, ciForThisPoint._1, ciForThisPoint._2)
+                series.add(measurement.params.axisData.head._2.asInstanceOf[Int], measurement.value, ciForThisPoint._1, ciForThisPoint._2)
               }
             } else {
               val newestSeries = new YIntervalSeries(curve.context.goe(dsl.curve, ""))
@@ -123,7 +123,7 @@ object ChartReporter {
                   pastResult <- history.results
                   correspondingCurveInHistory = pastResult._3
                 } yield correspondingCurveInHistory.measurements(measurementIndex)
-                // We then take all observations that gave the time measurement (by calling complete) of each point, and concat them
+                // We then take all observations that gave the value measurement (by calling complete) of each point, and concat them
                 val previousMeasurementsObservations = previousMeasurements flatMap(m => m.complete)
 
                 val ciForThisPoint = if (showHistoryCi) { t.confidenceInterval(curve.context, previousMeasurementsObservations) } else { (0D, 0D) }
@@ -137,7 +137,7 @@ object ChartReporter {
                   (0D, 0D)
                 }
 
-                newestSeries.add(measurement.params.axisData.head._2.asInstanceOf[Int], measurement.time, ciForNewestPoint._1, ciForNewestPoint._2)
+                newestSeries.add(measurement.params.axisData.head._2.asInstanceOf[Int], measurement.value, ciForNewestPoint._1, ciForNewestPoint._2)
               }
               dataset.addSeries(historySeries)
               dataset.addSeries(newestSeries)
@@ -166,7 +166,7 @@ object ChartReporter {
         paintCurves(renderer)
     
         //String title, String xAxisLabel, String yAxisLabel, XYDataset dataset, PlotOrientation orientation, boolean legend,boolean tooltips, boolean urls
-        val chart = JFreeChartFactory.createXYLineChart(chartName, xAxisName, "time", dataset, PlotOrientation.VERTICAL, true, true, false)
+        val chart = JFreeChartFactory.createXYLineChart(chartName, xAxisName, "value", dataset, PlotOrientation.VERTICAL, true, true, false)
         val plot: XYPlot = chart.getPlot.asInstanceOf[XYPlot]
         plot.setBackgroundPaint(new java.awt.Color(200, 200, 200))
         plot.setRenderer(renderer)
@@ -209,12 +209,12 @@ object ChartReporter {
               val curveName = curve.context.goe(dsl.curve, "")
               val measurementParams = (for(p <- measurement.params.axisData) yield (p._1.toString + " : " + p._2.toString)).mkString("[", ", ", "]")
               val seriesName: String = curveName + " " + measurementParams
-              dataset.addValue(measurement.time, seriesName, categoryName)
+              dataset.addValue(measurement.value, seriesName, categoryName)
             }
           }
         }
 
-        val chart = JFreeChartFactory.createBarChart(chartName, xAxisName, "Time", dataset, PlotOrientation.VERTICAL, true, true, false)
+        val chart = JFreeChartFactory.createBarChart(chartName, xAxisName, "Value", dataset, PlotOrientation.VERTICAL, true, true, false)
         val plot: CategoryPlot = chart.getPlot.asInstanceOf[CategoryPlot]
         val renderer: BarRenderer = plot.getRenderer.asInstanceOf[BarRenderer]
         renderer.setDrawBarOutline(false)
@@ -321,12 +321,12 @@ object ChartReporter {
               val curveName = curve.context.goe(dsl.curve, "")
               val measurementParams = (for(p <- measurement.params.axisData) yield (p._1.toString + " : " + p._2.toString)).mkString("[", ", ", "]")
               val seriesName: String = curveName + "#" + formattedDate
-              dataset.addValue(measurement.time, seriesName, measurementParams)
+              dataset.addValue(measurement.value, seriesName, measurementParams)
             }
           }
         }
 
-        val chart = JFreeChartFactory.createBarChart(chartName, xAxisName, "Time", dataset, PlotOrientation.VERTICAL, true, true, false)
+        val chart = JFreeChartFactory.createBarChart(chartName, xAxisName, "Value", dataset, PlotOrientation.VERTICAL, true, true, false)
         val plot: CategoryPlot = chart.getPlot.asInstanceOf[CategoryPlot]
         val renderer: BarRenderer = plot.getRenderer.asInstanceOf[BarRenderer]
         renderer.setDrawBarOutline(false)

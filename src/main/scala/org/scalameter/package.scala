@@ -235,7 +235,7 @@ package scalameter {
   }
 
   @SerialVersionUID(-2541697615491239986L)
-  case class Measurement(time: Double, params: Parameters, data: Option[Measurement.Data]) {
+  case class Measurement(value: Double, params: Parameters, data: Option[Measurement.Data], units: String) {
     def complete: Seq[Double] = data.get.complete
     def success: Boolean = data.map(_.success).getOrElse(true)
     def errors: Errors = data match {

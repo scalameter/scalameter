@@ -95,12 +95,17 @@ object Executor {
   trait Measurer extends Serializable {
     def name: String
     def measure[T, U](context: Context, measurements: Int, setup: T => Any, tear: T => Any, regen: () => T, snippet: T => Any): Seq[Double]
+    def units: String
   }
 
   object Measurer {
 
+    trait Timer extends Measurer {
+      def units = "ms"
+    }
+
     /** Mixin for measurers whose benchmarked value is based on the current iteration. */
-    trait IterationBasedValue extends Measurer {
+    trait IterationBasedValue extends Timer {
 
       /** Returns the value used for the benchmark at `iteration`.
        *  May optionally call `regen` to obtain a new value for the benchmark.
@@ -113,7 +118,7 @@ object Executor {
     }
 
     /** A default measurer executes the test as many times as specified and returns the sequence of measured times. */
-    class Default extends Measurer with IterationBasedValue {
+    class Default extends Timer with IterationBasedValue {
       def name = "Measurer.Default"
 
       def measure[T, U](context: Context, measurements: Int, setup: T => Any, tear: T => Any, regen: () => T, snippet: T => Any): Seq[Double] = {
@@ -148,7 +153,7 @@ object Executor {
      *  To prevent looping forever, after the number of measurement failed due to GC exceeds the number of successful
      *  measurements by more than `M`, the subsequent measurements are accepted irregardless of whether GC cycles occur.
      */
-    class IgnoringGC extends Measurer with IterationBasedValue {
+    class IgnoringGC extends Timer with IterationBasedValue {
       override def name = "Measurer.IgnoringGC"
 
       def measure[T, U](context: Context, measurements: Int, setup: T => Any, tear: T => Any, regen: () => T, snippet: T => Any): Seq[Double] = {
@@ -239,7 +244,7 @@ object Executor {
      *
      *  A potential outlier (suffix) is removed if removing it increases the coefficient of variance by at least `Key.exec.outliers.covMultiplier` times.
      */
-    trait OutlierElimination extends Measurer {
+    trait OutlierElimination extends Timer {
 
       import exec.outliers._
 

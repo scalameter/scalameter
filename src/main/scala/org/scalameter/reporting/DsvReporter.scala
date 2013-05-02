@@ -68,7 +68,7 @@ case class DsvReporter(delimiter: Char) extends Reporter {
               p(v)
               p(delimiter)
             }
-            p(m.time)
+            p(m.value)
             p(delimiter)
             p(m.success)
             p(delimiter)

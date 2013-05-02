@@ -18,7 +18,7 @@ case class LoggingReporter() extends Reporter {
 
     // output measurements
     for (measurement <- result.measurements) {
-      log(s"${measurement.params}: ${measurement.time} ms")
+      log(s"${measurement.params}: ${measurement.value}")
     }
 
     // add a new line

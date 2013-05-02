@@ -77,12 +77,12 @@ class LocalExecutor(val warmer: Executor.Warmer, val aggregator: Aggregator, val
       val regen = regenerateFor(params)
 
       log.verbose(s"$repetitions repetitions of the snippet starting.")
-      val times = measurer.measure(context, repetitions, set, tear, regen, snippet)
+      val values = measurer.measure(context, repetitions, set, tear, regen, snippet)
       log.verbose("Repetitions ended.")
 
-      val processedTime = aggregator(times)
-      val data = aggregator.data(times)
-      measurements += Measurement(processedTime, params, data)
+      val processedValues = aggregator(values)
+      val data = aggregator.data(values)
+      measurements += Measurement(processedValues, params, data, measurer.units)
     }
 
     CurveData(measurements, Map.empty, context)

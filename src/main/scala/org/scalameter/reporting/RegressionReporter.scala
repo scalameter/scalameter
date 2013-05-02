@@ -192,6 +192,7 @@ object RegressionReporter {
         val testedmeasurements = for {
           measurement <- curvedata.measurements.sorted
         } yield {
+          val units = measurement.units
           val alternatives = measurementtable(measurement.params).filter(_.success).map(_.complete)
           try {
             val ftest = ANOVAFTest(alternatives, significance)
@@ -201,11 +202,11 @@ object RegressionReporter {
             log(s"$color  - at ${measurement.params.axisData.mkString(", ")}, ${alternatives.size} alternatives: $passed${ansi.reset}")
             log(f"$color    (SSA: ${ftest.ssa}%.2f, SSE: ${ftest.sse}%.2f, F: ${ftest.F}%.2f, qf: ${ftest.quantile}%.2f, significance: $significance)${ansi.reset}")
             if (!ftest) {
-              def logalt(a: Seq[Double]) = log(s"$color      ${a.map(_ + " ms").mkString(", ")}${ansi.reset}")
+              def logalt(a: Seq[Double], units: String) = log(s"$color      ${a.map(_ + units).mkString(", ")}${ansi.reset}")
               log(s"$color    History:")
-              for (a <- alternatives.init) logalt(a)
+              for (a <- alternatives.init) logalt(a, units)
               log(s"$color    Latest:")
-              logalt(alternatives.last)
+              logalt(alternatives.last, units)
             }
 
             if (ftest.passed) measurement else measurement.failed
@@ -222,22 +223,23 @@ object RegressionReporter {
     }
 
     case class ConfidenceIntervals(strict: Boolean = false) extends Tester {
-      def cistr(ci: (Double, Double)) = f"<${ci._1}%.2f ms, ${ci._2}%.2f ms>"
+      def cistr(ci: (Double, Double), units: String) = f"<${ci._1}%.2f $units, ${ci._2}%.2f $units>"
 
       def single(previous: Measurement, latest: Measurement, sig: Double): Measurement = {
         try {
           val citest = ConfidenceIntervalTest(strict, previous.complete, latest.complete, sig)
+          val units = latest.units
           
           if (!citest) {
             val color = ansi.red
-            val ciprev = cistr(citest.ci1)
-            val cilate = cistr(citest.ci2)
+            val ciprev = cistr(citest.ci1, units)
+            val cilate = cistr(citest.ci2, units)
             val prevform = previous.complete.map(v => f"$v%.2f")
             val lateform = latest.complete.map(v => f"$v%.2f")
             log.error(
-              f"$color      Failed confidence interval test: <${citest.ci._1}%.2f, ${citest.ci._2}%.2f> ${ansi.reset}\n" +
-              f"$color      Previous (mean = ${citest.m1}%.2f ms, stdev = ${citest.s1}%.2f ms, ci = $ciprev): ${prevform.mkString(", ")}${ansi.reset}\n" +
-              f"$color      Latest   (mean = ${citest.m2}%.2f ms, stdev = ${citest.s2}%.2f ms, ci = $cilate): ${lateform.mkString(", ")}${ansi.reset}"
+              f"$color      Failed confidence interval test: <${citest.ci._1}%.2f $units, ${citest.ci._2}%.2f $units> ${ansi.reset}\n" +
+              f"$color      Previous (mean = ${citest.m1}%.2f $units, stdev = ${citest.s1}%.2f $units, ci = $ciprev): ${prevform.mkString(", ")}${ansi.reset}\n" +
+              f"$color      Latest   (mean = ${citest.m2}%.2f $units, stdev = ${citest.s2}%.2f $units, ci = $cilate): ${lateform.mkString(", ")}${ansi.reset}"
             )
             latest.failed
           } else latest
@@ -255,7 +257,7 @@ object RegressionReporter {
         val color = if (allpass) ansi.green else ansi.red
         val passed = if (allpass) "passed" else "failed"
         val ci = confidenceInterval(context, latest.complete)
-        val cis = cistr(ci)
+        val cis = cistr(ci, latest.units)
         log(s"$color  - at ${latest.params.axisData.mkString(", ")}, ${previouss.size} alternatives: $passed${ansi.reset}")
         log(s"$color    (ci = $cis, significance = $sig)${ansi.reset}")
         tests.find(!_.success).getOrElse(latest)
@@ -284,22 +286,23 @@ object RegressionReporter {
     }
 
     case class OverlapIntervals() extends Tester {
-      def cistr(ci: (Double, Double)) = f"<${ci._1}%.2f ms, ${ci._2}%.2f msxs>"
+      def cistr(ci: (Double, Double), units: String) = f"<${ci._1}%.2f $units, ${ci._2}%.2f $units>"
 
       def single(previous: Measurement, latest: Measurement, sig: Double, noiseMagnitude: Double): Measurement = {
         try {
           val citest = OverlapTest(previous.complete, latest.complete, sig, noiseMagnitude)
+          val units = latest.units
           
           if (!citest) {
             val color = ansi.red
-            val ciprev = cistr(citest.ci1)
-            val cilate = cistr(citest.ci2)
+            val ciprev = cistr(citest.ci1, units)
+            val cilate = cistr(citest.ci2, units)
             val prevform = previous.complete.map(v => f"$v%.2f")
             val lateform = latest.complete.map(v => f"$v%.2f")
             val msg = {
               f"$color      Failed overlap interval test. ${ansi.reset}\n" +
-              f"$color      Previous (mean = ${citest.m1}%.2f ms, stdev = ${citest.s1}%.2f ms, ci = $ciprev ms): ${prevform.mkString(", ")}${ansi.reset}\n" +
-              f"$color      Latest   (mean = ${citest.m2}%.2f ms, stdev = ${citest.s2}%.2f ms, ci = $cilate ms): ${lateform.mkString(", ")}${ansi.reset}"
+              f"$color      Previous (mean = ${citest.m1}%.2f $units, stdev = ${citest.s1}%.2f $units, ci = $ciprev): ${prevform.mkString(", ")}${ansi.reset}\n" +
+              f"$color      Latest   (mean = ${citest.m2}%.2f $units, stdev = ${citest.s2}%.2f $units, ci = $cilate): ${lateform.mkString(", ")}${ansi.reset}"
             }
             log.error(msg)
             latest.failed
@@ -319,7 +322,7 @@ object RegressionReporter {
         val color = if (allpass) ansi.green else ansi.red
         val passed = if (allpass) "passed" else "failed"
         val ci = confidenceInterval(context, latest.complete)
-        val cis = cistr(ci)
+        val cis = cistr(ci, latest.units)
         log(s"$color  - at ${latest.params.axisData.mkString(", ")}, ${previouss.size} alternatives: $passed${ansi.reset}")
         log(s"$color    (ci = $cis, significance = $sig)${ansi.reset}")
         tests.find(!_.success).getOrElse(latest)
