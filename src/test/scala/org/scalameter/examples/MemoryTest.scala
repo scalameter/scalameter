@@ -18,7 +18,8 @@ class MemoryTest extends PerformanceTest.Regression {
   performance of "MemoryFootprint" in {
     performance of "Array" in {
       using(sizes) config (
-        exec.independentSamples -> 6
+        exec.benchRuns -> 10,
+        exec.independentSamples -> 2
       ) in { sz =>
         (0 until sz).toArray
       }
@@ -26,6 +27,7 @@ class MemoryTest extends PerformanceTest.Regression {
   }
 
 }
+
 
 
 

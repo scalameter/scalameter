@@ -42,7 +42,7 @@ trait DSL {
     }
   }
 
-  def using[T](gen: Gen[T]) = Using(Setup(setupzipper.value.current.context + (Key.dsl.curve -> freshCurveName()), gen, None, None, None, null))
+  def using[T](gen: Gen[T]) = Using(Setup(setupzipper.value.current.context + (Key.dsl.curve -> freshCurveName()), gen, None, None, None, null, executorOption))
 
   def isModule = this.getClass.getSimpleName.endsWith("$")
 
@@ -54,6 +54,10 @@ trait DSL {
   /** Runs all the tests in this test class or singleton object.
    */
   def executeTests(): Boolean
+
+  /** The optional executor assigned to a particular body of DSL code.
+   */
+  def executorOption: Option[Executor]
 
 }
 
