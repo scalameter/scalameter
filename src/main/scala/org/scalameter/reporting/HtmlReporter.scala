@@ -182,7 +182,7 @@ object HtmlReporter {
   }
 
   object Renderer {
-    def regression = Seq(Info(), Chart(ChartReporter.ChartFactory.XYLine()), Chart(ChartReporter.ChartFactory.TrendHistogram()))
+    def regression = Seq(HtmlReporter.Renderer.JSChart())
 
     def basic = Seq(Info(), BigO(), Chart(ChartReporter.ChartFactory.XYLine()))
 
