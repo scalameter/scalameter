@@ -368,6 +368,48 @@ object Executor {
 
     }
 
+    /** Measures the total memory footprint of an object created by the benchmarking snippet.
+     */
+    class MemoryFootprint extends Measurer {
+      def name = "Measurer.MemoryFootprint"
+      def measure[T, U](context: Context, measurements: Int, setup: T => Any, tear: T => Any, regen: () => T, snippet: T => Any): Seq[Double] = {
+        val runtime = Runtime.getRuntime
+        var iteration = 0
+        var memories = List[Double]()
+        var value: T = null.asInstanceOf[T]
+        var obj: Any = null.asInstanceOf[Any]
+
+        while (iteration < measurements) {
+          value = null.asInstanceOf[T]
+          obj = null.asInstanceOf[T]
+
+          Platform.collectGarbage()
+          val membefore = runtime.totalMemory - runtime.freeMemory
+
+          value = regen()
+          setup(value)
+
+          obj = snippet(value)
+
+          tear(value)
+          value = null.asInstanceOf[T]
+          
+          Platform.collectGarbage()
+          val memafter = runtime.totalMemory - runtime.freeMemory
+
+          val memory = (memafter - membefore) / 1000.0
+
+          memories ::= memory
+          iteration += 1
+        }
+
+        log.verbose("Measurements: " + memories)
+
+        memories.reverse
+      }
+      def units = "kB"
+    }
+
   }
 
 }

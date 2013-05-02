@@ -32,8 +32,6 @@ class RegressionTest2 extends PerformanceTest.Regression {
 
   def persistor = new SerializationPersistor
 
-  override def reporter = new RegressionReporter(Tester.ConfidenceIntervals(), Historian.Complete())
-
   val sizes = Gen.range("size")(1000000, 2000000, 500000)
 
   val lists = for (sz <- sizes) yield (0 until sz).toList
@@ -56,8 +54,6 @@ class RegressionTest2 extends PerformanceTest.Regression {
 class RegressionTest3 extends PerformanceTest.Regression {
 
   def persistor = new SerializationPersistor
-
-  override def reporter = new RegressionReporter(Tester.ConfidenceIntervals(), Historian.Complete())
 
   val sizes = Gen.single("size")(5000000)
 

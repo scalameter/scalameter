@@ -358,6 +358,7 @@ package scalameter {
 
     val Aggregator = org.scalameter.Aggregator
     val Measurer = Executor.Measurer
+    val Warmer = Executor.Warmer
 
     /* reporting */
 
