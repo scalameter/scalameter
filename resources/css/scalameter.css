@@ -350,6 +350,10 @@ h1.newstitle:hover {
   color: #f67a00;
 }
 
+div.newsinfo {
+  color: #8a2a00;
+}
+
 div.toc span {
   padding-top: 10px;
   font-size: 18px;
