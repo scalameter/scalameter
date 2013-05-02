@@ -64,13 +64,15 @@ object Main {
       def resdir: Parser[Configuration] = "-" ~ "CresultDir" ~ path ^^ {
         case _ ~ _ ~ s => Configuration(Nil, Context(reports.resultDir -> s))
       }
-      def scopefilt: Parser[Configuration] = "-" ~ "CscopeFilter" ~ ident ^^ {
+      def stringLit = "['\"]".r ~ rep("[^'']".r) ~ "['\"]".r ^^ {
+        case _ ~ cs ~ _ => cs.mkString
+      }
+      def scopefilt: Parser[Configuration] = "-" ~ "CscopeFilter" ~ (stringLit | failure("scopFilter must be followed by a single or double quoted string.")) ^^ {
         case _ ~ _ ~ s => Configuration(Nil, Context(scopeFilter -> s))
       }
-      def flag: Parser[Configuration] = "-" ~ ident ^^ {
+      def flag: Parser[Configuration] = "-" ~ ("verbose" | "preJDK7") ^^ {
         case _ ~ "verbose" => Configuration(Nil, Context(Key.verbose -> true))
         case _ ~ "preJDK7" => Configuration(Nil, Context(Key.preJDK7 -> true))
-        case _ ~ unknownFlag => sys.error(s"Unknown flag '$unknownFlag'")
       }
 
       parseAll(arguments, args.mkString(" ")) match {
