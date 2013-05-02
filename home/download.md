@@ -8,9 +8,7 @@ permalink: /download/index.html
 
 ## Direct download
 
-The latest ScalaMeter release is **ScalaMeter 0.2** for Scala 2.10.0-RC2.
-
-You can download it [here](https://github.com/downloads/axel22/scalameter/scalameter_2.10-0.2.jar).
+The latest ScalaMeter release is **ScalaMeter 0.3** for Scala 2.10.0.
 
 
 ## Maven repository
@@ -20,7 +18,7 @@ ScalaMeter is available for download from [Sonatype](https://oss.sonatype.org/in
     <dependency>
       <groupId>com.github.axel22</groupId>
       <artifactId>scalameter_2.10</artifactId>
-      <version>0.2</version>
+      <version>0.3</version>
     </dependency>
 
 If you're using [SBT](/home/gettingstarted/sbt/), just add the following lines to `build.sbt`:
@@ -28,7 +26,7 @@ If you're using [SBT](/home/gettingstarted/sbt/), just add the following lines t
     resolvers += "Sonatype OSS Snapshots" at
       "https://oss.sonatype.org/content/repositories/snapshots"
 
-    libraryDependencies += "com.github.axel22" %% "scalameter" % "0.2"
+    libraryDependencies += "com.github.axel22" %% "scalameter" % "0.3"
 
     testFrameworks += new TestFramework("org.scalameter.ScalaMeterFramework")
 
