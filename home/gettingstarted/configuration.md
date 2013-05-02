@@ -361,16 +361,70 @@ as we describe different parts of the pipeline.
 In the next section we talk in more detail about [generators](/scalameter/home/gettingstarted/generators/).
 
 
+## Writing larger test suites
+
+What if you have a larger test suite consisting of multiple test classes and each test class has a different `executor`?
+For example, some tests could measure the memory footprint, while others could measure the running time.
+In this case you have the option of using the `include` keyword, which includes the test cases from the referenced test classes.
+Importantly, these test classes can define separate executors used by their respective test cases -- for each test case
+the `include` directive will ensure that the executor of the respective test class is used.
+However, the `persistor` and `reporter` values are overridden by the `include` directive -- only the persistors
+and the reporters from the enclosing class are used. 
+
+In the following example we have two test classes that define separate executors.
+
+    class RegressionTest extends PerformanceTest.Regression {
+      def persistor = new SerializationPersistor
+    
+      val sizes = Gen.range("size")(1000000, 5000000, 2000000)
+      val arrays = for (sz <- sizes) yield (0 until sz).toArray
+    
+      performance of "Array" in {
+        measure method "foreach" in {
+          using(arrays) config (
+            exec.independentSamples -> 6
+          ) in { xs =>
+            var sum = 0
+            xs.foreach(x => sum += x)
+          }
+        }
+      }
+    }
+    
+    class MemoryTest extends PerformanceTest.Regression {
+      def persistor = new persistence.SerializationPersistor
+      override def measurer = new Executor.Measurer.MemoryFootprint
+    
+      val sizes = Gen.range("size")(1000000, 5000000, 2000000)
+    
+      performance of "MemoryFootprint" in {
+        performance of "Array" in {
+          using(sizes) config (
+            exec.benchRuns -> 10,
+            exec.independentSamples -> 2
+          ) in { sz =>
+            (0 until sz).toArray
+          }
+        }
+      }
+    }
+
+The enclosing class may look like this -- in this case it turns off the `persistor`s for the included tests.
+
+    class TestSuite extends PerformanceTest.Regression {
+    
+      def persistor = Persistor.None
+    
+      include[MemoryTest]
+      include[RegressionTest]
+    
+    }
+
+
+
 <div class="imagenoframe">
   <img src="/scalameter/resources/images/logo-yellow-small.png"></img>
 </div>
-
-
-
-
-
-
-
 
 
 

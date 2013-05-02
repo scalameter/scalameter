@@ -12,13 +12,13 @@ permalink: /news/index.html
   <a href="/scalameter/{{ post.url }}">
     <br/>
     <br/>
-    <div>
     <h1 class="newstitle">
       {{ post.title }}
     </h1>
-      {{ post.date | date: "%d.%m.%Y." }}
-    </div>
   </a>
+  <div>
+    {{ post.date | date: "%d.%m.%Y." }}, poster: {{ post.poster }}
+  </div>
   {{ post.content }}
   {% endfor %}
 </div>

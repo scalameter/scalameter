@@ -10,8 +10,7 @@ num: 7
 
 This section describes executors in ScalaMeter in more detail.
 
-Every executor is responsible for executing tests and obtaining the running times
-for those tests.
+Every executor is responsible for executing tests and obtaining the performance measurements such as running time or the memory footprint for those tests.
 Also, every executor is parametrized by three components, namely:
 
 1. `Warmer` -- warms up the JVM for the test(s)

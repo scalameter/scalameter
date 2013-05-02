@@ -342,6 +342,14 @@ h1.newstitle {
   text-shadow: none;
 }
 
+h1.newstitle:active {
+  color: #f67a00;
+}
+
+h1.newstitle:hover {
+  color: #f67a00;
+}
+
 div.toc span {
   padding-top: 10px;
   font-size: 18px;
