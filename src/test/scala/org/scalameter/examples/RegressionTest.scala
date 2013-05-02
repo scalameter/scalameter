@@ -10,11 +10,6 @@ class RegressionTest extends PerformanceTest.Regression {
 
   def persistor = new SerializationPersistor
 
-  override def reporter = Reporter.Composite(
-    new RegressionReporter(Tester.ConfidenceIntervals(), Historian.Complete()),
-    new DsvReporter('\t')
-  )
-
   val sizes = Gen.range("size")(1000000, 5000000, 2000000)
 
   val arrays = for (sz <- sizes) yield (0 until sz).toArray
