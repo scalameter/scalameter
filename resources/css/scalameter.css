@@ -50,6 +50,7 @@ body, html {
   padding: 0;
   height: 100%;
   font-family: LiberationSans;
+  text-align: justify;
   font-size: 14px;
   color: #441a00;
 }

@@ -69,26 +69,90 @@ that many measurements, possibly by doing even more repetitions.
 
 There are several predefined measurers.
 
-- `Measurer.Default` simply does as many measurements as the user requests.
+### Running time
 
-- `Measurer.IgnoringGC` does the same thing, but ignores those measurements with a GC cycle.
+`Measurer.Default` simply does as many running time measurements as the user requests.
+
+`Measurer.IgnoringGC` does the same thing, but ignores those measurements with a GC cycle.
 If the number of measurements with a GC cycle exceeds the number of desired measurements, it stops ignoring them.
 This ensures termination.
 
-- `Measurer.PeriodicInstantiation` is a mixin measurer, which can be mixed in with the previous measurers.
+`Measurer.PeriodicInstantiation` is a mixin measurer, which can be mixed in with the previous measurers.
 It reinstantiates the value for the benchmark every `exec.reinstantiation.frequency` repetitions and will additionaly
 perform a GC cycle if `exec.reinstantiation.fullGC` is set to `true`.
 
-- `Measurer.OutlierElimination` is another mixin measurer, which analyzes the measurements returned by other
+`Measurer.OutlierElimination` is another mixin measurer, which analyzes the measurements returned by other
 measurers and possibly discards and repeats measurements.
 It is described in more detail in the [regression testing section](/scalameter/home/gettingstarted/regressions/).
 
-- `Measurer.AbsoluteNoise` is a mixin measurer which adds absolute noise to measurements.
+`Measurer.AbsoluteNoise` is a mixin measurer which adds absolute noise to measurements.
 
-- `Measurer.RelativeNoise` is a mixin measurer which adds relative noise to measurements.
+`Measurer.RelativeNoise` is a mixin measurer which adds relative noise to measurements.
 The magnitude of the Gaussian noise is determined by the absolute running time multiplied by the
 `exec.noise.magnitude / 10`.
 Adding noise can make a performance regression test less sensitive.
+
+
+### Memory footprint
+
+ScalaMeter can measure memory footprint starting from version 0.4.
+
+`Measurer.MemoryFootprint` is a measurer the measures the memory footprint of the object the return value of the benchmark snippet references.
+It works by doing a GC and then recording the initial memory occupancy of the JVM -- call it `membefore`.
+It proceeds by instantiating the benchmark input from the generator, executing the snippet and then letting go of the reference to the input value so that it can be GCed.
+The input value is thus _not_ a part of the memory footprint.
+Finally, it calls GC again and records the memory occupancy again -- call this value `memafter`.
+
+The value `memafter - membefore` in kilobytes is the memory footprint it outputs.
+The use is illustrated by the following snippet:
+
+    class MemoryTest extends PerformanceTest.Regression {
+      def persistor = new persistence.SerializationPersistor
+      override def measurer = new Executor.Measurer.MemoryFootprint
+    
+      val sizes = Gen.range("size")(1000000, 5000000, 2000000)
+    
+      performance of "MemoryFootprint" in {
+        performance of "Array" in {
+          using(sizes) config (
+            exec.independentSamples -> 6
+          ) in { sz =>
+            (0 until sz).toArray
+          }
+        }
+      }
+    }
+
+The verbose output is in this case very accurate -- a 32-bit integer array memory footprint should be its size multiplied by `4`:
+
+    ...
+    [Full GC 20754K->1191K(2009792K), 0.0096360 secs]
+    [GC 105984K->20722K(2009792K), 0.0038210 secs]
+    [Full GC 20722K->20722K(2009792K), 0.0134250 secs]
+    [GC 20723K->20754K(2009792K), 0.0004800 secs]
+    [Full GC 20754K->1191K(2009792K), 0.0095290 secs]
+    [GC 105984K->20723K(2009792K), 0.0039180 secs]
+    [Full GC 20723K->20723K(2009792K), 0.0130130 secs]
+    Measurements: List(20000.016, 20000.016, 20000.016, 20000.016,
+      20000.016, 20000.016)
+    Obtained measurements:
+    size -> 1000000: 3927.424, 4000.016, 4000.016, 4000.016, ...
+    size -> 3000000: 11997.592, 12000.016, 12000.016, 12000.016, ...
+    size -> 5000000: 20000.016, 20000.016, 20000.016, 20000.016, ...
+
+
+And the final output:
+
+    :::Summary of regression test results - OverlapIntervals():::
+    Test group: MemoryFootprint.Array
+    - MemoryFootprint.Array.Test-0 measurements:
+      - at size -> 1000000, 1 alternatives: passed
+        (ci = <3958.34 kB, 4017.49 kB>, significance = 1.0E-10)
+      - at size -> 3000000, 1 alternatives: passed
+        (ci = <11998.62 kB, 12000.60 kB>, significance = 1.0E-10)
+      - at size -> 5000000, 1 alternatives: passed
+        (ci = <20000.02 kB, 20000.02 kB>, significance = 1.0E-10)
+
 
 You can take a look at the ScalaMeter API or source code to figure out how different measurers work in more detail.
 
