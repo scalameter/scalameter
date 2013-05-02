@@ -62,7 +62,7 @@ The `-CresultDir` option changes the directory the results are generated into:
 
     > test-only mypackage.MyScalaMeterTestName -- -CresultDir tmp2
 
-Starting from ScalaMeter 0.3 you can selectively run only certain tests from your test suite.
+Starting from ScalaMeter 0.4 you can selectively run only certain tests from your test suite.
 
 The `-CscopeFilter <test-name-prefix>` option runs only the benchmarks whose name starts with `<test-name-prefix>`.
 For example:
