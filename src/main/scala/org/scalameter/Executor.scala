@@ -271,7 +271,6 @@ object Executor {
           while (minlen <= suspectnum) {
             val cov = CoV(rs)
             val covinit = CoV(rs.dropRight(minlen))
-            log.verbose(cov + ", " + covinit + ", " + covmult)
             val confirmed = if (covinit != 0.0) cov > covmult * covinit * covMultiplierModifier
               else mean(rs.takeRight(minlen)) > 1.2 * mean(rs.dropRight(minlen))
   
