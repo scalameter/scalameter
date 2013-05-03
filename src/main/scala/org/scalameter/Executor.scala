@@ -245,11 +245,15 @@ object Executor {
      *
      *  A potential outlier (suffix) is removed if removing it increases the coefficient of variance by at least `Key.exec.outliers.covMultiplier` times.
      */
-    trait OutlierElimination extends Timer {
+    trait OutlierElimination extends Measurer {
 
       import exec.outliers._
 
       abstract override def name = s"${super.name}+OutlierElimination"
+
+      def eliminateLow = false
+
+      def covMultiplierModifier = 1.0
 
       abstract override def measure[T, U](context: Context, measurements: Int, setup: T => Any, tear: T => Any, regen: () => T, snippet: T => Any): Seq[Double] = {
         import utils.Statistics._
@@ -260,28 +264,41 @@ object Executor {
         val suspectnum = math.max(1, results.length * suspectp / 100)
         var retleft = context.goe(retries, 8)
 
-        def outlierSuffixLength(rs: Seq[Double]): Int = {
+        def suffixLength(rs: Seq[Double]): Int = {
+          import utils.Statistics._
+
           var minlen = 1
           while (minlen <= suspectnum) {
             val cov = CoV(rs)
             val covinit = CoV(rs.dropRight(minlen))
-            val confirmed = if (covinit != 0.0) cov > covmult * covinit
+            log.verbose(cov + ", " + covinit + ", " + covmult)
+            val confirmed = if (covinit != 0.0) cov > covmult * covinit * covMultiplierModifier
               else mean(rs.takeRight(minlen)) > 1.2 * mean(rs.dropRight(minlen))
-
+  
             if (confirmed) return minlen
             else minlen += 1
           }
+  
           0
         }
 
-        def outlierExists(rs: Seq[Double]) = outlierSuffixLength(rs) > 0
+        def outlierExists(rs: Seq[Double]) = {
+          suffixLength(rs) > 0 || (eliminateLow && suffixLength(rs.reverse) > 0)
+        }
 
         var best = results
         while (outlierExists(results) && retleft > 0) {
-          val suffixlen = outlierSuffixLength(results)
+          val prefixlen = suffixLength(results.reverse)
+          val suffixlen = suffixLength(results)
           val formatted = results.map(t => f"$t%.3f")
           log.verbose(s"Detected $suffixlen outlier(s): ${formatted.mkString(", ")}")
-          results = (results.dropRight(suffixlen) ++ super.measure(context, suffixlen, setup, tear, regen, snippet)).sorted
+          results = {
+            if (eliminateLow) (
+              super.measure(context, prefixlen, setup, tear, regen, snippet) ++
+              results.drop(prefixlen).dropRight(suffixlen) ++
+              super.measure(context, suffixlen, setup, tear, regen, snippet)
+            ).sorted else (results.dropRight(suffixlen) ++ super.measure(context, suffixlen, setup, tear, regen, snippet)).sorted
+          }
           if (CoV(results) < CoV(best)) best = results
           retleft -= 1
         }
@@ -369,10 +386,9 @@ object Executor {
 
     }
 
-    /** Measures the total memory footprint of an object created by the benchmarking snippet.
-     */
-    class MemoryFootprint extends Measurer {
+    abstract class BaseMemoryFootprint extends Measurer {
       def name = "Measurer.MemoryFootprint"
+
       def measure[T, U](context: Context, measurements: Int, setup: T => Any, tear: T => Any, regen: () => T, snippet: T => Any): Seq[Double] = {
         val runtime = Runtime.getRuntime
         var iteration = 0
@@ -404,11 +420,20 @@ object Executor {
           iteration += 1
         }
 
-        log.verbose("Measurements: " + memories)
+        log.verbose("Measurements: " + memories.reverse.mkString(", "))
 
         memories.reverse
       }
+
       def units = "kB"
+    }
+
+    /** Measures the total memory footprint of an object created by the benchmarking snippet.
+     *
+     *  Eliminates outliers.
+     */
+    class MemoryFootprint extends BaseMemoryFootprint with OutlierElimination {
+      override def eliminateLow = true
     }
 
   }
