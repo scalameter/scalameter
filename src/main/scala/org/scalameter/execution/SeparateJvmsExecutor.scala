@@ -42,6 +42,7 @@ class SeparateJvmsExecutor(val warmer: Executor.Warmer, val aggregator: Aggregat
       log.verbose(s"Sampling $reps measurements in separate JVM invocation $idx - ${context.scope}, ${context.goe(dsl.curve, "")}.")
 
       // warmup
+      setupBeforeAll()
       customwarmup match {
         case Some(warmup) =>
           for (i <- 0 until warmups) warmup()
@@ -50,14 +51,20 @@ class SeparateJvmsExecutor(val warmer: Executor.Warmer, val aggregator: Aggregat
             for (i <- w.warming(context, setupFor(x), teardownFor(x))) snippet(x)
           }
       }
+      teardownAfterAll()
+
+      // perform GC
+      compat.Platform.collectGarbage()
 
       // measure
+      setupBeforeAll()
       val observations = for (params <- gen.dataset) yield {
         val set = setupFor()
         val tear = teardownFor()
         val regen = regenerateFor(params)
         (params, m.measure(context, reps, set, tear, regen, snippet))
       }
+      teardownAfterAll()
 
       observations.toBuffer
     }

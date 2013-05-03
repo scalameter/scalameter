@@ -32,8 +32,10 @@ trait DSL {
   }
 
   protected case class Using[T](benchmark: Setup[T]) {
+    def beforeTests(block: =>Any) = Using(benchmark.copy(setupbeforeall = Some(() => block)))
     def setUp(block: T => Any) = Using(benchmark.copy(setup = Some(block)))
     def tearDown(block: T => Any) = Using(benchmark.copy(teardown = Some(block)))
+    def afterTests(block: =>Any) = Using(benchmark.copy(teardownafterall = Some(() => block)))
     def warmUp(block: =>Any) = Using(benchmark.copy(customwarmup = Some(() => block)))
     def curve(name: String) = Using(benchmark.copy(context = benchmark.context + (Key.dsl.curve -> name)))
     def config(xs: (String, Any)*) = Using(benchmark.copy(context = benchmark.context ++ Context(xs: _*)))
@@ -42,7 +44,7 @@ trait DSL {
     }
   }
 
-  def using[T](gen: Gen[T]) = Using(Setup(setupzipper.value.current.context + (Key.dsl.curve -> freshCurveName()), gen, None, None, None, null, executor))
+  def using[T](gen: Gen[T]) = Using(Setup(setupzipper.value.current.context + (Key.dsl.curve -> freshCurveName()), gen, None, None, None, None, None, null, executor))
 
   def isModule = this.getClass.getSimpleName.endsWith("$")
 

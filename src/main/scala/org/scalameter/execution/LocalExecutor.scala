@@ -34,11 +34,13 @@ class LocalExecutor(val warmer: Executor.Warmer, val aggregator: Aggregator, val
     // run all warmups for classloading purposes
     for (bench <- setups) {
       import bench._
+      setupBeforeAll()
       for (x <- gen.warmupset) {
         val warmups = context.goe(exec.maxWarmupRuns, 10)
         customwarmup.map(_())
         for (_ <- warmer.warming(context, setupFor(x), teardownFor(x))) snippet(x)
       }
+      teardownAfterAll()
     }
 
     // for every benchmark - do a warmup, and then measure
@@ -55,6 +57,7 @@ class LocalExecutor(val warmer: Executor.Warmer, val aggregator: Aggregator, val
     log.verbose(s"Running test set for ${bsetup.context.scope}, curve ${bsetup.context.goe(dsl.curve, "")}")
 
     // run warm up
+    setupBeforeAll()
     val warmups = context.goe(exec.maxWarmupRuns, 10)
     customwarmup match {
       case Some(warmup) =>
@@ -64,6 +67,7 @@ class LocalExecutor(val warmer: Executor.Warmer, val aggregator: Aggregator, val
           for (i <- warmer.warming(context, setupFor(x), teardownFor(x))) snippet(x)
         }
     }
+    teardownAfterAll()
 
     // perform GC
     Platform.collectGarbage()
@@ -71,6 +75,8 @@ class LocalExecutor(val warmer: Executor.Warmer, val aggregator: Aggregator, val
     // run tests
     val measurements = new mutable.ArrayBuffer[Measurement]()
     val repetitions = context.goe(exec.benchRuns, 10)
+
+    setupBeforeAll()
     for (params <- gen.dataset) {
       val set = setupFor()
       val tear = teardownFor()
@@ -84,6 +90,7 @@ class LocalExecutor(val warmer: Executor.Warmer, val aggregator: Aggregator, val
       val data = aggregator.data(values)
       measurements += Measurement(processedValues, params, data, measurer.units)
     }
+    teardownAfterAll()
 
     CurveData(measurements, Map.empty, context)
   }

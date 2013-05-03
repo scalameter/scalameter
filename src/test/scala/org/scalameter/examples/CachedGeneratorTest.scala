@@ -20,8 +20,8 @@ class CachedGeneratorTest extends PerformanceTest.Regression {
   performance of "foreach" in {
     performance of "ParRange" in {
       using(inputs) config (
-        exec.benchRuns -> 10,
-        exec.independentSamples -> 2
+        exec.benchRuns -> 30,
+        exec.independentSamples -> 5
       ) in { case (sz, p) =>
         val pr = (0 until sz).par
         pr.tasksupport = p
