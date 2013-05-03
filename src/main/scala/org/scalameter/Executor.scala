@@ -12,7 +12,7 @@ trait Executor {
 
   def run[T](setuptree: Tree[Setup[T]], reporter: Reporter, persistor: Persistor): Tree[CurveData] = {
     for (setup <- setuptree) yield {
-      val exec = setup.customExecutor.getOrElse(this)
+      val exec = Option(setup.customExecutor).getOrElse(this)
       val cd = exec.runSetup(setup)
       reporter.report(cd, persistor)
       cd

@@ -272,7 +272,7 @@ package scalameter {
     type Entry = (Date, Context, CurveData)
   }
 
-  case class Setup[T](context: Context, gen: Gen[T], setup: Option[T => Any], teardown: Option[T => Any], customwarmup: Option[() => Any], snippet: T => Any, @transient customExecutor: Option[Executor]) {
+  case class Setup[T](context: Context, gen: Gen[T], setup: Option[T => Any], teardown: Option[T => Any], customwarmup: Option[() => Any], snippet: T => Any, @transient customExecutor: Executor) {
     def setupFor(v: T) = if (setup.isEmpty) { () => } else { () => setup.get(v) }
     def teardownFor(v: T) = if (teardown.isEmpty) { () => } else { () => teardown.get(v) }
     def setupFor() = if (setup.isEmpty) { v: T => } else { v: T => setup.get(v) }

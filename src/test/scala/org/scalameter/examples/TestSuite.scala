@@ -9,12 +9,10 @@ import Key._
 
 
 class TestSuite extends PerformanceTest.Regression {
-
   def persistor = new persistence.SerializationPersistor
 
   include[MemoryTest]
   include[RegressionTest]
-
 }
 
 

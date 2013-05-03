@@ -38,6 +38,19 @@ trait Gen[T] extends Serializable {
 
   def generate(params: Parameters): T
 
+  def cached: Gen[T] = new Gen[T] {
+    @transient lazy val cachedWarmupset = self.warmupset.toSeq
+    @transient lazy val cachedDataset = self.dataset.map(p => (p, self.generate(p))).toMap
+
+    def axes = cachedDataset.head._1.axisData.keys.toSet
+    def warmupset = cachedWarmupset.iterator
+    def dataset = cachedDataset.keys.iterator
+    def generate(params: Parameters) = {
+      val desiredParams = Parameters(params.axisData.filterKeys(k => axes.contains(k)).toSeq: _*)
+      cachedDataset(desiredParams)
+    }
+  }
+
 }
 
 
@@ -67,6 +80,32 @@ object Gen {
     def warmupset = Iterator.single((until - from) / 2)
     def dataset = Iterator.iterate(from)(_ * factor).takeWhile(_ <= until).map(x => Parameters(axisName -> x))
     def generate(params: Parameters) = params[Int](axisName)
+  }
+
+  /* combinators */
+
+  def tupled[P, Q](p: Gen[P], q: Gen[Q]): Gen[(P, Q)] = {
+    for {
+      pv <- p
+      qv <- q
+    } yield (pv, qv)
+  }
+
+  def tupled[P, Q, R](p: Gen[P], q: Gen[Q], r: Gen[R]): Gen[(P, Q, R)] = {
+    for {
+      pv <- p
+      qv <- q
+      rv <- r
+    } yield (pv, qv, rv)
+  }
+
+  def tupled[P, Q, R, S](p: Gen[P], q: Gen[Q], r: Gen[R], s: Gen[S]): Gen[(P, Q, R, S)] = {
+    for {
+      pv <- p
+      qv <- q
+      rv <- r
+      sv <- s
+    } yield (pv, qv, rv, sv)
   }
 
   /** Provides most collection generators given that a size generator is defined.

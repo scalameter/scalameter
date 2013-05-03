@@ -33,8 +33,6 @@ object PerformanceTest {
 
     def persistor: Persistor
 
-    def executorOption = Option(executor)
-
     type SameType
 
     def executeTests(): Boolean = {
