@@ -22,6 +22,9 @@ The trait `Gen[T]` looks roughly like this:
       def generate(params: Parameters): T
     }
 
+ScalaMeter generators are **lazy** -- they do not internally hold references to test input objects by default.
+Instead, they generate them lazily when calling the `next` method of their input data iterators.
+
 As mentioned earlier, generators are divided into two main categories -- the
 *basic* generators and the *composed* generators.
 A number of basic generators are already predefined, and you can obtain
@@ -71,6 +74,34 @@ Each basic generator has a **single axis**.
 The name of this axis is the name specified when the generator was created.
 This same name will be the name of an axis when you generate a chart using
 a `ChartReporter`.
+
+A special, caching, generator can be obtained by calling `cached` on a generator.
+This generator will not recreate the test input values each time the input data is traversed.
+Instead, it will create the data only once on first iteration and keep it cached afterwards.
+This is useful to avoid regenerating expensive objects like thread pools or database connections
+when only a few such objects are needed during the entire test.
+
+    class CachedGeneratorTest extends PerformanceTest.Regression {
+      def persistor = new persistence.SerializationPersistor
+    
+      val sizes = Gen.range("size")(100000000, 500000000, 200000000)
+      val parallelismLevels = Gen.enumeration("parallelismLevel")(1, 2, 4, 8)
+      val pools = (for (par <- parallelismLevels) yield new collection.parallel.ForkJoinTaskSupport(new concurrent.forkjoin.ForkJoinPool(par))).cached
+      val inputs = Gen.tupled(sizes, pools)
+    
+      performance of "foreach" in {
+        performance of "ParRange" in {
+          using(inputs) config (
+            exec.benchRuns -> 30,
+            exec.independentSamples -> 5
+          ) in { case (sz, p) =>
+            val pr = (0 until sz).par
+            pr.tasksupport = p
+            pr.foreach(x => ())
+          }
+        }
+      }
+    }
 
 
 ### Composed generators
