@@ -58,6 +58,8 @@ case class DsvReporter(delimiter: Char) extends Reporter {
           p(delimiter)
           p("cihi")
           p(delimiter)
+          p("units")
+          p(delimiter)
           p("complete")
           println()
         }
@@ -78,6 +80,8 @@ case class DsvReporter(delimiter: Char) extends Reporter {
             p(f"${ci._1}%.3f")
             p(delimiter)
             p(f"${ci._2}%.3f")
+            p(delimiter)
+            p(m.units)
             p(delimiter)
             p("\"" + m.complete.mkString(" ") + "\"")
             println()
