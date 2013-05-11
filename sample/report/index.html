@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html><head>
+      <meta charset="utf-8" />
+      <title>Performance Report</title>
+      <link type="text/css" media="screen" rel="stylesheet" href="css/bootstrap.min.css"/>
+      <link type="text/css" media="screen" rel="stylesheet" href="css/ui.dynatree.css"/>
+      <link type="text/css" media="screen" rel="stylesheet" href="css/index.css"/>
+      <script type="text/javascript" src="js/d3.v3.min.js"></script>
+      <script type="text/javascript" src="js/crossfilter.min.js"></script>
+      <script type="text/javascript" src="js/jquery-1.9.1.js"></script>
+      <script type="text/javascript" src="js/jquery-ui.custom.min.js"></script>
+      <script type="text/javascript" src="js/jquery.dynatree.js"></script>
+      <script type="text/javascript" src="js/bootstrap.min.js"></script>
+      <script type="text/javascript" src="js/helper.js"></script>
+      <script type="text/javascript" src="js/chart.js"></script>
+      <script type="text/javascript" src="js/filter.js"></script>
+      <script type="text/javascript" src="js/main.js"></script>
+      <script type="text/javascript" src="js/curves.js"></script>
+    </head><body>
+      <div>
+      <div class="sidebar">
+        <div class="tree"></div>
+      </div>
+      <div class="content">
+        <div class="chart"></div>
+        <ul class="nav nav-tabs">
+          <li class="active"><a onclick="gc.setType(gc.cType.lineParam); gc.setShowCI(false); cd.update();" data-toggle="tab">Line Chart (param)</a></li>
+          <li><a onclick="gc.setType(gc.cType.lineDate); gc.setShowCI(false); cd.update();" data-toggle="tab">Line Chart (date)</a></li>
+          <li><a onclick="gc.setType(gc.cType.lineParam); gc.setShowCI(true); cd.update();" data-toggle="tab">Line Chart (param) with CI</a></li>
+          <li><a onclick="gc.setType(gc.cType.bar); gc.setShowCI(false); cd.update();" data-toggle="tab">Bar Chart</a></li>
+        </ul>
+        <h1>Filters</h1>
+        <div class="pagination">
+          <ul>
+            <li><a onclick="cd.prevDay();">&laquo;</a></li>
+            <li><a onclick="cd.nextDay();">&raquo;</a></li>
+          </ul>
+        </div>
+        <div class="filters"></div>
+        <h1>Raw data</h1>
+        <table class="table rawdata"></table>
+        <script type="text/javascript">
+          var h = Helper();
+          var gc = GenericChart(h);
+          var cd = CurveData(h, gc).rawdata('.rawdata');
+          cd.setCurves(curves);
+        </script>
+      </div>
+      <div>
+        <h1>Machine information</h1>
+        <ul>
+        <li>
+          cores: 4
+          </li><li>
+          hostname: T410
+          </li><li>
+          jvm-name: Java HotSpot(TM) 64-Bit Server VM
+          </li><li>
+          jvm-vendor: Oracle Corporation
+          </li><li>
+          jvm-version: 23.7-b01
+          </li><li>
+          os-arch: amd64
+          </li><li>
+          os-name: Windows 7
+          </li>
+        </ul>
+      </div>
+      <div>
+        <div>Started: Thu Apr 18 23:58:58 CEST 2013</div>
+        <div>Finished: Fri Apr 19 00:00:40 CEST 2013</div>
+        <div>Running time: 102 seconds</div>
+      </div>
+    </div>
+    </body></html>

@@ -1,0 +1,19 @@
+D3.js
+	BSD 3-Clause License
+	https://github.com/mbostock/d3/blob/master/LICENSE
+	"Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer."
+
+crossfilter, bootstrap:
+	Apache License, Version 2.0
+	http://www.apache.org/licenses/LICENSE-2.0
+	"You must give any other recipients of the Work or Derivative Works a copy of this License"
+
+jquery
+	MIT License
+	https://jquery.org/license/
+	"You are free to use a jQuery project in commercial projects as long as the copyright header is left intact."
+
+dynatree
+	MIT License
+	https://code.google.com/p/dynatree/wiki/LicenseInfo
+	"You are free to use Dynatree in commercial projects as long as the copyright header is left intact."

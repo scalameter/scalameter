@@ -1,0 +1,153 @@
+/*
+.filters .year {
+  height: 200px;
+  vertical-align: bottom;
+  font-weight: bold;
+  display: inline-block;
+  position: relative;
+}
+
+.filters .month {
+  position: absolute;
+  display: inline-block;
+  bottom: 0;
+}
+
+.filters .day {
+  display: inline-block;
+  width: 100px;
+}
+*/
+
+ul.dynatree-container {
+  border: 0;
+  margin: 10px;
+}
+
+.sidebar {
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: 250px;
+  height: 100%;
+  overflow-y: auto;
+}
+
+.content {
+  margin-left: 280px;
+}
+
+/*
+body {
+  margin: 40px auto;
+  width: 1050px;
+  min-height: 2000px;
+}
+*/
+
+.legend,
+.dynatree-title,
+.nav-tabs a,
+.pagination a {
+  cursor: pointer;
+}
+
+
+.badge {
+  margin-left: 5px;
+  cursor: pointer;
+}
+
+.dynatree-adjtext {
+  position: relative;
+  top: -3px;
+}
+
+.dynatree-square {
+  width: 13px;
+  height: 13px;
+  display: inline-block;
+  vertical-align: top;
+  margin: 1px 3px 0 0;
+}
+
+/*
+.tree {
+  display: inline-block;
+  width: 200px;  
+}
+*/
+
+.chart {
+  display: inline-block;
+  vertical-align: top;
+}
+
+.grid .tick {
+  stroke: lightgrey;
+  opacity: 0.7;
+}
+
+.grid path {
+  stroke-width: 0;
+}
+
+.axis path,
+.axis line {
+  fill: none;
+  stroke: #000;
+  shape-rendering: crispEdges;
+}
+
+.legend text {
+  text-anchor: end;
+  font-size: 10px;
+}
+
+.line {
+  fill: none;
+  stroke: steelblue;
+  stroke-width: 1.5px;
+}
+
+/*
+.datechart {
+  display: inline-block;
+  height: 151px;
+  margin-bottom: 20px;
+}
+
+.reset {
+  padding-left: 1em;
+  font-size: smaller;
+  color: #ccc;
+}
+
+.background.bar {
+  fill: #ccc;
+}
+
+.foreground.bar {
+  fill: steelblue;
+}
+
+.axis path, .axis line {
+  fill: none;
+  stroke: #000;
+  shape-rendering: crispEdges;
+}
+
+.axis text {
+  font: 10px sans-serif;
+}
+
+.brush rect.extent {
+  fill: steelblue;
+  fill-opacity: .125;
+}
+
+.brush .resize path {
+  fill: #eee;
+  stroke: #666;
+}
+*/
