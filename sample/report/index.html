@@ -8,6 +8,7 @@
       <script type="text/javascript" src="js/d3.v3.min.js"></script>
       <script type="text/javascript" src="js/crossfilter.min.js"></script>
       <script type="text/javascript" src="js/jquery-1.9.1.js"></script>
+      <script type="text/javascript" src="js/jquery-compat.js"></script>
       <script type="text/javascript" src="js/jquery-ui.custom.min.js"></script>
       <script type="text/javascript" src="js/jquery.dynatree.js"></script>
       <script type="text/javascript" src="js/bootstrap.min.js"></script>
@@ -36,7 +37,7 @@
             <li><a onclick="cd.nextDay();">&raquo;</a></li>
           </ul>
         </div>
-        <div class="filters"></div>
+        <div class="filters" id="sortable"></div>
         <h1>Raw data</h1>
         <table class="table rawdata"></table>
         <script type="text/javascript">
@@ -44,8 +45,14 @@
           var gc = GenericChart(h);
           var cd = CurveData(h, gc).rawdata('.rawdata');
           cd.setCurves(curves);
+
+          $(function() {
+            $( "#sortable" ).sortable();
+            $( "#sortable" ).disableSelection();
+          });
         </script>
       </div>
+      <!--
       <div>
         <h1>Machine information</h1>
         <ul>
@@ -71,5 +78,5 @@
         <div>Finished: Fri Apr 19 00:00:40 CEST 2013</div>
         <div>Running time: 102 seconds</div>
       </div>
-    </div>
+    </div>-->
     </body></html>

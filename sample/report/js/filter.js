@@ -11,7 +11,8 @@ var CurveData = function(helper, genericChart) {
 		rawdata,
 		filter_,
 		selectedDates_ = d3.set(),
-		selectedCurves_ = d3.set([0]);
+		selectedCurves_ = d3.set([0]),
+		expandedFilter_ = -1;
 
 	var mainColors = (function() {
 		var nGroups = 10;
@@ -48,11 +49,15 @@ var CurveData = function(helper, genericChart) {
 
 		my.getDim = getDimension;
 
+		var data = my.getData();
 
 		// DATE SELECTION
 		var dateDim = getDimension(dKey.date);
-		var uniqueDates = h.unique(my.getData(), h.mapKey(dKey.date), d3.descending);
+		var uniqueDates = h.unique(data, h.mapKey(dKey.date), d3.descending);
 
+
+
+/*
 		//generate random dates over the past 5 years
 		var testUniqueDates = [];
 		var today = +new Date();
@@ -61,7 +66,8 @@ var CurveData = function(helper, genericChart) {
 		}
 		testUniqueDates.sort(d3.descending);
 
-		// uniqueDates = testUniqueDates; TODO remove
+		uniqueDates = testUniqueDates;
+*/
 
 		function selectedDatesChanged() {
 			dateDim.filterFunction(function(d) {
@@ -186,6 +192,7 @@ var CurveData = function(helper, genericChart) {
 
 		var root = d3.select(".filters");
 
+/*
 		root.append("button")
 			.attr("class", "btn btn-small")
 			.text("All")
@@ -197,6 +204,62 @@ var CurveData = function(helper, genericChart) {
 			.on("click", selectNone);
 
 		toggleDate(uniqueDates[0]);
+		*/
+
+		function addFilter(root, name, fKey, i) {
+			var content = '<div class="filter-container-header">' +
+				'<i class="icon-move"></i> ' + name +
+			'</div>' +
+			'<div class="tabbable tabs-below">' +
+				'<div class="tab-content">' +
+				  '<i class="filter-expand icon-chevron-down filter-showexpanded"></i>' +
+				  '<i class="filter-expand icon-chevron-right filter-showcollapsed"></i>' +
+					'<span class="values"></span>' +
+				'</div>' +
+				'<ul class="nav nav-tabs filter-showexpanded">' +
+					'<li class="active"><a data-toggle="tab">All</a></li>' +
+					'<li><a data-toggle="tab">Single</a></li>' +
+					'<li><a data-toggle="tab">Select</a></li>' +
+				'</ul>' +
+			'</div>';
+
+			var container = root.append("div");
+
+			container
+				.datum(i)
+				.attr("class", "filter-container filter-collapsed")
+				.html(content);
+
+			var values = h.unique(data, fKey, d3.ascending);
+			values = values.concat(values.map(function(d) { return d / 1000; })).concat(values);
+
+			var badges = container.select(".values").selectAll(".badge").data(values);
+
+			badges.enter()
+				.append("span")
+				.attr("class", "badge")
+				.text(h.ident);
+
+			container.selectAll(".filter-expand")
+				.on("click", function() {
+					if (expandedFilter_ == i) {
+						expandedFilter_ = -1;
+					} else {
+						expandedFilter_ = i;
+					}
+					d3.selectAll(".filter-container")
+						.classed("filter-expanded", function(d) { return d == expandedFilter_; })
+						.classed("filter-collapsed", function(d) { return d != expandedFilter_; });
+				});
+
+			console.log(values);
+		}
+
+		addFilter(root, "size0", h.mapKey(dKey.param), 0);
+		addFilter(root, "size1", h.mapKey(dKey.param), 1);
+
+
+
 
 		return my;
 	}
