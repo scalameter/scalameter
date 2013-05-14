@@ -241,10 +241,10 @@ This component decides how often it should call the generator to reinstantiate t
 value for the test, in this case the list.
 Doing this too often slows down your test, and never doing it may result in always
 measuring the badly allocated list.
-In the `Regression` benchmarks it does this every `10` repetitions by default,
+In the `Regression` benchmarks it does this every `12` repetitions by default,
 but you can customize this:
 
-    exec.reinstantiation -> 2
+    exec.reinstantiation.frequency -> 2
 
 By instantiating the list more often running times stabilize, as we can see from
 the confidence intervals:
