@@ -6,6 +6,7 @@ package reporting
 import java.util.Date
 import java.io._
 import java.awt.Color
+import util.parsing.json._
 import org.jfree.chart._
 import collection._
 import xml._
@@ -128,6 +129,24 @@ case class HtmlReporter(val renderers: HtmlReporter.Renderer*) extends Reporter 
     }
   }
 
+  def JSONIndex(results: Tree[CurveData]) = {
+    def JSONCurve(context: Context, curve: CurveData) = JSONObject(
+      immutable.Map(
+        "scope" -> new JSONArray(curve.context.scopeList),
+        "name" -> curve.context.curve,
+        "file" -> s"../${context.scope}.${curve.context.curve}.dsv"
+      )
+    )
+
+    val JSONCurves = for {
+      (ctx, curves) <- results.scopes if curves.nonEmpty
+      curve <- curves
+    } yield {
+      JSONCurve(ctx, curve)
+    }
+    new JSONArray(JSONCurves.toList)
+  }
+
   def report(results: Tree[CurveData], persistor: Persistor) = {
     val resultdir = results.context.goe(reports.resultDir, "tmp")
 
@@ -139,9 +158,12 @@ case class HtmlReporter(val renderers: HtmlReporter.Renderer*) extends Reporter 
     new File(root, "css").mkdir()
     new File(root, "js").mkdir()
 
-    val report = <html>{head ++ body(results, persistor)}</html>
+    // val report = <html>{head ++ body(results, persistor)}</html>
+
+    val curvesJSONIndex = JSONIndex(results)
 
     List(
+      "index.html",
       "css/bootstrap.min.css",
       "css/icons.gif",
       "css/index.css",
@@ -160,15 +182,34 @@ case class HtmlReporter(val renderers: HtmlReporter.Renderer*) extends Reporter 
       copyResource(filename, new File(root, filename))
     }
 
-    printToFile(new File(s"$resultdir${sep}report${sep}index.html")) {
-      _.println("<!DOCTYPE html>\n" + report.toString)
+    def printTsv(pw: PrintWriter) {
+      val allCurves = for {
+        (ctx, curves) <- results.scopes if curves.nonEmpty
+        curve <- curves
+      } yield curve
+
+      val separators = "" #:: Stream.continually(", ")
+
+      pw.print("var curveDataTsv = [")
+      for ((curve, sep) <- allCurves.toStream zip separators) {
+        pw.print(sep)
+        pw.print("'")
+        DsvReporter.writeCurveData(curve, persistor, pw, "\\n")
+        pw.print("'")
+      }
+      pw.println("];")
+    }
+
+    printToFile(new File(root, "js/curves.js")) { pw =>
+      pw.println(s"var curves = $curvesJSONIndex;")
+      // printTsv(pw)
     }
 
     true
   }
 
-  def printToFile(f: java.io.File)(op: java.io.PrintWriter => Unit) {
-    val p = new java.io.PrintWriter(f)
+  def printToFile(f: File)(op: PrintWriter => Unit) {
+    val p = new PrintWriter(f)
     try { op(p) } finally { p.close() }
   }
 
