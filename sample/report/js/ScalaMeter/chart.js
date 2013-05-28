@@ -1,10 +1,10 @@
-var GenericChart = function(helper) {
-	var my = {};
+var ScalaMeter = (function(parent) {
+	var my = { name: "chart" };
 
 	/*
 	 * ----- imports -----
 	 */
-	var h = helper,
+	var h = parent.helper,
 		dKey = h.dKey,
 		mapKey = h.mapKey,
 		ident = h.ident
@@ -26,11 +26,11 @@ var GenericChart = function(helper) {
 	var STD_LEGEND_WIDTH = 200;
 
 	var CHART_TYPES = {
-		lineParam: { value: "lineParam", name: "Line Chart (param)" },
+		/*lineParam: { value: "lineParam", name: "Line Chart (param)" },
 		lineDate: { value: "lineDate", name: "Line Chart (date)" },
-		bar: { value: "bar", name: "Bar Chart" }
-/*		line: { value: "line", name: "Line Chart" },
 		bar: { value: "bar", name: "Bar Chart" }*/
+		line: { value: "line", name: "Line Chart" },
+		bar: { value: "bar", name: "Bar Chart" }
 	};
 
 	/*
@@ -43,7 +43,7 @@ var GenericChart = function(helper) {
 		margin_ = STD_MARGIN,
 		legendWidth_ = STD_LEGEND_WIDTH,
 		showCI_ = false,
-		chartType_ = CHART_TYPES.lineParam;
+		chartType_ = CHART_TYPES.line;
 
 	/*
 	 * ----- public properties -----
@@ -75,10 +75,10 @@ var GenericChart = function(helper) {
 		return my;
 	};
 
-	function sortBy(fn) {
-		return function(a, b) {
-			return d3.ascending(fn(a), fn(b));
-		};
+	my.toggleCI = function() {
+		showCI_ = !showCI_;
+		d3.select(".showci").classed("badge-info", showCI_);
+		return my;
 	}
 
 	function msToDateStr(d) {
@@ -129,12 +129,12 @@ var GenericChart = function(helper) {
 		legend.select("text").attr("style", "font-weight:normal");
 	}
 
-	function createColorMap(mainColors, domain_shades) {
+	function createColorMap(domain_shades) {
 		var brightness = d3.scale.ordinal()
 			.domain(domain_shades)
 			.rangePoints([-1, 1]);
 		return (function(i, j) {
-			return d3.hsl(mainColors(i)).brighter(brightness(j));
+			return d3.hsl(h.mainColors(i)).brighter(brightness(j));
 		});
 	}
 /*
@@ -160,7 +160,7 @@ var GenericChart = function(helper) {
 
 	}
 */
-	my.update = function(data, node, ylabel, mainColors) {
+	my.update = function(data, node, ylabel, filterParams) {
 		var W = width_ - margin_.left - margin_.right - legendWidth_;
 		var H = height_ - margin_.top - margin_.bottom;
 
@@ -179,14 +179,15 @@ var GenericChart = function(helper) {
 
 		// scales
 		var x,
-				y = d3.scale.linear()
-			.domain([0, d3.max(data, mapKey(dKey.value))])
-			.range([H, 0]);
+			y = d3.scale.linear()
+				.domain([0, d3.max(data, mapKey(dKey.value))])
+				.range([H, 0]);
 
+		//TODO handle null values
 		switch(chartType_) {
-			case CHART_TYPES.lineParam:
+			case CHART_TYPES.line:
 				lineData = data;
-				keyAbscissa = mapKey(dKey.param);
+				keyAbscissa = filterParams[0].keyFn(); //mapKey(dKey.param);
 
 				keyLegend = {
 					get: mapKey(dKey.date),
@@ -197,7 +198,10 @@ var GenericChart = function(helper) {
 				x = d3.scale.linear()
 							.domain(d3.extent(data, keyAbscissa))
 							.range([0, W]);
+
+				//TODO xLabelFormat
 				break;
+				/*
 			case CHART_TYPES.lineDate:
 				lineData = data;
 				keyAbscissa = mapKey(dKey.date);
@@ -215,21 +219,52 @@ var GenericChart = function(helper) {
 
 				xLabelFormat = msToDateStr;
 				break;
+				*/
 			case CHART_TYPES.bar:
 				barData = data;
 				showXGrid = false;
 
+				var paramsLegend = filterParams.slice(1); //TODO
+
 				keyLegend = {
-					get: mapKey(dKey.param),
+					get: paramsLegend[0].keyFn(),
 					sort: d3.ascending,
 					format: ident
 				};
 
+/*
 				keyAbscissa0 = mapKey(dKey.date);
 				keyAbscissa1 = mapKey(dKey.param);
 				keyAbscissa2 = mapKey(dKey.curve);
+				*/
 
-				var x = d3.scale.ordinal()
+				var xBar = function() { return 0; };
+				var xN = [];
+
+				var parentWidth = W;
+				var keyFuns = filterParams.map(function(param) {
+					return param.keyFn();
+				});
+				keyFuns.push(keyCurve.get);
+
+				for (var i = 0; i < keyFuns.length; i++) {
+					xN.push(
+						d3.scale.ordinal()
+							.domain(unique(data, keyFuns[i], d3.ascending))
+							.rangeRoundBands([0, parentWidth], 0.1)
+					);
+					parentWidth = xN[i].rangeBand();
+					var xBar = (function(xBarPrev, xN, keyFn) {
+						return function(d) {
+							return xBarPrev(d) + xN(keyFn(d));
+						};
+					})(xBar, xN[i], keyFuns[i]);
+				}
+				var barWidth = parentWidth;
+				x = xN[0];
+
+/*
+				x = d3.scale.ordinal()
 										.domain(unique(data, keyAbscissa0, d3.ascending))
 										.rangeRoundBands([0, W], 0.1);
 
@@ -240,8 +275,9 @@ var GenericChart = function(helper) {
 				var x2 = d3.scale.ordinal()
 										.domain(unique(data, keyAbscissa2, d3.ascending))
 										.rangeRoundBands([0, x1.rangeBand()]);
+										*/
 
-				xLabelFormat = msToDateStr;
+				//TODO xLabelFormat = msToDateStr;
 				break;
 		}
 
@@ -249,7 +285,7 @@ var GenericChart = function(helper) {
 		var group_outer = d3.nest()
 			.key(keyCurve.get).sortKeys(keyCurve.sort)
 			.key(keyLegend.get).sortKeys(keyLegend.sort)
-			.sortValues(sortBy(keyAbscissa));
+			.sortValues(h.sortBy(keyAbscissa));
 		var data_outer = group_outer.entries(lineData);
 
 		var keys_outer = data_outer.map(h.fKey);
@@ -258,7 +294,7 @@ var GenericChart = function(helper) {
 
 		var keysGradient = unique(data, keyLegend.get, keyLegend.sort);
 
-		var colorMap = createColorMap(mainColors, keysGradient);
+		var colorMap = createColorMap(keysGradient);
 
 		if (svg_ === null) {
 			svg_ = d3.select(node).append("svg").attr("width", width_).attr("height", height_)
@@ -340,10 +376,13 @@ var GenericChart = function(helper) {
 
 		function bar(d) {
 			d3.select(this)
-				.style("fill", colorMap(keyCurve.get(d), keyAbscissa1(d)))
+				// .style("fill", colorMap(keyCurve.get(d), keyAbscissa1(d)))
+				.style("fill", colorMap(keyCurve.get(d), keyLegend.get(d)))
 				.transition()
-				.attr("width", x2.rangeBand())
-				.attr("x", x(keyAbscissa0(d)) + x1(keyAbscissa1(d)) + x2(keyAbscissa2(d)))
+				//.attr("width", x2.rangeBand())
+				.attr("width", barWidth)
+				.attr("x", xBar(d))
+				// .attr("x", x0(keyAbscissa0(d)) + x1(keyAbscissa1(d)) + x2(keyAbscissa2(d)))
 				.attr("y", y(d[dKey.value]))
 				.attr("height", H - y(d[dKey.value]))
 				.transition()
@@ -368,7 +407,7 @@ var GenericChart = function(helper) {
 			rects.exit().remove();
 		}
 
-		d3.transition().duration(2000).each(function() {
+		d3.transition()./*duration(2000).*/each(function() {
 			// axis and grid
 			if (showXGrid) {
 				var xGrid = d3.svg.axis().scale(x).orient("bottom").tickSize(-H, 0, 0).tickFormat("");
@@ -390,7 +429,7 @@ var GenericChart = function(helper) {
 
 			bars.enter()
 				.append("rect")
-				.attr("class", function(d) { return "bar-" + keyAbscissa1(d); })
+				//TODO .attr("class", function(d) { return "bar-" + keyAbscissa1(d); })
 				.style("fill-opacity", 0);
 
 			bars.each(bar);
@@ -452,5 +491,7 @@ var GenericChart = function(helper) {
 		});
 	}
 
-	return my;
-};
+	parent[my.name] = my;
+
+	return parent;
+})(ScalaMeter || {});

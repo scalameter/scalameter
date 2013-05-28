@@ -1,39 +1,158 @@
-var CurveData = function(helper, genericChart) {
-	var h = helper,
-		dKey = h.dKey;
+var ScalaMeter = (function(parent) {
+	var my = { name: "filter" };
 
-	var my = {},
-		dataconcat = [],
-		tsvWaiting = 0,
-		// ready = false,
+	var h = parent.helper,
+		dKey = h.dKey,
+		dataConcat_ = [],
 		scopeTree = { children: [] },
 		scopeId = 0,
 		rawdata,
 		filter_,
 		selectedDates_ = d3.set(),
-		selectedCurves_ = d3.set([0]),
-		expandedFilter_ = -1;
+		selectedCurves_ = d3.set([0]);
 
-	var mainColors = (function() {
-		var nGroups = 10;
-		var groups = d3.scale.category10().domain(d3.range(nGroups));
-		return function(i) {
-			return groups(i % nGroups);
+	var SELECT_MODES = h.obj2enum({
+		single: "Single",
+		select: "Select",
+		all: "All"
+	});
+
+	var TSV_DATE_FORMAT = d3.time.format.utc("%Y-%m-%dT%H:%M:%SZ");
+
+	var filterParams = (function() {
+		var my = {};
+
+		var paramNames_ = [],
+			params_ = d3.map();
+
+		function addParam(name) {
+			return (function() {
+				var name_ = name,
+					caption_ = name_.substr(dKey.paramPrefix.length),
+					selectMode_ = SELECT_MODES.single,
+					selectedValues_ = d3.set(),
+					expanded_ = false,
+					values_,
+					cfDimension_;
+
+				function updateCrossfilter() {
+					cfDimension_.filterFunction(function(d) {
+						return d == null || selectedValues_.has(d);
+					});
+				}
+
+				function updateSelectMode() {
+					switch (selectMode_) {
+						case SELECT_MODES.single:
+							var selectedValue = values_[0];
+							for (var i = 0; i < values_.length; i++) {
+								if (selectedValues_.has(values_[i])) {
+									selectedValue = values_[i];
+									break;
+								}
+							}
+							selectedValues_ = d3.set([selectedValue]);
+							break;
+						case SELECT_MODES.all:
+							selectedValues_ = d3.set(values_);
+							break;
+					}
+				}
+
+				return {
+					init: function(data, cfDimension) {
+						values_ = h.unique(data, h.mapKey(name), d3.ascending);
+						selectedValues_ = d3.set(values_);
+						cfDimension_ = cfDimension;
+					},
+
+					updateCrossfilter : updateCrossfilter,
+
+					selectMode: function(_) {
+						if (!arguments.length) return selectMode_;
+						selectMode_ = _;
+						updateSelectMode();
+					},
+
+					selectedValues: function(_) {
+						if (!arguments.length) return selectedValues_;
+						selectedValues_ = _;
+					},
+
+					caption: function(_) {
+						if (!arguments.length) return caption_;
+						caption_ = _;
+					},
+
+					expanded: function(_) {
+						if (!arguments.length) return expanded_;
+						expanded_ = _;
+					},
+
+					keyFn: function() {
+						return h.mapKey(name_);
+					},
+
+					clickValue: function(value) {
+						if (selectMode_ == SELECT_MODES.single) {
+							selectedValues_ = d3.set([value]);
+						} else {
+							if (selectedValues_.has(value)) {
+								selectedValues_.remove(value);
+							} else {
+								selectedValues_.add(value);
+							}
+							if (selectedValues_.values().length == values_.length) {
+								selectMode_ = SELECT_MODES.all;
+							} else {
+								selectMode_ = SELECT_MODES.select;
+							}
+						}
+					},
+
+					getAllValues: function() {
+						return values_;
+					}
+				};
+			})();
+		}
+
+		my.add = function(name) {
+			if (!params_.has(name)) {
+				params_.set(name, addParam(name));
+				paramNames_.push(name);
+			}
+
+			return my;
 		};
+
+		my.get = function(name) {
+			return params_.get(name);
+		};
+
+		my.getAll = function() {
+			return paramNames_.map(function(name) {
+				return params_.get(name);
+			});
+		};
+
+		// my.getAxisParam = function() {
+		// 	return params_.get(paramNames_[0]);
+		// };
+
+		my.names = function(_) {
+			if (!arguments.length) return paramNames_;
+			paramNames_ = _;
+			return my;
+		};
+
+		return my;
 	})();
 
 	function init() {
-		// init filter once all files have been processed
-		if(tsvWaiting == 0) {
-			filter_ = createFilter();
-			initTree();
-		}
-	}
-
-	function createFilter() {
 		var my = {};
 
-		var cFilter_ = crossfilter(dataconcat),
+		var cFilter_ = crossfilter(dataConcat_),
 			filterDim_ = {};
 
 		function getDimension(key) {
@@ -54,8 +173,6 @@ var CurveData = function(helper, genericChart) {
 		// DATE SELECTION
 		var dateDim = getDimension(dKey.date);
 		var uniqueDates = h.unique(data, h.mapKey(dKey.date), d3.descending);
-
-
 
 /*
 		//generate random dates over the past 5 years
@@ -206,62 +323,126 @@ var CurveData = function(helper, genericChart) {
 		toggleDate(uniqueDates[0]);
 		*/
 
-		function addFilter(root, name, fKey, i) {
-			var content = '<div class="filter-container-header">' +
-				'<i class="icon-move"></i> ' + name +
-			'</div>' +
-			'<div class="tabbable tabs-below">' +
-				'<div class="tab-content">' +
-				  '<i class="filter-expand icon-chevron-down filter-showexpanded"></i>' +
-				  '<i class="filter-expand icon-chevron-right filter-showcollapsed"></i>' +
-					'<span class="values"></span>' +
-				'</div>' +
-				'<ul class="nav nav-tabs filter-showexpanded">' +
-					'<li class="active"><a data-toggle="tab">All</a></li>' +
-					'<li><a data-toggle="tab">Single</a></li>' +
-					'<li><a data-toggle="tab">Select</a></li>' +
-				'</ul>' +
-			'</div>';
+		function expandFilters() {
+			//TODO remove
+			d3.selectAll(".filter-container")
+				.classed("filter-expanded", function(d) { return d == expandedFilter_; })
+				.classed("filter-collapsed", function(d) { return d != expandedFilter_; });
+		}
 
-			var container = root.append("div");
+		function updateSelection(param) {
+			param.updateCrossfilter();
+			updateFilters();
+			update();
+		}
+
+		function createFilter(paramName, i) {
+			var container = d3.select(this);
+
+			var param = filterParams.get(paramName);
+			param.init(data, getDimension(paramName));
+			param.selectMode(i == 0 ? SELECT_MODES.select : SELECT_MODES.single);
+			param.updateCrossfilter();
+
+			function toggleExpanded() {
+				param.expanded(!param.expanded());
+				container
+					.classed("filter-expanded", param.expanded())
+					.classed("filter-collapsed", !param.expanded());
+			}
+
+			var content = '' +
+				'<div class="filter-container-header">' +
+					param.caption() +
+				'</div>' +
+				'<div class="tabbable tabs-below">' +
+					'<div class="tab-content">' +
+					  '<i class="filter-expand icon-chevron-down filter-hidecollapsed"></i>' +
+					  '<i class="filter-expand icon-chevron-right filter-hideexpanded"></i>' +
+						'<span class="values"></span>' +
+					'</div>' +
+					'<ul class="nav nav-tabs filter-hidecollapsed"></ul>' +
+				'</div>';
 
 			container
-				.datum(i)
+				.attr("id", h.ident)
 				.attr("class", "filter-container filter-collapsed")
 				.html(content);
 
-			var values = h.unique(data, fKey, d3.ascending);
-			values = values.concat(values.map(function(d) { return d / 1000; })).concat(values);
+			container.select("ul").selectAll("li").data(SELECT_MODES.enumAll)
+				.enter()
+				.append("li")
+				.append("a")
+				.attr("data-toggle", "tab")
+				.text(h.fValue)
+				.on("click", function(d) {
+					param.selectMode(d);
+					updateSelection(param);
+				});
 
-			var badges = container.select(".values").selectAll(".badge").data(values);
+			var badges = container.select(".values").selectAll(".badge").data(param.getAllValues());
 
 			badges.enter()
 				.append("span")
 				.attr("class", "badge")
+				.on("click", function(d) {
+					if (!param.expanded()) {
+						toggleExpanded();
+					} else {
+						param.clickValue(d);
+						updateSelection(param);
+					}
+				})
 				.text(h.ident);
 
 			container.selectAll(".filter-expand")
-				.on("click", function() {
-					if (expandedFilter_ == i) {
-						expandedFilter_ = -1;
-					} else {
-						expandedFilter_ = i;
-					}
-					d3.selectAll(".filter-container")
-						.classed("filter-expanded", function(d) { return d == expandedFilter_; })
-						.classed("filter-collapsed", function(d) { return d != expandedFilter_; });
-				});
-
-			console.log(values);
+				.on("click", toggleExpanded);
 		}
 
-		addFilter(root, "size0", h.mapKey(dKey.param), 0);
-		addFilter(root, "size1", h.mapKey(dKey.param), 1);
+		function updateFilter(paramName) {
+			var param = filterParams.get(paramName);
+			var container = d3.select(this);
+
+			container.select("ul").selectAll("li")
+				.classed("active", function(d) { return d == param.selectMode(); });
+
+			container.selectAll(".badge")
+				.classed("badge-info", function(d) { return param.selectedValues().has(d) })
+				.classed("filter-hidecollapsed", function(d) { return !param.selectedValues().has(d) });
+		}
+
+		function updateFilters() {
+			var containers = root.selectAll(".filter-container").data(filterParams.names(), h.ident);
+
+			containers.enter()
+				.append("div")
+				.each(createFilter);
+
+			containers
+				.each(updateFilter);
+		}
+
+		updateFilters();
+
+		$(".filters").sortable({
+		  handle: ".filter-container-header",
+		  update: function(event, ui) {
+		    // console.log(["update", event]);
+		    // var sortedIDs = $(this).sortable( "toArray" );
+		    filterParams.names($(this).sortable("toArray"));
+		    update();
+		    // console.log(sortedIDs);
+		  }
+		});
+		$(".filters").disableSelection();
+
+		// addFilter(root, "size0", h.mapKey(dKey.param), 0);
+		// addFilter(root, "size1", h.mapKey(dKey.param), 1);
 
 
 
 
-		return my;
+		filter_ = my;
 	}
 
 	function showdata(data) {
@@ -301,7 +482,7 @@ var CurveData = function(helper, genericChart) {
 			if (title != "") {
 				title = '<span class="dynatree-adjtext">' + title + '</span>';
 				if (node.id != -1) {
-					var color = mainColors(node.id);
+					var color = h.mainColors(node.id);
 					title = '<div class="dynatree-square" style="background-color:' + color + '"></div>' + title;
 				}
 				return {
@@ -363,7 +544,10 @@ var CurveData = function(helper, genericChart) {
 
 	function update() {
 		var data = filter_.getData();
-		genericChart.update(data, ".chart", "value [ms]", mainColors);
+		filterParams.names().forEach(function(d) {
+			console.log(filter_.getDim(d).group().all());
+		});
+		parent.chart.update(data, ".chart", "value [ms]", filterParams.getAll());
 		if (h.isDef(rawdata)) {
 			showdata(data);
 		}
@@ -381,7 +565,7 @@ var CurveData = function(helper, genericChart) {
 		var scopeId = addScope(scopeTree, scope);
 		d3.tsv(tsv, function(error, data) {
 			var dateformat = d3.time.format.utc("%Y-%m-%dT%H:%M:%SZ");
-			var offset = dataconcat.length;
+			var offset = dataConcat_.length;
 			data.forEach(function(d, i) {
 				d[dKey.param] = +d[dKey.param];
 				d[dKey.value] = +d[dKey.value];			
@@ -389,7 +573,7 @@ var CurveData = function(helper, genericChart) {
 				d[dKey.curve] = scopeId;
 				d[dKey.index] = offset + i;
 			});
-			dataconcat = dataconcat.concat(data);
+			dataConcat_ = dataConcat_.concat(data);
 			tsvWaiting--;
 			init();
 		});
@@ -398,36 +582,53 @@ var CurveData = function(helper, genericChart) {
 	};
 	*/
 
-	my.setCurves = function(curves) {
-		tsvWaiting = curves.length;
-		curves.forEach(function(curve) {
+	my.createFromIndex = function(index) {
+		var tsvWaiting = index.length;
+
+		function tsvReady() {
+			tsvWaiting--;
+			// init filter once all files have been processed
+			if(tsvWaiting == 0) {
+				init();
+				initTree();
+			}
+		}
+
+		function parseData(data, scopeId) {
+			for (key in data[0]) {
+				if(key.slice(0, dKey.paramPrefix.length) == dKey.paramPrefix) {
+					// key starts with "param-"
+					filterParams.add(key);
+				}
+			}
+			var offset = dataConcat_.length;
+			data.forEach(function(d, i) {
+				filterParams.names().forEach(function(paramName) {
+					if (d.hasOwnProperty(paramName)) {
+						d[paramName] = +d[paramName];
+					}
+				});
+				d[dKey.value] = +d[dKey.value];			
+				d[dKey.date] = +TSV_DATE_FORMAT.parse(d[dKey.date]);
+				d[dKey.curve] = scopeId;
+				d[dKey.index] = offset + i;
+			});
+			dataConcat_ = dataConcat_.concat(data);
+		}
+
+		index.forEach(function(curve) {
 			curve.scope.push(curve.name);
 			var scopeId = addScope(scopeTree, curve.scope);
 			d3.tsv(curve.file, function(error, data) {
-				var dateformat = d3.time.format.utc("%Y-%m-%dT%H:%M:%SZ");
-				var offset = dataconcat.length;
-				data.forEach(function(d, i) {
-					d[dKey.param] = +d[dKey.param];
-					d[dKey.value] = +d[dKey.value];			
-					d[dKey.date] = +dateformat.parse(d[dKey.date]);
-					d[dKey.curve] = scopeId;
-					d[dKey.index] = offset + i;
-				});
-				dataconcat = dataconcat.concat(data);
-				tsvWaiting--;
-				init();
+				if (data.length != 0) {
+					parseData(data, scopeId);
+				}
+				tsvReady();
 			});
 		});
+
 		return my;
 	};
-	
-	/*
-	my.setReady = function() {
-		ready = true;
-		init();
-		return my;
-	};
-	*/
 	
 	function setFilter(curves) {
 		selectedCurves_ = d3.set(curves);
@@ -473,5 +674,7 @@ var CurveData = function(helper, genericChart) {
 		return my;
 	}
 
-	return my;
-};
+	parent[my.name] = my;
+
+	return parent;
+})(ScalaMeter || {});

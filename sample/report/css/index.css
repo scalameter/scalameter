@@ -18,40 +18,57 @@
   width: 100px;
 }
 */
+.tooltip-x-axis {
+  position: absolute;
+}
 
-.filter-expanded .filter-showcollapsed,
-.filter-collapsed .filter-showexpanded
+.tooltip-x-axis img {
+  position: relative;
+  top: 9px;
+  left: -15px;
+}
+
+.tooltip-x-axis-caption {
+  font-size: 12px;
+  font-weight: bold;
+}
+
+.showci {
+  margin-bottom: 5px;
+}
+
+.filter-expanded .filter-hideexpanded,
+.filter-collapsed .filter-hidecollapsed
 {
   display: none;
 }
 
 .filter-container {
   position: relative;
-  margin: 15px 0;
-  padding: 10px 10px 10px 100px;
-  /**padding-top: 19px;*/
+  margin: 5px 0 15px 0;
+  padding: 3px 10px 3px 100px;
   background-color: #fff;
   border: 1px solid #ddd;
-  -webkit-border-radius: 4px;
-     -moz-border-radius: 4px;
-          border-radius: 4px;
+  border-radius: 4px;
+}
+
+.filter-container .nav {
+  margin: 3px 0 0 0;
 }
 
 .filter-container-header {
-    cursor: pointer;
-    position: absolute;
-    top: -1px;
-    left: -1px;
-    width: 70px;
-    padding: 3px 7px;
-    font-size: 12px;
-    font-weight: bold;
-    background-color: whiteSmoke;
-    border: 1px solid #DDD;
-    color: #9DA0A4;
-    -webkit-border-radius: 4px 0 4px 0;
-    -moz-border-radius: 4px 0 4px 0;
-    border-radius: 4px 0 4px 0;
+  cursor: move;
+  position: absolute;
+  top: -1px;
+  left: -1px;
+  width: 70px;
+  padding: 3px 7px;
+  font-size: 12px;
+  font-weight: bold;
+  background-color: whiteSmoke;
+  border: 1px solid #DDD;
+  color: #9DA0A4;
+  border-radius: 4px 0 4px 0;
 }
 
 ul.dynatree-container {
@@ -69,13 +86,18 @@ ul.dynatree-container {
 }
 
 .content {
-  margin-left: 280px;
+  position: fixed;
+  top: 0;
+  left: 250px;
+  right: 0;
+  bottom: 0;
+  padding-left: 35px;
+  height: 100%;
+  overflow: auto;
 }
 
-body {
-  /*margin: 40px auto;*/
-  width: 1050px;
-  /*min-height: 2000px;*/
+.content-inner {
+  width: 900px;
 }
 
 .legend,
@@ -103,13 +125,6 @@ body {
   vertical-align: top;
   margin: 1px 3px 0 0;
 }
-
-/*
-.tree {
-  display: inline-block;
-  width: 200px;  
-}
-*/
 
 .chart {
   display: inline-block;
@@ -142,45 +157,3 @@ body {
   stroke: steelblue;
   stroke-width: 1.5px;
 }
-
-/*
-.datechart {
-  display: inline-block;
-  height: 151px;
-  margin-bottom: 20px;
-}
-
-.reset {
-  padding-left: 1em;
-  font-size: smaller;
-  color: #ccc;
-}
-
-.background.bar {
-  fill: #ccc;
-}
-
-.foreground.bar {
-  fill: steelblue;
-}
-
-.axis path, .axis line {
-  fill: none;
-  stroke: #000;
-  shape-rendering: crispEdges;
-}
-
-.axis text {
-  font: 10px sans-serif;
-}
-
-.brush rect.extent {
-  fill: steelblue;
-  fill-opacity: .125;
-}
-
-.brush .resize path {
-  fill: #eee;
-  stroke: #666;
-}
-*/
