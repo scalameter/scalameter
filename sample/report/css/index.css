@@ -1,23 +1,68 @@
-/*
+.date-slider {
+  margin: 10px 50px;
+}
+
+#date .values {
+  text-align: center;
+  display: inline-block;
+  vertical-align: top;
+}
+
 .filters .year {
-  height: 200px;
-  vertical-align: bottom;
   font-weight: bold;
   display: inline-block;
+}
+
+.caption-outer {
+  position: relative;
+  border-left: solid 1px black;
+  /*border-right: solid 1px black;*/
+  text-align: center;
+  margin-top: 2px;
+  height: 15px;
+}
+
+.year:last-child > .caption-outer,
+.year:last-child .month:last-child .caption-outer {
+  border-right: solid 1px black;
+}
+
+.caption-outer:before {
+  content: "";
+  display: block;
+  border-top: solid 1px black;
+  width: 100%;
+  height: 1px;
+  position: absolute;
+  top: 50%;
+}
+  
+.caption {
+  background: #fff;
+  padding: 0 2px;
   position: relative;
 }
 
 .filters .month {
-  position: absolute;
   display: inline-block;
-  bottom: 0;
+  font-size: 12px;
 }
 
 .filters .day {
   display: inline-block;
-  width: 100px;
+  vertical-align: top;
+  min-height: 150px;
+  top: 0;
+  text-align: center;
+  font-weight: normal;
 }
-*/
+
+.filters .timeofday {
+  cursor: pointer;
+  display: block;
+  margin: 2px;
+}
+
 .tooltip-x-axis {
   position: absolute;
 }
@@ -35,6 +80,7 @@
 
 .showci {
   margin-bottom: 5px;
+  cursor: pointer;
 }
 
 .filter-expanded .filter-hideexpanded,
@@ -107,8 +153,7 @@ ul.dynatree-container {
   cursor: pointer;
 }
 
-
-.badge {
+.filter-value {
   margin-left: 5px;
   cursor: pointer;
 }

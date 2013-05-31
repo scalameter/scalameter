@@ -77,7 +77,7 @@ var ScalaMeter = (function(parent) {
 
 	my.toggleCI = function() {
 		showCI_ = !showCI_;
-		d3.select(".showci").classed("badge-info", showCI_);
+		d3.select(".showci").classed("label-info", showCI_);
 		return my;
 	}
 

@@ -19,6 +19,14 @@ var ScalaMeter = (function(parent) {
 		};
 	})();
 
+	my.numberFormat = function(thousandsSeparator) {
+		return function(d) {
+		    var parts = d.toString().split(".");
+		    parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, thousandsSeparator);
+		    return parts.join(".");
+		};
+	}
+
 	my.obj2enum = function(obj) {
 		var result = { enumAll: [] };
 		for (key in obj) {
@@ -36,11 +44,15 @@ var ScalaMeter = (function(parent) {
 		return d;
 	};
 
+	my.ascendingToInt = function(a, b) {
+		return d3.ascending(+a, +b);
+	};
+
 	my.sortBy = function(fn) {
 		return function(a, b) {
 			return d3.ascending(fn(a), fn(b));
 		};
-	}
+	};
 
 	my.mapKey = function(key) {
 		return function(d) { return d.hasOwnProperty(key) ? d[key] : null };

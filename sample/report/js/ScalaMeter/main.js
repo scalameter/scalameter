@@ -2,7 +2,7 @@ var ScalaMeter = (function(parent) {
 	var my = { name: "main" };
 
 	my.init = function() {
-		parent.filter.createFromIndex(parent.data.index);
+		parent.filter.init();
 	};
 
 	my.getUrl = function() {

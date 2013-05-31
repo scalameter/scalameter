@@ -4,6 +4,8 @@
       <title>Performance Report</title>
       <link type="text/css" media="screen" rel="stylesheet" href="css/bootstrap.min.css"/>
       <link type="text/css" media="screen" rel="stylesheet" href="css/ui.dynatree.css"/>
+      <link type="text/css" media="screen" rel="stylesheet" href="css/jquery-ui-1.10.3.custom.css"/>
+      <link type="text/css" media="screen" rel="stylesheet" href="css/bootstrap-slider.css"/>
       <link type="text/css" media="screen" rel="stylesheet" href="css/index.css"/>
       <script type="text/javascript" src="js/d3.v3.min.js"></script>
       <script type="text/javascript" src="js/crossfilter.min.js"></script>
@@ -25,27 +27,20 @@
       <div class="content">
         <div class="content-inner">
         <div class="chart"></div>
-        <span class="showci badge" onclick="ScalaMeter.chart.toggleCI(); ScalaMeter.filter.update();">Confidence Interval</span>
+        <span class="showci label" onclick="ScalaMeter.chart.toggleCI(); ScalaMeter.filter.update();">Confidence Interval</span>
         <ul class="nav nav-tabs">
-          <!--
-          <li class="active"><a onclick="gc.setType(gc.cType.lineParam); gc.setShowCI(false); cd.update();" data-toggle="tab">Line Chart (param)</a></li>
-          <li><a onclick="gc.setType(gc.cType.lineDate); gc.setShowCI(false); cd.update();" data-toggle="tab">Line Chart (date)</a></li>
-          <li><a onclick="gc.setType(gc.cType.lineParam); gc.setShowCI(true); cd.update();" data-toggle="tab">Line Chart (param) with CI</a></li>
-          <li><a onclick="gc.setType(gc.cType.bar); gc.setShowCI(false); cd.update();" data-toggle="tab">Bar Chart</a></li>
-          -->
           <li class="active"><a onclick="ScalaMeter.chart.setType(ScalaMeter.chart.cType.line); ScalaMeter.filter.update();" data-toggle="tab">Line Chart</a></li>
           <li><a onclick="ScalaMeter.chart.setType(ScalaMeter.chart.cType.bar); ScalaMeter.filter.update();" data-toggle="tab">Bar Chart</a></li>
         </ul>
-        <!--
-        <h1>Filters</h1>
+        
+<!--         <h1>Filters</h1>
         <div class="pagination">
           <ul>
-            <li><a onclick="cd.prevDay();">&laquo;</a></li>
-            <li><a onclick="cd.nextDay();">&raquo;</a></li>
+            <li><a onclick="ScalaMeter.filter.prevDay();">&laquo;</a></li>
+            <li><a onclick="ScalaMeter.filter.nextDay();">&raquo;</a></li>
           </ul>
-        </div>
-        -->
-
+        </div> -->
+        
         <div class="tooltip-x-axis"><img src="img/arrow.png"></div>
         <div class="tooltip-x-axis-caption">x-axis</div>
         <div class="filters"></div>
@@ -57,27 +52,6 @@
 
         <script type="text/javascript">
           ScalaMeter.main.init();
-        /*
-          var h = Helper();
-          var gc = GenericChart(h);
-          var cd = CurveData(h, gc).rawdata('.rawdata');
-          cd.setCurves(curves);
-          */
-
-/*
-          $(function() {
-            $(".filters").sortable({
-              handle: ".filter-container-header",
-              update: function(event, ui) {
-                console.log(["update", event]);
-                var sortedIDs = $(this).sortable( "toArray" );
-                console.log(sortedIDs);
-              }
-            });
-            $(".filters").disableSelection();
-          });
-*/
-
         </script>
       </div>
       </div>
