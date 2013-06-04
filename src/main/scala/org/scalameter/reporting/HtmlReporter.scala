@@ -93,10 +93,10 @@ case class HtmlReporter(val renderers: HtmlReporter.Renderer*) extends Reporter 
     root.mkdir()
     new File(root, "css").mkdir()
     new File(root, "img").mkdir()
-    new File(root, "js").mkdir()
-    new File(root, "js${sep}ScalaMeter").mkdir()
 
-    // val report = <html>{head ++ body(results, persistor)}</html>
+    val jsroot = new File(root, "js")
+    jsroot.mkdir()
+    new File(jsroot, "ScalaMeter").mkdir()
 
     val curvesJSONIndex = JSONIndex(results)
 
@@ -145,7 +145,7 @@ case class HtmlReporter(val renderers: HtmlReporter.Renderer*) extends Reporter 
       pw.println("];")
     }
 
-    printToFile(new File(root, "js/curves.js")) { pw =>
+    printToFile(new File(root, "js/ScalaMeter/data.js")) { pw =>
       pw.println("var ScalaMeter = (function(parent) {");
       pw.println("  var my = { name: \"data\" };");
       pw.println(s"  my.index = $curvesJSONIndex;")
