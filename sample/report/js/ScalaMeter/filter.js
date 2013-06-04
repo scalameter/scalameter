@@ -13,12 +13,13 @@ var ScalaMeter = (function(parent) {
 
 	var SELECT_MODES,
 		TSV_DATE_FORMAT,
-		NUMBER_FORMAT;
+		NUMBER_FORMAT,
+		DATE_FILTER_WIDTH;
 	/*
 	 * ----- public functions -----
 	 */
 	
-	my.init = function() {
+	my.init = function(allFilters) {
 		h = parent.helper;
 		dKey = h.dKey;
 		dataConcat_ = [];
@@ -38,14 +39,19 @@ var ScalaMeter = (function(parent) {
 
 		NUMBER_FORMAT = h.numberFormat("\u202F");  // 202F: narrow no-break space
 
-		createFromIndex(parent.data.index);
+		DATE_FORMAT = (function(d) {return d3.time.format("%Y-%m-%d %H:%M:%S")(new Date(+d)); });
+
+		DATE_FILTER_WIDTH = 12;
+
+		createFromIndex(parent.data.index, allFilters);
 	};
 
 	my.update = function() {
-		update();
+		updateChart();
 		return my;
 	}
 
+/*
 	my.prevDay = function() {
 		filter_.updateDateFilter(-1, d3.select("#date").select(".values"));
 		return my;
@@ -55,6 +61,7 @@ var ScalaMeter = (function(parent) {
 		filter_.updateDateFilter(1, d3.select("#date").select(".values"));
 		return my;
 	}
+*/
 
 	my.rawdata = function(_) {
 		if (!arguments.length) return rawdata;
@@ -62,19 +69,16 @@ var ScalaMeter = (function(parent) {
 		return my;
 	};
 
-	my.allFilters = function(_) {
-		if (!arguments.length) {
-			// get
-			return {
-				curves: selectedCurves_.values(),
-				dates: selectedDates_.values()
-			};
-		} else {
-			// set
-			//TODO
-		}
+	my.getAllFilters = function() {
+		return {
+			curves: selectedCurves_.values(),
+			order: filterDimensions.names(),
+			filters: filterDimensions.getAll().map(function(dim) {
+				return dim.selectedValues().values();
+			})
+		};
 		return my;
-	}
+	};
 
 	/*
 	 * ----- private functions -----
@@ -93,6 +97,7 @@ var ScalaMeter = (function(parent) {
 					selectMode_ = SELECT_MODES.single,
 					selectedValues_ = d3.set(),
 					expanded_ = false,
+					format_ = NUMBER_FORMAT,
 					values_,
 					cfDimension_;
 
@@ -154,6 +159,11 @@ var ScalaMeter = (function(parent) {
 					caption: function(_) {
 						if (!arguments.length) return caption_;
 						caption_ = _;
+					},
+
+					format: function(_) {
+						if (!arguments.length) return format_;
+						format_ = _;
 					},
 
 					expanded: function(_) {
@@ -248,6 +258,8 @@ var ScalaMeter = (function(parent) {
 			return getDimension(dKey.curve).top(Infinity);
 		};
 
+		my.updateFilters = updateFilters;
+
 		function timesOfDay(d) {
 			var dateBadges = d3.select(this).selectAll(".timeofday").data(d.values, h.ident);
 			var badgeFormat = d3.time.format("%H:%M:%S");
@@ -256,9 +268,11 @@ var ScalaMeter = (function(parent) {
 				.append("span")
 				.text(function (d) { return badgeFormat(new Date(+d)); })
 				.attr("class", "label timeofday filter-value")
+				.each(updateLabels(dateDim))
 				.on("click", function(d) {
 					dateDim.clickValue(d);
 					updateSelection(dateDim);
+					// TODO !expanded -> expanded
 				});
 
 			dateBadges.exit().remove();
@@ -300,7 +314,7 @@ var ScalaMeter = (function(parent) {
 
 		function filterDates() {
 			var dateFrom = uniqueDays[dayFrom];
-			var dayTo = dayFrom + nDays;
+			var dayTo = dayFrom + DATE_FILTER_WIDTH;
 			var dateTo = dayTo < uniqueDays.length ? uniqueDays[dayTo] : Infinity;
 			console.log(new Date(+dateFrom));
 			console.log(new Date(+dateTo));
@@ -309,22 +323,13 @@ var ScalaMeter = (function(parent) {
 			});
 		}
 
-		my.updateDateFilter = function(offsetDay, container) {
-			offsetDay = h.isDef(offsetDay) ? offsetDay : 0;
-			dayFrom = dayFrom + offsetDay;
-			dayFrom = Math.max(0, Math.min(uniqueDays.length - nDays, dayFrom));
+		function updateDateFilter(container) {
+			// offsetDay = h.isDef(offsetDay) ? offsetDay : 0;
+			// dayFrom = dayFrom + offsetDay;
+			dayFrom = Math.max(0, Math.min(uniqueDays.length - DATE_FILTER_WIDTH, dayFrom));
+			var dateList = dateDim.expanded() ? filterDates() : dateDim.selectedValues().values();
 
-			var nestedDates = nestDates.entries(filterDates());
-			/*nestedDates.map(function(year) {
-				year.nDays = 0;
-				year.values.map(function(month) {
-					month.nDays = month.values.length;
-					year.nDays = year.nDays + month.nDays;
-					return month;
-				});
-				return year;
-			});*/
-			console.log(nestedDates);
+			var nestedDates = nestDates.entries(dateList);
 
 			var g = container.selectAll(".year").data(nestedDates, h.fKey);
 
@@ -348,7 +353,7 @@ var ScalaMeter = (function(parent) {
 		function updateSelection(param) {
 			param.updateCrossfilter();
 			updateFilters();
-			update();
+			updateChart();
 		}
 
 		function createFilter(paramName, i) {
@@ -369,6 +374,9 @@ var ScalaMeter = (function(parent) {
 				container
 					.classed("filter-expanded", param.expanded())
 					.classed("filter-collapsed", !param.expanded());
+				if (paramName == dKey.date) { //TODO
+					updateDateFilter(valuesRoot);
+				}
 			}
 
 			var content = '' +
@@ -404,11 +412,11 @@ var ScalaMeter = (function(parent) {
 				.on("click", toggleExpanded);
 
 			var valuesRoot = container.select(".values");
-			if (paramName == dKey.date) {
+			if (paramName == dKey.date) { //TODO
 				valuesRoot
 					.append("div")
 					.attr("class", "date-slider");
-				my.updateDateFilter(0, valuesRoot);
+				updateDateFilter(valuesRoot);
 			} else {
 				var badges = valuesRoot.selectAll(".filter-value").data(param.getAllValues());
 
@@ -427,16 +435,24 @@ var ScalaMeter = (function(parent) {
 			}
 		}
 
+		function updateLabels(dim) {
+			return function(d) {
+				var selected = dim.selectedValues().has(d);
+				d3.select(this)
+					.classed("label-info", selected)
+					.classed("filter-hidecollapsed", !selected);
+			};
+		}
+
 		function updateFilter(paramName) {
-			var param = filterDimensions.get(paramName);
+			var dim = filterDimensions.get(paramName);
 			var container = d3.select(this);
 
 			container.select("ul").selectAll("li")
-				.classed("active", function(d) { return d == param.selectMode(); });
+				.classed("active", function(d) { return d == dim.selectMode(); });
 
 			container.selectAll(".filter-value")
-				.classed("label-info", function(d) { return param.selectedValues().has(d) })
-				.classed("filter-hidecollapsed", function(d) { return !param.selectedValues().has(d) });
+				.each(updateLabels(dim));
 		}
 
 		function updateFilters() {
@@ -447,12 +463,11 @@ var ScalaMeter = (function(parent) {
 				.each(createFilter);
 
 			containers
+				.order()
 				.each(updateFilter);
 		}
 
 		var root = d3.select(".filters");
-
-		// toggleDate(uniqueDates[0]);
 
 		my.getDim = getDimension;
 
@@ -460,13 +475,12 @@ var ScalaMeter = (function(parent) {
 
 		var dateDim = filterDimensions.addDim(dKey.date);
 		dateDim.init(data, getDimension(dKey.date));
-
+		dateDim.format(DATE_FORMAT);
 
 		var keyDay = function (d) { return +d3.time.day(new Date(+d)); };
 
 		var uniqueDays = h.unique(dateDim.getAllValues(), keyDay, d3.ascending);
-		var nDays = 12; //TODO cst
-		var dayFrom = uniqueDays.length - nDays;
+		var dayFrom = uniqueDays.length - DATE_FILTER_WIDTH;
 
 		var nestDates = d3.nest()
 			.key(function (d) { return +d3.time.year(new Date(+d)); }).sortKeys(h.ascendingToInt)
@@ -479,28 +493,21 @@ var ScalaMeter = (function(parent) {
 			handle: ".filter-container-header",
 			update: function(event, ui) {
 				filterDimensions.names($(this).sortable("toArray"));
-				update();
+				updateChart();
 			}
 		});
 		$(".filters").disableSelection();
 
-
-
 		$(".date-slider").slider({
 			orientation: "horizontal",
-			// range: "min",
 			min: 0,
 			max: dayFrom,
 			value: dayFrom,
 			slide: function (event, ui) {
 				dayFrom = ui.value;
-				my.updateDateFilter(0, d3.select("#date").select(".values"));
-				updateFilters();
+				updateDateFilter(d3.select("#date").select(".values"));
 			}
 		});
-
-
-
 
 		filter_ = my;
 	}
@@ -562,7 +569,8 @@ var ScalaMeter = (function(parent) {
 				var selectedKeys = $.map(selectedNodes, function(node){
 					return +node.data.key;
 				});
-				setFilter(selectedKeys);
+				setCurveFilter(selectedKeys);
+				updateChart();
 			},
 			onQueryActivate: function(flag, node) {
 				node.toggleSelect();
@@ -602,11 +610,11 @@ var ScalaMeter = (function(parent) {
 		}
 	}
 
-	function update() {
+	function updateChart() {
 		var data = filter_.getData();
-		filterDimensions.names().forEach(function(d) {
-			console.log(filter_.getDim(d).group().all());
-		});
+		// filterDimensions.names().forEach(function(d) {
+		// 	console.log(filter_.getDim(d).group().all());
+		// });
 		parent.chart.update(data, ".chart", "value [ms]", filterDimensions.getAll());
 		if (h.isDef(rawdata)) {
 			showdata(data);
@@ -614,21 +622,25 @@ var ScalaMeter = (function(parent) {
 	}
 
 
-	function createFromIndex(index) {
+	function createFromIndex(index, allFilters) {
 		var tsvWaiting = index.length;
 
 		function tsvReady() {
 			tsvWaiting--;
 			// init filter once all files have been processed
-			if(tsvWaiting == 0) {
+			if (tsvWaiting == 0) {
 				initFilters();
+				if (h.isDef(allFilters)) {
+					setAllFilters(allFilters);
+					updateChart();
+				}
 				initTree();
 			}
 		}
 
 		function parseData(data, scopeId) {
 			for (key in data[0]) {
-				if(key.slice(0, dKey.paramPrefix.length) == dKey.paramPrefix) {
+				if (key.slice(0, dKey.paramPrefix.length) == dKey.paramPrefix) {
 					// key starts with "param-"
 					filterDimensions.addParam(key);
 				}
@@ -659,15 +671,26 @@ var ScalaMeter = (function(parent) {
 			});
 		});
 	}
+
+	function setAllFilters(_) {
+		console.log(_);
+		setCurveFilter(_.curves);
+		filterDimensions.names(_.order);
+		for (var i = 0; i < _.order.length; i++) {
+			var dim = filterDimensions.get(_.order[i]);
+			dim.selectMode(SELECT_MODES.select);
+			dim.selectedValues(d3.set(_.filters[i]));
+			dim.updateCrossfilter();
+		};
+		filter_.updateFilters();
+	}
 	
-	function setFilter(curves) {
+	function setCurveFilter(curves) {
 		selectedCurves_ = d3.set(curves);
 		filter_.getDim(dKey.curve).filterFunction(function (d) {
 			return selectedCurves_.has(d);
 		});
-		update();
-		return my;
-	};
+	}
 
 	parent[my.name] = my;
 

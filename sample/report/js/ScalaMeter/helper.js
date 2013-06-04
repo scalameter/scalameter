@@ -44,6 +44,10 @@ var ScalaMeter = (function(parent) {
 		return d;
 	};
 
+	// my.arrayToString = function(array) {
+	// 	return "[" + array.map(function(d) { return '"' + d + '"'; }).join(",") + "]";
+	// };
+
 	my.ascendingToInt = function(a, b) {
 		return d3.ascending(+a, +b);
 	};

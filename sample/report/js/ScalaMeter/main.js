@@ -1,13 +1,48 @@
 var ScalaMeter = (function(parent) {
 	var my = { name: "main" };
 
+	my.initPermalinkBtn = function(permalinkBtn) {
+		$(permalinkBtn).popover({
+			placement: 'bottom',
+			trigger: 'manual',
+			title: 'Press Ctrl-C to copy',
+			html: true
+		}).click(function(event) {
+			event.preventDefault();
+			$(this).data('popover').options.content = '<textarea class="permalink-inner" />';
+			$(this).popover('toggle');
+			$('.permalink-inner')
+				.val(getPermalinkUrl())
+				.focus()
+				.select()
+				.click(function(event) {
+					$(this).select();
+					event.preventDefault();
+				});
+		});
+		
+		$(':not(' + permalinkBtn + ')').click(function(event) {
+			if (!event.isDefaultPrevented()) {
+				$(permalinkBtn).popover('hide');
+			}
+		});
+	}
+
 	my.init = function() {
-		parent.filter.init();
+		var allFilters;
+		urlParams = my.getUrlParams();
+		console.log(urlParams);
+		if (urlParams.hasOwnProperty("params")) {
+			allFilters = $.parseJSON(urlParams.params);
+			console.log(allFilters);
+		}
+		parent.filter.init(allFilters);
 	};
 
-	my.getUrl = function() {
-		return document.URL + "#" + jQuery.param(cd.allFilters());
-	};
+	function getPermalinkUrl() {
+		return document.URL.split('#')[0] + "#" + jQuery.param({ params: JSON.stringify(parent.filter.getAllFilters()) });
+	}
+	my.getUrl = getPermalinkUrl;
 
 	my.getUrlParams = function() {
 		var match,
