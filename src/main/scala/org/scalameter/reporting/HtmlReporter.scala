@@ -19,70 +19,6 @@ case class HtmlReporter(val renderers: HtmlReporter.Renderer*) extends Reporter 
 
   val sep = File.separator
 
-  def head = 
-    <head>
-      <meta charset="utf-8" />
-      <title>Performance Report</title>
-      <link type="text/css" media="screen" rel="stylesheet" href="css/bootstrap.min.css" />
-      <link type="text/css" media="screen" rel="stylesheet" href="css/index.css" />
-      <link type="text/css" media="screen" rel="stylesheet" href="css/ui.dynatree.css" />
-      <script type="text/javascript" src="js/d3.v3.min.js"></script>
-      <script type="text/javascript" src="js/crossfilter.min.js"></script>
-      <script type="text/javascript" src="js/jquery-1.9.1.js"></script>
-      <script type="text/javascript" src="js/jquery-ui.custom.min.js"></script>
-      <script type="text/javascript" src="js/jquery.dynatree.js"></script>
-      <script type="text/javascript" src="js/bootstrap.min.js"></script>
-      <script type="text/javascript" src="js/helper.js"></script>
-      <script type="text/javascript" src="js/chart.js"></script>
-      <script type="text/javascript" src="js/filter.js"></script>
-    </head>
-
-  def body(result: Tree[CurveData], persistor: Persistor) = {
-    <body>
-      {skeleton}
-      {machineInformation}
-      {date(result)}
-      <script type="text/javascript">
-        var cd = curvedata.rawdata('.rawdata');
-        var gc = genericChart;
-      </script>
-      {
-        for ((ctx, scoperesults) <- result.scopes; if scoperesults.nonEmpty) yield
-          {
-            val histories = scoperesults.map(cd => persistor.load(cd.context))
-            for (r <- renderers) yield r.render(ctx, scoperesults, histories)
-          }
-      }
-      <script type="text/javascript">
-        cd.setReady();
-      </script>
-    </body>
-  }
-
-  def skeleton =
-    <div>
-      <h1>Performance Report</h1>        
-      <div class="tree"></div>
-      <div class="chartholder">
-        <ul class="nav nav-tabs">
-          <li class="active"><a onclick="gc.setType(gc.cType.lineParam); gc.setShowCI(false); cd.update();" data-toggle="tab">Line Chart (param)</a></li>
-          <li><a onclick="gc.setType(gc.cType.lineDate); gc.setShowCI(false); cd.update();" data-toggle="tab">Line Chart (date)</a></li>
-          <li><a onclick="gc.setType(gc.cType.lineParam); gc.setShowCI(true); cd.update();" data-toggle="tab">Line Chart (param) with CI</a></li>
-          <li><a onclick="gc.setType(gc.cType.bar); gc.setShowCI(false); cd.update();" data-toggle="tab">Bar Chart</a></li>        </ul>
-        <div class="chart"></div>
-      </div>
-      <h1>Filters</h1>        
-      <div class="pagination">
-        <ul>
-          <li><a onclick="cd.prevDay();">&laquo;</a></li>
-          <li><a onclick="cd.nextDay();">&raquo;</a></li>
-        </ul>
-      </div>
-      <div class="filters"></div>
-      <h1>Raw data</h1>
-      <table class="table rawdata"></table>
-    </div>
-
   def machineInformation =
     <div>
       <h1>Machine information</h1>
@@ -156,7 +92,9 @@ case class HtmlReporter(val renderers: HtmlReporter.Renderer*) extends Reporter 
 
     root.mkdir()
     new File(root, "css").mkdir()
+    new File(root, "img").mkdir()
     new File(root, "js").mkdir()
+    new File(root, "js${sep}ScalaMeter").mkdir()
 
     // val report = <html>{head ++ body(results, persistor)}</html>
 
@@ -165,19 +103,26 @@ case class HtmlReporter(val renderers: HtmlReporter.Renderer*) extends Reporter 
     List(
       "index.html",
       "css/bootstrap.min.css",
+      "css/bootstrap-slider.css",
       "css/icons.gif",
       "css/index.css",
+      "css/jquery-ui-1.10.3.custom.css",
       "css/ui.dynatree.css",
       "css/vline.gif",
+      "img/arrow.png",
+      "img/glyphicons-halflings.png",
       "js/bootstrap.min.js",
-      "js/chart.js",
       "js/crossfilter.min.js",
       "js/d3.v3.min.js",
-      "js/filter.js",
-      "js/helper.js",
+      "js/jquery.dynatree.js",
       "js/jquery-1.9.1.js",
+      "js/jquery-compat.js",
       "js/jquery-ui.custom.min.js",
-      "js/jquery.dynatree.js"
+      "js/ScalaMeter/chart.js",
+      "js/ScalaMeter/filter.js",
+      "js/ScalaMeter/helper.js",
+      "js/ScalaMeter/main.js",
+      "js/ScalaMeter/permalink.js"
     ).foreach { filename =>
       copyResource(filename, new File(root, filename))
     }
@@ -201,8 +146,13 @@ case class HtmlReporter(val renderers: HtmlReporter.Renderer*) extends Reporter 
     }
 
     printToFile(new File(root, "js/curves.js")) { pw =>
-      pw.println(s"var curves = $curvesJSONIndex;")
+      pw.println("var ScalaMeter = (function(parent) {");
+      pw.println("  var my = { name: \"data\" };");
+      pw.println(s"  my.index = $curvesJSONIndex;")
       // printTsv(pw)
+      pw.println("  parent[my.name] = my;");
+      pw.println("  return parent;");
+      pw.println("})(ScalaMeter || {});");
     }
 
     true
