@@ -20,6 +20,8 @@
   <script type="text/javascript" src="js/ScalaMeter/filter.js"></script>
   <script type="text/javascript" src="js/ScalaMeter/main.js"></script>
   <script type="text/javascript" src="js/ScalaMeter/data.js"></script>
+  <script type="text/javascript" src="js/ScalaMeter/permalink.js"></script>
+  <!-- <script type="text/javascript" src="http://call.jsonlib.com/jsonlib.js"></script> -->
 </head>
 <body>
   <div class="sidebar">
@@ -33,13 +35,13 @@
         <div class="navbar-inner">
           <ul class="nav">
             <li class="active">
-              <a onclick="ScalaMeter.chart.setType(ScalaMeter.chart.cType.line); ScalaMeter.filter.update();" data-toggle="tab">Line Chart</a>
+              <a onclick="ScalaMeter.chart.setType(ScalaMeter.chart.cType.line);" data-toggle="tab">Line Chart</a>
             </li>
             <li>
-              <a onclick="ScalaMeter.chart.setType(ScalaMeter.chart.cType.bar); ScalaMeter.filter.update();" data-toggle="tab">Bar Chart</a>
+              <a onclick="ScalaMeter.chart.setType(ScalaMeter.chart.cType.bar);" data-toggle="tab">Bar Chart</a>
             </li>
           </ul>
-          <button type="button" class="btn btn-mini btn-showCI" data-toggle="button" onclick="ScalaMeter.chart.toggleCI(); ScalaMeter.filter.update();">Show Confidence Interval</button>
+          <button type="button" class="btn btn-mini btn-showCI" data-toggle="button" onclick="ScalaMeter.chart.toggleCI();">Show Confidence Interval</button>
           <ul class="nav pull-right">
             <li><a href="#" class="btn-permalink"><i class="icon-globe"></i> Permalink</a></li>
           </ul>
@@ -49,13 +51,7 @@
       <!-- chart -->
       <div class="chart"></div>
         
-<!--         <h1>Filters</h1>
-        <div class="pagination">
-          <ul>
-            <li><a onclick="ScalaMeter.filter.prevDay();">&laquo;</a></li>
-            <li><a onclick="ScalaMeter.filter.nextDay();">&raquo;</a></li>
-          </ul>
-        </div> -->
+<!--         <h1>Filters</h1>-->
         
       <div class="tooltip-x-axis"><img src="img/arrow.png"></div>
       <div class="tooltip-x-axis-caption">x-axis</div>
@@ -67,8 +63,28 @@
       -->
 
       <script type="text/javascript">
-        ScalaMeter.main.initPermalinkBtn(".btn-permalink");
         ScalaMeter.main.init();
+
+        /*function googlurl(url, cb) {
+          jsonlib.fetch({
+            url: 'https://www.googleapis.com/urlshortener/v1/url',
+            header: 'Content-Type: application/json',
+            data: JSON.stringify({longUrl: url})
+          }, function (m) {
+            var result = null;
+            try {
+              result = JSON.parse(m.content).id;
+              if (typeof result != 'string') result = null;
+            } catch (e) {
+              result = null;
+            }
+            cb(result);
+          });
+        }
+
+        googlurl("http://example.com/", function(s) {
+          console.log(s);
+        });*/
       </script>
     </div>
   </div>

@@ -36,17 +36,12 @@ var ScalaMeter = (function(parent) {
 			};
 			result.enumAll.push(result[key]);
 		}
-		console.log(result);
 		return result;
 	};
 
 	my.ident = function(d) {
 		return d;
 	};
-
-	// my.arrayToString = function(array) {
-	// 	return "[" + array.map(function(d) { return '"' + d + '"'; }).join(",") + "]";
-	// };
 
 	my.ascendingToInt = function(a, b) {
 		return d3.ascending(+a, +b);
@@ -72,7 +67,6 @@ var ScalaMeter = (function(parent) {
 
 	my.unique = function(data, key, sort){
 		var values = d3.nest().key(key).map(data, d3.map).keys();
-		// console.log(values);
 		values = values.filter(function(d) { return d != 'null'; }).map(toInt);
 		if (isDef(sort)) {
 			return values.sort(sort);
@@ -94,13 +88,6 @@ var ScalaMeter = (function(parent) {
 		index: "index"
 	};
 
-	/*
-	var tChart = {
-		lineParam: { value: "lineParam", name: "Line Chart (param)" },
-		lineDate: { value: "lineDate", name: "Line Chart (date)" },
-		bar: { value: "bar", name: "Bar Chart" }
-	};
-	*/
 	parent[my.name] = my;
 
 	return parent;
