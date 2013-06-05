@@ -4,67 +4,67 @@ var ScalaMeter = (function(parent) {
 	/*
 	 * ----- imports -----
 	 */
-	var h = parent.helper,
-		dKey = h.dKey,
-		mapKey = h.mapKey,
-		ident = h.ident
-		unique = h.unique;
+	var h,
+		dKey,
+		mapKey,
+		ident,
+		unique;
 
 	/*
 	 * ----- constants -----
 	 */
+	var MARGIN,
+		WIDTH,
+		HEIGHT,
+		MIN_LEGEND_WIDTH,
+		CHART_TYPES;
 
-	var STD_MARGIN = {
-		top : 20,
-		right : 20,
-		bottom : 30,
-		left : 50
-	}
-
-	var STD_WIDTH = 900;
-	var STD_HEIGHT = 500;
-	var STD_LEGEND_WIDTH = 200;
-
-	var CHART_TYPES = {
-		line: { value: "line", name: "Line Chart" },
-		bar: { value: "bar", name: "Bar Chart" }
-	};
 
 	/*
-	 * ----- private properties -----
+	 * ----- private fields -----
 	 */
 	var
 		svg_ = null,
-		width_ = STD_WIDTH,
-		height_ = STD_HEIGHT,
-		margin_ = STD_MARGIN,
-		legendWidth_ = STD_LEGEND_WIDTH,
 		showCI_ = false,
-		chartType_ = CHART_TYPES.line;
+		chartType_;
 
 	/*
-	 * ----- public properties -----
-	 */
-	my.cType = CHART_TYPES;
+	 * ----- public functions -----
+	 */	
 
-	my.setWidth = function(_) {
-		width_ = _;
-		return my;
+	my.init = function(parentNode) {
+		h = parent.helper;
+		dKey = h.dKey;
+		mapKey = h.mapKey;
+		ident = h.ident;
+		unique = h.unique;
+
+		MARGIN = {
+			top : 20,
+			right : 20,
+			bottom : 30,
+			left : 50
+		};
+		WIDTH = 900;
+		HEIGHT = 500;
+		MIN_LEGEND_WIDTH = 120;
+		CHART_TYPES = {
+			line: 0,
+			bar: 1
+		};
+
+		chartType_ = CHART_TYPES.line;
+
+		createSVG(parentNode);
 	};
 
-	my.setHeight = function(_) {
-		height_ = _;
-		return my;
-	};
-
-	my.setMargin = function(_) {
-		margin_ = _;
-		return my;
+	my.chartTypes = function() {
+		return CHART_TYPES;
 	};
 
 	my.setType = function(_) {
 		chartType_ = _;
-		parent.filter.update(); //TODO update only chart
+		parent.filter.update();
 	};
 
 	my.setShowCI = function(_) {
@@ -74,63 +74,15 @@ var ScalaMeter = (function(parent) {
 
 	my.toggleCI = function() {
 		showCI_ = !showCI_;
-		// d3.select(".showci").classed("label-info", showCI_);
-		parent.filter.update(); //TODO update only chart
+		parent.filter.update();
 	}
 
-	function flashBars(id) {
-		/*
-		TODO
-		var bars = d3.selectAll(".bar-" + id);
-		if (!bars.empty()) {
-			var width = bars.attr("width");
-			bars
-				.transition()
-				.attr("width", 1.1 * width)
-				.transition()
-				.attr("width", width);
-			setTimeout(function() { flashBars(id); }, 600);
-		}
-		*/
-	}
-
-	function mover(id) {
-		var line = d3.selectAll(".line-" + id);
-		var area = d3.select(".area-" + id);
-		var legend = d3.select(".legend-" + id)
-
-		line.transition().style("stroke-width", 4);
-
-		area.transition().style("stroke-opacity", 1);
-		area.transition().style("fill-opacity", 0.3);
-
-		legend.select("text").attr("style", "font-weight:bold");
-
-		flashBars(id);
-	}
-
-	function mout(id) {
-		var line = d3.selectAll(".line-" + id);
-		var area = d3.select(".area-" + id);
-		var legend = d3.select(".legend-" + id)
-
-		line.transition().style("stroke-width", 1.5);
-
-		area.transition().style("stroke-opacity", 1);
-		area.transition().style("fill-opacity", 0.1);
-
-		legend.select("text").attr("style", "font-weight:normal");
-	}
-
-	my.update = function(data, node, ylabel, filterDimensions, dateDim) {
-		var getCurveKey = mapKey(dKey.curve); //TODO helper
-		var keysCurveColor = unique(data, getCurveKey, d3.ascending);
-		var minLegendWidth_ = 120;
-		var legendWidth = 120 + 20 * keysCurveColor.length;
-		var W = width_ - margin_.left - margin_.right - legendWidth;
-		var H = height_ - margin_.top - margin_.bottom;
+	my.update = function(data, filterDimensions, dateDim) {
+		var keysCurveColor = unique(data, h.curveKey, d3.ascending);
+		var legendWidth = MIN_LEGEND_WIDTH + 20 * keysCurveColor.length;
+		var W = WIDTH - MARGIN.left - MARGIN.right - legendWidth;
+		var H = HEIGHT - MARGIN.top - MARGIN.bottom;
 		var allDimensions = filterDimensions.getAll();
-
 
 		var keyAbscissa,
 				showXGrid,
@@ -145,6 +97,10 @@ var ScalaMeter = (function(parent) {
 				.range([H, 0]);
 
 		var legendDimensions = allDimensions.slice(1);
+
+		var legendTitle = legendDimensions.map(function(dim) {
+			return dim.caption();
+		}).join(" \u2192 ");
 
 		var legendSize = 1;
 
@@ -170,7 +126,7 @@ var ScalaMeter = (function(parent) {
 								.range([0, W]);
 				}
 
-				var nestLineData = d3.nest().key(getCurveKey);
+				var nestLineData = d3.nest().key(h.curveKey);
 				legendDimensions.forEach(function(dim) {
 					nestLineData.key(dim.keyFn());
 				});
@@ -201,7 +157,7 @@ var ScalaMeter = (function(parent) {
 				var xi = d3.scale.ordinal()
 					.domain(keysCurveColor)
 					.rangeRoundBands([0, parentWidth], 0);
-				barScale = extendBarScale(barScale, xi, getCurveKey);
+				barScale = extendBarScale(barScale, xi, h.curveKey);
 
 				var barWidth = xi.rangeBand();
 				x = xN[0];
@@ -217,51 +173,13 @@ var ScalaMeter = (function(parent) {
 			.domain([0, legendSize - 1])
 			.range([-1, 1]);
 
-		var legendTitle = legendDimensions.map(function(dim) {
-			return dim.caption();
-		}).join(" \u2192 ");
-
-		if (svg_ === null) {
-			svg_ = d3.select(node)
-				.append("svg")
-				.attr("width", width_)
-				.attr("height", height_)
-				.append("g")
-				.attr("transform", "translate(" + margin_.left + "," + margin_.top + ")");
-
-			// grid
-			svg_.append("g")         
-	        .attr("class", "x grid")
-	        .attr("transform", "translate(0," + H + ")");
-			svg_.append("g")         
-	        .attr("class", "y grid");
-
-			// x axis
-			svg_.append("g")
-				.attr("class", "x axis")
-				.attr("transform", "translate(0," + H + ")");
-
-			// y axis
-			svg_.append("g")
-				.attr("class", "y axis")
-				.append("text")
-					.attr("transform", "rotate(-90)")
-					.attr("y", 6).attr("dy", ".71em")
-					.style("text-anchor", "end")
-					.text(ylabel);
-
-			// legend
-			svg_.append("g")
-				.attr("class", "legend")
-				.append("text")
-				.attr("class", "legend-title");
-		}
-
 		d3.transition().each(function() {
 			// axis and grid
 			if (showXGrid) {
 				var xGrid = d3.svg.axis().scale(x).orient("bottom").tickSize(-H, 0, 0).tickFormat("");
-				svg_.select(".x.grid").transition().call(xGrid);
+				svg_.select(".x.grid")
+					.attr("transform", "translate(0," + H + ")")
+					.transition().call(xGrid);
 			} else {
 				svg_.select(".x.grid").selectAll("*").remove();
 			}
@@ -270,7 +188,9 @@ var ScalaMeter = (function(parent) {
 			svg_.select(".y.grid").transition().call(yGrid);
 
 			var xAxis = d3.svg.axis().scale(x).orient("bottom").tickFormat(xAxisDim.format());
-			svg_.select(".x.axis").transition().call(xAxis);
+			svg_.select(".x.axis")
+				.attr("transform", "translate(0," + H + ")")
+				.transition().call(xAxis);
 
 			var yAxis = d3.svg.axis().scale(y).orient("left");
 			svg_.select(".y.axis").transition().call(yAxis);
@@ -357,7 +277,7 @@ var ScalaMeter = (function(parent) {
 			legendDimensions.forEach(function(dim) {
 				index = index * dim.filteredValues().length + dim.filteredValues().indexOf(dim.keyFn()(d));
 			});
-			return curveColorWithShade(getCurveKey(d), index);
+			return curveColorWithShade(h.curveKey(d), index);
 		}
 
 		function path(d) {
@@ -430,7 +350,6 @@ var ScalaMeter = (function(parent) {
 		}
 
 		function legendRow(shade) {
-			console.log(shade);
 			return function(d, i) {
 				var g = d3.select(this);
 				var rects = g.selectAll("rect").data(keysCurveColor, ident);
@@ -444,7 +363,6 @@ var ScalaMeter = (function(parent) {
 		}
 
 		function legendGroup(depth, parentId, groupSize) {
-			console.log("P:" + parentId);
 			return function(d, i) {
 				var id = parentId + i * groupSize;
 				var dim = legendDimensions[depth];
@@ -466,7 +384,6 @@ var ScalaMeter = (function(parent) {
 						.attr("transform", function(d, i) { return "translate(0, " + ((1 + i * (subGroupSize + 1)) * 20) + ")"; })
 						.each(legendGroup(depth + 1, id, subGroupSize));
 				} else {
-					console.log("S:" + subGroupSize);
 					groups
 						.attr("transform", function(d, i) { return "translate(0, " + ((1 + i) * 20) + ")"; })
 						.each(legendRow(id));
@@ -474,6 +391,88 @@ var ScalaMeter = (function(parent) {
 				groups.exit().remove();
 			};
 		}
+	}
+
+	/*
+	 * ----- private functions -----
+	 */
+
+	function createSVG(parentNode) {
+		svg_ = d3.select(parentNode)
+			.append("svg")
+			.attr("width", WIDTH)
+			.attr("height", HEIGHT)
+			.append("g")
+			.attr("transform", "translate(" + MARGIN.left + "," + MARGIN.top + ")");
+
+		// grid
+		svg_.append("g")
+			.attr("class", "x grid");
+		svg_.append("g")
+			.attr("class", "y grid");
+
+		// x axis
+		svg_.append("g")
+			.attr("class", "x axis");
+
+		// y axis
+		svg_.append("g")
+			.attr("class", "y axis")
+			.append("text")
+			.attr("transform", "rotate(-90)")
+			.attr("y", 6).attr("dy", ".71em")
+			.style("text-anchor", "end")
+			.text("value [ms]"); //TODO cst
+
+		// legend
+		svg_.append("g")
+			.attr("class", "legend")
+			.append("text")
+			.attr("class", "legend-title");
+	}
+
+	function flashBars(id) {
+		/*
+		TODO
+		var bars = d3.selectAll(".bar-" + id);
+		if (!bars.empty()) {
+			var width = bars.attr("width");
+			bars
+				.transition()
+				.attr("width", 1.1 * width)
+				.transition()
+				.attr("width", width);
+			setTimeout(function() { flashBars(id); }, 600);
+		}
+		*/
+	}
+
+	function mover(id) {
+		var line = d3.selectAll(".line-" + id);
+		var area = d3.select(".area-" + id);
+		var legend = d3.select(".legend-" + id)
+
+		line.transition().style("stroke-width", 4);
+
+		area.transition().style("stroke-opacity", 1);
+		area.transition().style("fill-opacity", 0.3);
+
+		legend.select("text").attr("style", "font-weight:bold");
+
+		flashBars(id);
+	}
+
+	function mout(id) {
+		var line = d3.selectAll(".line-" + id);
+		var area = d3.select(".area-" + id);
+		var legend = d3.select(".legend-" + id)
+
+		line.transition().style("stroke-width", 1.5);
+
+		area.transition().style("stroke-opacity", 1);
+		area.transition().style("fill-opacity", 0.1);
+
+		legend.select("text").attr("style", "font-weight:normal");
 	}
 
 	parent[my.name] = my;

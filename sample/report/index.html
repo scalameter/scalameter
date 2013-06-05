@@ -35,10 +35,10 @@
         <div class="navbar-inner">
           <ul class="nav">
             <li class="active">
-              <a onclick="ScalaMeter.chart.setType(ScalaMeter.chart.cType.line);" data-toggle="tab">Line Chart</a>
+              <a onclick="ScalaMeter.chart.setType(ScalaMeter.chart.chartTypes().line);" data-toggle="tab">Line Chart</a>
             </li>
             <li>
-              <a onclick="ScalaMeter.chart.setType(ScalaMeter.chart.cType.bar);" data-toggle="tab">Bar Chart</a>
+              <a onclick="ScalaMeter.chart.setType(ScalaMeter.chart.chartTypes().bar);" data-toggle="tab">Bar Chart</a>
             </li>
           </ul>
           <button type="button" class="btn btn-mini btn-showCI" data-toggle="button" onclick="ScalaMeter.chart.toggleCI();">Show Confidence Interval</button>

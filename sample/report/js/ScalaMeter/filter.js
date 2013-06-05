@@ -1,63 +1,69 @@
 var ScalaMeter = (function(parent) {
 	var my = { name: "filter" };
 
+	/*
+	 * ----- imports -----
+	 */
 	var h,
-		dKey,
-		dataConcat_,
-		scopeTree,
-		scopeId,
-		rawdata,
-		filter_,
-		dateDim_,
-		selectedCurves_;
+		dKey;
 
+	/*
+	 * ----- constants -----
+	 */
 	var SELECT_MODES,
 		TSV_DATE_FORMAT,
 		NUMBER_FORMAT,
+		DATE_FORMAT,
 		DATE_FILTER_WIDTH;
+
+	/*
+	 * ----- private fields -----
+	 */
+	var	dataConcat_,
+		// rawdata,
+		filter_,
+		dateDim_,
+		selectedCurves_;
 
 	/*
 	 * ----- public functions -----
 	 */
 	
-	my.init = function(allFilters) {
+	my.init = function() {
 		h = parent.helper;
 		dKey = h.dKey;
-		dataConcat_ = [];
-		scopeTree = { children: [] };
-		scopeId = 0;
-		selectedCurves_ = d3.set([0]);
-		//TODO init rawdata, filter_?
 
 		SELECT_MODES = h.obj2enum({
 			single: "Single",
 			select: "Select",
 			all: "All"
 		});
-
 		TSV_DATE_FORMAT = d3.time.format.utc("%Y-%m-%dT%H:%M:%SZ");
-
 		NUMBER_FORMAT = h.numberFormat("\u202F");  // 202F: narrow no-break space
-
 		DATE_FORMAT = (function(d) {return d3.time.format("%Y-%m-%d %H:%M:%S")(new Date(+d)); });
-
 		DATE_FILTER_WIDTH = 12;
 
-		createFromIndex(parent.data.index, allFilters);
+		dataConcat_ = [];
+		selectedCurves_ = d3.set([0]);
+	};
+
+	my.setData = function(index, filterData) {
+		createFromIndex(index, filterData);
 	};
 
 	my.update = function() {
 		updateChart();
-		return my;
 	}
 
+/*
 	my.rawdata = function(_) {
 		if (!arguments.length) return rawdata;
 		rawdata = _;
 		return my;
 	};
+	*/
 
-	my.getAllFilters = function() {
+	my.getFilterData = function() {
 		return {
 			curves: selectedCurves_.values(),
 			order: filterDimensions.names(),
@@ -86,6 +92,7 @@ var ScalaMeter = (function(parent) {
 					selectedValues_ = d3.set(),
 					expanded_ = false,
 					format_ = NUMBER_FORMAT,
+					filterContainer_,
 					values_,
 					filteredValues_,
 					cfDimension_;
@@ -160,6 +167,11 @@ var ScalaMeter = (function(parent) {
 						format_ = _;
 					},
 
+					filterContainer: function(_) {
+						if (!arguments.length) return filterContainer_;
+						filterContainer_ = _;
+					},
+
 					expanded: function(_) {
 						if (!arguments.length) return expanded_;
 						expanded_ = _;
@@ -208,7 +220,7 @@ var ScalaMeter = (function(parent) {
 		my.filterValues = function(data, legendOrder) {
 			paramNames_.forEach(function(name, i) {
 				var dim = params_.get(name);
-				dim.filteredValues(unique(data, dim.keyFn(), i == 0 ? d3.ascending : legendOrder));
+				dim.filteredValues(h.unique(data, dim.keyFn(), i == 0 ? d3.ascending : legendOrder));
 			});
 		};
 
@@ -271,9 +283,7 @@ var ScalaMeter = (function(parent) {
 				.attr("class", "label timeofday filter-value")
 				.each(updateLabels(dateDim_))
 				.on("click", function(d) {
-					dateDim_.clickValue(d);
-					updateSelection(dateDim_);
-					// TODO !expanded -> expanded
+					clickBadge(dateDim_, d);
 				});
 
 			dateBadges.exit().remove();
@@ -322,14 +332,12 @@ var ScalaMeter = (function(parent) {
 		}
 
 		function updateDateFilter(container) {
-			// offsetDay = h.isDef(offsetDay) ? offsetDay : 0;
-			// dayFrom = dayFrom + offsetDay;
 			dayFrom = Math.max(0, Math.min(uniqueDays.length - DATE_FILTER_WIDTH, dayFrom));
 			var dateList = dateDim_.expanded() ? filterDates() : dateDim_.selectedValues().values();
 
 			var nestedDates = nestDates.entries(dateList);
 
-			var g = container.selectAll(".year").data(nestedDates, h.fKey);
+			var g = container.select(".filter-values").selectAll(".year").data(nestedDates, h.fKey);
 
 			g.enter()
 				.append("div")
@@ -354,11 +362,32 @@ var ScalaMeter = (function(parent) {
 			updateChart();
 		}
 
+		function clickBadge(dim, d) {
+			if (!dim.expanded()) {
+				toggleExpanded(dim);
+			} else {
+				dim.clickValue(d);
+				updateSelection(dim);
+			}
+		}
+
+		function toggleExpanded(dim) {
+			dim.expanded(!dim.expanded());
+			var container = dim.filterContainer();
+			container
+				.classed("filter-expanded", dim.expanded())
+				.classed("filter-collapsed", !dim.expanded());
+			if (dim == dateDim_) {
+				updateDateFilter(container);
+			}
+		}
+
 		function createFilter(paramName, i) {
 			var container = d3.select(this);
 
 			var param = filterDimensions.get(paramName);
-			if (paramName == dKey.date) { //TODO
+			param.filterContainer(container);
+			if (param == dateDim_) {
 				param.selectLast();
 				param.selectMode(SELECT_MODES.single);
 			} else {
@@ -366,16 +395,6 @@ var ScalaMeter = (function(parent) {
 				param.selectMode(i == 0 ? SELECT_MODES.select : SELECT_MODES.single);
 			}
 			param.updateCrossfilter();
-
-			function toggleExpanded() {
-				param.expanded(!param.expanded());
-				container
-					.classed("filter-expanded", param.expanded())
-					.classed("filter-collapsed", !param.expanded());
-				if (paramName == dKey.date) { //TODO
-					updateDateFilter(valuesRoot);
-				}
-			}
 
 			var content = '' +
 				'<div class="filter-container-header">' +
@@ -407,14 +426,15 @@ var ScalaMeter = (function(parent) {
 				});
 
 			container.selectAll(".filter-expand")
-				.on("click", toggleExpanded);
+				.on("click", function() {
+					toggleExpanded(param);
+				});
 
 			var valuesRoot = container.select(".filter-values");
-			if (paramName == dKey.date) { //TODO
+			if (param == dateDim_) {
 				valuesRoot
 					.append("div")
 					.attr("class", "date-slider");
-				updateDateFilter(valuesRoot);
 			} else {
 				var badges = valuesRoot.selectAll(".filter-value").data(param.getAllValues());
 
@@ -422,12 +442,7 @@ var ScalaMeter = (function(parent) {
 					.append("span")
 					.attr("class", "label filter-value")
 					.on("click", function(d) {
-						if (!param.expanded()) {
-							toggleExpanded();
-						} else {
-							param.clickValue(d);
-							updateSelection(param);
-						}
+						clickBadge(param, d);
 					})
 					.text(NUMBER_FORMAT);
 			}
@@ -446,6 +461,10 @@ var ScalaMeter = (function(parent) {
 			var dim = filterDimensions.get(paramName);
 			var container = d3.select(this);
 
+			if (dim == dateDim_) {
+				updateDateFilter(container);
+			}
+
 			container.select("ul").selectAll("li")
 				.classed("active", function(d) { return d == dim.selectMode(); });
 
@@ -456,13 +475,17 @@ var ScalaMeter = (function(parent) {
 		function updateFilters() {
 			var containers = root.selectAll(".filter-container").data(filterDimensions.names(), h.ident);
 
-			containers.enter()
-				.append("div")
-				.each(createFilter);
-
 			containers
 				.order()
 				.each(updateFilter);
+		}
+
+		function createFilters() {
+			var containers = root.selectAll(".filter-container").data(filterDimensions.names(), h.ident);
+
+			containers.enter()
+				.append("div")
+				.each(createFilter);			
 		}
 
 		var root = d3.select(".filters");
@@ -485,7 +508,7 @@ var ScalaMeter = (function(parent) {
 			.key(function (d) { return +d3.time.month(new Date(+d)); }).sortKeys(h.ascendingToInt)
 			.key(keyDay).sortKeys(h.ascendingToInt).sortValues(d3.ascending);
 
-		updateFilters();
+		createFilters();
 
 		$(".filters").sortable({
 			handle: ".filter-container-header",
@@ -503,13 +526,14 @@ var ScalaMeter = (function(parent) {
 			value: dayFrom,
 			slide: function (event, ui) {
 				dayFrom = ui.value;
-				updateDateFilter(d3.select("#date").select(".filter-values"));  //TODO ref to date filter container
+				updateDateFilter(dateDim_.filterContainer());
 			}
 		});
 
 		filter_ = my;
 	}
 
+/*
 	function showdata(data) {
 		function addCols(row) {
 			header.selectAll("th").data(d3.keys(row)).enter().append("th").text(h.ident);
@@ -531,43 +555,23 @@ var ScalaMeter = (function(parent) {
 		rows.enter().append("tr").attr("class", "datavalues").each(addCols);
 		rows.exit().remove();
 	}
+	*/
 
 	/*
 	 * Initialize the dynatree widget, using the
 	 * data accumulated in scopeTree.
 	 */
-	function initTree() {
-		function convertTree(node, title) {
-			var children = [];
-			for (child in node.children) {
-				children.push(
-					convertTree(node.children[child], child)
-				);
-			}
-			if (title != "") {
-				title = '<span class="dynatree-adjtext">' + title + '</span>';
-				if (node.id != -1) {
-					var color = h.mainColors(node.id);
-					title = '<div class="dynatree-square" style="background-color:' + color + '"></div>' + title;
-				}
-				return {
-					key: "" + node.id,
-					title: title,
-					expand: true,
-					children: children
-				}
-			} else {
-				return children;
-			}
-		}
+	function initTree(scopeTree) {
 		var children = convertTree(scopeTree, "");
+
 		$(".tree").dynatree({
 			onSelect: function(flag, node) {
 				var selectedNodes = node.tree.getSelectedNodes();
 				var selectedKeys = $.map(selectedNodes, function(node){
 					return +node.data.key;
 				});
-				setCurveFilter(selectedKeys);
+				selectedCurves_ = d3.set(selectedKeys);
+				updateCurveDim();
 				updateChart();
 			},
 			onQueryActivate: function(flag, node) {
@@ -583,45 +587,54 @@ var ScalaMeter = (function(parent) {
 				nodeIcon: "none"
 			}
 		});
-		// Select first leaf node
-		selectedCurves_.forEach(function(d) {
-			$(".tree").dynatree("getTree").selectKey(d);
-		});		
-	}
-	
-	function addScope(node, scope) {
-		var nodeName = scope[0];
-		var isLeaf = scope.length == 1;
-		var id = isLeaf ? scopeId : -1;
-		if (!node.children.hasOwnProperty(nodeName)) {
-			node.children[nodeName] = {
-				"id": id,
-				"children": []
+
+		function convertTree(node, title) {
+			var children = [];
+			for (var child in node.children) {
+				children.push(
+					convertTree(node.children[child], child)
+				);
 			}
-		}
-		if (isLeaf) {
-			scopeId++;
-			return id;
-		}	else {		
-			scope.shift();
-			return addScope(node.children[nodeName], scope);
+			if (title != "") {
+				title = '<span class="dynatree-adjtext">' + title + '</span>';
+				if (node.id != -1) {
+					var color = h.mainColors(node.id);
+					title = '<div class="dynatree-square" style="background-color:' + color + '"></div>' + title;
+				}
+				return {
+					key: "" + node.id,
+					title: title,
+					expand: true,
+					select: selectedCurves_.has(node.id),
+					children: children
+				}
+			} else {
+				return children;
+			}
 		}
 	}
 
 	function updateChart() {
-		var data = filter_.getData();
-		// filterDimensions.names().forEach(function(d) {
-		// 	console.log(filter_.getDim(d).group().all());
-		// });
-		parent.chart.update(data, ".chart", "value [ms]", filterDimensions, dateDim_);
-		if (h.isDef(rawdata)) {
+		parent.chart.update(filter_.getData(), filterDimensions, dateDim_);
+		/*if (h.isDef(rawdata)) {
 			showdata(data);
-		}
+		}*/
 	}
-
 
 	function createFromIndex(index, allFilters) {
 		var tsvWaiting = index.length;
+		var scopeTree = { children: [] };
+
+		index.forEach(function(curve, id) {
+			curve.scope.push(curve.name);
+			addScope(scopeTree, curve.scope, id);
+			d3.tsv(curve.file, function(error, data) {
+				if (data.length != 0) {
+					parseData(data, id);
+				}
+				tsvReady();
+			});
+		});
 
 		function tsvReady() {
 			tsvWaiting--;
@@ -630,14 +643,31 @@ var ScalaMeter = (function(parent) {
 				initFilters();
 				if (allFilters != null) {
 					setAllFilters(allFilters);
-					updateChart();
 				}
-				initTree();
+				filter_.updateFilters();
+				initTree(scopeTree);
+				updateCurveDim();
+				updateChart();
 			}
 		}
 
-		function parseData(data, scopeId) {
-			for (key in data[0]) {
+		function addScope(node, scope, leafId) {
+			var nodeName = scope[0];
+			var isLeaf = scope.length == 1;
+			if (!node.children.hasOwnProperty(nodeName)) {
+				node.children[nodeName] = {
+					"id": isLeaf ? leafId : -1,
+					"children": []
+				}
+			}
+			if (!isLeaf) {
+				scope.shift();
+				addScope(node.children[nodeName], scope, leafId);
+			}
+		}
+
+		function parseData(data, curveId) {
+			for (var key in data[0]) {
 				if (key.slice(0, dKey.paramPrefix.length) == dKey.paramPrefix) {
 					// key starts with "param-"
 					filterDimensions.addParam(key);
@@ -652,26 +682,15 @@ var ScalaMeter = (function(parent) {
 				});
 				d[dKey.value] = +d[dKey.value];			
 				d[dKey.date] = +TSV_DATE_FORMAT.parse(d[dKey.date]);
-				d[dKey.curve] = scopeId;
+				d[dKey.curve] = curveId;
 				d[dKey.index] = offset + i;
 			});
 			dataConcat_ = dataConcat_.concat(data);
 		}
-
-		index.forEach(function(curve) {
-			curve.scope.push(curve.name);
-			var scopeId = addScope(scopeTree, curve.scope);
-			d3.tsv(curve.file, function(error, data) {
-				if (data.length != 0) {
-					parseData(data, scopeId);
-				}
-				tsvReady();
-			});
-		});
 	}
 
 	function setAllFilters(_) {
-		setCurveFilter(_.curves);
+		selectedCurves_ = d3.set(_.curves);
 		filterDimensions.names(_.order);
 		for (var i = 0; i < _.order.length; i++) {
 			var dim = filterDimensions.get(_.order[i]);
@@ -679,11 +698,9 @@ var ScalaMeter = (function(parent) {
 			dim.selectedValues(d3.set(_.filters[i]));
 			dim.updateCrossfilter();
 		};
-		filter_.updateFilters();
 	}
 	
-	function setCurveFilter(curves) {
-		selectedCurves_ = d3.set(curves);
+	function updateCurveDim() {
 		filter_.getDim(dKey.curve).filterFunction(function (d) {
 			return selectedCurves_.has(d);
 		});

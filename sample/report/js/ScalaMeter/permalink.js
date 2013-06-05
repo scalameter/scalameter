@@ -1,6 +1,8 @@
 var ScalaMeter = (function(parent) {
 	var my = { name: "permalink" };
 
+	var BITLY_ACCESS_TOKEN = "34fda5dc3ef2ea36e6caf295f4a6443b4afa7401";
+
 	/*
 	 * ----- public functions -----
 	 */
@@ -9,20 +11,24 @@ var ScalaMeter = (function(parent) {
 		$(permalinkBtn).popover({
 			placement: 'bottom',
 			trigger: 'manual',
-			title: 'Press Ctrl-C to copy',
+			title: 'Press Ctrl-C to copy <a class="permalink-shorten pull-right">Shorten</a>',
 			html: true
 		}).click(function(event) {
 			event.preventDefault();
 			$(this).data('popover').options.content = '<textarea class="permalink-inner" />';
 			$(this).popover('toggle');
-			$('.permalink-inner')
-				.val(getPermalinkUrl())
-				.focus()
-				.select()
-				.click(function(event) {
-					$(this).select();
+			longUrl = getPermalinkUrl();
+			displayUrl(longUrl);
+			if (isOnLocalhost()) {
+				$('.permalink-shorten').hide();
+			} else {
+				$('.permalink-shorten').click(function(event) {
 					event.preventDefault();
+					bitlyShorten(longUrl, function(shortUrl) {
+						displayUrl(shortUrl);
+					});
 				});
+			}
 		});
 		
 		$(':not(' + permalinkBtn + ')').click(function(event) {
@@ -33,8 +39,7 @@ var ScalaMeter = (function(parent) {
 	}
 
 	my.parseUrl = function() {
-		var allFilters;
-		data = getUrlParams();
+		var data = getUrlParams();
 		if (data.hasOwnProperty("params")) {
 			return $.parseJSON(data.params);
 		} else {
@@ -46,9 +51,20 @@ var ScalaMeter = (function(parent) {
 	 * ----- private functions -----
 	 */
 
+	function displayUrl(url) {
+		$('.permalink-inner')
+			.val(url)
+			.focus()
+			.select()
+			.click(function(event) {
+				$(this).select();
+				event.preventDefault();
+			});
+	}
+
 	function getPermalinkUrl() {
 		var data = {
-			params: JSON.stringify(parent.filter.getAllFilters())
+			params: JSON.stringify(parent.filter.getFilterData())
 		};
 		return document.URL.split('#')[0] + "#" + jQuery.param(data);
 	}
@@ -66,6 +82,24 @@ var ScalaMeter = (function(parent) {
 		}
 		return urlParams;
 	};
+
+	function bitlyShorten(longUrl, func) {
+		$.getJSON(
+			"https://api-ssl.bitly.com/v3/shorten", 
+			{ 
+				"access_token": BITLY_ACCESS_TOKEN,
+				"longUrl": longUrl
+			},
+			function(response) {
+				func(response.data.url);
+			}
+		);
+	}
+
+	function isOnLocalhost() {
+		var hostname = document.location.hostname;
+		return hostname == "127.0.0.1" || hostname == "localhost";
+	}
 
 	parent[my.name] = my;
 
