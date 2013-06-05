@@ -23,7 +23,8 @@ var ScalaMeter = (function(parent) {
 		// rawdata,
 		filter_,
 		dateDim_,
-		selectedCurves_;
+		selectedCurves_,
+		scopeTree_;
 
 	/*
 	 * ----- public functions -----
@@ -47,8 +48,18 @@ var ScalaMeter = (function(parent) {
 		selectedCurves_ = d3.set([0]);
 	};
 
-	my.setData = function(index, filterData) {
-		createFromIndex(index, filterData);
+	my.load = function(onLoad) {
+		var storedData = parent.permalink.storedData();
+		readData(parent.data, function() {
+			initFilters();
+			if (storedData != null) {
+				setConfig(storedData.filterConfig);
+			}
+			filter_.updateFilters();
+			initTree();
+			updateCurveDim();
+			onLoad();
+		});
 	};
 
 	my.update = function() {
@@ -63,7 +74,7 @@ var ScalaMeter = (function(parent) {
 	};
 	*/
 
-	my.getFilterData = function() {
+	my.getConfig = function() {
 		return {
 			curves: selectedCurves_.values(),
 			order: filterDimensions.names(),
@@ -71,7 +82,6 @@ var ScalaMeter = (function(parent) {
 				return dim.selectedValues().values();
 			})
 		};
-		return my;
 	};
 
 	/*
@@ -561,8 +571,8 @@ var ScalaMeter = (function(parent) {
 	 * Initialize the dynatree widget, using the
 	 * data accumulated in scopeTree.
 	 */
-	function initTree(scopeTree) {
-		var children = convertTree(scopeTree, "");
+	function initTree() {
+		var children = convertTree(scopeTree_, "");
 
 		$(".tree").dynatree({
 			onSelect: function(flag, node) {
@@ -621,33 +631,30 @@ var ScalaMeter = (function(parent) {
 		}*/
 	}
 
-	function createFromIndex(index, allFilters) {
-		var tsvWaiting = index.length;
+	function readData(data, onLoad) {
+		var tsvWaiting = data.index.length;
 		var scopeTree = { children: [] };
 
-		index.forEach(function(curve, id) {
+		data.index.forEach(function(curve, id) {
 			curve.scope.push(curve.name);
 			addScope(scopeTree, curve.scope, id);
-			d3.tsv(curve.file, function(error, data) {
-				if (data.length != 0) {
-					parseData(data, id);
-				}
-				tsvReady();
-			});
+			if (h.isDef(data.tsvData)) {
+				tsvReady(d3.tsv.parse(data.tsvData[id]), id);
+			} else {
+				d3.tsv(curve.file, function(error, tsvData) {
+					tsvReady(tsvData, id);
+				});
+			}
 		});
 
-		function tsvReady() {
+		function tsvReady(tsvData, curveId) {
+			if (tsvData.length != 0) {
+				parseData(tsvData, curveId);
+			}
 			tsvWaiting--;
-			// init filter once all files have been processed
 			if (tsvWaiting == 0) {
-				initFilters();
-				if (allFilters != null) {
-					setAllFilters(allFilters);
-				}
-				filter_.updateFilters();
-				initTree(scopeTree);
-				updateCurveDim();
-				updateChart();
+				scopeTree_ = scopeTree;
+				onLoad();
 			}
 		}
 
@@ -666,15 +673,15 @@ var ScalaMeter = (function(parent) {
 			}
 		}
 
-		function parseData(data, curveId) {
-			for (var key in data[0]) {
+		function parseData(tsvData, curveId) {
+			for (var key in tsvData[0]) {
 				if (key.slice(0, dKey.paramPrefix.length) == dKey.paramPrefix) {
 					// key starts with "param-"
 					filterDimensions.addParam(key);
 				}
 			}
 			var offset = dataConcat_.length;
-			data.forEach(function(d, i) {
+			tsvData.forEach(function(d, i) {
 				filterDimensions.names().forEach(function(paramName) {
 					if (d.hasOwnProperty(paramName)) {
 						d[paramName] = +d[paramName];
@@ -685,11 +692,11 @@ var ScalaMeter = (function(parent) {
 				d[dKey.curve] = curveId;
 				d[dKey.index] = offset + i;
 			});
-			dataConcat_ = dataConcat_.concat(data);
+			dataConcat_ = dataConcat_.concat(tsvData);
 		}
 	}
 
-	function setAllFilters(_) {
+	function setConfig(_) {
 		selectedCurves_ = d3.set(_.curves);
 		filterDimensions.names(_.order);
 		for (var i = 0; i < _.order.length; i++) {

@@ -6,13 +6,24 @@ var ScalaMeter = (function(parent) {
 	 */
 
 	my.init = function() {
-    parent.permalink.init(".btn-permalink");
-    parent.chart.init(".chart");
+		parent.permalink.init(getParams);
+		parent.chart.init(".chart");
 		parent.filter.init();
 
-    var filterData = parent.permalink.parseUrl();
-		parent.filter.setData(parent.data.index, filterData);
+		parent.filter.load(updateView);
+		parent.chart.load();
 	};
+
+	function getParams() {
+		return {
+			filterConfig: parent.filter.getConfig(),
+			chartConfig: parent.chart.getConfig()
+		};
+	}
+
+	function updateView() {
+		parent.filter.update();
+	}
 
 	parent[my.name] = my;
 

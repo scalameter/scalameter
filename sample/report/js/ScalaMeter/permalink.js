@@ -3,11 +3,19 @@ var ScalaMeter = (function(parent) {
 
 	var BITLY_ACCESS_TOKEN = "34fda5dc3ef2ea36e6caf295f4a6443b4afa7401";
 
+	var getParams_,
+		storedData_;
+
 	/*
 	 * ----- public functions -----
 	 */
 
-	my.init = function(permalinkBtn) {
+	my.init = function(getParams) {
+		getParams_ = getParams;
+		storedData_ = parseUrl();
+
+		var permalinkBtn = ".btn-permalink";
+
 		$(permalinkBtn).popover({
 			placement: 'bottom',
 			trigger: 'manual',
@@ -36,16 +44,11 @@ var ScalaMeter = (function(parent) {
 				$(permalinkBtn).popover('hide');
 			}
 		});
-	}
+	};
 
-	my.parseUrl = function() {
-		var data = getUrlParams();
-		if (data.hasOwnProperty("params")) {
-			return $.parseJSON(data.params);
-		} else {
-			return null;
-		}
-	}
+	my.storedData = function() {
+		return storedData_;
+	};
 
 	/*
 	 * ----- private functions -----
@@ -64,7 +67,7 @@ var ScalaMeter = (function(parent) {
 
 	function getPermalinkUrl() {
 		var data = {
-			params: JSON.stringify(parent.filter.getFilterData())
+			params: JSON.stringify(getParams_())
 		};
 		return document.URL.split('#')[0] + "#" + jQuery.param(data);
 	}
@@ -99,6 +102,15 @@ var ScalaMeter = (function(parent) {
 	function isOnLocalhost() {
 		var hostname = document.location.hostname;
 		return hostname == "127.0.0.1" || hostname == "localhost";
+	}
+
+	function parseUrl() {
+		var data = getUrlParams();
+		if (data.hasOwnProperty("params")) {
+			return $.parseJSON(data.params);
+		} else {
+			return null;
+		}
 	}
 
 	parent[my.name] = my;

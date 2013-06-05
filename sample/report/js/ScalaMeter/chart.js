@@ -58,6 +58,20 @@ var ScalaMeter = (function(parent) {
 		createSVG(parentNode);
 	};
 
+	my.load = function() {
+		var storedData = parent.permalink.storedData();
+		if (storedData != null) {
+			setConfig(storedData.chartConfig);
+		}
+	};
+
+	my.getConfig = function() {
+		return {
+			type: chartType_,
+			showCI: showCI_
+		};
+	};
+
 	my.chartTypes = function() {
 		return CHART_TYPES;
 	};
@@ -67,15 +81,10 @@ var ScalaMeter = (function(parent) {
 		parent.filter.update();
 	};
 
-	my.setShowCI = function(_) {
-		showCI_ = _;
-		return my;
-	};
-
 	my.toggleCI = function() {
 		showCI_ = !showCI_;
 		parent.filter.update();
-	}
+	};
 
 	my.update = function(data, filterDimensions, dateDim) {
 		var keysCurveColor = unique(data, h.curveKey, d3.ascending);
@@ -396,6 +405,20 @@ var ScalaMeter = (function(parent) {
 	/*
 	 * ----- private functions -----
 	 */
+
+	function setConfig(config) {
+		chartType_ = config.type;
+		showCI_ = config.showCI;
+
+		d3.selectAll(".nav-charttype li")
+			.classed("active", function(d, i) {
+				return i == chartType_;
+			});
+
+		if (showCI_) {
+			$('.btn-showCI').button('toggle');
+		}
+	}
 
 	function createSVG(parentNode) {
 		svg_ = d3.select(parentNode)
