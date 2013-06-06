@@ -1,15 +1,26 @@
 var ScalaMeter = (function(parent) {
 	var my = { name: "helper" };
 
-	function toInt(d) {
-		return +d;
-	}
+	var TSV_DATA_KEYS = {
+		date: "date",
+		paramPrefix: "param-",
+		param: "param-size",
+		value: "value",
+		success: "success",
+		cilo: "cilo",
+		cihi: "cihi",
+		complete: "complete",
+		curve: "curve",
+		index: "index"
+	};
 
-	function isDef(value) {
-		return typeof value !== 'undefined'; 
-	}
+	my.curveKey = mapKey(TSV_DATA_KEYS.curve);
+
+	my.dKey = TSV_DATA_KEYS;
 
 	my.isDef = isDef;
+
+	my.mapKey = mapKey;
 
 	my.mainColors = (function() {
 		var nGroups = 10;
@@ -29,7 +40,7 @@ var ScalaMeter = (function(parent) {
 
 	my.obj2enum = function(obj) {
 		var result = { enumAll: [] };
-		for (key in obj) {
+		for (var key in obj) {
 			result[key] = {
 				key: key,
 				value: obj[key]
@@ -53,10 +64,6 @@ var ScalaMeter = (function(parent) {
 		};
 	};
 
-	my.mapKey = function(key) {
-		return function(d) { return d.hasOwnProperty(key) ? d[key] : null };
-	};
-
 	my.fKey = function(d) {
 		return d.key;
 	};
@@ -75,18 +82,17 @@ var ScalaMeter = (function(parent) {
 		}
 	};
 
-	my.dKey = {
-		date: "date",
-		paramPrefix: "param-",
-		param: "param-size",
-		value: "value",
-		success: "success",
-		cilo: "cilo",
-		cihi: "cihi",
-		complete: "complete",
-		curve: "curve",
-		index: "index"
-	};
+	function isDef(value) {
+		return typeof value !== 'undefined'; 
+	}
+
+	function mapKey(key) {
+		return function(d) { return d.hasOwnProperty(key) ? d[key] : null };
+	}
+
+	function toInt(d) {
+		return +d;
+	}
 
 	parent[my.name] = my;
 
