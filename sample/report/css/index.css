@@ -134,7 +134,8 @@ ul.dynatree-container {
   stroke-width: 1.5px;
 }
 
-.bar {
+.bar,
+.legend-container rect {
   stroke: #222;
   stroke-width: 2px;
   stroke-opacity: 0;

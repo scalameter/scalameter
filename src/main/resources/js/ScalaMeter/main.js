@@ -6,13 +6,17 @@ var ScalaMeter = (function(parent) {
 	 */
 
 	my.init = function() {
-		parent.permalink.init(getParams);
-		parent.chart.init(".chart");
+		parent.chart.init();
 		parent.filter.init();
+		parent.dimensions.init();
+		parent.permalink.init();
 
-		var modules = [parent.filter, parent.chart];
-		loadModules(modules, parent.filter.update);
+		load();
 	};
+
+	function load() {
+		loadModules([parent.filter, parent.chart], parent.filter.update);
+	}
 
 	function loadModules(modules, onLoad) {
 		var nWaiting = modules.length;
@@ -25,13 +29,6 @@ var ScalaMeter = (function(parent) {
 				}
 			});
 		});
-	}
-
-	function getParams() {
-		return {
-			filterConfig: parent.filter.getConfig(),
-			chartConfig: parent.chart.getConfig()
-		};
 	}
 
 	parent[my.name] = my;

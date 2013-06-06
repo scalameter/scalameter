@@ -15,13 +15,13 @@
   <script type="text/javascript" src="js/jquery-ui-1.10.3.custom.min.js"></script>
   <script type="text/javascript" src="js/jquery.dynatree.js"></script>
   <script type="text/javascript" src="js/bootstrap.min.js"></script>
-  <script type="text/javascript" src="js/ScalaMeter/helper.js"></script>
   <script type="text/javascript" src="js/ScalaMeter/chart.js"></script>
-  <script type="text/javascript" src="js/ScalaMeter/filter.js"></script>
-  <script type="text/javascript" src="js/ScalaMeter/main.js"></script>
   <script type="text/javascript" src="js/ScalaMeter/data.js"></script>
+  <script type="text/javascript" src="js/ScalaMeter/dimensions.js"></script>
+  <script type="text/javascript" src="js/ScalaMeter/filter.js"></script>
+  <script type="text/javascript" src="js/ScalaMeter/helper.js"></script>
+  <script type="text/javascript" src="js/ScalaMeter/main.js"></script>
   <script type="text/javascript" src="js/ScalaMeter/permalink.js"></script>
-  <!-- <script type="text/javascript" src="http://call.jsonlib.com/jsonlib.js"></script> -->
 </head>
 <body>
   <div class="sidebar">
@@ -31,7 +31,7 @@
     <div class="content-inner">
 
       <!-- navbar -->
-      <div class="navbar">
+      <div class="navbar navbar-header">
         <div class="navbar-inner">
           <ul class="nav nav-charttype">
             <li class="active">
@@ -50,9 +50,7 @@
 
       <!-- chart -->
       <div class="chart"></div>
-        
-<!--         <h1>Filters</h1>-->
-        
+
       <div class="tooltip-x-axis"><img src="img/arrow.png"></div>
       <div class="tooltip-x-axis-caption">x-axis</div>
       <div class="filters"></div>
@@ -64,27 +62,6 @@
 
       <script type="text/javascript">
         ScalaMeter.main.init();
-
-        /*function googlurl(url, cb) {
-          jsonlib.fetch({
-            url: 'https://www.googleapis.com/urlshortener/v1/url',
-            header: 'Content-Type: application/json',
-            data: JSON.stringify({longUrl: url})
-          }, function (m) {
-            var result = null;
-            try {
-              result = JSON.parse(m.content).id;
-              if (typeof result != 'string') result = null;
-            } catch (e) {
-              result = null;
-            }
-            cb(result);
-          });
-        }
-
-        googlurl("http://example.com/", function(s) {
-          console.log(s);
-        });*/
       </script>
     </div>
   </div>

@@ -549,6 +549,10 @@ var ScalaMeter = (function(parent) {
 			.style("fill-opacity", 0.3);
 
 		legend.select("text").attr("style", "font-weight:bold");
+		legend.select("rect")
+			.transition()
+			.style("stroke-opacity", 1);
+
 
 		bars.transition().style("stroke-opacity", 1);
 	}
@@ -566,6 +570,9 @@ var ScalaMeter = (function(parent) {
 			.style("fill-opacity", 0.1);
 
 		legend.select("text").attr("style", "font-weight:normal");
+		legend.select("rect")
+			.transition()
+			.style("stroke-opacity", 0);
 
 		bars.transition().style("stroke-opacity", 0);
 	}
