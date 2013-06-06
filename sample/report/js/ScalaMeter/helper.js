@@ -14,6 +14,16 @@ var ScalaMeter = (function(parent) {
 		index: "index"
 	};
 
+	var SELECT_MODES = obj2enum({
+		single: "Single",
+		select: "Select",
+		all: "All"
+	});
+
+	var DATE_FORMAT = (function(d) {return d3.time.format("%Y-%m-%d %H:%M:%S")(new Date(+d)); });
+
+	var NUMBER_FORMAT = createNumberFormat("\u202F");  // 202F: narrow no-break space
+
 	my.curveKey = mapKey(TSV_DATA_KEYS.curve);
 
 	my.dKey = TSV_DATA_KEYS;
@@ -22,6 +32,12 @@ var ScalaMeter = (function(parent) {
 
 	my.mapKey = mapKey;
 
+	my.selectModes = SELECT_MODES;
+
+	my.dateFormat = DATE_FORMAT;
+
+	my.numberFormat = NUMBER_FORMAT;
+
 	my.mainColors = (function() {
 		var nGroups = 10;
 		var groups = d3.scale.category10().domain(d3.range(nGroups));
@@ -29,26 +45,6 @@ var ScalaMeter = (function(parent) {
 			return groups(i % nGroups);
 		};
 	})();
-
-	my.numberFormat = function(thousandsSeparator) {
-		return function(d) {
-		    var parts = d.toString().split(".");
-		    parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, thousandsSeparator);
-		    return parts.join(".");
-		};
-	}
-
-	my.obj2enum = function(obj) {
-		var result = { enumAll: [] };
-		for (var key in obj) {
-			result[key] = {
-				key: key,
-				value: obj[key]
-			};
-			result.enumAll.push(result[key]);
-		}
-		return result;
-	};
 
 	my.ident = function(d) {
 		return d;
@@ -90,8 +86,28 @@ var ScalaMeter = (function(parent) {
 		return function(d) { return d.hasOwnProperty(key) ? d[key] : null };
 	}
 
+	function obj2enum(obj) {
+		var result = { enumAll: [] };
+		for (var key in obj) {
+			result[key] = {
+				key: key,
+				value: obj[key]
+			};
+			result.enumAll.push(result[key]);
+		}
+		return result;
+	};
+
 	function toInt(d) {
 		return +d;
+	}
+
+	function createNumberFormat(thousandsSeparator) {
+		return function(d) {
+		    var parts = d.toString().split(".");
+		    parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, thousandsSeparator);
+		    return parts.join(".");
+		};
 	}
 
 	parent[my.name] = my;

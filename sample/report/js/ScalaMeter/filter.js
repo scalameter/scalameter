@@ -10,10 +10,7 @@ var ScalaMeter = (function(parent) {
 	/*
 	 * ----- constants -----
 	 */
-	var SELECT_MODES,
-		TSV_DATE_FORMAT,
-		NUMBER_FORMAT,
-		DATE_FORMAT,
+	var TSV_DATE_FORMAT,
 		DATE_FILTER_WIDTH;
 
 	/*
@@ -24,7 +21,8 @@ var ScalaMeter = (function(parent) {
 		filter_,
 		dateDim_,
 		selectedCurves_,
-		scopeTree_;
+		scopeTree_,
+		filterDimensions_;
 
 	/*
 	 * ----- public functions -----
@@ -34,18 +32,12 @@ var ScalaMeter = (function(parent) {
 		h = parent.helper;
 		dKey = h.dKey;
 
-		SELECT_MODES = h.obj2enum({
-			single: "Single",
-			select: "Select",
-			all: "All"
-		});
 		TSV_DATE_FORMAT = d3.time.format.utc("%Y-%m-%dT%H:%M:%SZ");
-		NUMBER_FORMAT = h.numberFormat("\u202F");  // 202F: narrow no-break space
-		DATE_FORMAT = (function(d) {return d3.time.format("%Y-%m-%d %H:%M:%S")(new Date(+d)); });
 		DATE_FILTER_WIDTH = 12;
 
 		dataConcat_ = [];
 		selectedCurves_ = d3.set([0]);
+		filterDimensions_ = parent.dimensions;
 	};
 
 	my.load = function(onLoad) {
@@ -77,8 +69,8 @@ var ScalaMeter = (function(parent) {
 	my.getConfig = function() {
 		return {
 			curves: selectedCurves_.values(),
-			order: filterDimensions.names(),
-			filters: filterDimensions.getAll().map(function(dim) {
+			order: filterDimensions_.names(),  //TODO
+			filters: filterDimensions_.getAll().map(function(dim) {
 				return dim.selectedValues().values();
 			})
 		};
@@ -88,188 +80,46 @@ var ScalaMeter = (function(parent) {
 	 * ----- private functions -----
 	 */
 	
-	var filterDimensions = (function() {
-		var my = {};
-
-		var paramNames_ = [],
-			params_ = d3.map();
-
-		function addDimension(name, caption) {
-			return (function() {
-				var name_ = name,
-					caption_ = caption,
-					selectMode_ = SELECT_MODES.single,
-					selectedValues_ = d3.set(),
-					expanded_ = false,
-					format_ = NUMBER_FORMAT,
-					keyFn_ = h.mapKey(name_),
-					filterContainer_,
-					values_,
-					filteredValues_,
-					cfDimension_;
-
-				function updateCrossfilter() {
-					cfDimension_.filterFunction(function(d) {
-						return d == null || selectedValues_.has(d);
-					});
-				}
-
-				function updateSelectMode() {
-					switch (selectMode_) {
-						case SELECT_MODES.single:
-							var selectedValue = values_[0];
-							for (var i = 0; i < values_.length; i++) {
-								if (selectedValues_.has(values_[i])) {
-									selectedValue = values_[i];
-									break;
-								}
-							}
-							selectedValues_ = d3.set([selectedValue]);
-							break;
-						case SELECT_MODES.all:
-							selectedValues_ = d3.set(values_);
-							break;
-					}
-				}
-
-				return {
-					init: function(data, cfDimension) {
-						values_ = h.unique(data, h.mapKey(name), d3.ascending);
-
-// if (name == dKey.date) {
-// 	//generate random dates over the past 5 years
-// 	values_ = [];
-// 	var today = +new Date();
-// 	for(i=0; i<100; i++){
-// 			values_.push(today - Math.round(Math.random() * 40 * 365 * 86400 * 1000));
-// 	}
-// 	values_.sort(d3.ascending);
-// }
-
-						selectedValues_ = d3.set(values_);
-						cfDimension_ = cfDimension;
-					},
-
-					updateCrossfilter : updateCrossfilter,
-
-					selectMode: function(_) {
-						if (!arguments.length) return selectMode_;
-						selectMode_ = _;
-						updateSelectMode();
-					},
-
-					selectedValues: function(_) {
-						if (!arguments.length) return selectedValues_;
-						selectedValues_ = _;
-					},
-
-					filteredValues: function(_) {
-						if (!arguments.length) return filteredValues_;
-						filteredValues_ = _;
-					},
-
-					caption: function(_) {
-						if (!arguments.length) return caption_;
-						caption_ = _;
-					},
-
-					format: function(_) {
-						if (!arguments.length) return format_;
-						format_ = _;
-					},
-
-					filterContainer: function(_) {
-						if (!arguments.length) return filterContainer_;
-						filterContainer_ = _;
-					},
-
-					expanded: function(_) {
-						if (!arguments.length) return expanded_;
-						expanded_ = _;
-					},
-
-					keyFn: function() {
-						return keyFn_;
-					},
-
-					clickValue: function(value) {
-						if (selectMode_ == SELECT_MODES.single) {
-							selectedValues_ = d3.set([value]);
-						} else {
-							if (selectedValues_.has(value)) {
-								selectedValues_.remove(value);
-							} else {
-								selectedValues_.add(value);
-							}
-							if (selectedValues_.values().length == values_.length) {
-								selectMode_ = SELECT_MODES.all;
-							} else {
-								selectMode_ = SELECT_MODES.select;
-							}
-						}
-					},
-
-					getAllValues: function() {
-						return values_;
-					},
-
-					selectLast: function() {
-						selectedValues_ = d3.set([values_[values_.length - 1]]);
-					}
-				};
-			})();
-		}
-
-		my.addParam = function(name) {
-			if (!params_.has(name)) {
-				params_.set(name, addDimension(name, name.substr(dKey.paramPrefix.length)));
-				paramNames_.push(name);
-			}
-			return my;
-		};
-
-		my.filterValues = function(data, legendOrder) {
-			paramNames_.forEach(function(name, i) {
-				var dim = params_.get(name);
-				dim.filteredValues(h.unique(data, dim.keyFn(), i == 0 ? d3.ascending : legendOrder));
-			});
-		};
-
-		my.addDim = function(name) {
-			var newDim = addDimension(name, name);
-			params_.set(name, newDim);
-			paramNames_.push(name);
-			return newDim;
-		}
-
-		my.get = function(name) {
-			return params_.get(name);
-		};
-
-		my.getAll = function() {
-			return paramNames_.map(function(name) {
-				return params_.get(name);
-			});
-		};
-
-		// my.getAxisParam = function() {
-		// 	return params_.get(paramNames_[0]);
-		// };
-
-		my.names = function(_) {
-			if (!arguments.length) return paramNames_;
-			paramNames_ = _;
-			return my;
-		};
-
-		return my;
-	})();
-
 	function initFilters() {
 		var my = {};
 
+		my.getData = getData;
+
+		my.updateFilters = updateFilters;
+
+		my.getDim = getDimension;
+
 		var cFilter_ = crossfilter(dataConcat_),
 			filterDim_ = {};
+
+		var root = d3.select(".filters");
+
+		var data = getData();
+
+		dateDim_ = filterDimensions_.addDim(dKey.date);
+		dateDim_.init(data, getDimension(dKey.date));
+		dateDim_.format(h.dateFormat);
+
+		var keyDay = function (d) { return +d3.time.day(new Date(+d)); };
+
+		var uniqueDays = h.unique(dateDim_.getAllValues(), keyDay, d3.ascending);
+		var dayFrom = uniqueDays.length - DATE_FILTER_WIDTH;
+
+		var nestDates = d3.nest()
+			.key(function (d) { return +d3.time.year(new Date(+d)); }).sortKeys(h.ascendingToInt)
+			.key(function (d) { return +d3.time.month(new Date(+d)); }).sortKeys(h.ascendingToInt)
+			.key(keyDay).sortKeys(h.ascendingToInt).sortValues(d3.ascending);
+
+		createFilters();
+
+		$(".filters").sortable({
+			handle: ".filter-container-header",
+			update: function(event, ui) {
+				filterDimensions_.names($(this).sortable("toArray"));
+				updateChart();
+			}
+		});
+		$(".filters").disableSelection();
 
 		function getDimension(key) {
 			if (!filterDim_.hasOwnProperty(key)) {
@@ -278,11 +128,9 @@ var ScalaMeter = (function(parent) {
 			return filterDim_[key];
 		}
 
-		my.getData = function() {
+		function getData() {
 			return getDimension(dKey.curve).top(Infinity);
 		};
-
-		my.updateFilters = updateFilters;
 
 		function timesOfDay(d) {
 			var dateBadges = d3.select(this).selectAll(".timeofday").data(d.values, h.ident);
@@ -367,6 +215,46 @@ var ScalaMeter = (function(parent) {
 			g.exit().remove();
 		}
 
+		function createDateSlider(parentNode) {
+			var container = parentNode.append("div");
+			
+			container.attr("class", "date-slider-container");
+
+			container.append("a")
+				.on("click", function() {
+					dayFrom--;
+					updateDateFilter(dateDim_.filterContainer());
+				})
+				.attr("class", "btn btn-mini date-slider-btn")
+				.append("i")
+				.attr("class", "icon-arrow-left");
+
+			container.append("div")
+				.attr("class", "date-slider-center")
+				.append("div")
+				.attr("class", "date-slider");
+
+			container.append("a")
+				.on("click", function() {
+					dayFrom++;
+					updateDateFilter(dateDim_.filterContainer());
+				})
+				.attr("class", "btn btn-mini date-slider-btn")
+				.append("i")
+				.attr("class", "icon-arrow-right");
+
+			$(".date-slider").slider({
+				orientation: "horizontal",
+				min: 0,
+				max: dayFrom,
+				value: dayFrom,
+				slide: function (event, ui) {
+					dayFrom = ui.value;
+					updateDateFilter(dateDim_.filterContainer());
+				}
+			});
+		}
+
 		function updateSelection(param) {
 			param.updateCrossfilter();
 			updateFilters();
@@ -396,14 +284,14 @@ var ScalaMeter = (function(parent) {
 		function createFilter(paramName, i) {
 			var container = d3.select(this);
 
-			var param = filterDimensions.get(paramName);
+			var param = filterDimensions_.get(paramName);
 			param.filterContainer(container);
 			if (param == dateDim_) {
 				param.selectLast();
-				param.selectMode(SELECT_MODES.single);
+				param.selectMode(h.selectModes.single);
 			} else {
 				param.init(data, getDimension(paramName));
-				param.selectMode(i == 0 ? SELECT_MODES.select : SELECT_MODES.single);
+				param.selectMode(i == 0 ? h.selectModes.select : h.selectModes.single);
 			}
 			param.updateCrossfilter();
 
@@ -425,7 +313,7 @@ var ScalaMeter = (function(parent) {
 				.attr("class", "filter-container filter-collapsed")
 				.html(content);
 
-			container.select("ul").selectAll("li").data(SELECT_MODES.enumAll)
+			container.select("ul").selectAll("li").data(h.selectModes.enumAll)
 				.enter()
 				.append("li")
 				.append("a")
@@ -443,9 +331,9 @@ var ScalaMeter = (function(parent) {
 
 			var valuesRoot = container.select(".filter-values");
 			if (param == dateDim_) {
-				valuesRoot
-					.append("div")
-					.attr("class", "date-slider");
+				if (uniqueDays.length > DATE_FILTER_WIDTH) {
+					valuesRoot.call(createDateSlider);
+				}
 			} else {
 				var badges = valuesRoot.selectAll(".filter-value").data(param.getAllValues());
 
@@ -455,7 +343,7 @@ var ScalaMeter = (function(parent) {
 					.on("click", function(d) {
 						clickBadge(param, d);
 					})
-					.text(NUMBER_FORMAT);
+					.text(h.numberFormat);
 			}
 		}
 
@@ -469,7 +357,7 @@ var ScalaMeter = (function(parent) {
 		}
 
 		function updateFilter(paramName) {
-			var dim = filterDimensions.get(paramName);
+			var dim = filterDimensions_.get(paramName);
 			var container = d3.select(this);
 
 			if (dim == dateDim_) {
@@ -484,7 +372,7 @@ var ScalaMeter = (function(parent) {
 		}
 
 		function updateFilters() {
-			var containers = root.selectAll(".filter-container").data(filterDimensions.names(), h.ident);
+			var containers = root.selectAll(".filter-container").data(filterDimensions_.names(), h.ident);
 
 			containers
 				.order()
@@ -492,54 +380,12 @@ var ScalaMeter = (function(parent) {
 		}
 
 		function createFilters() {
-			var containers = root.selectAll(".filter-container").data(filterDimensions.names(), h.ident);
+			var containers = root.selectAll(".filter-container").data(filterDimensions_.names(), h.ident);
 
 			containers.enter()
 				.append("div")
 				.each(createFilter);			
 		}
-
-		var root = d3.select(".filters");
-
-		my.getDim = getDimension;
-
-		var data = my.getData();
-
-		dateDim_ = filterDimensions.addDim(dKey.date);
-		dateDim_.init(data, getDimension(dKey.date));
-		dateDim_.format(DATE_FORMAT);
-
-		var keyDay = function (d) { return +d3.time.day(new Date(+d)); };
-
-		var uniqueDays = h.unique(dateDim_.getAllValues(), keyDay, d3.ascending);
-		var dayFrom = uniqueDays.length - DATE_FILTER_WIDTH;
-
-		var nestDates = d3.nest()
-			.key(function (d) { return +d3.time.year(new Date(+d)); }).sortKeys(h.ascendingToInt)
-			.key(function (d) { return +d3.time.month(new Date(+d)); }).sortKeys(h.ascendingToInt)
-			.key(keyDay).sortKeys(h.ascendingToInt).sortValues(d3.ascending);
-
-		createFilters();
-
-		$(".filters").sortable({
-			handle: ".filter-container-header",
-			update: function(event, ui) {
-				filterDimensions.names($(this).sortable("toArray"));
-				updateChart();
-			}
-		});
-		$(".filters").disableSelection();
-
-		$(".date-slider").slider({
-			orientation: "horizontal",
-			min: 0,
-			max: dayFrom,
-			value: dayFrom,
-			slide: function (event, ui) {
-				dayFrom = ui.value;
-				updateDateFilter(dateDim_.filterContainer());
-			}
-		});
 
 		filter_ = my;
 	}
@@ -626,7 +472,7 @@ var ScalaMeter = (function(parent) {
 	}
 
 	function updateChart() {
-		parent.chart.update(filter_.getData(), filterDimensions, dateDim_);
+		parent.chart.update(filter_.getData(), filterDimensions_, dateDim_); //TODO
 		/*if (h.isDef(rawdata)) {
 			showdata(data);
 		}*/
@@ -678,12 +524,12 @@ var ScalaMeter = (function(parent) {
 			for (var key in tsvData[0]) {
 				if (key.slice(0, dKey.paramPrefix.length) == dKey.paramPrefix) {
 					// key starts with "param-"
-					filterDimensions.addParam(key);
+					filterDimensions_.addParam(key);
 				}
 			}
 			var offset = dataConcat_.length;
 			tsvData.forEach(function(d, i) {
-				filterDimensions.names().forEach(function(paramName) {
+				filterDimensions_.names().forEach(function(paramName) {
 					if (d.hasOwnProperty(paramName)) {
 						d[paramName] = +d[paramName];
 					}
@@ -699,10 +545,10 @@ var ScalaMeter = (function(parent) {
 
 	function setConfig(_) {
 		selectedCurves_ = d3.set(_.curves);
-		filterDimensions.names(_.order);
+		filterDimensions_.names(_.order); //TODO
 		for (var i = 0; i < _.order.length; i++) {
-			var dim = filterDimensions.get(_.order[i]);
-			dim.selectMode(SELECT_MODES.select);
+			var dim = filterDimensions_.get(_.order[i]);
+			dim.selectMode(h.selectModes.select);
 			dim.selectedValues(d3.set(_.filters[i]));
 			dim.updateCrossfilter();
 		};

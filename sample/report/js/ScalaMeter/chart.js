@@ -17,7 +17,9 @@ var ScalaMeter = (function(parent) {
 		WIDTH,
 		HEIGHT,
 		MIN_LEGEND_WIDTH,
-		CHART_TYPES;
+		CHART_TYPES,
+		Y_AXIS_CAPTION,
+		ROOT_NODE;
 
 	/*
 	 * ----- private fields -----
@@ -31,7 +33,7 @@ var ScalaMeter = (function(parent) {
 	 * ----- public functions -----
 	 */	
 
-	my.init = function(parentNode) {
+	my.init = function() {
 		h = parent.helper;
 		dKey = h.dKey;
 		mapKey = h.mapKey;
@@ -51,10 +53,12 @@ var ScalaMeter = (function(parent) {
 			line: 0,
 			bar: 1
 		};
+		Y_AXIS_CAPTION = "running time [ms]";
+		ROOT_NODE = ".chart";
 
 		chartType_ = CHART_TYPES.line;
 
-		createSVG(parentNode);
+		createSVG();
 	};
 
 	my.load = function(onLoad) {
@@ -199,7 +203,11 @@ var ScalaMeter = (function(parent) {
 			var xAxis = d3.svg.axis().scale(x).orient("bottom").tickFormat(xAxisDim.format());
 			svg_.select(".x.axis")
 				.attr("transform", "translate(0," + H + ")")
-				.transition().call(xAxis);
+				.transition()
+				.call(xAxis)
+				.select(".axis-caption")
+				.attr("x", W)
+				.text(xAxisDim.caption());
 
 			var yAxis = d3.svg.axis().scale(y).orient("left");
 			svg_.select(".y.axis").transition().call(yAxis);
@@ -208,10 +216,11 @@ var ScalaMeter = (function(parent) {
 
 			bars.enter()
 				.append("rect")
-				.each(hoverable("bar", legendKey))
 				.style("fill-opacity", 0);
 
-			bars.each(bar);
+			bars
+				.each(hoverable("bar", legendKey))
+				.each(bar);
 
 			bars.exit().remove();
 
@@ -230,10 +239,10 @@ var ScalaMeter = (function(parent) {
 			var points = svg_.selectAll('circle').data(lineData, mapKey(dKey.index));
 
 			points.enter().append('circle')
-				.each(hoverable("line", legendKey))
 				.attr('r', 5);
 
 			points
+				.each(hoverable("line", legendKey))
 				.style("stroke",  function(d) { return colorMap(d); })
 				.transition()
 				.attr('cx', function (d) { return x(keyAbscissa(d)); })
@@ -356,13 +365,13 @@ var ScalaMeter = (function(parent) {
 			var g = d3.select(this);
 
 			g.append("line")
-				.attr("class", "bar-cilo bar-ci-v bar-cilo-v").style("stroke-opacity", 0);;
+				.attr("class", "bar-cilo bar-ci-v bar-cilo-v").style("stroke-opacity", 0);
 			g.append("line")
-				.attr("class", "bar-cihi bar-ci-v bar-cihi-v").style("stroke-opacity", 0);;
+				.attr("class", "bar-cihi bar-ci-v bar-cihi-v").style("stroke-opacity", 0);
 			g.append("line")
-				.attr("class", "bar-cilo bar-ci-h bar-cilo-h").style("stroke-opacity", 0);;
+				.attr("class", "bar-cilo bar-ci-h bar-cilo-h").style("stroke-opacity", 0);
 			g.append("line")
-				.attr("class", "bar-cihi bar-ci-h bar-cihi-h").style("stroke-opacity", 0);;
+				.attr("class", "bar-cihi bar-ci-h bar-cihi-h").style("stroke-opacity", 0);
 		}
 
 		function barCI(d) {
@@ -478,8 +487,8 @@ var ScalaMeter = (function(parent) {
 		}
 	}
 
-	function createSVG(parentNode) {
-		svg_ = d3.select(parentNode)
+	function createSVG() {
+		svg_ = d3.select(ROOT_NODE)
 			.append("svg")
 			.attr("width", WIDTH)
 			.attr("height", HEIGHT)
@@ -494,7 +503,11 @@ var ScalaMeter = (function(parent) {
 
 		// x axis
 		svg_.append("g")
-			.attr("class", "x axis");
+			.attr("class", "x axis")
+			.append("text")
+			.attr("class", "axis-caption")
+			.attr("y", -6)
+			.style("text-anchor", "end");
 
 		// y axis
 		svg_.append("g")
@@ -503,7 +516,7 @@ var ScalaMeter = (function(parent) {
 			.attr("transform", "rotate(-90)")
 			.attr("y", 6).attr("dy", ".71em")
 			.style("text-anchor", "end")
-			.text("value [ms]"); //TODO cst
+			.text(Y_AXIS_CAPTION);
 
 		// legend
 		svg_.append("g")
