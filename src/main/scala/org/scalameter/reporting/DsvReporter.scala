@@ -32,7 +32,7 @@ case class DsvReporter(delimiter: Char) extends Reporter {
 
       try {
         writer = new PrintWriter(new FileWriter(filename, false))
-        DsvReporter.writeCurveData(cd, persistor, writer, "\n", delimiter)
+        DsvReporter.writeCurveData(cd, persistor, writer, delimiter)
       } finally {
         if (writer != null) writer.close()
       }
@@ -52,7 +52,7 @@ object DsvReporter {
     (date) => df.format(date)
   }
 
-  def writeCurveData(cd: CurveData, persistor: Persistor, pw: PrintWriter, newline: String, delimiter: Char = '\t') {
+  def writeCurveData(cd: CurveData, persistor: Persistor, pw: PrintWriter, delimiter: Char, newline: String = "\n") {
     val history = persistor.load(cd.context)
     import pw._
     import pw.{print => p}
@@ -102,8 +102,8 @@ object DsvReporter {
       }
     }
 
-    val curves = history.curves // :+ cd
-    val dates = history.dates // :+ currentDate
+    val curves = history.curves
+    val dates = history.dates
     
     header(cd)
     for ((c, d) <- curves zip dates) output(c, d)

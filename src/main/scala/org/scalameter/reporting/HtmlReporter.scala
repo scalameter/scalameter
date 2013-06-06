@@ -15,9 +15,47 @@ import Key._
 
 
 
-case class HtmlReporter(val embedDsv: Boolean = false) extends Reporter {
+case class HtmlReporter(val embedDsv: Boolean) extends Reporter {
+  import HtmlReporter._
 
-  val sep = File.separator
+  def report(result: CurveData, persistor: Persistor) {
+    // nothing - the charts are generated only at the end
+  }
+  
+  def report(results: Tree[CurveData], persistor: Persistor) = {
+    if (!embedDsv) {
+      new DsvReporter(dsvDelimiter).report(results, persistor)
+    }
+
+    val resultdir = results.context.goe(reports.resultDir, "tmp")
+    new File(resultdir).mkdir()
+    val root = new File(resultdir, "report")
+    root.mkdir()
+
+    val curvesJSONIndex = JSONIndex(results)
+
+    printToFile(new File(root, jsDataFile)) { pw =>
+      pw.println("var ScalaMeter = (function(parent) {");
+      pw.println("  var my = { name: \"data\" };");
+      pw.println(s"  my.index = $curvesJSONIndex;")
+      if (embedDsv) {
+        printTsv(results, persistor, pw)
+      }
+      pw.println("  parent[my.name] = my;");
+      pw.println("  return parent;");
+      pw.println("})(ScalaMeter || {});");
+    }
+
+    resourceDirs.foreach {
+      new File(root, _).mkdir()
+    }
+
+    resourceFiles.foreach { filename =>
+      copyResource(filename, new File(root, filename))
+    }
+
+    true
+  }
 
   def machineInformation =
     <div>
@@ -43,28 +81,6 @@ case class HtmlReporter(val embedDsv: Boolean = false) extends Reporter {
     dateoption.getOrElse(<div>No date information.</div>)
   }
   
-  def report(result: CurveData, persistor: Persistor) {
-    // nothing - the charts are generated only at the end
-  }
-  
-  def copyResource(from: String, to: File) {
-    val res = getClass.getClassLoader.getResourceAsStream(from)
-    try {
-      val buffer = new Array[Byte](1024)
-      val fos = new FileOutputStream(to)
-      var nBytesRead = 0
-      def read = { nBytesRead = res.read(buffer) }
-      while ({read; nBytesRead != -1}) {
-        fos.write(buffer, 0, nBytesRead)
-      }
-      if (fos != null) {
-        fos.close();
-      }
-    } finally {
-      res.close()
-    }
-  }
-
   def JSONIndex(results: Tree[CurveData]) = {
     def JSONCurve(context: Context, curve: CurveData) = JSONObject(
       immutable.Map(
@@ -83,81 +99,75 @@ case class HtmlReporter(val embedDsv: Boolean = false) extends Reporter {
     new JSONArray(JSONCurves.toList)
   }
 
-  def report(results: Tree[CurveData], persistor: Persistor) = {
-    val resultdir = results.context.goe(reports.resultDir, "tmp")
+  def printTsv(results: Tree[CurveData], persistor: Persistor, pw: PrintWriter) {
+    val allCurves = for {
+      (ctx, curves) <- results.scopes if curves.nonEmpty
+      curve <- curves
+    } yield curve
 
-    new File(s"$resultdir").mkdir()
+    val separators = "" #:: Stream.continually(", ")
 
-    val root = new File(s"$resultdir${sep}report")
-
-    root.mkdir()
-    new File(root, "css").mkdir()
-    new File(root, "img").mkdir()
-
-    val jsroot = new File(root, "js")
-    jsroot.mkdir()
-    new File(jsroot, "ScalaMeter").mkdir()
-
-    val curvesJSONIndex = JSONIndex(results)
-
-    List(
-      "index.html",
-      "css/bootstrap.min.css",
-      "css/bootstrap-slider.css",
-      "css/icons.gif",
-      "css/index.css",
-      "css/jquery-ui-1.10.3.custom.css",
-      "css/ui.dynatree.css",
-      "css/vline.gif",
-      "img/arrow.png",
-      "img/glyphicons-halflings.png",
-      "js/bootstrap.min.js",
-      "js/crossfilter.min.js",
-      "js/d3.v3.min.js",
-      "js/jquery.dynatree.js",
-      "js/jquery-1.9.1.js",
-      "js/jquery-compat.js",
-      "js/jquery-ui-1.10.3.custom.min.js",
-      "js/ScalaMeter/chart.js",
-      "js/ScalaMeter/filter.js",
-      "js/ScalaMeter/helper.js",
-      "js/ScalaMeter/main.js",
-      "js/ScalaMeter/permalink.js"
-    ).foreach { filename =>
-      copyResource(filename, new File(root, filename))
+    pw.print("  my.tsvData = [")
+    for ((curve, sep) <- allCurves.toStream zip separators) {
+      pw.print(sep)
+      pw.print("'")
+      DsvReporter.writeCurveData(curve, persistor, pw, dsvDelimiter, "\\n")
+      pw.print("'")
     }
+    pw.println("];")
+  }
 
-    def printTsv(pw: PrintWriter) {
-      val allCurves = for {
-        (ctx, curves) <- results.scopes if curves.nonEmpty
-        curve <- curves
-      } yield curve
+}
 
-      val separators = "" #:: Stream.continually(", ")
 
-      pw.print("  my.tsvData = [")
-      for ((curve, sep) <- allCurves.toStream zip separators) {
-        pw.print(sep)
-        pw.print("'")
-        DsvReporter.writeCurveData(curve, persistor, pw, "\\n")
-        pw.print("'")
+object HtmlReporter {
+  val resourceDirs = List("css", "img", "js", "js/ScalaMeter")
+
+  val resourceFiles = List(
+    "index.html",
+    "css/bootstrap.min.css",
+    "css/bootstrap-slider.css",
+    "css/icons.gif",
+    "css/index.css",
+    "css/jquery-ui-1.10.3.custom.css",
+    "css/ui.dynatree.css",
+    "css/vline.gif",
+    "img/arrow.png",
+    "img/glyphicons-halflings.png",
+    "js/bootstrap.min.js",
+    "js/crossfilter.min.js",
+    "js/d3.v3.min.js",
+    "js/jquery.dynatree.js",
+    "js/jquery-1.9.1.js",
+    "js/jquery-compat.js",
+    "js/jquery-ui-1.10.3.custom.min.js",
+    "js/ScalaMeter/chart.js",
+    "js/ScalaMeter/dimensions.js",
+    "js/ScalaMeter/filter.js",
+    "js/ScalaMeter/helper.js",
+    "js/ScalaMeter/main.js",
+    "js/ScalaMeter/permalink.js" )
+
+  val jsDataFile = "js/ScalaMeter/data.js"
+
+  val dsvDelimiter = '\t'
+
+  def copyResource(from: String, to: File) {
+    val res = getClass.getClassLoader.getResourceAsStream(from)
+    try {
+      val buffer = new Array[Byte](1024)
+      val fos = new FileOutputStream(to)
+      var nBytesRead = 0
+      def read = { nBytesRead = res.read(buffer) }
+      while ({read; nBytesRead != -1}) {
+        fos.write(buffer, 0, nBytesRead)
       }
-      pw.println("];")
-    }
-
-    printToFile(new File(root, "js/ScalaMeter/data.js")) { pw =>
-      pw.println("var ScalaMeter = (function(parent) {");
-      pw.println("  var my = { name: \"data\" };");
-      pw.println(s"  my.index = $curvesJSONIndex;")
-      if (embedDsv) {
-        printTsv(pw)
+      if (fos != null) {
+        fos.close();
       }
-      pw.println("  parent[my.name] = my;");
-      pw.println("  return parent;");
-      pw.println("})(ScalaMeter || {});");
+    } finally {
+      res.close()
     }
-
-    true
   }
 
   def printToFile(f: File)(op: PrintWriter => Unit) {
@@ -166,6 +176,3 @@ case class HtmlReporter(val embedDsv: Boolean = false) extends Reporter {
   }
 
 }
-
-
-object HtmlReporter
