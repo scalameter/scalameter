@@ -102,6 +102,7 @@ var ScalaMeter = (function(parent) {
 					selectedValues_ = d3.set(),
 					expanded_ = false,
 					format_ = NUMBER_FORMAT,
+					keyFn_ = h.mapKey(name_),
 					filterContainer_,
 					values_,
 					filteredValues_,
@@ -188,7 +189,7 @@ var ScalaMeter = (function(parent) {
 					},
 
 					keyFn: function() {
-						return h.mapKey(name_);
+						return keyFn_;
 					},
 
 					clickValue: function(value) {

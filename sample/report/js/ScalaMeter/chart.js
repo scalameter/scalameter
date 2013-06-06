@@ -19,7 +19,6 @@ var ScalaMeter = (function(parent) {
 		MIN_LEGEND_WIDTH,
 		CHART_TYPES;
 
-
 	/*
 	 * ----- private fields -----
 	 */
@@ -58,11 +57,12 @@ var ScalaMeter = (function(parent) {
 		createSVG(parentNode);
 	};
 
-	my.load = function() {
+	my.load = function(onLoad) {
 		var storedData = parent.permalink.storedData();
 		if (storedData != null) {
 			setConfig(storedData.chartConfig);
 		}
+		onLoad();
 	};
 
 	my.getConfig = function() {
@@ -208,18 +208,29 @@ var ScalaMeter = (function(parent) {
 
 			bars.enter()
 				.append("rect")
-				//TODO .attr("class", function(d) { return "bar-" + keyAbscissa1(d); })
+				.each(hoverable("bar", legendKey))
 				.style("fill-opacity", 0);
 
 			bars.each(bar);
 
 			bars.exit().remove();
 
+			var barsCI = svg_.selectAll(".bar-ci").data(showCI_ ? barData : [], mapKey(dKey.index));
+
+			barsCI.enter()
+				.append("g")
+				.attr("class", "bar-ci")
+				.each(createBarCI);
+
+			barsCI.each(barCI);
+
+			barsCI.exit().remove();
+
 			// data points
 			var points = svg_.selectAll('circle').data(lineData, mapKey(dKey.index));
 
 			points.enter().append('circle')
-				.attr("class", function(d) { return "line"; /* TODO line-" + keyLegend.get(d); */ })
+				.each(hoverable("line", legendKey))
 				.attr('r', 5);
 
 			points
@@ -252,29 +263,13 @@ var ScalaMeter = (function(parent) {
 
 			curvesCI.exit().remove();
 
-			svg_.select(".legend")
+			svg_.select(".legend-container")
 				.attr("transform", "translate(" + (W + legendWidth - 20 * keysCurveColor.length) + ", 0)")
-				.each(legendGroup(0, 0, legendSize))
+				.each(legendGroup(0, 0, legendSize, ""))
 				.select(".legend-title")
 				.attr("x", -4)
 				.attr("y", 13)
 				.text(legendTitle);
-
-			// var legend = svg_.selectAll(".legend").data(keysGradient, ident);
-
-			// legend.enter()
-			// 	.append("g")
-			// 	.attr("class", function(d) { return "legend legend-" + d; })
-			// 	.on("mouseover", mover)
-			// 	.on("mouseout", mout)
-			// 	.append("text");
-			
-			// legend
-			// 	.attr("transform", function(d, i) { return "translate(" + (W + legendWidth_ - 20 * keysCurveColor.length) + ", " + i * 20 + ")"; })
-			// 	.each(legendRow);
-
-			// legend.exit().remove();
-
 		});
 
 		function curveColorWithShade(curveKey, shade) {
@@ -297,13 +292,10 @@ var ScalaMeter = (function(parent) {
 			});
 
 			var g = d3.select(this);
-			var cls = "line line-" +d.key;
 			var color = colorMap(d.values[0]);
 			g.select("path")
-				.attr("class", cls)
 				.attr("style", "stroke-opacity:0.7;stroke:" + color)
-				.on("mouseover", function(d) { mover(d.key); })
-				.on("mouseout", function(d) { mout(d.key); })
+				.each(hoverable("line", legendKey(d.values[0])))
 				.transition()
 				.attr("d", line(d.values));
 		}
@@ -320,7 +312,7 @@ var ScalaMeter = (function(parent) {
 			var g = d3.select(this);
 			var color = colorMap(d.values[0]);
 			g.select("path")
-				.attr("class", "area-" + d.key)
+				.attr("class", "area-" + legendKey(d.values[0]))
 				.attr("style", "stroke-opacity:0.2;stroke:" + color + ";fill-opacity:0.1;fill:" + color)
 				.transition()
 				.attr("d", area(d.values));
@@ -356,6 +348,64 @@ var ScalaMeter = (function(parent) {
 				.attr("height", H - y(d[dKey.value]))
 				.transition()
 				.style("fill-opacity", 1);
+
+			$(this).tooltip({title: "ASDF<br>jkl", container: "body", html: true});
+		}
+
+		function createBarCI() {
+			var g = d3.select(this);
+
+			g.append("line")
+				.attr("class", "bar-cilo bar-ci-v bar-cilo-v").style("stroke-opacity", 0);;
+			g.append("line")
+				.attr("class", "bar-cihi bar-ci-v bar-cihi-v").style("stroke-opacity", 0);;
+			g.append("line")
+				.attr("class", "bar-cilo bar-ci-h bar-cilo-h").style("stroke-opacity", 0);;
+			g.append("line")
+				.attr("class", "bar-cihi bar-ci-h bar-cihi-h").style("stroke-opacity", 0);;
+		}
+
+		function barCI(d) {
+			var g = d3.select(this)
+			var x0 = barScale(d);
+			var xMiddle = x0 + barWidth / 2;
+			var y0 = y(d[dKey.value]);
+			var yCilo = y(d[dKey.cilo]);
+			var yCihi = y(d[dKey.cihi]);
+
+			lineTransition(".bar-ci-h", function(nodes) {
+				return nodes
+					.attr("x1", x0 + 1)
+					.attr("x2", x0 + barWidth - 1);	});
+			lineTransition(".bar-cilo-h", function(nodes) {
+				return nodes
+					.attr("y1", yCilo)
+					.attr("y2", yCilo); });
+			lineTransition(".bar-cihi-h", function(nodes) {
+				return nodes
+					.attr("y1", yCihi)
+					.attr("y2", yCihi); });
+
+			lineTransition(".bar-ci-v", function(nodes) {
+				return nodes
+					.attr("x1", xMiddle)
+					.attr("x2", xMiddle); });
+			lineTransition(".bar-cilo-v", function(nodes) {
+				return nodes
+					.attr("y1", y0)
+					.attr("y2", yCilo); });
+			lineTransition(".bar-cihi-v", function(nodes) {
+				return nodes
+					.attr("y1", y0)
+					.attr("y2", yCihi); });
+
+			function lineTransition(selector, fn) {
+				g.selectAll(selector)
+					.transition()
+					.call(fn)
+					.transition()
+					.style("stroke-opacity", 1);
+			}
 		}
 
 		function legendRow(shade) {
@@ -371,12 +421,13 @@ var ScalaMeter = (function(parent) {
 			};
 		}
 
-		function legendGroup(depth, parentId, groupSize) {
+		function legendGroup(depth, parentId, groupSize, lKeyPrefix) {
 			return function(d, i) {
 				var id = parentId + i * groupSize;
 				var dim = legendDimensions[depth];
 				var groups = d3.select(this).selectAll(".legend-grp-" + depth).data(dim.filteredValues(), h.ident);
 				var subGroupSize = groupSize / dim.filteredValues().length;
+				var lKey = (depth == 0) ? "" : lKeyPrefix + d + "-";
 
 				var labels = groups.enter()
 					.append("g")
@@ -391,14 +442,21 @@ var ScalaMeter = (function(parent) {
 						.attr("style", "font-weight:bold");
 					groups
 						.attr("transform", function(d, i) { return "translate(0, " + ((1 + i * (subGroupSize + 1)) * 20) + ")"; })
-						.each(legendGroup(depth + 1, id, subGroupSize));
+						.each(legendGroup(depth + 1, id, subGroupSize, lKey));
 				} else {
 					groups
 						.attr("transform", function(d, i) { return "translate(0, " + ((1 + i) * 20) + ")"; })
+						.each(hoverable("legend", function(d) { return lKey + d; }))
 						.each(legendRow(id));
 				}
 				groups.exit().remove();
 			};
+		}
+
+		function legendKey(d) {
+			return legendDimensions.map(function(dim) {
+				return dim.keyFn()(d);
+			}).join("-");
 		}
 	}
 
@@ -449,53 +507,54 @@ var ScalaMeter = (function(parent) {
 
 		// legend
 		svg_.append("g")
-			.attr("class", "legend")
+			.attr("class", "legend-container")
 			.append("text")
 			.attr("class", "legend-title");
 	}
 
-	function flashBars(id) {
-		/*
-		TODO
-		var bars = d3.selectAll(".bar-" + id);
-		if (!bars.empty()) {
-			var width = bars.attr("width");
-			bars
-				.transition()
-				.attr("width", 1.1 * width)
-				.transition()
-				.attr("width", width);
-			setTimeout(function() { flashBars(id); }, 600);
-		}
-		*/
+	function hoverable(className, getId) {
+		return function(d) {
+			var id = ($.isFunction(getId)) ? getId(d) : getId;
+			d3.select(this)
+				.classed(className, true)
+				.classed(className + "-" + id, true)
+				.on("mouseover", function() { mover(id) })
+				.on("mouseout", function() { mout(id) });
+		};
 	}
 
 	function mover(id) {
 		var line = d3.selectAll(".line-" + id);
 		var area = d3.select(".area-" + id);
 		var legend = d3.select(".legend-" + id)
+		var bars = d3.selectAll(".bar-" + id);
 
 		line.transition().style("stroke-width", 4);
 
-		area.transition().style("stroke-opacity", 1);
-		area.transition().style("fill-opacity", 0.3);
+		area.transition()
+			.style("stroke-opacity", 1)
+			.style("fill-opacity", 0.3);
 
 		legend.select("text").attr("style", "font-weight:bold");
 
-		flashBars(id);
+		bars.transition().style("stroke-opacity", 1);
 	}
 
 	function mout(id) {
 		var line = d3.selectAll(".line-" + id);
 		var area = d3.select(".area-" + id);
 		var legend = d3.select(".legend-" + id)
+		var bars = d3.selectAll(".bar-" + id);
 
 		line.transition().style("stroke-width", 1.5);
 
-		area.transition().style("stroke-opacity", 1);
-		area.transition().style("fill-opacity", 0.1);
+		area.transition()
+			.style("stroke-opacity", 0.2)
+			.style("fill-opacity", 0.1);
 
 		legend.select("text").attr("style", "font-weight:normal");
+
+		bars.transition().style("stroke-opacity", 0);
 	}
 
 	parent[my.name] = my;

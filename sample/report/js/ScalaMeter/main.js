@@ -10,19 +10,28 @@ var ScalaMeter = (function(parent) {
 		parent.chart.init(".chart");
 		parent.filter.init();
 
-		parent.filter.load(updateView);
-		parent.chart.load();
+		var modules = [parent.filter, parent.chart];
+		loadModules(modules, parent.filter.update);
 	};
+
+	function loadModules(modules, onLoad) {
+		var nWaiting = modules.length;
+
+		modules.forEach(function(module) {
+			module.load(function() {
+				nWaiting--;
+				if (nWaiting == 0) {
+					onLoad();
+				}
+			});
+		});
+	}
 
 	function getParams() {
 		return {
 			filterConfig: parent.filter.getConfig(),
 			chartConfig: parent.chart.getConfig()
 		};
-	}
-
-	function updateView() {
-		parent.filter.update();
 	}
 
 	parent[my.name] = my;
