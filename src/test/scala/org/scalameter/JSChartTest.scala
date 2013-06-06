@@ -14,8 +14,7 @@ class JSChartTest extends PerformanceTest.Regression with Collections {
 
   override def reporter: Reporter = org.scalameter.Reporter.Composite(
     new RegressionReporter(RegressionReporter.Tester.OverlapIntervals(), RegressionReporter.Historian.ExponentialBackoff()),
-    new DsvReporter('\t'),
-    HtmlReporter(HtmlReporter.Renderer.JSChart())
+    HtmlReporter(true)
   )
 
   def withPar[A <% CustomParallelizable[B, C[B]], B, C[B] <: ParIterable[B]](collections: Gen[A]) = {

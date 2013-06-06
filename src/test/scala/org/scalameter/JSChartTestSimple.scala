@@ -15,7 +15,7 @@ class JSChartTestSimple extends PerformanceTest.Regression with Collections {
   override def reporter: Reporter = org.scalameter.Reporter.Composite(
     new RegressionReporter(RegressionReporter.Tester.OverlapIntervals(), RegressionReporter.Historian.ExponentialBackoff()),
     new DsvReporter('\t'),
-    HtmlReporter(HtmlReporter.Renderer.JSChart())
+    HtmlReporter()
   )
 
   performance of "Seq" in {

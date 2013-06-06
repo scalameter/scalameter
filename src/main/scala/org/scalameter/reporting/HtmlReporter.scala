@@ -15,7 +15,7 @@ import Key._
 
 
 
-case class HtmlReporter(val renderers: HtmlReporter.Renderer*) extends Reporter {
+case class HtmlReporter(val embedDsv: Boolean = false) extends Reporter {
 
   val sep = File.separator
 
@@ -117,7 +117,7 @@ case class HtmlReporter(val renderers: HtmlReporter.Renderer*) extends Reporter 
       "js/jquery.dynatree.js",
       "js/jquery-1.9.1.js",
       "js/jquery-compat.js",
-      "js/jquery-ui.custom.min.js",
+      "js/jquery-ui-1.10.3.custom.min.js",
       "js/ScalaMeter/chart.js",
       "js/ScalaMeter/filter.js",
       "js/ScalaMeter/helper.js",
@@ -135,7 +135,7 @@ case class HtmlReporter(val renderers: HtmlReporter.Renderer*) extends Reporter 
 
       val separators = "" #:: Stream.continually(", ")
 
-      pw.print("var curveDataTsv = [")
+      pw.print("  my.tsvData = [")
       for ((curve, sep) <- allCurves.toStream zip separators) {
         pw.print(sep)
         pw.print("'")
@@ -149,7 +149,9 @@ case class HtmlReporter(val renderers: HtmlReporter.Renderer*) extends Reporter 
       pw.println("var ScalaMeter = (function(parent) {");
       pw.println("  var my = { name: \"data\" };");
       pw.println(s"  my.index = $curvesJSONIndex;")
-      // printTsv(pw)
+      if (embedDsv) {
+        printTsv(pw)
+      }
       pw.println("  parent[my.name] = my;");
       pw.println("  return parent;");
       pw.println("})(ScalaMeter || {});");
@@ -166,126 +168,4 @@ case class HtmlReporter(val renderers: HtmlReporter.Renderer*) extends Reporter 
 }
 
 
-object HtmlReporter {
-
-  trait Renderer {
-    def render(context: Context, curves: Seq[CurveData], hs: Seq[History]): Node
-  }
-
-  object Renderer {
-    def regression = Seq(HtmlReporter.Renderer.JSChart())
-
-    def basic = Seq(Info(), BigO(), Chart(ChartReporter.ChartFactory.XYLine()))
-
-    case class Info() extends Renderer {
-      def render(context: Context, curves: Seq[CurveData], hs: Seq[History]): Node = 
-      <div>Info:
-      <ul>
-      <li>Number of runs: {context.goe(exec.benchRuns, "")}</li>
-      <li>Executor: {context.goe(dsl.executor, "")}</li>
-      </ul>
-      </div>
-    }
-
-    case class BigO() extends Renderer {
-      def render(context: Context, curves: Seq[CurveData], hs: Seq[History]): Node = 
-      <div>Big O analysis:
-      <ul>
-      {
-        for (cd <- curves) yield <li>
-        {cd.context.goe(dsl.curve, "")}: {cd.context.goe(reports.bigO, "(no data)")}
-        </li>
-      }
-      </ul>
-      </div>
-    }
-
-    case class Chart(factory: ChartReporter.ChartFactory, title: String = "Chart", colors: Seq[Color] = Seq()) extends Renderer {
-      def render(context: Context, curves: Seq[CurveData], hs: Seq[History]): Node = {
-        val resultdir = context.goe(reports.resultDir, "tmp")
-        val scopename = context.scope
-        val chart = factory.createChart(scopename, curves, hs, colors)
-        val chartfile = new File(s"$resultdir${File.separator}report${File.separator}images${File.separator}$scopename.png")
-        ChartUtilities.saveChartAsPNG(chartfile, chart, 1600, 1200)
-
-        <div>
-        <p>{s"$title :"}</p>
-        <a href={"images/" + scopename + ".png"}>
-        <img src={"images/" + scopename + ".png"} alt={scopename} width="800" height="600"></img>
-        </a>
-        </div>
-      }
-    }
-    
-    case class JSChart() extends Renderer {
-      def render(context: Context, curves: Seq[CurveData], hs: Seq[History]): Node = {
-        val resultdir = ".." //context.goe(reports.resultDir, "tmp")
-        val group = context.scope
-        val sep = "/"
-
-        def addCurve(curve: CurveData): Node = {
-          val curveName = curve.context.curve
-          val scope = scala.xml.Unparsed(new scala.util.parsing.json.JSONArray(curve.context.scopeList).toString())
-          val filename = s"$resultdir$sep$group.$curveName.dsv"
-          <script type="text/javascript">
-            cd.addGraph({ scope }, { s"'$curveName'" }, { s"'$filename'" });
-          </script>
-        }
-        <div> {
-          for (c <- curves) yield addCurve(c)
-        } </div>
-      }
-    }
-
-    case class HistoryList() extends Renderer {
-      def render(context: Context, curves: Seq[CurveData], hs: Seq[History]): Node = {
-        // TODO
-
-        <div>
-        </div>
-      }
-    }
-
-    case class Regression(tester: RegressionReporter.Tester, colors: Seq[Color] = Seq()) extends Renderer {
-      def render(context: Context, curves: Seq[CurveData], hs: Seq[History]): Node = {
-
-        val factory = ChartReporter.ChartFactory.ConfidenceIntervals(true, true, tester)
-        val resultdir = context.goe(reports.resultDir, "tmp")
-        val scopename = context.scope
-
-        for {
-          (curve, history) <- curves zip hs
-          (prevdate, prevctx, previousCurve) <- history.results
-        } yield {
-          val checkedCurve = dyn.log.withValue(Log.None) {
-            tester.apply(curve.context, curve, Seq(previousCurve))
-          }
-          if (!checkedCurve.success) {
-            // draw a graph
-            val chart = factory.createChart(scopename, Seq(checkedCurve), Seq(History(Seq((prevdate, prevctx, previousCurve)))))
-            val chartfile = new File(s"$resultdir${File.separator}report${File.separator}images${File.separator}$scopename.png")
-            ChartUtilities.saveChartAsPNG(chartfile, chart, 1600, 1200)
-          }
-        }
-
-        <div>
-        <p>Failed tests:</p>
-        <a href={"images/" + scopename + ".png"}>
-        <img src={"images/" + scopename + ".png"} alt={scopename} width="800" height="600"></img>
-        </a>
-        </div>
-      }
-    }
-  }
-
-}
-
-
-
-
-
-
-
-
-
-
+object HtmlReporter
