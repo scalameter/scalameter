@@ -34,6 +34,14 @@ case class HtmlReporter(val embedDsv: Boolean) extends Reporter {
 
     val curvesJSONIndex = JSONIndex(results)
 
+    resourceDirs.foreach {
+      new File(root, _).mkdir()
+    }
+
+    resourceFiles.foreach { filename =>
+      copyResource(filename, new File(root, filename))
+    }
+
     printToFile(new File(root, jsDataFile)) { pw =>
       pw.println("var ScalaMeter = (function(parent) {");
       pw.println("  var my = { name: \"data\" };");
@@ -44,14 +52,6 @@ case class HtmlReporter(val embedDsv: Boolean) extends Reporter {
       pw.println("  parent[my.name] = my;");
       pw.println("  return parent;");
       pw.println("})(ScalaMeter || {});");
-    }
-
-    resourceDirs.foreach {
-      new File(root, _).mkdir()
-    }
-
-    resourceFiles.foreach { filename =>
-      copyResource(filename, new File(root, filename))
     }
 
     true
