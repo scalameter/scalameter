@@ -20,6 +20,8 @@ var ScalaMeter = (function(parent) {
 		all: "All"
 	});
 
+	var LABEL_NULL = "none";
+
 	var DATE_FORMAT = (function(d) {return d3.time.format("%Y-%m-%d %H:%M:%S")(new Date(+d)); });
 
 	var NUMBER_FORMAT = createNumberFormat("\u202F");  // 202F: narrow no-break space
@@ -68,14 +70,22 @@ var ScalaMeter = (function(parent) {
 		return d.value;
 	};
 
-	my.unique = function(data, key, sort){
+	my.unique = function(data, key, sort, includeNull){
+		includeNull = isDef(includeNull) ? includeNull : false;
 		var values = d3.nest().key(key).map(data, d3.map).keys();
-		values = values.filter(function(d) { return d != 'null'; }).map(toInt);
+		var hasNull = false;
+		values = values.filter(function(d) {
+			var isNull = (d == "null");
+			hasNull = hasNull || isNull;
+			return !isNull;
+		}).map(toInt);
 		if (isDef(sort)) {
-			return values.sort(sort);
-		} else {
-			return values;
+			values = values.sort(sort);
 		}
+		if (includeNull && hasNull) {
+			values.unshift(null);
+		}
+		return values;
 	};
 
 	function isDef(value) {
@@ -104,9 +114,13 @@ var ScalaMeter = (function(parent) {
 
 	function createNumberFormat(thousandsSeparator) {
 		return function(d) {
-		    var parts = d.toString().split(".");
-		    parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, thousandsSeparator);
-		    return parts.join(".");
+			if (d == null) {
+				return LABEL_NULL;
+			} else {
+				var parts = d.toString().split(".");
+				parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, thousandsSeparator);
+				return parts.join(".");
+			}
 		};
 	}
 

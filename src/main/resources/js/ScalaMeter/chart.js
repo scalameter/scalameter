@@ -6,9 +6,7 @@ var ScalaMeter = (function(parent) {
 	 */
 	var h,
 		dKey,
-		mapKey,
-		ident,
-		unique;
+		mapKey;
 
 	/*
 	 * ----- constants -----
@@ -37,8 +35,6 @@ var ScalaMeter = (function(parent) {
 		h = parent.helper;
 		dKey = h.dKey;
 		mapKey = h.mapKey;
-		ident = h.ident;
-		unique = h.unique;
 
 		MARGIN = {
 			top : 20,
@@ -92,7 +88,7 @@ var ScalaMeter = (function(parent) {
 
 	my.update = function(data) {
 		var filterDimensions = parent.dimensions;
-		var keysCurveColor = unique(data, h.curveKey, d3.ascending);
+		var keysCurveColor = h.unique(data, h.curveKey, d3.ascending);
 		var legendWidth = MIN_LEGEND_WIDTH + 20 * keysCurveColor.length;
 		var W = WIDTH - MARGIN.left - MARGIN.right - legendWidth;
 		var H = HEIGHT - MARGIN.top - MARGIN.bottom;
@@ -122,7 +118,6 @@ var ScalaMeter = (function(parent) {
 
 		var barScale = function() { return 0; };
 
-		//TODO handle null values
 		switch(chartType_) {
 			case CHART_TYPES.line:
 				filterDimensions.filterValues(data, d3.descending);
@@ -301,13 +296,20 @@ var ScalaMeter = (function(parent) {
 				return y(d[dKey.value]);
 			});
 
+			var d0 = d.values[0];
 			var g = d3.select(this);
-			var color = colorMap(d.values[0]);
+			var color = colorMap(d0);
+			var pathData;
+			if (keyAbscissa(d0) == null) {
+				pathData = "M0," + y(d0[dKey.value]) + "H" + W;
+			} else {
+				pathData = line(d.values);
+			}
 			g.select("path")
 				.attr("style", "stroke-opacity:0.7;stroke:" + color)
-				.each(hoverable("line", legendKey(d.values[0])))
+				.each(hoverable("line", legendKey(d0)))
 				.transition()
-				.attr("d", line(d.values));
+				.attr("d", pathData);
 		}
 
 		function areaCI(d) {
@@ -426,7 +428,7 @@ var ScalaMeter = (function(parent) {
 		function legendRow(shade) {
 			return function(d, i) {
 				var g = d3.select(this);
-				var rects = g.selectAll("rect").data(keysCurveColor, ident);
+				var rects = g.selectAll("rect").data(keysCurveColor, h.ident);
 				rects.enter().append("rect")
 					.attr("width", 18)
 					.attr("height", 18)
@@ -470,7 +472,8 @@ var ScalaMeter = (function(parent) {
 
 		function legendKey(d) {
 			return legendDimensions.map(function(dim) {
-				return dim.keyFn()(d);
+				var key = dim.keyFn()(d);
+				return key == null ? "null" : key;
 			}).join("-");
 		}
 	}
@@ -555,7 +558,7 @@ var ScalaMeter = (function(parent) {
 			.style("fill-opacity", 0.3);
 
 		legend.select("text").attr("style", "font-weight:bold");
-		legend.select("rect")
+		legend.selectAll("rect")
 			.transition()
 			.style("stroke-opacity", 1);
 
@@ -576,7 +579,7 @@ var ScalaMeter = (function(parent) {
 			.style("fill-opacity", 0.1);
 
 		legend.select("text").attr("style", "font-weight:normal");
-		legend.select("rect")
+		legend.selectAll("rect")
 			.transition()
 			.style("stroke-opacity", 0);
 

@@ -26,7 +26,7 @@ var ScalaMeter = (function(parent) {
 	my.filterValues = function(data, legendOrder) {
 		keys_.forEach(function(key, i) {
 			var dim = params_.get(key);
-			dim.filteredValues(h.unique(data, dim.keyFn(), i == 0 ? d3.ascending : legendOrder));
+			dim.filteredValues(h.unique(data, dim.keyFn(), i == 0 ? d3.ascending : legendOrder, true));
 		});
 	};
 
