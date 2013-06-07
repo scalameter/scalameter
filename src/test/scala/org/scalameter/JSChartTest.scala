@@ -13,7 +13,9 @@ class JSChartTest extends PerformanceTest.Regression with Collections {
   def persistor = new persistence.SerializationPersistor()
 
   override def reporter: Reporter = org.scalameter.Reporter.Composite(
-    new RegressionReporter(RegressionReporter.Tester.OverlapIntervals(), RegressionReporter.Historian.ExponentialBackoff()),
+    new RegressionReporter(
+      RegressionReporter.Tester.OverlapIntervals(),
+      RegressionReporter.Historian.ExponentialBackoff() ),
     HtmlReporter(true)
   )
 
@@ -58,15 +60,6 @@ class JSChartTest extends PerformanceTest.Regression with Collections {
         _.reduce(_ + _)
       }
 
-      /*using(lists(from, to, by)) curve("List") config (
-        exec.benchRuns -> 30,
-        exec.independentSamples -> 4,
-        exec.reinstantiation.fullGC -> true,
-        exec.reinstantiation.frequency -> 5
-      ) in {
-        _.reduce(_ + _)
-      }*/
-
       using(withPar(ranges(from, to, by))) curve("Range") in {
         _.reduce(_ + _)
       }
@@ -100,17 +93,6 @@ class JSChartTest extends PerformanceTest.Regression with Collections {
         _.filter(_ % 2 == 0)
       }
 
-      /*using(lists(from, to, by)) curve("List") config (
-        exec.minWarmupRuns -> 120,
-        exec.maxWarmupRuns -> 240,
-        exec.benchRuns -> 64,
-        exec.independentSamples -> 6,
-        exec.reinstantiation.fullGC -> true,
-        exec.reinstantiation.frequency -> 6
-      ) in {
-        _.filter(_ % 2 == 0)
-      }*/
-
       using(withPar(ranges(from, to, by))) curve("Range") in {
         _.filter(_ % 2 == 0)
       }
@@ -140,17 +122,6 @@ class JSChartTest extends PerformanceTest.Regression with Collections {
         _.groupBy(_ % 10)
       }
 
-      /*using(lists(from, to, by)) curve("List") config (
-        exec.benchRuns -> 24,
-        exec.independentSamples -> 4,
-        exec.reinstantiation.fullGC -> true,
-        exec.reinstantiation.frequency -> 4,
-        exec.outliers.suspectPercent -> 50,
-        exec.outliers.covMultiplier -> 2.0
-      ) in {
-        _.groupBy(_ % 10)
-      }*/
-
       using(withPar(ranges(from, to, by))) curve("Range") in {
         _.groupBy(_ % 10)
       }
@@ -179,16 +150,6 @@ class JSChartTest extends PerformanceTest.Regression with Collections {
       using(withPar(vectors(from, to, by))) curve("Vector") in {
         _.map(_ * 2)
       }
-
-      /*using(lists(from, to, by)) curve("List") config (
-        exec.benchRuns -> 48,
-        exec.independentSamples -> 4,
-        exec.reinstantiation.fullGC -> true,
-        exec.reinstantiation.frequency -> 6,
-        exec.noise.magnitude -> 1.0
-      ) in {
-        _.map(_ * 2)
-      }*/
 
       using(withPar(ranges(from, to, by))) curve("Range") in {
         _.map(_ * 2)

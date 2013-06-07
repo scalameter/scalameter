@@ -92,7 +92,7 @@ object PerformanceTest {
     def aggregator = Aggregator.complete(Aggregator.average)
     def measurer: Measurer = new Measurer.IgnoringGC with Measurer.PeriodicReinstantiation with Measurer.OutlierElimination with Measurer.RelativeNoise
     def executor: Executor = new execution.SeparateJvmsExecutor(warmer, aggregator, measurer)
-    def reporter: Reporter = org.scalameter.Reporter.Composite(
+    def reporter: Reporter = Reporter.Composite(
       new RegressionReporter(RegressionReporter.Tester.OverlapIntervals(), RegressionReporter.Historian.ExponentialBackoff()),
       HtmlReporter(false)
     )
