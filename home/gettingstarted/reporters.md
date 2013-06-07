@@ -21,7 +21,7 @@ any single test.
 The second `report` method is invoked at the end when all of the tests are finished
 executing.
 If you plan to implement your own `Reporter` from scratch, then you should take
-a look at the [ScalaMeter API](/scalameter/home/api) to better understand what the parameters
+a look at the [ScalaMeter API](http://lampwww.epfl.ch/~prokopec/scalameter/index.html#package) to better understand what the parameters
 are, as well as how other important ScalaMeter datatypes work.
 <br/>
 Otherwise, there are plenty of predefined reporters to choose from.
@@ -109,35 +109,47 @@ variance in the measurements.
 This factory also only works correctly only for 2D data.
 
 
-## HTML reporter
+## DSV reporter
 
-Creates an HTML document with reports for all the tests.
-The report is configurable with different HTML renderers.
-This reporter is useful when you need multiple test results to be displayed in some way
-on the same HTML document.
+Produces a DSV file for each curve with results that can be used for visualization. Every row represents an average obtained for one parameter combination for a specific test date. Confidence intervals are also included.
 
 Constructor arguments:
 
-- `renderers` -- a sequence of renderers for different components of the HTML document
+- `delimiter` -- the character used to delimit columns
+
+Configuration:
+
+- `reports.resultDir` -- the directory in which the DSV files are stored
+
+
+## HTML reporter
+
+Creates an HTML document with reports for all the tests.
+This reporter creates an interactive page which gives an overview of all test groups and curves.
+The page is capable of rendering charts in SVG format using the [D3.js](http://d3js.org/) library.
+Performance data can be filtered by curve, date, and [Generator](/scalameter/home/gettingstarted/generators) dimensions.
+All filter parameters are set directly from within the HTML UI.
+Permalinks for specific filter configurations can be generated as a simple way of storing or sharing filter parameters.
+
+`HtmlReporter` internally uses a `DsvReporter` to export performance data. It can either be exported to individual files for each curve, or embedded in the generated `data.js` file. The latter is particularly useful in cases where the JavaScript code has no access to the DSV files. This typically happens when opening the generated HTML document from the local file system. Most browsers enforce a [same origin policy](http://en.wikipedia.org/wiki/Same_origin_policy) that prevents JavaScript code from accessing local files.
+
+The `HtmlReporter` has to be used in combination with a `RegressionReporter` (see below) in order to have access to a history of running times. In the composition, `RegressionReporter` has to precede `HtmlReporter` in order for the history to include the most recent run, e.g. like this:
+
+    def reporter: Reporter = Reporter.Composite(
+      new RegressionReporter(
+        RegressionReporter.Tester.OverlapIntervals(),
+        RegressionReporter.Historian.ExponentialBackoff() ),
+      HtmlReporter(true)
+    )
+
+
+Constructor arguments:
+
+- `embedDsv` -- when set to `true`, data is embedded in `data.js`, otherwise a separate DSV file is created for each curve
 
 Configuration:
 
 - `reports.resultDir` -- the directory in which the report page and its resources are generated
-- this reporter may show the values of various other test parameters as part of the report
-
-
-### Renderers
-
-`HtmlReporter.Renderer` is a common supertrait of all renderers.
-It is responsible for generating some part of the content on the HTML report.
-You can define your own renderers for custom content by implementing this trait.
-There are several predefined types of renderers.
-
-`Renderer.Info` creates some generic information about the test, such as the executor
-and measuring methodology that was used, the number of benchmark repetitions and so on.
-
-`Renderer.Chart` creates a chart for the test and embeds it into the HTML report.
-This gives a graphical representation of the test results.
 
 
 ## Regression reporter
