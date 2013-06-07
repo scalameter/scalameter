@@ -6,60 +6,61 @@ var ScalaMeter = (function(parent) {
 	 */
 	var h;
 
-	var paramNames_ = [],
-		params_ = d3.map();
+	var keys_,
+		params_;
 
 	my.init = function() {
 		h = parent.helper;
+
+		keys_ = [];
+		params_ = d3.map();
 	};
 
-	my.addParam = function(name) {
-		if (!params_.has(name)) {
-			params_.set(name, addDimension(name, name.substr(h.dKey.paramPrefix.length)));
-			paramNames_.push(name);
+	my.addParam = function(key) {
+		if (!params_.has(key)) {
+			params_.set(key, addDimension(key, key.substr(h.dKey.paramPrefix.length)));
+			keys_.push(key);
 		}
-		return my;
 	};
 
 	my.filterValues = function(data, legendOrder) {
-		paramNames_.forEach(function(name, i) {
-			var dim = params_.get(name);
+		keys_.forEach(function(key, i) {
+			var dim = params_.get(key);
 			dim.filteredValues(h.unique(data, dim.keyFn(), i == 0 ? d3.ascending : legendOrder));
 		});
 	};
 
-	my.addDim = function(name) {
-		var newDim = addDimension(name, name);
-		params_.set(name, newDim);
-		paramNames_.push(name);
+	my.add = function(key) {
+		var newDim = addDimension(key, key);
+		params_.set(key, newDim);
+		keys_.push(key);
 		return newDim;
 	}
 
-	my.get = function(name) {
-		return params_.get(name);
+	my.get = function(key) {
+		return params_.get(key);
 	};
 
 	my.getAll = function() {
-		return paramNames_.map(function(name) {
-			return params_.get(name);
+		return keys_.map(function(key) {
+			return params_.get(key);
 		});
 	};
 
-	my.names = function(_) {
-		if (!arguments.length) return paramNames_;
-		paramNames_ = _;
-		return my;
+	my.keys = function(_) {
+		if (!arguments.length) return keys_;
+		keys_ = _;
 	};
 
-	function addDimension(name, caption) {
+	function addDimension(key, caption) {
 		return (function() {
-			var name_ = name,
+			var key_ = key,
 				caption_ = caption,
 				selectMode_ = h.selectModes.single,
 				selectedValues_ = d3.set(),
 				expanded_ = false,
 				format_ = h.numberFormat,
-				keyFn_ = h.mapKey(name_),
+				keyFn_ = h.mapKey(key),
 				filterContainer_,
 				values_,
 				filteredValues_,
@@ -91,9 +92,9 @@ var ScalaMeter = (function(parent) {
 
 			return {
 				init: function(data, cfDimension) {
-					values_ = h.unique(data, h.mapKey(name), d3.ascending);
+					values_ = h.unique(data, h.mapKey(key), d3.ascending);
 
-// if (name == h.dKey.date) {
+// if (key == h.dKey.date) {
 // 	//generate random dates over the past 5 years
 // 	var today = +new Date();
 // 	for(i=0; i<5000; i++){
@@ -142,6 +143,10 @@ var ScalaMeter = (function(parent) {
 				expanded: function(_) {
 					if (!arguments.length) return expanded_;
 					expanded_ = _;
+				},
+
+				key: function() {
+					return key_;
 				},
 
 				keyFn: function() {

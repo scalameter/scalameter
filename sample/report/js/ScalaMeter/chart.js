@@ -90,7 +90,8 @@ var ScalaMeter = (function(parent) {
 		parent.filter.update();
 	};
 
-	my.update = function(data, filterDimensions, dateDim) {
+	my.update = function(data) {
+		var filterDimensions = parent.dimensions;
 		var keysCurveColor = unique(data, h.curveKey, d3.ascending);
 		var legendWidth = MIN_LEGEND_WIDTH + 20 * keysCurveColor.length;
 		var W = WIDTH - MARGIN.left - MARGIN.right - legendWidth;
@@ -129,7 +130,7 @@ var ScalaMeter = (function(parent) {
 				showXGrid = true;
 				keyAbscissa = xAxisDim.keyFn();
 
-				if (xAxisDim == dateDim) {
+				if (xAxisDim.key() == dKey.date) {
 					x = d3.scale.ordinal()
 								.domain(xAxisDim.filteredValues())
 								.rangePoints([0, W]);
@@ -358,7 +359,12 @@ var ScalaMeter = (function(parent) {
 				.transition()
 				.style("fill-opacity", 1);
 
-			$(this).tooltip({title: "ASDF<br>jkl", container: "body", html: true});
+			var ttContent = legendDimensions.map(function(dim) {
+				return dim.caption() + ": " + dim.format()(dim.keyFn()(d));
+			});
+			ttContent.push("success: " + d[dKey.success]);
+
+			$(this).tooltip({title: ttContent.join("<br/>"), container: "body", html: true});
 		}
 
 		function createBarCI() {

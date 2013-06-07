@@ -19,7 +19,6 @@ var ScalaMeter = (function(parent) {
 	var	dataConcat_,
 		// rawdata,
 		filter_,
-		dateDim_,
 		selectedCurves_,
 		scopeTree_,
 		filterDimensions_;
@@ -69,7 +68,7 @@ var ScalaMeter = (function(parent) {
 	my.getConfig = function() {
 		return {
 			curves: selectedCurves_.values(),
-			order: filterDimensions_.names(),  //TODO
+			order: filterDimensions_.keys(),
 			filters: filterDimensions_.getAll().map(function(dim) {
 				return dim.selectedValues().values();
 			})
@@ -90,13 +89,14 @@ var ScalaMeter = (function(parent) {
 		my.getDim = getDimension;
 
 		var cFilter_ = crossfilter(dataConcat_),
-			filterDim_ = {};
+			filterDim_ = {},
+			dateDim_;
 
 		var root = d3.select(".filters");
 
 		var data = getData();
 
-		dateDim_ = filterDimensions_.addDim(dKey.date);
+		dateDim_ = filterDimensions_.add(dKey.date);
 		dateDim_.init(data, getDimension(dKey.date));
 		dateDim_.format(h.dateFormat);
 
@@ -115,7 +115,7 @@ var ScalaMeter = (function(parent) {
 		$(".filters").sortable({
 			handle: ".filter-container-header",
 			update: function(event, ui) {
-				filterDimensions_.names($(this).sortable("toArray"));
+				filterDimensions_.keys($(this).sortable("toArray"));
 				updateChart();
 			}
 		});
@@ -255,8 +255,8 @@ var ScalaMeter = (function(parent) {
 			});
 		}
 
-		function updateSelection(param) {
-			param.updateCrossfilter();
+		function updateSelection(dim) {
+			dim.updateCrossfilter();
 			updateFilters();
 			updateChart();
 		}
@@ -284,20 +284,20 @@ var ScalaMeter = (function(parent) {
 		function createFilter(paramName, i) {
 			var container = d3.select(this);
 
-			var param = filterDimensions_.get(paramName);
-			param.filterContainer(container);
-			if (param == dateDim_) {
-				param.selectLast();
-				param.selectMode(h.selectModes.single);
+			var dim = filterDimensions_.get(paramName);
+			dim.filterContainer(container);
+			if (dim == dateDim_) {
+				dim.selectLast();
+				dim.selectMode(h.selectModes.single);
 			} else {
-				param.init(data, getDimension(paramName));
-				param.selectMode(i == 0 ? h.selectModes.select : h.selectModes.single);
+				dim.init(data, getDimension(paramName));
+				dim.selectMode(i == 0 ? h.selectModes.select : h.selectModes.single);
 			}
-			param.updateCrossfilter();
+			dim.updateCrossfilter();
 
 			var content = '' +
 				'<div class="filter-container-header">' +
-					param.caption() +
+					dim.caption() +
 				'</div>' +
 				'<div class="tabbable tabs-below">' +
 					'<div class="tab-content">' +
@@ -320,28 +320,28 @@ var ScalaMeter = (function(parent) {
 				.attr("data-toggle", "tab")
 				.text(h.fValue)
 				.on("click", function(d) {
-					param.selectMode(d);
-					updateSelection(param);
+					dim.selectMode(d);
+					updateSelection(dim);
 				});
 
 			container.selectAll(".filter-expand")
 				.on("click", function() {
-					toggleExpanded(param);
+					toggleExpanded(dim);
 				});
 
 			var valuesRoot = container.select(".filter-values");
-			if (param == dateDim_) {
+			if (dim == dateDim_) {
 				if (uniqueDays.length > DATE_FILTER_WIDTH) {
 					valuesRoot.call(createDateSlider);
 				}
 			} else {
-				var badges = valuesRoot.selectAll(".filter-value").data(param.getAllValues());
+				var badges = valuesRoot.selectAll(".filter-value").data(dim.getAllValues());
 
 				badges.enter()
 					.append("span")
 					.attr("class", "label filter-value")
 					.on("click", function(d) {
-						clickBadge(param, d);
+						clickBadge(dim, d);
 					})
 					.text(h.numberFormat);
 			}
@@ -372,7 +372,7 @@ var ScalaMeter = (function(parent) {
 		}
 
 		function updateFilters() {
-			var containers = root.selectAll(".filter-container").data(filterDimensions_.names(), h.ident);
+			var containers = root.selectAll(".filter-container").data(filterDimensions_.keys(), h.ident);
 
 			containers
 				.order()
@@ -380,7 +380,7 @@ var ScalaMeter = (function(parent) {
 		}
 
 		function createFilters() {
-			var containers = root.selectAll(".filter-container").data(filterDimensions_.names(), h.ident);
+			var containers = root.selectAll(".filter-container").data(filterDimensions_.keys(), h.ident);
 
 			containers.enter()
 				.append("div")
@@ -472,7 +472,7 @@ var ScalaMeter = (function(parent) {
 	}
 
 	function updateChart() {
-		parent.chart.update(filter_.getData(), filterDimensions_, dateDim_); //TODO
+		parent.chart.update(filter_.getData()); 
 		/*if (h.isDef(rawdata)) {
 			showdata(data);
 		}*/
@@ -529,7 +529,7 @@ var ScalaMeter = (function(parent) {
 			}
 			var offset = dataConcat_.length;
 			tsvData.forEach(function(d, i) {
-				filterDimensions_.names().forEach(function(paramName) {
+				filterDimensions_.keys().forEach(function(paramName) {
 					if (d.hasOwnProperty(paramName)) {
 						d[paramName] = +d[paramName];
 					}
@@ -545,7 +545,7 @@ var ScalaMeter = (function(parent) {
 
 	function setConfig(_) {
 		selectedCurves_ = d3.set(_.curves);
-		filterDimensions_.names(_.order); //TODO
+		filterDimensions_.keys(_.order);
 		for (var i = 0; i < _.order.length; i++) {
 			var dim = filterDimensions_.get(_.order[i]);
 			dim.selectMode(h.selectModes.select);
