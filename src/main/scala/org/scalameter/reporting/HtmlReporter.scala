@@ -6,6 +6,7 @@ package reporting
 import java.util.Date
 import java.io._
 import java.awt.Color
+import util.parsing.json._
 import org.jfree.chart._
 import collection._
 import xml._
@@ -14,73 +15,47 @@ import Key._
 
 
 
-case class HtmlReporter(val renderers: HtmlReporter.Renderer*) extends Reporter {
+case class HtmlReporter(val embedDsv: Boolean) extends Reporter {
+  import HtmlReporter._
 
-  val sep = File.separator
-
-  def head = 
-    <head>
-      <meta charset="utf-8" />
-      <title>Performance Report</title>
-      <link type="text/css" media="screen" rel="stylesheet" href="css/bootstrap.min.css" />
-      <link type="text/css" media="screen" rel="stylesheet" href="css/index.css" />
-      <link type="text/css" media="screen" rel="stylesheet" href="css/ui.dynatree.css" />
-      <script type="text/javascript" src="js/d3.v3.min.js"></script>
-      <script type="text/javascript" src="js/crossfilter.min.js"></script>
-      <script type="text/javascript" src="js/jquery-1.9.1.js"></script>
-      <script type="text/javascript" src="js/jquery-ui.custom.min.js"></script>
-      <script type="text/javascript" src="js/jquery.dynatree.js"></script>
-      <script type="text/javascript" src="js/bootstrap.min.js"></script>
-      <script type="text/javascript" src="js/helper.js"></script>
-      <script type="text/javascript" src="js/chart.js"></script>
-      <script type="text/javascript" src="js/filter.js"></script>
-    </head>
-
-  def body(result: Tree[CurveData], persistor: Persistor) = {
-    <body>
-      {skeleton}
-      {machineInformation}
-      {date(result)}
-      <script type="text/javascript">
-        var cd = curvedata.rawdata('.rawdata');
-        var gc = genericChart;
-      </script>
-      {
-        for ((ctx, scoperesults) <- result.scopes; if scoperesults.nonEmpty) yield
-          {
-            val histories = scoperesults.map(cd => persistor.load(cd.context))
-            for (r <- renderers) yield r.render(ctx, scoperesults, histories)
-          }
-      }
-      <script type="text/javascript">
-        cd.setReady();
-      </script>
-    </body>
+  def report(result: CurveData, persistor: Persistor) {
+    // nothing - the charts are generated only at the end
   }
+  
+  def report(results: Tree[CurveData], persistor: Persistor) = {
+    if (!embedDsv) {
+      new DsvReporter(dsvDelimiter).report(results, persistor)
+    }
 
-  def skeleton =
-    <div>
-      <h1>Performance Report</h1>        
-      <div class="tree"></div>
-      <div class="chartholder">
-        <ul class="nav nav-tabs">
-          <li class="active"><a onclick="gc.setType(gc.cType.lineParam); gc.setShowCI(false); cd.update();" data-toggle="tab">Line Chart (param)</a></li>
-          <li><a onclick="gc.setType(gc.cType.lineDate); gc.setShowCI(false); cd.update();" data-toggle="tab">Line Chart (date)</a></li>
-          <li><a onclick="gc.setType(gc.cType.lineParam); gc.setShowCI(true); cd.update();" data-toggle="tab">Line Chart (param) with CI</a></li>
-          <li><a onclick="gc.setType(gc.cType.bar); gc.setShowCI(false); cd.update();" data-toggle="tab">Bar Chart</a></li>        </ul>
-        <div class="chart"></div>
-      </div>
-      <h1>Filters</h1>        
-      <div class="pagination">
-        <ul>
-          <li><a onclick="cd.prevDay();">&laquo;</a></li>
-          <li><a onclick="cd.nextDay();">&raquo;</a></li>
-        </ul>
-      </div>
-      <div class="filters"></div>
-      <h1>Raw data</h1>
-      <table class="table rawdata"></table>
-    </div>
+    val resultdir = results.context.goe(reports.resultDir, "tmp")
+    new File(resultdir).mkdir()
+    val root = new File(resultdir, "report")
+    root.mkdir()
+
+    val curvesJSONIndex = JSONIndex(results)
+
+    printToFile(new File(root, jsDataFile)) { pw =>
+      pw.println("var ScalaMeter = (function(parent) {");
+      pw.println("  var my = { name: \"data\" };");
+      pw.println(s"  my.index = $curvesJSONIndex;")
+      if (embedDsv) {
+        printTsv(results, persistor, pw)
+      }
+      pw.println("  parent[my.name] = my;");
+      pw.println("  return parent;");
+      pw.println("})(ScalaMeter || {});");
+    }
+
+    resourceDirs.foreach {
+      new File(root, _).mkdir()
+    }
+
+    resourceFiles.foreach { filename =>
+      copyResource(filename, new File(root, filename))
+    }
+
+    true
+  }
 
   def machineInformation =
     <div>
@@ -106,10 +81,77 @@ case class HtmlReporter(val renderers: HtmlReporter.Renderer*) extends Reporter 
     dateoption.getOrElse(<div>No date information.</div>)
   }
   
-  def report(result: CurveData, persistor: Persistor) {
-    // nothing - the charts are generated only at the end
+  def JSONIndex(results: Tree[CurveData]) = {
+    def JSONCurve(context: Context, curve: CurveData) = JSONObject(
+      immutable.Map(
+        "scope" -> new JSONArray(curve.context.scopeList),
+        "name" -> curve.context.curve,
+        "file" -> s"../${context.scope}.${curve.context.curve}.dsv"
+      )
+    )
+
+    val JSONCurves = for {
+      (ctx, curves) <- results.scopes if curves.nonEmpty
+      curve <- curves
+    } yield {
+      JSONCurve(ctx, curve)
+    }
+    new JSONArray(JSONCurves.toList)
   }
-  
+
+  def printTsv(results: Tree[CurveData], persistor: Persistor, pw: PrintWriter) {
+    val allCurves = for {
+      (ctx, curves) <- results.scopes if curves.nonEmpty
+      curve <- curves
+    } yield curve
+
+    val separators = "" #:: Stream.continually(", ")
+
+    pw.print("  my.tsvData = [")
+    for ((curve, sep) <- allCurves.toStream zip separators) {
+      pw.print(sep)
+      pw.print("'")
+      DsvReporter.writeCurveData(curve, persistor, pw, dsvDelimiter, "\\n")
+      pw.print("'")
+    }
+    pw.println("];")
+  }
+
+}
+
+
+object HtmlReporter {
+  val resourceDirs = List("css", "img", "js", "js/ScalaMeter")
+
+  val resourceFiles = List(
+    "index.html",
+    "css/bootstrap.min.css",
+    "css/bootstrap-slider.css",
+    "css/icons.gif",
+    "css/index.css",
+    "css/jquery-ui-1.10.3.custom.css",
+    "css/ui.dynatree.css",
+    "css/vline.gif",
+    "img/arrow.png",
+    "img/glyphicons-halflings.png",
+    "js/bootstrap.min.js",
+    "js/crossfilter.min.js",
+    "js/d3.v3.min.js",
+    "js/jquery.dynatree.js",
+    "js/jquery-1.9.1.js",
+    "js/jquery-compat.js",
+    "js/jquery-ui-1.10.3.custom.min.js",
+    "js/ScalaMeter/chart.js",
+    "js/ScalaMeter/dimensions.js",
+    "js/ScalaMeter/filter.js",
+    "js/ScalaMeter/helper.js",
+    "js/ScalaMeter/main.js",
+    "js/ScalaMeter/permalink.js" )
+
+  val jsDataFile = "js/ScalaMeter/data.js"
+
+  val dsvDelimiter = '\t'
+
   def copyResource(from: String, to: File) {
     val res = getClass.getClassLoader.getResourceAsStream(from)
     try {
@@ -128,173 +170,9 @@ case class HtmlReporter(val renderers: HtmlReporter.Renderer*) extends Reporter 
     }
   }
 
-  def report(results: Tree[CurveData], persistor: Persistor) = {
-    val resultdir = results.context.goe(reports.resultDir, "tmp")
-
-    new File(s"$resultdir").mkdir()
-
-    val root = new File(s"$resultdir${sep}report")
-
-    root.mkdir()
-    new File(root, "css").mkdir()
-    new File(root, "js").mkdir()
-
-    val report = <html>{head ++ body(results, persistor)}</html>
-
-    List(
-      "css/bootstrap.min.css",
-      "css/icons.gif",
-      "css/index.css",
-      "css/ui.dynatree.css",
-      "css/vline.gif",
-      "js/bootstrap.min.js",
-      "js/chart.js",
-      "js/crossfilter.min.js",
-      "js/d3.v3.min.js",
-      "js/filter.js",
-      "js/helper.js",
-      "js/jquery-1.9.1.js",
-      "js/jquery-ui.custom.min.js",
-      "js/jquery.dynatree.js"
-    ).foreach { filename =>
-      copyResource(filename, new File(root, filename))
-    }
-
-    printToFile(new File(s"$resultdir${sep}report${sep}index.html")) {
-      _.println("<!DOCTYPE html>\n" + report.toString)
-    }
-
-    true
-  }
-
-  def printToFile(f: java.io.File)(op: java.io.PrintWriter => Unit) {
-    val p = new java.io.PrintWriter(f)
+  def printToFile(f: File)(op: PrintWriter => Unit) {
+    val p = new PrintWriter(f)
     try { op(p) } finally { p.close() }
   }
 
 }
-
-
-object HtmlReporter {
-
-  trait Renderer {
-    def render(context: Context, curves: Seq[CurveData], hs: Seq[History]): Node
-  }
-
-  object Renderer {
-    def regression = Seq(HtmlReporter.Renderer.JSChart())
-
-    def basic = Seq(Info(), BigO(), Chart(ChartReporter.ChartFactory.XYLine()))
-
-    case class Info() extends Renderer {
-      def render(context: Context, curves: Seq[CurveData], hs: Seq[History]): Node = 
-      <div>Info:
-      <ul>
-      <li>Number of runs: {context.goe(exec.benchRuns, "")}</li>
-      <li>Executor: {context.goe(dsl.executor, "")}</li>
-      </ul>
-      </div>
-    }
-
-    case class BigO() extends Renderer {
-      def render(context: Context, curves: Seq[CurveData], hs: Seq[History]): Node = 
-      <div>Big O analysis:
-      <ul>
-      {
-        for (cd <- curves) yield <li>
-        {cd.context.goe(dsl.curve, "")}: {cd.context.goe(reports.bigO, "(no data)")}
-        </li>
-      }
-      </ul>
-      </div>
-    }
-
-    case class Chart(factory: ChartReporter.ChartFactory, title: String = "Chart", colors: Seq[Color] = Seq()) extends Renderer {
-      def render(context: Context, curves: Seq[CurveData], hs: Seq[History]): Node = {
-        val resultdir = context.goe(reports.resultDir, "tmp")
-        val scopename = context.scope
-        val chart = factory.createChart(scopename, curves, hs, colors)
-        val chartfile = new File(s"$resultdir${File.separator}report${File.separator}images${File.separator}$scopename.png")
-        ChartUtilities.saveChartAsPNG(chartfile, chart, 1600, 1200)
-
-        <div>
-        <p>{s"$title :"}</p>
-        <a href={"images/" + scopename + ".png"}>
-        <img src={"images/" + scopename + ".png"} alt={scopename} width="800" height="600"></img>
-        </a>
-        </div>
-      }
-    }
-    
-    case class JSChart() extends Renderer {
-      def render(context: Context, curves: Seq[CurveData], hs: Seq[History]): Node = {
-        val resultdir = ".." //context.goe(reports.resultDir, "tmp")
-        val group = context.scope
-        val sep = "/"
-
-        def addCurve(curve: CurveData): Node = {
-          val curveName = curve.context.curve
-          val scope = scala.xml.Unparsed(new scala.util.parsing.json.JSONArray(curve.context.scopeList).toString())
-          val filename = s"$resultdir$sep$group.$curveName.dsv"
-          <script type="text/javascript">
-            cd.addGraph({ scope }, { s"'$curveName'" }, { s"'$filename'" });
-          </script>
-        }
-        <div> {
-          for (c <- curves) yield addCurve(c)
-        } </div>
-      }
-    }
-
-    case class HistoryList() extends Renderer {
-      def render(context: Context, curves: Seq[CurveData], hs: Seq[History]): Node = {
-        // TODO
-
-        <div>
-        </div>
-      }
-    }
-
-    case class Regression(tester: RegressionReporter.Tester, colors: Seq[Color] = Seq()) extends Renderer {
-      def render(context: Context, curves: Seq[CurveData], hs: Seq[History]): Node = {
-
-        val factory = ChartReporter.ChartFactory.ConfidenceIntervals(true, true, tester)
-        val resultdir = context.goe(reports.resultDir, "tmp")
-        val scopename = context.scope
-
-        for {
-          (curve, history) <- curves zip hs
-          (prevdate, prevctx, previousCurve) <- history.results
-        } yield {
-          val checkedCurve = dyn.log.withValue(Log.None) {
-            tester.apply(curve.context, curve, Seq(previousCurve))
-          }
-          if (!checkedCurve.success) {
-            // draw a graph
-            val chart = factory.createChart(scopename, Seq(checkedCurve), Seq(History(Seq((prevdate, prevctx, previousCurve)))))
-            val chartfile = new File(s"$resultdir${File.separator}report${File.separator}images${File.separator}$scopename.png")
-            ChartUtilities.saveChartAsPNG(chartfile, chart, 1600, 1200)
-          }
-        }
-
-        <div>
-        <p>Failed tests:</p>
-        <a href={"images/" + scopename + ".png"}>
-        <img src={"images/" + scopename + ".png"} alt={scopename} width="800" height="600"></img>
-        </a>
-        </div>
-      }
-    }
-  }
-
-}
-
-
-
-
-
-
-
-
-
-

@@ -4,6 +4,7 @@ import collection._
 import reporting._
 import Key._
 import collections._
+import parallel.ParIterable
 
 
 
@@ -12,222 +13,149 @@ class JSChartTest extends PerformanceTest.Regression with Collections {
   def persistor = new persistence.SerializationPersistor()
 
   override def reporter: Reporter = org.scalameter.Reporter.Composite(
-    new DsvReporter('\t'),
-    new RegressionReporter(RegressionReporter.Tester.OverlapIntervals(), RegressionReporter.Historian.ExponentialBackoff()),
-    HtmlReporter(HtmlReporter.Renderer.JSChart())
+    new RegressionReporter(
+      RegressionReporter.Tester.OverlapIntervals(),
+      RegressionReporter.Historian.ExponentialBackoff() ),
+    HtmlReporter(true)
   )
 
-  /* tests */
+  def withPar[A <% CustomParallelizable[B, C[B]], B, C[B] <: ParIterable[B]](collections: Gen[A]) = {
+    for {
+      collection <- collections
+      par <- Gen.exponential("par")(1, 8, 2)
+    } yield {
+      val parCollection = collection.par
+      parCollection.tasksupport = new parallel.ForkJoinTaskSupport(
+        new scala.concurrent.forkjoin.ForkJoinPool(par))
+      parCollection
+    }
+  }
 
-  performance of "Seq" in {
+  performance of "Traversable" in {
 
-    measure method "apply" config (
-      exec.minWarmupRuns -> 40,
-      exec.maxWarmupRuns -> 120,
+    measure method "reduce" config (
+      exec.minWarmupRuns -> 120,
+      exec.maxWarmupRuns -> 240,
       exec.benchRuns -> 36,
       exec.independentSamples -> 3,
       reports.regression.significance -> 1e-13,
       reports.regression.noiseMagnitude -> 0.2
     ) in {
       val from = 100000
-      val to = 1000000
-      val by = 200000
-      var sideeffect = 0
+      val to = 600000
+      val by = 150000
 
-      using(arrays(from, to, by)) curve("Array") in { xs =>
-        var i = 0
-        var sum = 0
-        val len = xs.length
-        val until = len
-        while (i < until) {
-          sum += xs.apply(i % len)
-          i += 1
-        }
-        sideeffect = sum
+      using(withPar(arrays(from, to, by))) curve("Array") config (
+        exec.minWarmupRuns -> 150,
+        exec.maxWarmupRuns -> 320
+      ) in {
+        _.reduce(_ + _)
       }
 
-      using(arraybuffers(from, to, by)) curve("ArrayBuffer") in { xs =>
-        var i = 0
-        var sum = 0
-        val len = xs.length
-        val until = len
-        while (i < until) {
-          sum += xs.apply(i % len)
-          i += 1
-        }
-        sideeffect = sum
+      using(withPar(arraybuffers(from, to, by))) curve("ArrayBuffer") in {
+        _.reduce(_ + _)
       }
 
-      using(vectors(from, to, by)) curve("Vector") in { xs =>
-        var i = 0
-        var sum = 0
-        val len = xs.length
-        val until = len
-        while (i < until) {
-          sum += xs.apply(i % len)
-          i += 1
-        }
-        sideeffect = sum
+      using(withPar(vectors(from, to, by))) curve("Vector") in {
+        _.reduce(_ + _)
       }
 
-      using(ranges(from, to, by)) curve("Range") in { xs =>
-        var i = 0
-        var sum = 0
-        val len = xs.length
-        val until = len
-        while (i < until) {
-          sum += xs.apply(i % len)
-          i += 1
-        }
-        sideeffect = sum
+      using(withPar(ranges(from, to, by))) curve("Range") in {
+        _.reduce(_ + _)
       }
-
     }
-
-    measure method "update" config (
-      exec.minWarmupRuns -> 60,
-      exec.maxWarmupRuns -> 240,
+    
+    measure method "filter" config (
+      exec.minWarmupRuns -> 100,
+      exec.maxWarmupRuns -> 200,
       exec.benchRuns -> 36,
       exec.independentSamples -> 4,
       reports.regression.significance -> 1e-13,
       reports.regression.noiseMagnitude -> 0.2
     ) in {
       val from = 100000
-      val to = 1000000
-      val by = 200000
-      var sideeffect = 0
+      val to = 400000
+      val by = 100000
 
-      using(arrays(from, to, by)) curve("Array") in { xs =>
-        var i = 0
-        var sum = 0
-        val len = xs.length
-        val until = len
-        while (i < until) {
-          xs.update(i % len, i)
-          i += 1
-        }
-        sideeffect = sum
+      using(withPar(arrays(from, to, by))) curve("Array") in {
+        _.filter(_ % 2 == 0)
       }
 
-      using(arraybuffers(from, to, by)) curve("ArrayBuffer") in { xs =>
-        var i = 0
-        var sum = 0
-        val len = xs.length
-        val until = len
-        while (i < until) {
-          xs.update(i % len, i)
-          i += 1
-        }
-        sideeffect = sum
+      using(withPar(arraybuffers(from, to, by))) curve("ArrayBuffer") config (
+        exec.minWarmupRuns -> 120,
+        exec.maxWarmupRuns -> 240,
+        exec.reinstantiation.frequency -> 4
+      ) in {
+        _.filter(_ % 2 == 0)
+      }
+      
+      using(withPar(vectors(from, to, by))) curve("Vector") in {
+        _.filter(_ % 2 == 0)
       }
 
+      using(withPar(ranges(from, to, by))) curve("Range") in {
+        _.filter(_ % 2 == 0)
+      }
     }
 
-    measure method "append" config (
-      exec.minWarmupRuns -> 60,
-      exec.maxWarmupRuns -> 150,
-      exec.benchRuns -> 36,
-      exec.independentSamples -> 4,
-      exec.outliers.suspectPercent -> 60,
-      reports.regression.significance -> 1e-13,
-      reports.regression.noiseMagnitude -> 0.2
-    ) in {
-      val from = 20000
-      val to = 220000
-      val by = 40000
-
-      using(sizes(from, to, by)) curve("Vector") config (
-        exec.benchRuns -> 32,
-        exec.independentSamples -> 4,
-        exec.outliers.suspectPercent -> 66,
-        exec.outliers.covMultiplier -> 1.4
-      ) in { len =>
-        var i = 0
-        var vector = Vector.empty[Int]
-        while (i < len) {
-          vector = vector :+ i
-          i += 1
-        }
-      }
-
-    }
-
-/*
-    measure method "prepend" config (
+    measure method "groupBy" config (
       exec.minWarmupRuns -> 80,
-      exec.maxWarmupRuns -> 200,
+      exec.maxWarmupRuns -> 160,
       exec.benchRuns -> 36,
       exec.independentSamples -> 4,
       reports.regression.significance -> 1e-13,
       reports.regression.noiseMagnitude -> 0.2
     ) in {
       val from = 50000
-      val to = 250000
+      val to = 200000
       val by = 50000
 
-      using(sizes(from, to, by)) curve("Vector") config (
-        exec.benchRuns -> 32,
-        exec.independentSamples -> 4,
-        exec.outliers.suspectPercent -> 66,
-        exec.outliers.covMultiplier -> 1.4
-      ) in { len =>
-        var i = 0
-        var vector = Vector.empty[Int]
-        while (i < len) {
-          vector = i +: vector
-          i += 1
-        }
+      using(withPar(arrays(from, to, by))) curve("Array") in {
+        _.groupBy(_ % 10)
       }
 
-      using(sizes(from, to, by)) curve("List") config (
-        exec.independentSamples -> 6,
-        exec.outliers.suspectPercent -> 60,
-        exec.outliers.covMultiplier -> 1.4
-      ) in { len =>
-        var i = 0
-        var list = List.empty[Int]
-        while (i < len) {
-          list = i :: list
-          i += 1
-        }
+      using(withPar(arraybuffers(from, to, by))) curve("ArrayBuffer") in {
+        _.groupBy(_ % 10)
       }
 
+      using(withPar(vectors(from, to, by))) curve("Vector") in {
+        _.groupBy(_ % 10)
+      }
+
+      using(withPar(ranges(from, to, by))) curve("Range") in {
+        _.groupBy(_ % 10)
+      }
     }
 
-    measure method "sorted" config (
-      exec.minWarmupRuns -> 80,
+    measure method "map" config (
+      exec.minWarmupRuns -> 100,
       exec.maxWarmupRuns -> 200,
       exec.benchRuns -> 36,
-      exec.independentSamples -> 4,
       reports.regression.significance -> 1e-13,
+      exec.independentSamples -> 4,
       reports.regression.noiseMagnitude -> 0.2
     ) in {
-      val from = 20000
-      val to = 1000000
+      val from = 100000
+      val to = 400000
       val by = 100000
 
-      using(arrays(from, to, by)) curve("Array") in {
-        _.sorted
+      using(withPar(arrays(from, to, by))) curve("Array") in {
+        _.map(_ * 2)
       }
 
-      using(vectors(from, to, by)) curve("Vector") in {
-        _.sorted
+      using(withPar(arraybuffers(from, to, by))) curve("ArrayBuffer")  in {
+        _.map(_ * 2)
+      }
+      
+      using(withPar(vectors(from, to, by))) curve("Vector") in {
+        _.map(_ * 2)
       }
 
-      using(lists(from, to, by)) curve("List") config (
-        exec.benchRuns -> 32,
-        exec.independentSamples -> 4,
-        exec.outliers.suspectPercent -> 60,
-        exec.outliers.covMultiplier -> 1.6
-      ) in {
-        _.sorted
+      using(withPar(ranges(from, to, by))) curve("Range") in {
+        _.map(_ * 2)
       }
-
     }
-    */
-
   }
-
 }
 
 

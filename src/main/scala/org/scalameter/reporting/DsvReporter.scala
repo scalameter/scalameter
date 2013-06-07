@@ -17,12 +17,6 @@ case class DsvReporter(delimiter: Char) extends Reporter {
 
   val sep = File.separator
 
-  val dateISO: (Date => String) = {
-    val df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'")
-    df.setTimeZone(TimeZone.getTimeZone("UTC"))
-    (date) => df.format(date)
-  }
-
   def report(result: CurveData, persistor: Persistor) {
   }
 
@@ -34,65 +28,11 @@ case class DsvReporter(delimiter: Char) extends Reporter {
 
     def reportCurve(cd: CurveData) {
       val filename = s"$resultdir$sep${cd.context.scope}.${cd.context.curve}.dsv"
-      val history = persistor.load(cd.context)
       var writer: PrintWriter = null
 
       try {
         writer = new PrintWriter(new FileWriter(filename, false))
-        val pw = writer
-        import pw._
-        import pw.{print => p}
-
-        def header(cd: CurveData) {
-          p("date")
-          p(delimiter)
-          for (paramname <- cd.measurements.head.params.axisData.keys) {
-            p("param-" + paramname)
-            p(delimiter)
-          }
-          p("value")
-          p(delimiter)
-          p("success")
-          p(delimiter)
-          p("cilo")
-          p(delimiter)
-          p("cihi")
-          p(delimiter)
-          p("units")
-          p(delimiter)
-          p("complete")
-          println()
-        }
-
-        def output(cd: CurveData, date: Date) {
-          for (m <- cd.measurements) {
-            p("\"" + dateISO(date) + "\"")
-            p(delimiter)
-            for (v <- m.params.axisData.values) {
-              p(v)
-              p(delimiter)
-            }
-            p(m.value)
-            p(delimiter)
-            p(m.success)
-            p(delimiter)
-            val ci = utils.Statistics.confidenceInterval(m.complete, cd.context.goe(Key.reports.regression.significance, 1e-10))
-            p(f"${ci._1}%.3f")
-            p(delimiter)
-            p(f"${ci._2}%.3f")
-            p(delimiter)
-            p(m.units)
-            p(delimiter)
-            p("\"" + m.complete.mkString(" ") + "\"")
-            println()
-          }
-        }
-
-        val curves = history.curves :+ cd
-        val dates = history.dates :+ currentDate
-        
-        header(cd)
-        for ((c, d) <- curves zip dates) output(c, d)
+        DsvReporter.writeCurveData(cd, persistor, writer, delimiter)
       } finally {
         if (writer != null) writer.close()
       }
@@ -105,8 +45,70 @@ case class DsvReporter(delimiter: Char) extends Reporter {
 
 }
 
+object DsvReporter {
+  val dateISO: (Date => String) = {
+    val df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'")
+    df.setTimeZone(TimeZone.getTimeZone("UTC"))
+    (date) => df.format(date)
+  }
 
-object DsvReporter
+  def writeCurveData(cd: CurveData, persistor: Persistor, pw: PrintWriter, delimiter: Char, newline: String = "\n") {
+    val history = persistor.load(cd.context)
+    import pw._
+    import pw.{print => p}
+
+    def header(cd: CurveData) {
+      p("date")
+      p(delimiter)
+      for (paramname <- cd.measurements.head.params.axisData.keys) {
+        p("param-" + paramname)
+        p(delimiter)
+      }
+      p("value")
+      p(delimiter)
+      p("success")
+      p(delimiter)
+      p("cilo")
+      p(delimiter)
+      p("cihi")
+      p(delimiter)
+      p("units")
+      p(delimiter)
+      p("complete")
+      print(newline)
+    }
+
+    def output(cd: CurveData, date: Date) {
+      for (m <- cd.measurements) {
+        p(dateISO(date))
+        p(delimiter)
+        for (v <- m.params.axisData.values) {
+          p(v)
+          p(delimiter)
+        }
+        p(m.value)
+        p(delimiter)
+        p(m.success)
+        p(delimiter)
+        val ci = utils.Statistics.confidenceInterval(m.complete, cd.context.goe(Key.reports.regression.significance, 1e-10))
+        p(f"${ci._1}%.3f")
+        p(delimiter)
+        p(f"${ci._2}%.3f")
+        p(delimiter)
+        p(m.units)
+        p(delimiter)
+        p("\"" + m.complete.mkString(" ") + "\"")
+        print(newline)
+      }
+    }
+
+    val curves = history.curves
+    val dates = history.dates
+    
+    header(cd)
+    for ((c, d) <- curves zip dates) output(c, d)
+  }
+}
 
 
 

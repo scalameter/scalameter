@@ -392,7 +392,6 @@ package scalameter {
     val Tester = reporting.RegressionReporter.Tester
     val Historian = reporting.RegressionReporter.Historian
     val ChartFactory = reporting.ChartReporter.ChartFactory
-    val Renderer = reporting.HtmlReporter.Renderer
 
     /* persistence */
 
