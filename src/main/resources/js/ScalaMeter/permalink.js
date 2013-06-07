@@ -114,8 +114,9 @@ var ScalaMeter = (function(parent) {
 	}
 
 	function isOnLocalhost() {
-		var hostname = document.location.hostname;
-		return hostname == "127.0.0.1" || hostname == "localhost";
+		var hostname = window.location.hostname;
+		var protocol = window.location.protocol;
+		return hostname == "127.0.0.1" || hostname == "localhost" || protocol == "file:";
 	}
 
 	function parseUrl() {
