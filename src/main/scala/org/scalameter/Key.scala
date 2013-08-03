@@ -24,7 +24,7 @@ class Key {
       val vendor = "jvm-vendor"
       val name = "jvm-name"
     }
-    
+
     val osName = "os-name"
     val osArch = "os-arch"
     val cores = "cores"
@@ -56,6 +56,7 @@ class Key {
     val warmupCovThreshold = "cov-warmup"
     val independentSamples = "independent-samples"
     val jvmflags = "jvm-flags"
+    val jvmcmd = "jvm-cmd"
 
     object reinstantiation {
       val frequency = "frequency"
