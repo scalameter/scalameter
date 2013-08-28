@@ -1,5 +1,6 @@
 package org.scalameter
 
+import language.postfixOps
 
 
 import java.io._
