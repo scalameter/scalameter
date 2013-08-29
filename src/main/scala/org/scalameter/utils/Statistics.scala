@@ -2,6 +2,7 @@ package org.scalameter
 package utils
 
 
+import language.implicitConversions
 
 import collection._
 import math._

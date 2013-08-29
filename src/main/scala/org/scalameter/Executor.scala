@@ -1,6 +1,7 @@
 package org.scalameter
 
 
+import language.reflectiveCalls
 
 import collection._
 import compat._
