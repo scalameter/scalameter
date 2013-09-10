@@ -2,7 +2,6 @@ package org.scalameter
 
 
 
-import java.net.URLClassLoader
 import org.scalatools.testing._
 import collection._
 import util.matching.Regex._
@@ -44,10 +43,7 @@ class ScalaMeterFramework extends Framework {
       } else l.debug(msg)
     }
 
-    def computeClasspath = testClassLoader match {
-      case urlclassloader: URLClassLoader => extractClasspath(urlclassloader)
-      case _ => sys.error(s"Cannot recognize classloader (not URLClassLoader): $testClassLoader")
-    }
+    def computeClasspath = extractClasspath(testClassLoader, sys.error(s"Cannot recognize classloader (not URLClassLoader): $testClassLoader"))
 
     def run(testClassName: String, fingerprint: Fingerprint, eventHandler: EventHandler, args: Array[String]) {
       val complog = Log.Composite(loggers.map(TestInterfaceLog): _*)
