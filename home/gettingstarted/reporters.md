@@ -120,6 +120,7 @@ Constructor arguments:
 Configuration:
 
 - `reports.resultDir` -- the directory in which the DSV files are stored
+- `reports.regression.significance` -- the significance level for the statistical test (described below)
 
 
 ## HTML reporter
