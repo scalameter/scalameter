@@ -49,7 +49,10 @@ object PerformanceTest {
     }
 
     def delayedInit(body: =>Unit) {
-      testbody.value = () => body
+      // Save the *current* value of testbody.value, so that next line closes
+      // over this value and not testbody itself.
+      val current = testbody.value
+      testbody.value = () => { current(); body }
     }
 
   }

@@ -11,7 +11,7 @@ trait DSL {
 
   import DSL._
 
-  private[scalameter] val testbody = new DynamicVariable[() => Any](() => ???)
+  private[scalameter] val testbody = new DynamicVariable[() => Any](() => ())
 
   object performance {
     def of(modulename: String) = Scope(modulename, setupzipper.value.current.context)
