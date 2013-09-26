@@ -53,6 +53,7 @@ object PerformanceTest {
       // over this value and not testbody itself.
       val current = testbody.value
       testbody.value = () => { current(); body }
+      testbodySet = true
     }
 
   }

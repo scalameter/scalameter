@@ -11,7 +11,13 @@ trait DSL {
 
   import DSL._
 
-  private[scalameter] val testbody = new DynamicVariable[() => Any](() => ())
+  protected[scalameter] var testbodySet = false
+  private[scalameter] val testbody = new DynamicVariable[() => Any]{_ =>
+      if (!testbodySet)
+        ???
+      else
+        ()
+    }
 
   object performance {
     def of(modulename: String) = Scope(modulename, setupzipper.value.current.context)
