@@ -46,6 +46,7 @@ object ScalaMeterBuild extends Build {
   }
 
   val publishCredFile = "scalameter.maven.credentials-file"
+
   val publishCreds: Seq[Setting[_]] = Seq(sys.props.get(publishCredFile) match {
     case Some(fileName) =>
       credentials += Credentials({ new java.io.File(sys.props(publishCredFile)) })
@@ -53,7 +54,6 @@ object ScalaMeterBuild extends Build {
      // prevent publishing
      publish <<= streams.map(_.log.info("Publishing to Sonatype is disabled since the \"" + publishCredFile + "\" variable is not set."))
   })
-
 
   /* projects */
   
