@@ -1,6 +1,7 @@
 package org.scalameter
 
 
+import language.reflectiveCalls
 
 import collection._
 import compat._
@@ -61,11 +62,11 @@ object Executor {
             nogc = false
             log.verbose("GC detected.")
           } apply {
-            setup()
             var i = 0
             while (i < maxwarmups) {
-              nogc = true
 
+              setup()
+              nogc = true
               val start = System.nanoTime
               f(i)
               val end = System.nanoTime
@@ -74,7 +75,6 @@ object Executor {
               if (nogc) withoutgc.add(runningtime)
               withgc.add(runningtime)
               teardown()
-              setup()
 
               val covNoGC = withoutgc.cov
               val covGC = withgc.cov

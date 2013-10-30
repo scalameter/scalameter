@@ -44,13 +44,23 @@ object ScalaMeterBuild extends Build {
       if (exitcode != 0) error("Tests not passing.")
     }
   }
-  
+
+  val publishCredFile = "scalameter.maven.credentials-file"
+  val publishCreds: Seq[Setting[_]] = Seq(sys.props.get(publishCredFile) match {
+    case Some(fileName) =>
+      credentials += Credentials({ new java.io.File(sys.props(publishCredFile)) })
+   case None =>
+     // prevent publishing
+     publish <<= streams.map(_.log.info("Publishing to Sonatype is disabled since the \"" + publishCredFile + "\" variable is not set."))
+  })
+
+
   /* projects */
   
   lazy val scalameter = Project(
     "scalameter",
     file("."),
-    settings = Defaults.defaultSettings ++ Seq(runsuiteTask, javaCommandSetting)
+    settings = Defaults.defaultSettings ++ Seq(runsuiteTask, javaCommandSetting) ++ publishCreds
   ) dependsOn (
   )
   
