@@ -21,4 +21,4 @@ on the techniques used in ScalaMeter.
 - [Eugene Platonov](https://github.com/jozic)
 - [Lukas Rytz](https://github.com/lrytz)
 - [Vlad Ureche](https://github.com/VladUreche)
-
+- [Paolo Giarrusso](http://www.informatik.uni-marburg.de/~pgiarrusso/)
