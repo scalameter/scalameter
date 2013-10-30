@@ -15,7 +15,7 @@ import Key._
 
 
 
-case class HtmlReporter(val embedDsv: Boolean) extends Reporter {
+case class HtmlReporter(val embedDsv: Boolean = true) extends Reporter {
   import HtmlReporter._
 
   def report(result: CurveData, persistor: Persistor) {
