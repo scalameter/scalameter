@@ -8,12 +8,12 @@ permalink: /download/index.html
 
 ## Direct download
 
-The latest ScalaMeter release is **ScalaMeter 0.4** for Scala 2.10.0.
+The latest ScalaMeter release is **ScalaMeter 0.4** for Scala 2.10.
 
 
 ## Maven repository
 
-ScalaMeter is available for download from [Sonatype](https://oss.sonatype.org/index.html#nexus-search;quick~scalameter)!
+ScalaMeter is available for download from Maven Central!
 
     <dependency>
       <groupId>com.github.axel22</groupId>
