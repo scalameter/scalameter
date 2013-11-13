@@ -6,7 +6,7 @@ organization := "com.github.axel22"
 
 version := "0.5-SNAPSHOT"
 
-scalaVersion := "2.10.0"
+scalaVersion := "2.11.0-SNAPSHOT"
 
 scalacOptions ++= Seq("-deprecation", "-unchecked")
 
@@ -16,7 +16,10 @@ libraryDependencies ++= List(
   "org.scalatest" % "scalatest_2.10" % "1.9.1",
   "jfree" % "jfreechart" % "1.0.12",
   "org.apache.commons" % "commons-math3" % "3.0",
-  "org.scala-tools.testing" % "test-interface" % "0.5"
+  "org.scala-tools.testing" % "test-interface" % "0.5",
+  "org.scala-lang" % "scala-reflect" % "2.11.0-SNAPSHOT",
+  "org.scala-lang" % "scala-parser-combinators" % "2.11.0-SNAPSHOT",
+  "org.scala-lang" % "scala-xml" % "2.11.0-SNAPSHOT"
 )
 
 
