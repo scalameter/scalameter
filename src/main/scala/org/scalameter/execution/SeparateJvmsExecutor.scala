@@ -58,15 +58,16 @@ class SeparateJvmsExecutor(val warmer: Executor.Warmer, val aggregator: Aggregat
 
       // measure
       setupBeforeAll()
-      val observations = for (params <- gen.dataset) yield {
+      val observations = new mutable.ArrayBuffer[(Parameters, Seq[Double])]()
+      for (params <- gen.dataset) {
         val set = setupFor()
         val tear = teardownFor()
         val regen = regenerateFor(params)
-        (params, m.measure(context, reps, set, tear, regen, snippet))
+        observations += (params -> m.measure(context, reps, set, tear, regen, snippet))
       }
       teardownAfterAll()
 
-      observations.toBuffer
+      observations
     }
 
     def sampleReport(idx: Int, reps: Int): Seq[(Parameters, Seq[Double])] = try {
