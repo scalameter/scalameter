@@ -64,14 +64,14 @@ The `-CresultDir` option changes the directory the results are generated into:
 
 Starting from ScalaMeter 0.4 you can selectively run only certain tests from your test suite.
 
-The `-CscopeFilter <test-name-prefix>` option runs only the benchmarks whose name starts with `<test-name-prefix>`.
+The `-CscopeFilter <test-name-regex>` option runs only the benchmarks whose name starts with `<test-name-regex>`.
 For example:
 
     > test-only mypackage.MyScalaMeterTestName -- -CscopeFilter 'Seq'
 
-    > test-only mypackage.MyScalaMeterTestName -- -CscopeFilter 'Seq.foreach'
+    > test-only mypackage.MyScalaMeterTestName -- -CscopeFilter 'Seq\.foreach'
 
-    > test-only mypackage.MyScalaMeterTestName -- -CscopeFilter 'Seq.foreach.Array'
+    > test-only mypackage.MyScalaMeterTestName -- -CscopeFilter 'Seq\.foreach.*'
 
 
 
