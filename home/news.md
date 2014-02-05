@@ -8,6 +8,7 @@ permalink: /news/index.html
 
 
 <div class="newsentries">
+
   {% for post in site.posts %}
   <a href="/scalameter/{{ post.url }}">
     <br/>
@@ -22,6 +23,7 @@ permalink: /news/index.html
   <br/>
   {{ post.content }}
   {% endfor %}
+  
 </div>
 
 
