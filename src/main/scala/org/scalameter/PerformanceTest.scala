@@ -39,7 +39,7 @@ object PerformanceTest {
 
     def executeTests(): Boolean = {
       val datestart = new java.util.Date
-      DSL.setupzipper.value = defaultConfig.foldLeft(Tree.Zipper.root[Setup[_]])(_.addContext(_))
+      DSL.setupzipper.value = Tree.Zipper.root[Setup[_]].modifyContext(_ ++ defaultConfig)
       testbody.value.apply()
       val rawsetuptree = DSL.setupzipper.value.result
       val setuptree = rawsetuptree.filter(setupFilter)
