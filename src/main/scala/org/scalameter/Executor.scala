@@ -47,9 +47,9 @@ object Executor {
     case class Default() extends Warmer {
       def name = "Warmer.Default"
       def warming(ctx: Context, setup: () => Any, teardown: () => Any) = new Foreach[Int] {
-        val minwarmups = ctx.goe(exec.minWarmupRuns, 10)
+        val minwarmups = ctx(exec.minWarmupRuns)
         val maxwarmups = ctx.goe(exec.maxWarmupRuns, 50)
-        val covThreshold = ctx.goe(exec.warmupCovThreshold, 0.1)
+        val covThreshold = ctx(exec.warmupCovThreshold)
 
         def foreach[U](f: Int => U): Unit = {
           val withgc = new utils.SlidingWindow(minwarmups)
@@ -259,10 +259,10 @@ object Executor {
         import utils.Statistics._
 
         var results = super.measure(context, measurements, setup, tear, regen, snippet).sorted
-        val suspectp = context.goe(suspectPercent, 25)
-        val covmult = context.goe(covMultiplier, 2.0)
+        val suspectp = context(suspectPercent)
+        val covmult = context(covMultiplier)
         val suspectnum = math.max(1, results.length * suspectp / 100)
-        var retleft = context.goe(retries, 8)
+        var retleft = context(retries)
 
         def suffixLength(rs: Seq[Double]): Int = {
           import utils.Statistics._
@@ -322,7 +322,7 @@ object Executor {
 
       abstract override def measure[T, U](context: Context, measurements: Int, setup: T => Any, tear: T => Any, regen: () => T, snippet: T => Any): Seq[Double] = {
         val observations = super.measure(context, measurements, setup, tear, regen, snippet)
-        val magni = context.goe(magnitude, 0.0)
+        val magni = context(magnitude)
         val noise = noiseFunction(observations, magni)
         val withnoise = observations map {
           x => (x + noise(x))

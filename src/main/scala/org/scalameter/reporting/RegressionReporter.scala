@@ -78,7 +78,7 @@ object RegressionReporter {
   import Key._
 
   object ansi {
-    val colors = initialContext.goe(Key.reports.colors, true)
+    val colors = initialContext(Key.reports.colors)
     def ifcolor(s: String) = if (colors) s else ""
 
     val red = ifcolor("\u001B[31m")
@@ -186,7 +186,7 @@ object RegressionReporter {
       def apply(context: Context, curvedata: CurveData, corresponding: Seq[CurveData]): CurveData = {
         log(s"${ansi.green}- ${context.scope}.${curvedata.context.curve} measurements:${ansi.reset}")
 
-        val significance = curvedata.context.goe(reports.regression.significance, 1e-10)
+        val significance = curvedata.context(reports.regression.significance)
         val allmeasurements = (corresponding :+ curvedata) map (_.measurements)
         val measurementtable = allmeasurements.flatten.groupBy(_.params)
         val testedmeasurements = for {
@@ -251,7 +251,7 @@ object RegressionReporter {
       }
 
       def multiple(context: Context, previouss: Seq[Measurement], latest: Measurement): Measurement = {
-        val sig = context.goe(reports.regression.significance, 1e-10)
+        val sig = context(reports.regression.significance)
         val tests = for (previous <- previouss if previous.success) yield single(previous, latest, sig)
         val allpass = tests.forall(_.success)
         val color = if (allpass) ansi.green else ansi.red
@@ -278,7 +278,7 @@ object RegressionReporter {
       }
 
       override def confidenceInterval(context: Context, alt: Seq[Double]): (Double, Double) = {
-        val significance = context.goe(reports.regression.significance, 1e-10)
+        val significance = context(reports.regression.significance)
 
         val citest = ConfidenceIntervalTest(strict, alt, alt, significance)
         citest.ci1
@@ -315,8 +315,8 @@ object RegressionReporter {
       }
 
       def multiple(context: Context, previouss: Seq[Measurement], latest: Measurement): Measurement = {
-        val sig = context.goe(reports.regression.significance, 1e-10)
-        val noiseMagnitude = context.goe(Key.reports.regression.noiseMagnitude, 0.0)
+        val sig = context(reports.regression.significance)
+        val noiseMagnitude = context(Key.reports.regression.noiseMagnitude)
         val tests = for (previous <- previouss if previous.success) yield single(previous, latest, sig, noiseMagnitude)
         val allpass = tests.forall(_.success)
         val color = if (allpass) ansi.green else ansi.red
@@ -343,8 +343,8 @@ object RegressionReporter {
       }
 
       override def confidenceInterval(context: Context, alt: Seq[Double]): (Double, Double) = {
-        val significance = context.goe(reports.regression.significance, 1e-10)
-        val noisemag = context.goe(Key.reports.regression.noiseMagnitude, 0.0)
+        val significance = context(reports.regression.significance)
+        val noisemag = context(Key.reports.regression.noiseMagnitude)
 
         val test = OverlapTest(alt, alt, significance, noisemag)
         test.ci1
