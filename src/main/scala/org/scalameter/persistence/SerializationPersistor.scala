@@ -35,7 +35,7 @@ case class SerializationPersistor(path: File) extends Persistor {
   }
 
   private def saveHistory(dir: String, scope: String, curve: String, h: History) {
-    path.mkdir()
+    path.mkdirs()
     val file = new File(s"$path$sep$scope.$curve.dat")
     val fos = new FileOutputStream(file)
     val oos = new ObjectOutputStream(fos)

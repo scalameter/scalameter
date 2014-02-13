@@ -24,7 +24,7 @@ case class DsvReporter(delimiter: Char) extends Reporter {
     val currentDate = new Date
     val resultdir = initialContext.goe(Key.reports.resultDir, "tmp")
 
-    new File(s"$resultdir").mkdir()
+    new File(s"$resultdir").mkdirs()
 
     def reportCurve(cd: CurveData) {
       val filename = s"$resultdir$sep${cd.context.scope}.${cd.context.curve}.dsv"
