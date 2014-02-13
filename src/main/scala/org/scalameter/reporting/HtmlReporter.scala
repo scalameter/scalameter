@@ -28,14 +28,13 @@ case class HtmlReporter(val embedDsv: Boolean = true) extends Reporter {
     }
 
     val resultdir = results.context.goe(reports.resultDir, "tmp")
-    new File(resultdir).mkdir()
     val root = new File(resultdir, "report")
-    root.mkdir()
+    root.mkdirs()
 
     val curvesJSONIndex = JSONIndex(results)
 
     resourceDirs.foreach {
-      new File(root, _).mkdir()
+      new File(root, _).mkdirs()
     }
 
     resourceFiles.foreach { filename =>

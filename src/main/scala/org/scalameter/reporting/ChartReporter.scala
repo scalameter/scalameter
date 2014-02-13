@@ -41,7 +41,7 @@ case class ChartReporter(drawer: ChartReporter.ChartFactory, fileNamePrefix: Str
       val histories = curves.map(c => persistor.load(c.context))
       val chart = drawer.createChart(scopename, curves, histories)
       val dir = result.context.goe(resultDir, "tmp")
-      new File(dir).mkdir()
+      new File(dir).mkdirs()
       val chartfile = new File(s"$dir/$fileNamePrefix$scopename.png")
       ChartUtilities.saveChartAsPNG(chartfile, chart, wdt, hgt)
     }
