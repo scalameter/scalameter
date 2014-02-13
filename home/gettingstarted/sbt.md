@@ -53,8 +53,14 @@ To run tests with arguments:
 Below is a list of useful arguments.
 These can be used both from SBT and when running ScalaMeter from the command line.
 
-The `-verbose` flag produces verbose output.
-You will see information about running your benchmarks, warmup times, measuring time, etc.:
+Since ScalaMeter 0.5, running a performance test by default produces verbose output about the status of the test.
+ScalaMeter shows information about running your benchmarks, warmup times, measuring time, etc.
+The `-silent` flag disables this verbose output:
+
+    > test-only mypackage.MyScalaMeterTestName -- -silent
+
+In versions prior to ScalaMeter 0.5 the verbose output was off by default.
+The `-verbose` flag enabled verbose output.
 
     > test-only mypackage.MyScalaMeterTestName -- -verbose
 
