@@ -186,9 +186,14 @@ package scalameter {
     def +[T](t: (Key[T], T)) = Context(properties + t)
     def ++(that: Context) = Context(this.properties ++ that.properties)
     def ++(that: Seq[KeyValue]) = Context(this.properties ++ that)
-    def get[T](key: Key[T]) = properties.get(key).asInstanceOf[Option[T]].orElse(key.defaultValue)
+    def get[T](key: Key[T]) = properties.get(key).asInstanceOf[Option[T]].orElse {
+      key match {
+        case k: KeyWithDefault[_] => Some(k.defaultValue)
+        case _ => None
+      }
+    }
     def goe[T](key: Key[T], v: T) = properties.getOrElse(key, v).asInstanceOf[T]
-    def apply[T](key: Key[T]) = get(key).get
+    def apply[T](key: KeyWithDefault[T]) = properties.get(key).asInstanceOf[Option[T]].getOrElse(key.defaultValue)
 
     def scope = scopeList.mkString(".")
     def scopeList = apply(dsl.scope).reverse

@@ -3,7 +3,7 @@ package org.scalameter
 import java.util.Date
 
 
-class Key[T](val name: String, val defaultValue: Option[T]) {
+class Key[T](val name: String) {
   override def toString = name
   override def hashCode = name.hashCode
   override def equals(x: Any) = x match {
@@ -12,10 +12,12 @@ class Key[T](val name: String, val defaultValue: Option[T]) {
   }
 }
 
+class KeyWithDefault[T](name: String, val defaultValue: T) extends Key[T](name)
+
 
 object Key extends Keys {
-  def apply[T](name: String) = new Key[T](name, None)
-  def apply[T](name: String, defaultValue: T) = new Key[T](name, Some(defaultValue))
+  def apply[T](name: String) = new Key[T](name)
+  def apply[T](name: String, defaultValue: T) = new KeyWithDefault[T](name, defaultValue)
 
   implicit val ordering: Ordering[Key[_]] = Ordering.by(_.name)
 }
