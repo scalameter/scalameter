@@ -44,10 +44,6 @@ object Tree {
   case class Zipper[T](current: Tree[T], path: Zipper.Path[T]) {
     import Zipper._
     def addContext[T](kv: (Key[T], T)) = Zipper(current.copy(context = current.context + kv), path)
-    def transformContext[T](k: Key[T], f: T => T) = {
-      val v2 = f(current.context(k))
-      Zipper(current.copy(context = current.context + (k -> v2)), path)
-    }
     def modifyContext(f: Context => Context) = setContext(f(current.context))
     def setContext(ctx: Context) = Zipper(current.copy(context = ctx), path)
     def addItem(x: T) = Zipper(current.copy(items = current.items :+ x), path)
