@@ -27,7 +27,7 @@ case class HtmlReporter(val embedDsv: Boolean = true) extends Reporter {
       new DsvReporter(dsvDelimiter).report(results, persistor)
     }
 
-    val resultdir = results.context.goe(reports.resultDir, "tmp")
+    val resultdir = results.context(reports.resultDir)
     val root = new File(resultdir, "report")
     root.mkdirs()
 
@@ -70,8 +70,8 @@ case class HtmlReporter(val embedDsv: Boolean = true) extends Reporter {
 
   def date(results: Tree[CurveData]) = {
     val dateoption = for {
-      start <- results.context.get[Date](reports.startDate)
-      end <- results.context.get[Date](reports.endDate)
+      start <- results.context(reports.startDate)
+      end <- results.context(reports.endDate)
     } yield <div>
       <div>Started: {start}</div>
       <div>Finished: {end}</div>

@@ -40,7 +40,7 @@ case class ChartReporter(drawer: ChartReporter.ChartFactory, fileNamePrefix: Str
       val scopename = ctx.scope
       val histories = curves.map(c => persistor.load(c.context))
       val chart = drawer.createChart(scopename, curves, histories)
-      val dir = result.context.goe(resultDir, "tmp")
+      val dir = result.context(resultDir)
       new File(dir).mkdirs()
       val chartfile = new File(s"$dir/$fileNamePrefix$scopename.png")
       ChartUtilities.saveChartAsPNG(chartfile, chart, wdt, hgt)
@@ -103,7 +103,7 @@ object ChartReporter {
           val dataset = new YIntervalSeriesCollection
           for ((curve, history) <- cs zip histories) {
             if (history.results.isEmpty) {
-              val series = new YIntervalSeries(curve.context.goe(dsl.curve, ""))
+              val series = new YIntervalSeries(curve.context(dsl.curve))
               for (measurement <- curve.measurements) {
                 val ciForThisPoint = if (showLatestCi) {
                   t.confidenceInterval(curve.context, measurement.complete)
@@ -113,8 +113,8 @@ object ChartReporter {
                 series.add(measurement.params.axisData.head._2.asInstanceOf[Int], measurement.value, ciForThisPoint._1, ciForThisPoint._2)
               }
             } else {
-              val newestSeries = new YIntervalSeries(curve.context.goe(dsl.curve, ""))
-              val historySeries = new YIntervalSeries(curve.context.goe(dsl.curve, ""))
+              val newestSeries = new YIntervalSeries(curve.context(dsl.curve))
+              val historySeries = new YIntervalSeries(curve.context(dsl.curve))
 
               for ((measurement, measurementIndex) <- curve.measurements.zipWithIndex) {
                 /* Fetch, for each corresponding curve in history, the measurements that were at the same position (same size for instance)
@@ -206,7 +206,7 @@ object ChartReporter {
           val categoryNames = dates.map(df format _)
           for ((curve, categoryName) <- curves zip categoryNames) {
             for(measurement <- curve.measurements) {
-              val curveName = curve.context.goe(dsl.curve, "")
+              val curveName = curve.context(dsl.curve)
               val measurementParams = (for(p <- measurement.params.axisData) yield (p._1.toString + " : " + p._2.toString)).mkString("[", ", ", "]")
               val seriesName: String = curveName + " " + measurementParams
               dataset.addValue(measurement.value, seriesName, categoryName)
@@ -318,7 +318,7 @@ object ChartReporter {
           val formattedDates = dates.map(df format _)
           for ((curve, formattedDate) <- curves zip formattedDates) {
             for(measurement <- curve.measurements) {
-              val curveName = curve.context.goe(dsl.curve, "")
+              val curveName = curve.context(dsl.curve)
               val measurementParams = (for(p <- measurement.params.axisData) yield (p._1.toString + " : " + p._2.toString)).mkString("[", ", ", "]")
               val seriesName: String = curveName + "#" + formattedDate
               dataset.addValue(measurement.value, seriesName, measurementParams)

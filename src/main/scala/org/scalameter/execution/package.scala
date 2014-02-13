@@ -13,9 +13,9 @@ import Key._
 package object execution {
 
   def createJvmContext(ctx: Context) = {
-    val existingFlags = ctx.goe(exec.jvmflags, "")
-    val flags = s"${if (initialContext.goe(Key.verbose, false)) "-verbose:gc" else ""} " + existingFlags
-    Context(ctx.properties + (exec.jvmflags -> flags))
+    val existingFlags = ctx(exec.jvmflags)
+    val flags = s"${if (initialContext(Key.verbose)) "-verbose:gc" else ""} " + existingFlags
+    ctx + (exec.jvmflags -> flags)
   }
 
   final class JvmRunner {
@@ -42,8 +42,8 @@ package object execution {
 
     private def runJvm(ctx: Context) {
       val classpath = ctx.goe(Key.classpath, defaultClasspath)
-      val flags = ctx.goe(Key.exec.jvmflags, "")
-      val jcmd = ctx.goe(Key.exec.jvmcmd, "java -server")
+      val flags = ctx(Key.exec.jvmflags)
+      val jcmd = ctx(Key.exec.jvmcmd)
       val command = s"$jcmd $flags -cp $classpath ${classOf[Main].getName} ${tmpfile.getPath}"
       log.verbose(s"Starting new JVM: $command")
       command !;

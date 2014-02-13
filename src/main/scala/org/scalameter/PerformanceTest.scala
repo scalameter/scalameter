@@ -4,7 +4,7 @@ package org.scalameter
 
 import collection._
 import utils.Tree
-
+import java.util.Date
 
 
 abstract class PerformanceTest extends PerformanceTest.Initialization {
@@ -33,18 +33,18 @@ object PerformanceTest {
 
     def persistor: Persistor
 
-    def defaultConfig: Seq[(String, Any)] = Seq()
+    def defaultConfig: Context = Context.empty
 
     type SameType
 
     def executeTests(): Boolean = {
-      val datestart = new java.util.Date
+      val datestart: Option[Date] = Some(new Date)
       DSL.setupzipper.value = Tree.Zipper.root[Setup[_]].modifyContext(_ ++ defaultConfig)
       testbody.value.apply()
       val rawsetuptree = DSL.setupzipper.value.result
       val setuptree = rawsetuptree.filter(setupFilter)
       val resulttree = executor.run(setuptree.asInstanceOf[Tree[Setup[SameType]]], reporter, persistor)
-      val dateend = new java.util.Date
+      val dateend: Option[Date] = Some(new Date)
 
       val datedtree = resulttree.copy(context = resulttree.context + (Key.reports.startDate -> datestart) + (Key.reports.endDate -> dateend))
       reporter.report(datedtree, persistor)
@@ -61,7 +61,7 @@ object PerformanceTest {
   }
 
   private def setupFilter(setup: Setup[_]): Boolean = {
-    val sf = initialContext.goe(Key.scopeFilter, "")
+    val sf = initialContext(Key.scopeFilter)
     val fullname = setup.context.scope + "." + setup.context.curve
     val regex = sf.r
     regex.findFirstIn(fullname) != None

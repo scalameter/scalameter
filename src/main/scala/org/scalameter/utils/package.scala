@@ -11,7 +11,7 @@ import JavaConversions._
 package object utils {
 
   def withGCNotification[T](eventhandler: Notification => Any) = new {
-    def apply(body: =>T): T = if (!initialContext.goe[Boolean](Key.preJDK7, false)) {
+    def apply(body: =>T): T = if (!initialContext(Key.preJDK7)) {
       val gcbeans = java.lang.management.ManagementFactory.getGarbageCollectorMXBeans
       val listeners = for (gcbean <- gcbeans) yield {
         val listener = new NotificationListener {

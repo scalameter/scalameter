@@ -24,9 +24,9 @@ class SeparateJvmsExecutor(val warmer: Executor.Warmer, val aggregator: Aggregat
   def runSetup[T](setup: Setup[T]): CurveData = {
     import setup._
 
-    val warmups = context.goe(exec.maxWarmupRuns, 10)
-    val totalreps = context.goe(exec.benchRuns, 10)
-    val independentSamples = context.goe(exec.independentSamples, 9)
+    val warmups = context(exec.maxWarmupRuns)
+    val totalreps = context(exec.benchRuns)
+    val independentSamples = context(exec.independentSamples)
     def repetitions(idx: Int): Int = {
       val is = independentSamples
       totalreps / is + (if (idx < totalreps % is) 1 else 0)
@@ -39,7 +39,7 @@ class SeparateJvmsExecutor(val warmer: Executor.Warmer, val aggregator: Aggregat
     def sample(idx: Int, reps: Int): Seq[(Parameters, Seq[Double])] = runner.run(jvmContext) {
       dyn.initialContext.value = context
       
-      log.verbose(s"Sampling $reps measurements in separate JVM invocation $idx - ${context.scope}, ${context.goe(dsl.curve, "")}.")
+      log.verbose(s"Sampling $reps measurements in separate JVM invocation $idx - ${context.scope}, ${context(dsl.curve)}.")
 
       // warmup
       setupBeforeAll()
@@ -79,7 +79,7 @@ class SeparateJvmsExecutor(val warmer: Executor.Warmer, val aggregator: Aggregat
         throw e
     }
 
-    log.verbose(s"Running test set for ${context.scope}, curve ${context.goe(dsl.curve, "")}")
+    log.verbose(s"Running test set for ${context.scope}, curve ${context(dsl.curve)}")
     log.verbose(s"Starting $totalreps measurements across $independentSamples independent JVM runs.")
 
     val valueseqs = for {

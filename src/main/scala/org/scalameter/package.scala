@@ -3,6 +3,7 @@ package org
 import language.implicitConversions
 import language.postfixOps
 import language.reflectiveCalls
+import language.existentials
 
 
 
@@ -15,6 +16,8 @@ import scala.util.DynamicVariable
 
 
 package object scalameter {
+
+  type KeyValue = (Key[T], T) forSome { type T }
 
   trait Foreach[T] {
     def foreach[U](f: T => U): Unit
@@ -131,7 +134,7 @@ package object scalameter {
         println(msg)
       }
       def debug(msg: String) {
-        if (initialContext.goe(Key.verbose, false)) log synchronized {
+        if (initialContext(Key.verbose)) log synchronized {
           println(msg)
         }
       }
@@ -179,25 +182,25 @@ package scalameter {
 
   import Key._
 
-  case class Context(properties: immutable.Map[String, Any]) {
-    def +(t: (String, Any)) = Context(properties + t)
+  case class Context(properties: immutable.Map[Key[_], Any]) {
+    def +[T](t: (Key[T], T)) = Context(properties + t)
     def ++(that: Context) = Context(this.properties ++ that.properties)
-    def ++(that: Seq[(String, Any)]) = Context(this.properties ++ that)
-    def get[T](key: String) = properties.get(key).asInstanceOf[Option[T]]
-    def goe[T](key: String, v: T) = properties.getOrElse(key, v).asInstanceOf[T]
-    def apply[T](key: String) = properties.apply(key).asInstanceOf[T]
+    def ++(that: Seq[KeyValue]) = Context(this.properties ++ that)
+    def get[T](key: Key[T]) = properties.get(key).asInstanceOf[Option[T]].orElse(key.defaultValue)
+    def goe[T](key: Key[T], v: T) = properties.getOrElse(key, v).asInstanceOf[T]
+    def apply[T](key: Key[T]) = get(key).get
 
-    def scope = properties(dsl.scope).asInstanceOf[List[String]].reverse.mkString(".")
-    def scopeList = properties(dsl.scope).asInstanceOf[List[String]].reverse
-    def curve = goe(dsl.curve, "")
+    def scope = scopeList.mkString(".")
+    def scopeList = apply(dsl.scope).reverse
+    def curve = apply(dsl.curve)
   }
 
   object Context {
-    def apply(xs: (String, Any)*) = new Context(immutable.Map(xs: _*))
+    def apply(xs: KeyValue*) = new Context(xs.asInstanceOf[Seq[(Key[_], Any)]].toMap)
 
-    val empty = new Context(immutable.Map())
+    val empty = new Context(immutable.Map.empty)
 
-    val topLevel = machine ++ List(
+    val topLevel = machine ++ Context(
       preJDK7 -> false,
       dsl.scope -> Nil,
       exec.benchRuns -> 36,
@@ -209,7 +212,7 @@ package scalameter {
       reports.regression.significance -> 1e-10
     )
 
-    def machine = Context(immutable.Map(
+    def machine = Context(
       Key.machine.jvm.version -> sys.props("java.vm.version"),
       Key.machine.jvm.vendor -> sys.props("java.vm.vendor"),
       Key.machine.jvm.name -> sys.props("java.vm.name"),
@@ -217,7 +220,10 @@ package scalameter {
       Key.machine.osArch -> sys.props("os.arch"),
       Key.machine.cores -> Runtime.getRuntime.availableProcessors,
       Key.machine.hostname -> java.net.InetAddress.getLocalHost.getHostName
-    ))
+    )
+
+    @deprecated("This implicit will be removed in 0.6. Replace config(opts: _*) with config(opts).", "0.5")
+    implicit def toKeyValues(ctx: Context): Seq[KeyValue] = ctx.properties.toSeq.asInstanceOf[Seq[KeyValue]]
   }
 
   @SerialVersionUID(4203959258570851398L)
@@ -264,7 +270,7 @@ package scalameter {
     case class Data(complete: Seq[Double], success: Boolean)
   }
 
-  case class CurveData(measurements: Seq[Measurement], info: Map[String, Any], context: Context) {
+  case class CurveData(measurements: Seq[Measurement], info: Map[Key[_], Any], context: Context) {
     def success = measurements.forall(_.success)
   }
 
@@ -273,8 +279,8 @@ package scalameter {
   }
 
   @SerialVersionUID(-2666789428423525666L)
-  case class History(results: Seq[History.Entry], infomap: Map[String, Any] = Map.empty) {
-    def info[T](key: String, fallback: T) = infomap.getOrElse(key, fallback).asInstanceOf[T]
+  case class History(results: Seq[History.Entry], infomap: Map[Key[_], Any] = Map.empty) {
+    def info[T](key: Key[T], fallback: T) = infomap.getOrElse(key, fallback).asInstanceOf[T]
     def curves = results.map(_._3)
     def dates = results.map(_._1)
 
@@ -359,7 +365,7 @@ package scalameter {
    *  - the `HtmlReporter.Renderer` object
    *  - and much more...
    */
-  object api extends Key {
+  object api extends Keys {
 
     type Gen[T] = org.scalameter.Gen[T]
     val Gen = org.scalameter.Gen
