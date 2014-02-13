@@ -48,6 +48,7 @@ object Tree {
       val v2 = f(current.context.properties(k).asInstanceOf[T])
       Zipper(current.copy(context = current.context + (k -> v2)), path)
     }
+    def modifyContext(f: Context => Context) = setContext(f(current.context))
     def setContext(ctx: Context) = Zipper(current.copy(context = ctx), path)
     def addItem(x: T) = Zipper(current.copy(items = current.items :+ x), path)
     def descend = Zipper(Tree(current.context, Seq(), Seq()), Node(current.context, current.items, current.children, path))

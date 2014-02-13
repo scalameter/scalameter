@@ -33,11 +33,13 @@ object PerformanceTest {
 
     def persistor: Persistor
 
+    def defaultConfig: Seq[(String, Any)] = Seq()
+
     type SameType
 
     def executeTests(): Boolean = {
       val datestart = new java.util.Date
-      DSL.setupzipper.value = Tree.Zipper.root[Setup[_]]
+      DSL.setupzipper.value = Tree.Zipper.root[Setup[_]].modifyContext(_ ++ defaultConfig)
       testbody.value.apply()
       val rawsetuptree = DSL.setupzipper.value.result
       val setuptree = rawsetuptree.filter(setupFilter)
