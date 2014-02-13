@@ -3,7 +3,7 @@ package org.scalameter
 import java.util.Date
 
 
-class Key[T](val name: String, val defaultValue: Option[T]) {
+class Key[T](val name: String, val defaultValue: Option[T]) extends Serializable {
   override def toString = name
   override def hashCode = name.hashCode
   override def equals(x: Any) = x match {
@@ -26,7 +26,7 @@ class Keys {
   // Note: predefined keys need to be lazy
   // due to initialization order issue with object Key
 
-  lazy val verbose = Key[Boolean]("verbose", false)
+  lazy val verbose = Key[Boolean]("verbose", true)
   lazy val classpath = Key[String]("classpath")
   lazy val preJDK7 = Key[Boolean]("pre-jdk-7", false)
   lazy val scopeFilter = Key[String]("scope-filter", "")
