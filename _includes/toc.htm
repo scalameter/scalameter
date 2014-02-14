@@ -12,17 +12,17 @@
   <h3><a href="/scalameter/">ScalaMeter</a></h3>
 
   <ul class="bullets">
-    <li><a href="/scalameter/home/news/">News</a></li>
-    <li><a href="/scalameter/home/download/">Download</a></li>
+    <li><a href="http://scalameter.github.io/home/news/">News</a></li>
+    <li><a href="http://scalameter.github.io/home/download/">Download</a></li>
   </ul>
 
-  <h3><a href="/scalameter/home/gettingstarted/">Getting started</a></h3>
+  <h3><a href="http://scalameter.github.io/home/gettingstarted/">Getting started</a></h3>
   {% if totalPagesTour %}
   <ul class="bullets">
     {% for i in (1..totalPagesTour) %}
       {% for pg in site.pages %}
         {% if pg.partof == "getting-started" and pg.num and pg.num == i %}
-          <li><a href="/scalameter/{{ pg.url }}">{{ pg.title }}</a></li>
+          <li><a href="http://scalameter.github.io/{{ pg.url }}">{{ pg.title }}</a></li>
         {% endif %}
       {% endfor %}
     {% endfor %}
@@ -34,9 +34,9 @@
   <h3>Other</h3>
 
   <ul class="bullets">
-    <li><a href="/scalameter/home/authors/">Authors</a></li>
-    <li><a href="/scalameter/home/contact/">Contact</a></li>
-    <li><a href="/scalameter/home/license/">License</a></li>
+    <li><a href="http://scalameter.github.io/home/authors/">Authors</a></li>
+    <li><a href="http://scalameter.github.io/home/contact/">Contact</a></li>
+    <li><a href="http://scalameter.github.io/home/license/">License</a></li>
   </ul>
 
 
