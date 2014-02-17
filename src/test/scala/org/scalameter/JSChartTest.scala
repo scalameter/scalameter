@@ -1,6 +1,7 @@
 package org.scalameter
 
 import language.higherKinds
+
 import collection._
 import reporting._
 import Key._

@@ -2,13 +2,11 @@ package org
 
 import language.implicitConversions
 import language.postfixOps
-import language.reflectiveCalls
 import language.existentials
 
 
 
 import java.io.File
-import java.net.URLClassLoader
 import java.util.Date
 import collection._
 import scala.util.DynamicVariable
