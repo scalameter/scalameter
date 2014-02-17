@@ -46,13 +46,7 @@ package object scalameter {
 
   @deprecated("Use Aggregator.apply", "0.5")
   implicit def fun2ops(f: Seq[Double] => Double) = new {
-    def toAggregator(n: String) = {
-      val function = f
-      new Aggregator {
-        def name = n
-        def apply(times: Seq[Double]) = function(times)
-      }
-    }
+    def toAggregator(n: String) = Aggregator(n)(f)
   }
 
   implicit final class SeqDoubleOps(val sq: Seq[Double]) extends AnyVal {
@@ -259,14 +253,11 @@ package scalameter {
   }
 
   @SerialVersionUID(-2541697615491239986L)
-  case class Measurement(value: Double, params: Parameters, data: Option[Measurement.Data], units: String) {
-    def complete: Seq[Double] = data.get.complete
-    def success: Boolean = data.map(_.success).getOrElse(true)
-    def errors: Errors = data match {
-      case None    => throw new Exception("The complete data is not available. Please wrap your current aggregator in Aggregator.complete: `Aggregator.complete(Aggregator.average)")
-      case Some(_) => new Errors(this)
-    }
-    def failed = this.copy(data = Some(data.get.copy(success = false)))
+  case class Measurement(value: Double, params: Parameters, data: Measurement.Data, units: String) {
+    def complete: Seq[Double] = data.complete
+    def success: Boolean = data.success
+    def errors: Errors = new Errors(this)
+    def failed = this.copy(data = data.copy(success = false))
   }
 
   object Measurement {
@@ -319,7 +310,7 @@ package scalameter {
   trait Aggregator extends (Seq[Double] => Double) with Serializable {
     def name: String
     def apply(times: Seq[Double]): Double
-    def data(times: Seq[Double]): Option[Measurement.Data] = Some(Measurement.Data(times, true))
+    def data(times: Seq[Double]): Measurement.Data
   }
 
   object Aggregator {
@@ -329,6 +320,7 @@ package scalameter {
     def apply(n: String)(f: Seq[Double] => Double) = new Aggregator {
       def name = n
       def apply(times: Seq[Double]) = f(times)
+      def data(times: Seq[Double]) = Measurement.Data(times, true)
     }
 
     def min = Aggregator("min") { _.min }
@@ -346,10 +338,7 @@ package scalameter {
     def stdev = Aggregator("stdev") { xs: Seq[Double] => xs.stdev }
 
     @deprecated("Unnecessary, use a directly", "0.5")
-    def complete(a: Aggregator) = new Aggregator {
-      def name = s"complete(${a.name})"
-      def apply(times: Seq[Double]) = a(times)
-    }
+    def complete(a: Aggregator) = a
   }
 
   /** Import the contents of this singleton object to obtain access to most abstractions
