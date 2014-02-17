@@ -44,13 +44,13 @@ package object scalameter {
 
   /* decorators */
 
+  @deprecated("Use Aggregator.apply", "0.5")
   implicit def fun2ops(f: Seq[Double] => Double) = new {
     def toAggregator(n: String) = {
       val function = f
       new Aggregator {
         def name = n
         def apply(times: Seq[Double]) = function(times)
-        def data(times: Seq[Double]) = None
       }
     }
   }
@@ -319,35 +319,36 @@ package scalameter {
   trait Aggregator extends (Seq[Double] => Double) with Serializable {
     def name: String
     def apply(times: Seq[Double]): Double
-    def data(times: Seq[Double]): Option[Measurement.Data]
+    def data(times: Seq[Double]): Option[Measurement.Data] = Some(Measurement.Data(times, true))
   }
 
   object Aggregator {
 
     case class Statistic(min: Double, max: Double, average: Double, stdev: Double, median: Double)
 
-    def min = {
-      xs: Seq[Double] => xs.min.toDouble
-    } toAggregator "min"
+    def apply(n: String)(f: Seq[Double] => Double) = new Aggregator {
+      def name = n
+      def apply(times: Seq[Double]) = f(times)
+    }
 
-    def max = {
-      xs: Seq[Double] => xs.max.toDouble
-    } toAggregator "max"
+    def min = Aggregator("min") { _.min }
 
-    def median = {
+    def max = Aggregator("max") { _.max }
+
+    def median = Aggregator("median") {
       xs: Seq[Double] =>
       val sorted = xs.sorted
-      sorted(sorted.size / 2).toDouble
-    } toAggregator "median"
+      sorted(sorted.size / 2)
+    }
 
-    def average = { xs: Seq[Double] => xs.sum.toDouble / xs.size } toAggregator "average"
+    def average = Aggregator("average") { xs: Seq[Double] => xs.sum / xs.size }
 
-    def stdev = { xs: Seq[Double] => xs.stdev } toAggregator "stdev"
+    def stdev = Aggregator("stdev") { xs: Seq[Double] => xs.stdev }
 
+    @deprecated("Unnecessary, use a directly", "0.5")
     def complete(a: Aggregator) = new Aggregator {
       def name = s"complete(${a.name})"
       def apply(times: Seq[Double]) = a(times)
-      def data(times: Seq[Double]) = Some(Measurement.Data(times, true))
     }
   }
 
