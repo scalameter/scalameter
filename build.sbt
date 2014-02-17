@@ -8,7 +8,7 @@ version := "0.5-SNAPSHOT"
 
 scalaVersion := "2.10.0"
 
-scalacOptions ++= Seq("-deprecation", "-unchecked")
+scalacOptions ++= Seq("-deprecation", "-unchecked", "-feature")
 
 resolvers += "Sonatype OSS Snapshots" at "https://oss.sonatype.org/content/repositories/snapshots"
 

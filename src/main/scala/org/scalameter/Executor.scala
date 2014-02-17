@@ -1,8 +1,6 @@
 package org.scalameter
 
 
-import language.reflectiveCalls
-
 import collection._
 import compat._
 import utils.{withGCNotification, Tree}
@@ -61,7 +59,7 @@ object Executor {
           withGCNotification { n =>
             nogc = false
             log.verbose("GC detected.")
-          } apply {
+          } {
             var i = 0
             while (i < maxwarmups) {
 
@@ -172,7 +170,7 @@ object Executor {
           val time = withGCNotification { n =>
             gc = true
             log.verbose("GC detected.")
-          } apply {
+          } {
             val start = System.nanoTime
             snippet(value)
             val end = System.nanoTime

@@ -2,13 +2,11 @@ package org
 
 import language.implicitConversions
 import language.postfixOps
-import language.reflectiveCalls
 import language.existentials
 
 
 
 import java.io.File
-import java.net.URLClassLoader
 import java.util.Date
 import collection._
 import scala.util.DynamicVariable
@@ -50,8 +48,10 @@ package object scalameter {
   }
 
   implicit final class SeqDoubleOps(val sq: Seq[Double]) extends AnyVal {
+    def mean = sq.sum / sq.size
+
     def stdev: Double = {
-      val m = 1.0 * sq.sum / sq.size
+      val m = mean
       var s = 0.0
       for (v <- sq) {
         val diff = v - m
@@ -328,14 +328,14 @@ package scalameter {
     def max = Aggregator("max") { _.max }
 
     def median = Aggregator("median") {
-      xs: Seq[Double] =>
+      xs =>
       val sorted = xs.sorted
       sorted(sorted.size / 2)
     }
 
-    def average = Aggregator("average") { xs: Seq[Double] => xs.sum / xs.size }
+    def average = Aggregator("average") { _.mean }
 
-    def stdev = Aggregator("stdev") { xs: Seq[Double] => xs.stdev }
+    def stdev = Aggregator("stdev") { _.stdev }
 
     @deprecated("Unnecessary, use a directly", "0.5")
     def complete(a: Aggregator) = a
