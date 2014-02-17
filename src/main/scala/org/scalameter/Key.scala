@@ -65,7 +65,7 @@ class Keys {
 
     object regression {
       lazy val significance = Key[Double]("significance", 1e-10)
-      lazy val timeIndices = Key[collection.Seq[Long]]("time-indices")
+      lazy val timeIndices = Key[Seq[Long]]("time-indices")
       lazy val noiseMagnitude = Key[Double]("regression-noise-magnitude", 0.0)
     }
   }

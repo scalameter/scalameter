@@ -95,7 +95,7 @@ object PerformanceTest {
     import Executor.Measurer
     import reporting._
     def warmer = Executor.Warmer.Default()
-    def aggregator = Aggregator.complete(Aggregator.average)
+    def aggregator = Aggregator.average
     def measurer: Measurer = new Measurer.IgnoringGC with Measurer.PeriodicReinstantiation with Measurer.OutlierElimination with Measurer.RelativeNoise
     def executor: Executor = new execution.SeparateJvmsExecutor(warmer, aggregator, measurer)
     def reporter: Reporter = Reporter.Composite(
