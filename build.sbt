@@ -1,12 +1,11 @@
 
-
 name := "scalameter"
 
 organization := "com.github.axel22"
 
 version := "0.5-SNAPSHOT"
 
-scalaVersion := "2.10.0"
+scalaVersion := "2.10.2"
 
 scalacOptions ++= Seq("-deprecation", "-unchecked", "-feature")
 
