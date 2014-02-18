@@ -36,7 +36,7 @@ class SeparateJvmsExecutor(val warmer: Executor.Warmer, val aggregator: Aggregat
     val w = warmer
     val jvmContext = createJvmContext(context)
 
-    def sample(idx: Int, reps: Int): Seq[(Parameters, Seq[Double])] = runner.run(jvmContext) {
+    def sample(idx: Int, reps: Int): Try[Seq[(Parameters, Seq[Double])]] = runner.run(jvmContext) {
       dyn.initialContext.value = context
       
       log.verbose(s"Sampling $reps measurements in separate JVM invocation $idx - ${context.scope}, ${context(dsl.curve)}.")
@@ -71,9 +71,9 @@ class SeparateJvmsExecutor(val warmer: Executor.Warmer, val aggregator: Aggregat
     }
 
     def sampleReport(idx: Int, reps: Int): Seq[(Parameters, Seq[Double])] = try {
-      sample(idx, reps)
+      sample(idx, reps).get
     } catch {
-      case e: Exception =>
+      case t: Throwable =>
         log.error(s"Error running separate JVM: $e")
         log.error(s"Classpath: ${sys.props("java.class.path")}")
         throw e
