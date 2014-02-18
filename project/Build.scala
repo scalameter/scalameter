@@ -58,7 +58,7 @@ object ScalaMeterBuild extends Build {
       </licenses>
       <scm>
         <url>git@github.com:axel22/scalameter.git</url>
-        <connection>scm:git:git@github.com:axel22/scalameter.git</connection>
+        <connection>scm:git:git@github.com:scalameter/scalameter.git</connection>
       </scm>
       <developers>
         <developer>
