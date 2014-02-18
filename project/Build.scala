@@ -1,4 +1,3 @@
-
 import sbt._
 import Keys._
 import Process._
@@ -45,14 +44,18 @@ object ScalaMeterBuild extends Build {
     }
   }
 
-  val publishCredFile = "scalameter.maven.credentials-file"
+  val publishUser = "SONATYPE_USER"
+  
+  val publishPass = "SONATYPE_PASS"
+  
+  val credentials = sys.props.get(publishUser) zip sys.props.get(publishPass)
 
-  val publishCreds: Seq[Setting[_]] = Seq(sys.props.get(publishCredFile) match {
-    case Some(fileName) =>
-      credentials += Credentials({ new java.io.File(sys.props(publishCredFile)) })
-   case None =>
-     // prevent publishing
-     publish <<= streams.map(_.log.info("Publishing to Sonatype is disabled since the \"" + publishCredFile + "\" variable is not set."))
+  val publishCreds: Seq[Setting[_]] = Seq(credentials match {
+    case Some((user, pass)) =>
+      credentials += Credentials("Sonatype Nexus Repository Manager", "nexus.scala-tools.org", user, pass)
+    case None =>
+      // prevent publishing
+      publish <<= streams.map(_.log.info("Publishing to Sonatype is disabled since the \"" + publishUser + "\" and/or \"" + publishPass + "\" variables are not set."))
   })
 
   /* projects */
