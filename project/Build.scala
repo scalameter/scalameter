@@ -48,9 +48,12 @@ object ScalaMeterBuild extends Build {
   
   val publishPass = "SONATYPE_PASS"
   
-  val credentials = sys.props.get(publishUser) zip sys.props.get(publishPass)
+  val userPass = for {
+    user <- sys.props.get(publishUser)
+    pass <- sys.props.get(publishPass)
+  } yield (user, pass)
 
-  val publishCreds: Seq[Setting[_]] = Seq(credentials match {
+  val publishCreds: Seq[Setting[_]] = Seq(userPass match {
     case Some((user, pass)) =>
       credentials += Credentials("Sonatype Nexus Repository Manager", "nexus.scala-tools.org", user, pass)
     case None =>
