@@ -4,8 +4,9 @@ package execution
 
 
 import java.io._
-import collection._
-import sys.process._
+import scala.collection._
+import scala.sys.process._
+import scala.util.{Try, Success, Failure}
 import utils.Tree
 
 
@@ -74,9 +75,9 @@ class SeparateJvmsExecutor(val warmer: Executor.Warmer, val aggregator: Aggregat
       sample(idx, reps).get
     } catch {
       case t: Throwable =>
-        log.error(s"Error running separate JVM: $e")
+        log.error(s"Error running separate JVM: $t")
         log.error(s"Classpath: ${sys.props("java.class.path")}")
-        throw e
+        throw t
     }
 
     log.verbose(s"Running test set for ${context.scope}, curve ${context(dsl.curve)}")
