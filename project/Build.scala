@@ -44,13 +44,13 @@ object ScalaMeterBuild extends Build {
     }
   }
 
-  val publishUser = "build.publish.user"
+  val publishUser = "SONATYPE_USER"
   
-  val publishPass = "build.publish.pass"
+  val publishPass = "SONATYPE_PASS"
   
   val userPass = for {
-    user <- sys.props.get(publishUser)
-    pass <- sys.props.get(publishPass)
+    user <- sys.env.get(publishUser)
+    pass <- sys.env.get(publishPass)
   } yield (user, pass)
 
   val publishCreds: Seq[Setting[_]] = Seq(userPass match {
@@ -58,7 +58,7 @@ object ScalaMeterBuild extends Build {
       credentials += Credentials("Sonatype Nexus Repository Manager", "nexus.scala-tools.org", user, pass)
     case None =>
       // prevent publishing
-      publish <<= streams.map(_.log.info("Publishing to Sonatype is disabled since the \"" + publishUser + "\" and/or \"" + publishPass + "\" properties are not set."))
+      publish <<= streams.map(_.log.info("Publishing to Sonatype is disabled since the \"" + publishUser + "\" and/or \"" + publishPass + "\" environment variables are not set."))
   })
 
   /* projects */
