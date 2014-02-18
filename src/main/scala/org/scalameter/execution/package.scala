@@ -1,12 +1,13 @@
 package org.scalameter
 
+
+
 import language.postfixOps
-
-
 import java.io._
 import sys.process._
 import compat.Platform
 import Key._
+import scala.util.{Try, Success, Failure}
 
 
 
@@ -23,7 +24,7 @@ package object execution {
     private val tmpfile = File.createTempFile("newjvm-", "-io")
     tmpfile.deleteOnExit()
 
-    def run[R](ctx: Context)(body: =>R): R = {
+    def run[R](ctx: Context)(body: =>R): Try[R] = {
       serializeInput(() => body)
       runJvm(ctx)
       readOutput[R]()
@@ -49,11 +50,15 @@ package object execution {
       command !;
     }
 
-    private def readOutput[R](): R = {
+    private def readOutput[R](): Try[R] = {
       val fis = new FileInputStream(tmpfile)
       val ois = new ObjectInputStream(fis)
       try {
-        ois.readObject().asInstanceOf[R]
+        val result = ois.readObject()
+        result match {
+          case SeparateJvmFailure(t) => Failure(t)
+          case result => Success(result.asInstanceOf[R])
+        }
       } finally {
         fis.close()
         ois.close()
@@ -61,6 +66,8 @@ package object execution {
     }
 
   }
+  
+  case class SeparateJvmFailure(t: Throwable)
 
   class Main
 
@@ -71,9 +78,14 @@ package object execution {
     }
 
     def mainMethod(tmpfile: File) {
-      val body = loadBody(tmpfile)
-      val result = body()
-      saveResult(tmpfile, result)
+      try {
+        val body = loadBody(tmpfile)
+        val result = body()
+        saveResult(tmpfile, result)
+      } catch {
+        case t: Throwable =>
+          saveFailure(tmpfile, t)
+      }
     }
 
     private def loadBody(file: File): () => Any = {
@@ -92,6 +104,17 @@ package object execution {
       val oos = new ObjectOutputStream(fos)
       try {
         oos.writeObject(result)
+      } finally {
+        fos.close()
+        oos.close()
+      }
+    }
+
+    private def saveFailure(file: File, t: Throwable) {
+      val fos = new FileOutputStream(file)
+      val oos = new ObjectOutputStream(fos)
+      try {
+        oos.writeObject(SeparateJvmFailure(t))
       } finally {
         fos.close()
         oos.close()
