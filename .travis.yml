@@ -6,4 +6,5 @@ jdk:
 script: sbt -Dbuild.publish.user=${SONATYPE_USER} -Dbuild.publish.password=${SONATYPE_PASS} ++${TRAVIS_SCALA_VERSION} test $(if [[ "${TRAVIS_PULL_REQUEST}" == "false" && "${TRAVIS_BRANCH}" == "master"]]; then echo "publish";  fi)
 env:
   global:
-  
+    - secure: "adngy4wHe+DLnkLW0K7S8KFe+GR2mTMHx3VPs4YFooXSkJlRZMzhMzd2nJN0VNb2U7zkIrtLvsykLGIaeKF3u02iheHt3RCpRoKmxOjAkFXSRm6V7Z1J+EMVHqAG/72L2P2KkjJEaXrQqE3yG6e6elRk+qp2V3zKpQ6E5sS/g3c="
+    - secure: "fjMyfWi+UndcsT+Voqxt1NVvIbqPKwDzipxK18zd+eEgASam+L4fgtmDsIXjbgdBaTX59w+Q1DNnAOT7x34XpneU+GDASDmoNdj6oCoZOHiQb/odu2WOBWf/iINCTpJtPMMr8cLQaQ3CsnSyOojaJiFERDMcO9i58kDfU1gXa/4="
