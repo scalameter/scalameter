@@ -365,6 +365,9 @@ package scalameter {
     type Gen[T] = org.scalameter.Gen[T]
     val Gen = org.scalameter.Gen
 
+    type Context = org.scalameter.Context
+    val Context = org.scalameter.Context
+
     type PerformanceTest = org.scalameter.PerformanceTest
     val PerformanceTest = org.scalameter.PerformanceTest
 
