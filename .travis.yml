@@ -3,3 +3,7 @@ scala:
   - "2.10.2"
 jdk:
   - oraclejdk7
+script: sbt -Dbuild.publish.user=${SONATYPE_USER} -Dbuild.publish.password=${SONATYPE_PASS} ++${TRAVIS_SCALA_VERSION} test $(if [[ "${TRAVIS_PULL_REQUEST}" == "false" && "${TRAVIS_BRANCH}" == "master"]]; then echo "publish";  fi)
+env:
+  global:
+  
