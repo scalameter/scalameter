@@ -3,19 +3,15 @@ package reporting
 
 
 
-import java.util.Date
 import java.io._
-import java.awt.Color
 import util.parsing.json._
-import org.jfree.chart._
 import collection._
-import xml._
 import utils.Tree
 import Key._
 
 
 
-case class HtmlReporter(val embedDsv: Boolean = true) extends Reporter {
+case class HtmlReporter(embedDsv: Boolean = true) extends Reporter {
   import HtmlReporter._
 
   def report(result: CurveData, persistor: Persistor) {
@@ -42,15 +38,15 @@ case class HtmlReporter(val embedDsv: Boolean = true) extends Reporter {
     }
 
     printToFile(new File(root, jsDataFile)) { pw =>
-      pw.println("var ScalaMeter = (function(parent) {");
-      pw.println("  var my = { name: \"data\" };");
+      pw.println("var ScalaMeter = (function(parent) {")
+      pw.println("  var my = { name: \"data\" };")
       pw.println(s"  my.index = $curvesJSONIndex;")
       if (embedDsv) {
         printTsv(results, persistor, pw)
       }
-      pw.println("  parent[my.name] = my;");
-      pw.println("  return parent;");
-      pw.println("})(ScalaMeter || {});");
+      pw.println("  parent[my.name] = my;")
+      pw.println("  return parent;")
+      pw.println("})(ScalaMeter || {});")
     }
 
     true
@@ -157,12 +153,15 @@ object HtmlReporter {
       val buffer = new Array[Byte](1024)
       val fos = new FileOutputStream(to)
       var nBytesRead = 0
-      def read() = { nBytesRead = res.read(buffer) }
-      while ({read(); nBytesRead != -1}) {
+      def read() = {
+        nBytesRead = res.read(buffer)
+        nBytesRead != -1
+      }
+      while (read()) {
         fos.write(buffer, 0, nBytesRead)
       }
       if (fos != null) {
-        fos.close();
+        fos.close()
       }
     } finally {
       res.close()
