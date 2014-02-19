@@ -32,6 +32,11 @@ trait Gen[T] extends Serializable {
     }
   }
 
+  def zip[S](that: Gen[S]): Gen[(T, S)] = for {
+    x <- self
+    y <- that
+  } yield (x, y)
+
   def warmupset: Iterator[T]
 
   def dataset: Iterator[Parameters]
