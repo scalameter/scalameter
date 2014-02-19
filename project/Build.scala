@@ -26,7 +26,7 @@ object ScalaMeterBuild extends Build {
 
   val scalaMeterSettings = Defaults.defaultSettings ++ publishCreds ++ Seq(
     scalaVersion := "2.10.2",
-    scalacOptions ++= Seq("-deprecation", "-unchecked", "-feature"),
+    scalacOptions ++= Seq("-deprecation", "-unchecked", "-feature", "-Xlint"),
     resolvers ++= Seq(
       "Sonatype OSS Snapshots" at "https://oss.sonatype.org/content/repositories/snapshots",
       "Sonatype OSS Releases" at "https://oss.sonatype.org/content/repositories/releases"

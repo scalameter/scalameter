@@ -22,6 +22,12 @@ class SeparateJvmsExecutor(val warmer: Executor.Warmer, val aggregator: Aggregat
 
   val runner = new JvmRunner
 
+  def createJvmContext(ctx: Context) = {
+    val existingFlags = ctx(exec.jvmflags)
+    val flags = s"${if (initialContext(Key.verbose)) "-verbose:gc" else ""} " + existingFlags
+    ctx + (exec.jvmflags -> flags)
+  }
+
   def runSetup[T](setup: Setup[T]): CurveData = {
     import setup._
 

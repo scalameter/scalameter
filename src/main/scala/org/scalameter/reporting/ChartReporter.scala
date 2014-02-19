@@ -237,7 +237,7 @@ object ChartReporter {
         /*
          * new version. If there are not enough colors specified, the rest are default colors assigned by JFreeChart
          */
-        def paintCurves = {
+        def paintCurves() = {
 
           def loop(numbersOfMeasurements: Seq[Int], colors: Seq[Color], seriesIndex: Int): Unit = (numbersOfMeasurements, colors) match {
 
@@ -261,7 +261,7 @@ object ChartReporter {
           loop(numbersOfMeasurementsPerCurve, colors, 0)
         }
 
-        def setChartLegend = {
+        def setChartLegend() = {
           var seriesIndex = 0
           val legendItems = new LegendItemCollection
           for((curve, curveIndex) <- cs.zipWithIndex) {
@@ -274,8 +274,8 @@ object ChartReporter {
           plot.setFixedLegendItems(legendItems)
         }
 
-        paintCurves
-        setChartLegend
+        paintCurves()
+        setChartLegend()
 
         class LabelGenerator extends StandardCategoryItemLabelGenerator {
           val serialVersionUID = -7553175765030937177L
@@ -343,7 +343,7 @@ object ChartReporter {
           }
         }*/
 
-        def paintCurves = {
+        def paintCurves() = {
 
           def loop(numbersOfEntries: Seq[Int], colors: Seq[Color], seriesIndex: Int): Unit = (numbersOfEntries, colors) match {
 
@@ -367,7 +367,7 @@ object ChartReporter {
           loop(numbersOfEntries, colors, 0)
         }
 
-        def setChartLegend = {
+        def setChartLegend() = {
           var seriesIndex = 0
           var curveIndex = 0
           val legendItems = new LegendItemCollection
@@ -381,8 +381,8 @@ object ChartReporter {
           plot.setFixedLegendItems(legendItems)
         }
 
-        paintCurves
-        setChartLegend
+        paintCurves()
+        setChartLegend()
 
         class LabelGenerator extends StandardCategoryItemLabelGenerator {
           val serialVersionUID = -7553175765030937177L

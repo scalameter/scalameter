@@ -157,8 +157,8 @@ object HtmlReporter {
       val buffer = new Array[Byte](1024)
       val fos = new FileOutputStream(to)
       var nBytesRead = 0
-      def read = { nBytesRead = res.read(buffer) }
-      while ({read; nBytesRead != -1}) {
+      def read() = { nBytesRead = res.read(buffer) }
+      while ({read(); nBytesRead != -1}) {
         fos.write(buffer, 0, nBytesRead)
       }
       if (fos != null) {
