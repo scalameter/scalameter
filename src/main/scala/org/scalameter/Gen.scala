@@ -58,7 +58,7 @@ object Gen {
 
   def unit(axisName: String): Gen[Unit] = new Gen[Unit] {
     def warmupset = Iterator.single(())
-    def dataset = Iterator.single(Parameters(axisName -> ()))
+    def dataset = Iterator.single(Parameters((axisName, ())))
     def generate(params: Parameters) = params[Unit](axisName)
   }
 

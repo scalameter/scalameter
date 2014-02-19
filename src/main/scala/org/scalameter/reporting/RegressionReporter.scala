@@ -134,7 +134,7 @@ object RegressionReporter {
         }
         val (newentries, newindices) = pruned.unzip
 
-        History(newentries.toBuffer.reverse :+ newest, Map(reports.regression.timeIndices -> (1L +: newindices.toBuffer)))
+        History(newentries.toBuffer.reverse :+ newest, immutable.Map(reports.regression.timeIndices -> (1L +: newindices.toBuffer)))
       }
 
       def push(h: History, newest: History.Entry): History = {
