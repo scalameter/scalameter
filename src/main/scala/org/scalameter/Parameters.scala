@@ -6,6 +6,7 @@ import scala.collection.{Iterable, immutable}
 case class Parameters(axisData: immutable.ListMap[String, Any]) {
   def ++(that: Parameters) = Parameters(this.axisData ++ that.axisData)
   def apply[T](key: String) = axisData.apply(key).asInstanceOf[T]
+  def map(f: ((String, Any)) => (String, Any)) = Parameters(axisData.map(f))
 
   override def toString = s"Parameters(${axisData.map(t => t._1 + " -> " + t._2).mkString(", ")})"
 }
