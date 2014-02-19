@@ -146,7 +146,7 @@ object PerformanceTest {
   }
 
   @deprecated("This performance test is now deprecated, please use `OnlineRegressionReport` instead.", "0.5")
-  trait Regression {
+  trait Regression extends PerformanceTest {
     import reporting._
     import Executor.Measurer
     def warmer = Executor.Warmer.Default()
