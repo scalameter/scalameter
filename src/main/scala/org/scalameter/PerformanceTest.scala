@@ -121,8 +121,8 @@ object PerformanceTest {
    */
   trait OnlineRegressionReport extends HTMLReport {
     import reporting._
-    def tester = RegressionReporter.Tester.OverlapIntervals()
-    def historian = RegressionReporter.Historian.ExponentialBackoff()
+    def tester: RegressionReporter.Tester = RegressionReporter.Tester.OverlapIntervals()
+    def historian: RegressionReporter.Historian = RegressionReporter.Historian.ExponentialBackoff()
     def online = true
   }
 
@@ -130,8 +130,8 @@ object PerformanceTest {
    */
   trait OfflineRegressionReport extends HTMLReport {
     import reporting._
-    def tester = RegressionReporter.Tester.OverlapIntervals()
-    def historian = RegressionReporter.Historian.ExponentialBackoff()
+    def tester: RegressionReporter.Tester = RegressionReporter.Tester.OverlapIntervals()
+    def historian: RegressionReporter.Historian = RegressionReporter.Historian.ExponentialBackoff()
     def online = false
   }
 
@@ -140,8 +140,8 @@ object PerformanceTest {
    */
   trait OfflineReport extends HTMLReport {
     import reporting._
-    def tester = RegressionReporter.Tester.Accepter()
-    def historian = RegressionReporter.Historian.ExponentialBackoff()
+    def tester: RegressionReporter.Tester = RegressionReporter.Tester.Accepter()
+    def historian: RegressionReporter.Historian = RegressionReporter.Historian.ExponentialBackoff()
     def online = false
   }
 
