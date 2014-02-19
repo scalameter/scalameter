@@ -41,10 +41,10 @@ trait Gen[T] extends Serializable {
     val reverseMapping = mapping.map(kv => (kv._2, kv._1))
     def warmupset = self.warmupset
     def dataset = self.dataset.map(params => params map {
-      case (k, v) => (mapping.toMap.apply(k), v)
+      case (k, v) => (mapping.toMap.applyOrElse(k, (k: String) => k), v)
     })
     def generate(params: Parameters) = self.generate(params map {
-      case (k, v) => (reverseMapping.toMap.apply(k), v)
+      case (k, v) => (reverseMapping.toMap.applyOrElse(k, (k: String) => k), v)
     })
   }
 
