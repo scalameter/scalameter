@@ -33,36 +33,6 @@ package object scalameter {
     def toAggregator(n: String) = Aggregator(n)(f)
   }
 
-  implicit final class SeqDoubleOps(val sq: Seq[Double]) extends AnyVal {
-    def mean = sq.sum / sq.size
-
-    def stdev: Double = {
-      val m = mean
-      var s = 0.0
-      for (v <- sq) {
-        val diff = v - m
-        s += diff * diff
-      }
-      math.sqrt(s / (sq.size - 1))
-    }
-  }
-
-  implicit final class SeqOps[T](val sq: Seq[T]) extends AnyVal {
-    def orderedGroupBy[K](f: T => K): Map[K, Seq[T]] = {
-      val map = mutable.LinkedHashMap[K, mutable.ArrayBuffer[T]]()
-
-      for (elem <- sq) {
-        val key = f(elem)
-        map.get(key) match {
-          case Some(b) => b += elem
-          case None => map(key) = mutable.ArrayBuffer(elem)
-        }
-      }
-
-      map
-    }
-  }
-
   /* misc */
 
   def defaultClasspath = extractClasspath(this.getClass.getClassLoader, sys.props("java.class.path"))

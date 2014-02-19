@@ -2,6 +2,20 @@ package org.scalameter
 
 object Aggregator {
 
+  implicit final class SeqDoubleOps(val sq: Seq[Double]) extends AnyVal {
+    def mean = sq.sum / sq.size
+
+    def stdev: Double = {
+      val m = mean
+      var s = 0.0
+      for (v <- sq) {
+        val diff = v - m
+        s += diff * diff
+      }
+      math.sqrt(s / (sq.size - 1))
+    }
+  }
+
   case class Statistic(min: Double, max: Double, average: Double, stdev: Double, median: Double)
 
   def apply(n: String)(f: Seq[Double] => Double) = new Aggregator {
