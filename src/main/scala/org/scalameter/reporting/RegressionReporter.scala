@@ -173,10 +173,31 @@ object RegressionReporter {
     /** Accepts any test result.
      */
     case class Accepter() extends Tester {
+      def cistr(ci: (Double, Double), units: String) = f"<${ci._1}%.2f $units, ${ci._2}%.2f $units>"
+
       def apply(context: Context, curvedata: CurveData, corresponding: Seq[CurveData]): CurveData = {
         log(s"${ansi.green}- ${context.scope}.${curvedata.context.curve} measurements:${ansi.reset}")
 
+        for (measurement <- curvedata.measurements) {
+          val color = ansi.green
+          val passed = "passed"
+          val mean = measurement.complete.sum / measurement.complete.size
+          val means = f"$mean%.2f ${measurement.units}"
+          val ci = confidenceInterval(context, measurement.complete)
+          val cis = cistr(ci, measurement.units)
+          val sig = context(reports.regression.significance)
+          log(s"$color  - at ${measurement.params.axisData.mkString(", ")}: $passed${ansi.reset}")
+          log(s"$color    (mean = $means, ci = $cis, significance = $sig)${ansi.reset}")
+        }
+
         curvedata
+      }
+
+      override def confidenceInterval(context: Context, alt: Seq[Double]): (Double, Double) = {
+        val significance = context(reports.regression.significance)
+
+        val citest = ConfidenceIntervalTest(true, alt, alt, significance)
+        citest.ci1
       }
     }
 
