@@ -112,7 +112,7 @@ object PerformanceTest {
     def online: Boolean
     def reporter: Reporter = Reporter.Composite(
       new RegressionReporter(tester, historian),
-      HtmlReporter(online)
+      HtmlReporter(!online)
     )
   }
 
