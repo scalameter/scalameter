@@ -7,7 +7,7 @@ import utils.Tree
 import java.util.Date
 
 
-abstract class PerformanceTest extends PerformanceTest.Initialization {
+abstract class PerformanceTest extends PerformanceTest.Initialization with Serializable {
 
   def main(args: Array[String]) {
     val ctx = Main.Configuration.fromCommandLineArgs(args).context
