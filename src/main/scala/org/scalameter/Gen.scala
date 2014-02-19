@@ -37,6 +37,17 @@ trait Gen[T] extends Serializable {
     y <- that
   } yield (x, y)
 
+  def rename(mapping: (String, String)*): Gen[T] = new Gen[T] {
+    val reverseMapping = mapping.map(kv => (kv._2, kv._1))
+    def warmupset = self.warmupset
+    def dataset = self.dataset.map(params => params map {
+      case (k, v) => (mapping.toMap.apply(k), v)
+    })
+    def generate(params: Parameters) = self.generate(params map {
+      case (k, v) => (reverseMapping.toMap.apply(k), v)
+    })
+  }
+
   def warmupset: Iterator[T]
 
   def dataset: Iterator[Parameters]
