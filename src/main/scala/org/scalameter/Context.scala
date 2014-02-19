@@ -36,7 +36,7 @@ object Context {
     exec.minWarmupRuns -> 10,
     exec.maxWarmupRuns -> 50,
     exec.jvmflags -> "-Xmx2048m -Xms2048m -XX:CompileThreshold=100",
-    classpath -> defaultClasspath,
+    classpath -> utils.ClassPath.default,
     reports.resultDir -> "tmp",
     reports.regression.significance -> 1e-10
   )

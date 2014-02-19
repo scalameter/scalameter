@@ -7,7 +7,6 @@ import language.existentials
 
 
 import collection._
-import java.io.File
 
 
 package object scalameter {
@@ -35,26 +34,14 @@ package object scalameter {
 
   /* misc */
 
-  def defaultClasspath = extractClasspath(this.getClass.getClassLoader, sys.props("java.class.path"))
+  import utils.ClassPath
 
+  @deprecated("Use utils.ClassPath.default", "0.5")
+  def defaultClasspath = ClassPath.default
+
+  @deprecated("Use utils.ClassPath.extract", "0.5")
   def extractClasspath(classLoader: ClassLoader, default: => String): String =
-    classLoader match {
-      case urlclassloader: java.net.URLClassLoader => extractClasspath(urlclassloader)
-      case _ =>
-        val parent = classLoader.getParent
-        if (parent != null)
-          extractClasspath(parent, default)
-        else
-          default
-    }
-
-  def extractClasspath(urlclassloader: java.net.URLClassLoader): String = {
-    val fileResource = "file:(.*)".r
-    val files = urlclassloader.getURLs.map(_.toString) collect {
-      case fileResource(file) => file
-    }
-    files.mkString(File.pathSeparator)
-  }
+    ClassPath.extract(classLoader, default)
 
   def singletonInstance[C](module: Class[C]) = module.getField("MODULE$").get(null).asInstanceOf[PerformanceTest]
 

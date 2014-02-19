@@ -30,7 +30,7 @@ final class JvmRunner {
   }
 
   private def runJvm(ctx: Context) {
-    val classpath = ctx.goe(Key.classpath, defaultClasspath)
+    val classpath = ctx.goe(Key.classpath, utils.ClassPath.default)
     val flags = ctx(Key.exec.jvmflags)
     val jcmd = ctx(Key.exec.jvmcmd)
     val command = s"$jcmd $flags -cp $classpath ${classOf[Main].getName} ${tmpfile.getPath}"
