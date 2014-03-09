@@ -70,24 +70,29 @@ object ChartReporter {
 
     case class XYLine() extends ChartFactory {
       def createChart(scopename: String, cs: Seq[CurveData], histories: Seq[History], colors: Seq[Color] = Seq()): Chart = {
-        val seriesCollection = new XYSeriesCollection
-        val chartName = scopename
-        val xAxisName = cs.head.measurements.head.params.axisData.head._1
-        val renderer = new XYLineAndShapeRenderer()
+        val dataset = for ((curve, idx) <- cs.zipWithIndex) yield {
+          val seriesName = curve.context.goe(dsl.curve, idx.toString)
 
-        for ((curve, idx) <- cs.zipWithIndex) {
-          val series = new XYSeries(curve.context.goe(dsl.curve, idx.toString), true, true)
-          for (measurement <- curve.measurements) {
-            series.add(measurement.params.axisData.head._2.asInstanceOf[Int], measurement.value)
-          }
-          seriesCollection.addSeries(series)
-          renderer.setSeriesShapesVisible(idx, true)
+          val seriesData = for {
+            measurement <- curve.measurements
+            x = measurement.params.axisData.head._2.asInstanceOf[Int]
+            y = measurement.value
+          } yield x -> y
+
+          seriesName -> seriesData
         }
 
-        val chart = XYLineChart(seriesCollection, title = chartName, domainAxisLabel = xAxisName, rangeAxisLabel = "value")
+        val chart = XYLineChart(dataset)
+        chart.title = scopename
+        chart.domainAxisLabel = cs.head.measurements.head.params.axisData.head._1
+        chart.rangeAxisLabel = "value"
+
         chart.plot.setBackgroundPaint(new java.awt.Color(180, 180, 180))
-        chart.plot.asInstanceOf[XYPlot].setRenderer(renderer)
         chart.antiAlias = true
+
+        val renderer = new XYLineAndShapeRenderer()
+        for (i <- cs.indices) renderer.setSeriesShapesVisible(i, true)
+        chart.plot.setRenderer(renderer)
 
         chart
       }
