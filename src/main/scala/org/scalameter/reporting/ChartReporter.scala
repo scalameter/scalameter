@@ -29,9 +29,8 @@ import scala.math.Pi
 
 case class ChartReporter(drawer: ChartReporter.ChartFactory, fileNamePrefix: String = "", wdt: Int = 1600, hgt: Int = 1200) extends Reporter {
 
-  def report(result: CurveData, persistor: Persistor) {
-    // nothing - the charts are generated only at the end
-  }
+  /** Does nothing, the charts are generated only at the end. */
+  override final def report(result: CurveData, persistor: Persistor): Unit = ()
 
   def report(result: Tree[CurveData], persistor: Persistor) = {
     for ((ctx, curves) <- result.scopes if curves.nonEmpty) {
