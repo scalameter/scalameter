@@ -33,7 +33,7 @@ object ScalaMeterBuild extends Build {
     ),
     libraryDependencies ++= List(
       "org.scalatest" % "scalatest_2.10" % "1.9.1" % "test",
-      "jfree" % "jfreechart" % "1.0.12",
+      "com.github.wookietreiber" %% "scala-chart" % "latest.integration",
       "org.apache.commons" % "commons-math3" % "3.0",
       "org.scala-tools.testing" % "test-interface" % "0.5"
     ),
