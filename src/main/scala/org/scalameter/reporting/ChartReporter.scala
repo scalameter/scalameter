@@ -114,6 +114,7 @@ object ChartReporter {
                 }
                 series.add(measurement.params.axisData.head._2.asInstanceOf[Int], measurement.value, ciForThisPoint._1, ciForThisPoint._2)
               }
+              dataset.addSeries(series)
             } else {
               val newestSeries = new YIntervalSeries(curve.context(dsl.curve))
               val historySeries = new YIntervalSeries(curve.context(dsl.curve))
