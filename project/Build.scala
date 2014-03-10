@@ -31,7 +31,7 @@ object ScalaMeterBuild extends Build {
       "Sonatype OSS Releases" at "https://oss.sonatype.org/content/repositories/releases"
     ),
     libraryDependencies ++= List(
-      "org.scalatest" % "scalatest_2.10" % "2.1.0" % "test",
+      "org.scalatest" %% "scalatest" % "2.1.0" % "test",
       "com.github.wookietreiber" %% "scala-chart" % "0.4.0-SNAPSHOT",
       "org.apache.commons" % "commons-math3" % "3.2",
       "org.scala-tools.testing" % "test-interface" % "0.5"
