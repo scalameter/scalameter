@@ -99,6 +99,12 @@ object ChartReporter {
 
     case class ConfidenceIntervals(showLatestCi: Boolean, showHistoryCi: Boolean, t: RegressionReporter.Tester) extends ChartFactory {
 
+      private def ciFor(curve: CurveData, values: Seq[Double]) = if (showLatestCi) {
+        t.confidenceInterval(curve.context, values)
+      } else {
+        (0D, 0D)
+      }
+
       def createChart(scopename: String, cs: Seq[CurveData], histories: Seq[History], colors: Seq[Color] = Seq()): Chart = {
 
         def createDataset = {
@@ -107,12 +113,8 @@ object ChartReporter {
             if (history.results.isEmpty) {
               val series = new YIntervalSeries(curve.context(dsl.curve))
               for (measurement <- curve.measurements) {
-                val ciForThisPoint = if (showLatestCi) {
-                  t.confidenceInterval(curve.context, measurement.complete)
-                } else {
-                  (0D, 0D)
-                }
-                series.add(measurement.params.axisData.head._2.asInstanceOf[Int], measurement.value, ciForThisPoint._1, ciForThisPoint._2)
+                val (yLow,yHigh) = ciFor(curve, measurement.complete)
+                series.add(measurement.params.axisData.head._2.asInstanceOf[Int], measurement.value, yLow, yHigh)
               }
               dataset.addSeries(series)
             } else {
@@ -120,6 +122,8 @@ object ChartReporter {
               val historySeries = new YIntervalSeries(curve.context(dsl.curve))
 
               for ((measurement, measurementIndex) <- curve.measurements.zipWithIndex) {
+                val x = measurement.params.axisData.head._2.asInstanceOf[Int]
+
                 /* Fetch, for each corresponding curve in history, the measurements that were at the same position (same size for instance)
                 on x-axis, and make a list of them */
                 val previousMeasurements = for {
@@ -129,18 +133,14 @@ object ChartReporter {
                 // We then take all observations that gave the value measurement (by calling complete) of each point, and concat them
                 val previousMeasurementsObservations = previousMeasurements flatMap(m => m.complete)
 
-                val ciForThisPoint = if (showHistoryCi) { t.confidenceInterval(curve.context, previousMeasurementsObservations) } else { (0D, 0D) }
+                val (yLowThis,yHighThis) = ciFor(curve, previousMeasurementsObservations)
+                val (yLowNewest,yHighNewest) = ciFor(curve, measurement.complete)
+
                 val meanForThisPoint = mean(previousMeasurementsObservations)
                 // Params : x - the x-value, y - the y-value, yLow - the lower bound of the y-interval, yHigh - the upper bound of the y-interval.
-                historySeries.add(measurement.params.axisData.head._2.asInstanceOf[Int], meanForThisPoint, ciForThisPoint._1, ciForThisPoint._2)
 
-                val ciForNewestPoint = if (showLatestCi) {
-                  t.confidenceInterval(curve.context, measurement.complete)
-                } else {
-                  (0D, 0D)
-                }
-
-                newestSeries.add(measurement.params.axisData.head._2.asInstanceOf[Int], measurement.value, ciForNewestPoint._1, ciForNewestPoint._2)
+                historySeries.add(x, meanForThisPoint, yLowThis, yHighThis)
+                newestSeries.add(x, measurement.value, yLowNewest, yHighNewest)
               }
               dataset.addSeries(historySeries)
               dataset.addSeries(newestSeries)
