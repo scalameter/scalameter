@@ -1,4 +1,3 @@
-
 name := "scalameter"
 
 organization := "com.github.axel22"
