@@ -99,6 +99,12 @@ object ChartReporter {
 
     case class ConfidenceIntervals(showLatestCi: Boolean, showHistoryCi: Boolean, t: RegressionReporter.Tester) extends ChartFactory {
 
+      private def ciFor(curve: CurveData, values: Seq[Double]) = if (showLatestCi) {
+        t.confidenceInterval(curve.context, values)
+      } else {
+        (0D, 0D)
+      }
+
       def createChart(scopename: String, cs: Seq[CurveData], histories: Seq[History], colors: Seq[Color] = Seq()): Chart = {
 
         def createDataset = {
@@ -107,18 +113,17 @@ object ChartReporter {
             if (history.results.isEmpty) {
               val series = new YIntervalSeries(curve.context(dsl.curve))
               for (measurement <- curve.measurements) {
-                val ciForThisPoint = if (showLatestCi) {
-                  t.confidenceInterval(curve.context, measurement.complete)
-                } else {
-                  (0D, 0D)
-                }
-                series.add(measurement.params.axisData.head._2.asInstanceOf[Int], measurement.value, ciForThisPoint._1, ciForThisPoint._2)
+                val (yLow,yHigh) = ciFor(curve, measurement.complete)
+                series.add(measurement.params.axisData.head._2.asInstanceOf[Int], measurement.value, yLow, yHigh)
               }
+              dataset.addSeries(series)
             } else {
               val newestSeries = new YIntervalSeries(curve.context(dsl.curve))
               val historySeries = new YIntervalSeries(curve.context(dsl.curve))
 
               for ((measurement, measurementIndex) <- curve.measurements.zipWithIndex) {
+                val x = measurement.params.axisData.head._2.asInstanceOf[Int]
+
                 /* Fetch, for each corresponding curve in history, the measurements that were at the same position (same size for instance)
                 on x-axis, and make a list of them */
                 val previousMeasurements = for {
@@ -128,18 +133,14 @@ object ChartReporter {
                 // We then take all observations that gave the value measurement (by calling complete) of each point, and concat them
                 val previousMeasurementsObservations = previousMeasurements flatMap(m => m.complete)
 
-                val ciForThisPoint = if (showHistoryCi) { t.confidenceInterval(curve.context, previousMeasurementsObservations) } else { (0D, 0D) }
+                val (yLowThis,yHighThis) = ciFor(curve, previousMeasurementsObservations)
+                val (yLowNewest,yHighNewest) = ciFor(curve, measurement.complete)
+
                 val meanForThisPoint = mean(previousMeasurementsObservations)
                 // Params : x - the x-value, y - the y-value, yLow - the lower bound of the y-interval, yHigh - the upper bound of the y-interval.
-                historySeries.add(measurement.params.axisData.head._2.asInstanceOf[Int], meanForThisPoint, ciForThisPoint._1, ciForThisPoint._2)
 
-                val ciForNewestPoint = if (showLatestCi) {
-                  t.confidenceInterval(curve.context, measurement.complete)
-                } else {
-                  (0D, 0D)
-                }
-
-                newestSeries.add(measurement.params.axisData.head._2.asInstanceOf[Int], measurement.value, ciForNewestPoint._1, ciForNewestPoint._2)
+                historySeries.add(x, meanForThisPoint, yLowThis, yHighThis)
+                newestSeries.add(x, measurement.value, yLowNewest, yHighNewest)
               }
               dataset.addSeries(historySeries)
               dataset.addSeries(newestSeries)
@@ -176,45 +177,46 @@ object ChartReporter {
       }
     }
 
+    /** Returns the data to dataset converter. */
+    private implicit val MyToCategoryDatasetConverter: ToCategoryDataset[Seq[(String,(String,Double))]] =
+      ToCategoryDataset { coll =>
+        coll.foldLeft(new DefaultCategoryDataset) { case (dataset,(series,(category,value))) =>
+          dataset.addValue(value.toDouble, series, category)
+          dataset
+        }
+      }
+
     case class TrendHistogram() extends ChartFactory {
+
       def createChart(scopename: String, cs: Seq[CurveData], histories: Seq[History], colors: Seq[Color] = Seq()): Chart = {
-        val chartName = scopename
-        val xAxisName = "Date"
         val now = new Date
         val df = getDateTimeInstance(MEDIUM, MEDIUM)
-        val currentDate = df format now
-        val dataset = new DefaultCategoryDataset
 
         /*
-         * An History contains the previous curves for a curve in cs. For instance, if we have three dates (categories) on the chart, and for instance
+         * A History contains the previous curves for a curve in cs. For instance, if we have three dates (categories) on the chart, and for instance
          * three curves for the most recent measurements (so cs has size 3), then histories will have length 3 too (because there are 3 curves), and each
          * History in histories will contain 2 Entry because there are 3 dates (categories).
          *
          * cs and histories will always have the same length here
          *
-         * 
+         * case class History(results: Seq[History.Entry], ...)
+         * type Entry = (Date, Context, CurveData)
+         * def curves = results.map(_._3)
+         * def dates = results.map(_._1)
          */
-        for ((c, history) <- cs zip histories) {
-          /*
-           * case class History(results: Seq[History.Entry], ...)
-           * type Entry = (Date, Context, CurveData)
-           * def curves = results.map(_._3)
-           * def dates = results.map(_._1)
-           */
-          val curves = history.curves :+ c
-          val dates = history.dates :+ now
-          val categoryNames = dates.map(df format _)
-          for ((curve, categoryName) <- curves zip categoryNames) {
-            for(measurement <- curve.measurements) {
-              val curveName = curve.context(dsl.curve)
-              val measurementParams = (for(p <- measurement.params.axisData) yield (p._1.toString + " : " + p._2.toString)).mkString("[", ", ", "]")
-              val seriesName: String = curveName + " " + measurementParams
-              dataset.addValue(measurement.value, seriesName, categoryName)
-            }
-          }
-        }
+        val data = for {
+          (c, history) <- cs zip histories
+          curves = history.curves :+ c
+          dates = history.dates :+ now
+          categories = dates map df.format
+          (curve, category) <- curves zip categories
+          measurement <- curve.measurements
+          curveName = curve.context(dsl.curve)
+          measurementParams = (for(p <- measurement.params.axisData) yield (s"""$p._1 : $p._2""")).mkString("[", ", ", "]")
+          series = s"""$curveName $measurementParams"""
+        } yield (series,(category,measurement.value))
 
-        val chart = BarChart(dataset, title = chartName, domainAxisLabel = xAxisName, rangeAxisLabel = "Value")
+        val chart = BarChart(data, title = scopename, domainAxisLabel = "Date", rangeAxisLabel = "Value")
         val plot = chart.plot
         val renderer: BarRenderer = plot.getRenderer.asInstanceOf[BarRenderer]
         renderer.setDrawBarOutline(false)
@@ -304,28 +306,22 @@ object ChartReporter {
 
     case class NormalHistogram() extends ChartFactory {
       def createChart(scopename: String, cs: Seq[CurveData], histories: Seq[History], colors: Seq[Color] = Seq()): Chart = {
-        val chartName = scopename
-        val xAxisName = "Parameters"
         val now = new Date
         val df = getDateTimeInstance(MEDIUM, MEDIUM)
-        val currentDate = df format now
-        val dataset = new DefaultCategoryDataset
 
-        for ((c, history) <- cs zip histories) {
-          val curves = history.curves :+ c
-          val dates = history.dates :+ now
-          val formattedDates = dates.map(df format _)
-          for ((curve, formattedDate) <- curves zip formattedDates) {
-            for(measurement <- curve.measurements) {
-              val curveName = curve.context(dsl.curve)
-              val measurementParams = (for(p <- measurement.params.axisData) yield (p._1.toString + " : " + p._2.toString)).mkString("[", ", ", "]")
-              val seriesName: String = curveName + "#" + formattedDate
-              dataset.addValue(measurement.value, seriesName, measurementParams)
-            }
-          }
-        }
+        val data = for {
+          (c, history) <- cs zip histories
+          curves = history.curves :+ c
+          dates = history.dates :+ now
+          formattedDates = dates map df.format
+          (curve, formattedDate) <- curves zip formattedDates
+          measurement <- curve.measurements
+          curveName = curve.context(dsl.curve)
+          measurementParams = (for(p <- measurement.params.axisData) yield (s"""$p._1 : $p._2""")).mkString("[", ", ", "]")
+          series = s"""$curveName#$formattedDate"""
+        } yield (series,(measurementParams,measurement.value))
 
-        val chart = BarChart(dataset, title = chartName, domainAxisLabel = xAxisName, rangeAxisLabel = "Value")
+        val chart = BarChart(data, title = scopename, domainAxisLabel = "Parameters", rangeAxisLabel = "Value")
         val plot = chart.plot
         val renderer: BarRenderer = plot.getRenderer.asInstanceOf[BarRenderer]
         renderer.setDrawBarOutline(false)
