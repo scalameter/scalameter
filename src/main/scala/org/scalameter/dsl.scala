@@ -28,9 +28,10 @@ trait DSL {
   }
 
   protected case class Scope(name: String, context: Context) {
-    def config(kvs: (String, Any)*) = Scope(name, context ++ Context(kvs.toMap))
+    def config(kvs: KeyValue*): Scope = config(Context(kvs: _*))
+    def config(ctx: Context): Scope = Scope(name, context ++ ctx)
     def in(block: =>Unit): Unit = {
-      val oldscope = context.goe(Key.dsl.scope, List())
+      val oldscope = context(Key.dsl.scope)
       descendInScope(name, context + (Key.dsl.scope -> (name :: oldscope))) {
         block
       }
@@ -44,7 +45,8 @@ trait DSL {
     def afterTests(block: =>Any) = Using(benchmark.copy(teardownafterall = Some(() => block)))
     def warmUp(block: =>Any) = Using(benchmark.copy(customwarmup = Some(() => block)))
     def curve(name: String) = Using(benchmark.copy(context = benchmark.context + (Key.dsl.curve -> name)))
-    def config(xs: (String, Any)*) = Using(benchmark.copy(context = benchmark.context ++ Context(xs: _*)))
+    def config(kvs: KeyValue*): Using[T] = config(Context(kvs: _*))
+    def config(ctx: Context): Using[T] = Using(benchmark.copy(context = benchmark.context ++ ctx))
     def in(block: T => Any) {
       setupzipper.value = setupzipper.value.addItem(benchmark.copy(snippet = block))
     }

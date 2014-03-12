@@ -4,8 +4,9 @@ package execution
 
 
 import java.io._
-import collection._
-import sys.process._
+import scala.collection._
+import scala.sys.process._
+import scala.util.{Try, Success, Failure}
 import utils.Tree
 
 
@@ -21,12 +22,18 @@ class SeparateJvmsExecutor(val warmer: Executor.Warmer, val aggregator: Aggregat
 
   val runner = new JvmRunner
 
+  def createJvmContext(ctx: Context) = {
+    val existingFlags = ctx(exec.jvmflags)
+    val flags = s"${if (initialContext(Key.verbose)) "-verbose:gc" else ""} " + existingFlags
+    ctx + (exec.jvmflags -> flags)
+  }
+
   def runSetup[T](setup: Setup[T]): CurveData = {
     import setup._
 
-    val warmups = context.goe(exec.maxWarmupRuns, 10)
-    val totalreps = context.goe(exec.benchRuns, 10)
-    val independentSamples = context.goe(exec.independentSamples, 9)
+    val warmups = context(exec.maxWarmupRuns)
+    val totalreps = context(exec.benchRuns)
+    val independentSamples = context(exec.independentSamples)
     def repetitions(idx: Int): Int = {
       val is = independentSamples
       totalreps / is + (if (idx < totalreps % is) 1 else 0)
@@ -36,10 +43,10 @@ class SeparateJvmsExecutor(val warmer: Executor.Warmer, val aggregator: Aggregat
     val w = warmer
     val jvmContext = createJvmContext(context)
 
-    def sample(idx: Int, reps: Int): Seq[(Parameters, Seq[Double])] = runner.run(jvmContext) {
+    def sample(idx: Int, reps: Int): Try[Seq[(Parameters, Seq[Double])]] = runner.run(jvmContext) {
       dyn.initialContext.value = context
       
-      log.verbose(s"Sampling $reps measurements in separate JVM invocation $idx - ${context.scope}, ${context.goe(dsl.curve, "")}.")
+      log.verbose(s"Sampling $reps measurements in separate JVM invocation $idx - ${context.scope}, ${context(dsl.curve)}.")
 
       // warmup
       setupBeforeAll()
@@ -58,27 +65,28 @@ class SeparateJvmsExecutor(val warmer: Executor.Warmer, val aggregator: Aggregat
 
       // measure
       setupBeforeAll()
-      val observations = for (params <- gen.dataset) yield {
+      val observations = new mutable.ArrayBuffer[(Parameters, Seq[Double])]()
+      for (params <- gen.dataset) {
         val set = setupFor()
         val tear = teardownFor()
         val regen = regenerateFor(params)
-        (params, m.measure(context, reps, set, tear, regen, snippet))
+        observations += (params -> m.measure(context, reps, set, tear, regen, snippet))
       }
       teardownAfterAll()
 
-      observations.toBuffer
+      observations
     }
 
     def sampleReport(idx: Int, reps: Int): Seq[(Parameters, Seq[Double])] = try {
-      sample(idx, reps)
+      sample(idx, reps).get
     } catch {
-      case e: Exception =>
-        log.error(s"Error running separate JVM: $e")
+      case t: Throwable =>
+        log.error(s"Error running separate JVM: $t")
         log.error(s"Classpath: ${sys.props("java.class.path")}")
-        throw e
+        throw t
     }
 
-    log.verbose(s"Running test set for ${context.scope}, curve ${context.goe(dsl.curve, "")}")
+    log.verbose(s"Running test set for ${context.scope}, curve ${context(dsl.curve)}")
     log.verbose(s"Starting $totalreps measurements across $independentSamples independent JVM runs.")
 
     val valueseqs = for {

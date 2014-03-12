@@ -32,6 +32,22 @@ trait Gen[T] extends Serializable {
     }
   }
 
+  def zip[S](that: Gen[S]): Gen[(T, S)] = for {
+    x <- self
+    y <- that
+  } yield (x, y)
+
+  def rename(mapping: (String, String)*): Gen[T] = new Gen[T] {
+    val reverseMapping = mapping.map(kv => (kv._2, kv._1))
+    def warmupset = self.warmupset
+    def dataset = self.dataset.map(params => params map {
+      case (k, v) => (mapping.toMap.applyOrElse(k, (k: String) => k), v)
+    })
+    def generate(params: Parameters) = self.generate(params map {
+      case (k, v) => (reverseMapping.toMap.applyOrElse(k, (k: String) => k), v)
+    })
+  }
+
   def warmupset: Iterator[T]
 
   def dataset: Iterator[Parameters]
@@ -58,7 +74,7 @@ object Gen {
 
   def unit(axisName: String): Gen[Unit] = new Gen[Unit] {
     def warmupset = Iterator.single(())
-    def dataset = Iterator.single(Parameters(axisName -> ()))
+    def dataset = Iterator.single(Parameters((axisName, ())))
     def generate(params: Parameters) = params[Unit](axisName)
   }
 

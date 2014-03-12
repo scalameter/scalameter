@@ -67,11 +67,12 @@ object Main {
       def stringLit = "['\"]".r ~ rep("[^'']".r) ~ "['\"]".r ^^ {
         case _ ~ cs ~ _ => cs.mkString
       }
-      def scopefilt: Parser[Configuration] = "-" ~ "CscopeFilter" ~ (stringLit | failure("scopFilter must be followed by a single or double quoted string.")) ^^ {
+      def scopefilt: Parser[Configuration] = "-" ~ "CscopeFilter" ~ (stringLit | failure("scopeFilter must be followed by a single or double quoted string.")) ^^ {
         case _ ~ _ ~ s => Configuration(Nil, Context(scopeFilter -> s))
       }
-      def flag: Parser[Configuration] = "-" ~ ("verbose" | "preJDK7") ^^ {
+      def flag: Parser[Configuration] = "-" ~ ("silent" | "verbose" | "preJDK7") ^^ {
         case _ ~ "verbose" => Configuration(Nil, Context(Key.verbose -> true))
+        case _ ~ "silent" => Configuration(Nil, Context(Key.verbose -> false))
         case _ ~ "preJDK7" => Configuration(Nil, Context(Key.preJDK7 -> true))
       }
 
