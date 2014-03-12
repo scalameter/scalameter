@@ -22,9 +22,9 @@ case class DsvReporter(delimiter: Char) extends Reporter {
 
   def report(result: Tree[CurveData], persistor: Persistor) = {
     val currentDate = new Date
-    val resultdir = initialContext.goe(Key.reports.resultDir, "tmp")
+    val resultdir = initialContext(Key.reports.resultDir)
 
-    new File(s"$resultdir").mkdir()
+    new File(s"$resultdir").mkdirs()
 
     def reportCurve(cd: CurveData) {
       val filename = s"$resultdir$sep${cd.context.scope}.${cd.context.curve}.dsv"
@@ -90,7 +90,7 @@ object DsvReporter {
         p(delimiter)
         p(m.success)
         p(delimiter)
-        val ci = utils.Statistics.confidenceInterval(m.complete, cd.context.goe(Key.reports.regression.significance, 1e-10))
+        val ci = utils.Statistics.confidenceInterval(m.complete, cd.context(Key.reports.regression.significance))
         p(f"${ci._1}%.3f")
         p(delimiter)
         p(f"${ci._2}%.3f")
