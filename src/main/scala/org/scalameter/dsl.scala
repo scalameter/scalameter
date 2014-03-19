@@ -19,11 +19,11 @@ trait DSL {
         ()
     })
 
-  object performance {
+  case object performance {
     def of(modulename: String) = Scope(modulename, setupzipper.value.current.context)
   }
 
-  object measure {
+  case object measure {
     def method(methodname: String) = Scope(methodname, setupzipper.value.current.context)
   }
 
