@@ -11,8 +11,8 @@ trait DSL {
 
   import DSL._
 
-  protected[scalameter] var testbodySet = false
-  private[scalameter] val testbody = new DynamicVariable[() => Any]({ () =>
+  @transient protected[scalameter] var testbodySet = false
+  @transient private[scalameter] val testbody = new DynamicVariable[() => Any]({ () =>
       if (!testbodySet)
         ???
       else
