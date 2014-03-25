@@ -105,45 +105,50 @@ object ChartReporter {
         (0D, 0D)
       }
 
-      private def newestSeriesData(curve: CurveData) = for {
-        measurement <- curve.measurements
-        x = measurement.params.axisData.head._2.asInstanceOf[Int]
-        (ciLow,ciHigh) = ciFor(curve, measurement.complete)
-      } yield (x, measurement.value, ciLow, ciHigh)
-
       def createChart(scopename: String, cs: Seq[CurveData], histories: Seq[History], colors: Seq[Color] = Seq()): Chart = {
 
-        val seriess = for ((curve, history) <- cs zip histories) yield {
-          val seriesName = curve.context(dsl.curve)
+        def createDataset = {
+          val dataset = new YIntervalSeriesCollection
+          for ((curve, history) <- cs zip histories) {
+            if (history.results.isEmpty) {
+              val series = new YIntervalSeries(curve.context(dsl.curve))
+              for (measurement <- curve.measurements) {
+                val (yLow,yHigh) = ciFor(curve, measurement.complete)
+                series.add(measurement.params.axisData.head._2.asInstanceOf[Int], measurement.value, yLow, yHigh)
+              }
+              dataset.addSeries(series)
+            } else {
+              val newestSeries = new YIntervalSeries(curve.context(dsl.curve))
+              val historySeries = new YIntervalSeries(curve.context(dsl.curve))
 
-          val newestSeries = newestSeriesData(curve).toYIntervalSeries(seriesName)
+              for ((measurement, measurementIndex) <- curve.measurements.zipWithIndex) {
+                val x = measurement.params.axisData.head._2.asInstanceOf[Int]
 
-          if (history.results.isEmpty) {
-            List(newestSeries)
-          } else {
-            val historySeriesData = for {
-              (measurement, measurementIndex) <- curve.measurements.zipWithIndex
-              x = measurement.params.axisData.head._2.asInstanceOf[Int]
+                /* Fetch, for each corresponding curve in history, the measurements that were at the same position (same size for instance)
+                on x-axis, and make a list of them */
+                val previousMeasurements = for {
+                  pastResult <- history.results
+                  correspondingCurveInHistory = pastResult._3
+                } yield correspondingCurveInHistory.measurements(measurementIndex)
+                // We then take all observations that gave the value measurement (by calling complete) of each point, and concat them
+                val previousMeasurementsObservations = previousMeasurements flatMap(m => m.complete)
 
-              /* Fetch, for each corresponding curve in history, the measurements that were at the same position (same size for instance)
-               on x-axis, and make a list of them */
-              previousMeasurements = for {
-                pastResult <- history.results
-                correspondingCurveInHistory = pastResult._3
-              } yield correspondingCurveInHistory.measurements(measurementIndex)
+                val (yLowThis,yHighThis) = ciFor(curve, previousMeasurementsObservations)
+                val (yLowNewest,yHighNewest) = ciFor(curve, measurement.complete)
 
-              // We then take all observations that gave the value measurement (by calling complete) of each point, and concat them
-              previousMeasurementsObservations = previousMeasurements.flatMap(_.complete)
-              (ciLow,ciHigh) = ciFor(curve, previousMeasurementsObservations)
-              meanForThisPoint = mean(previousMeasurementsObservations)
-            } yield (x, meanForThisPoint, ciLow, ciHigh)
+                val meanForThisPoint = mean(previousMeasurementsObservations)
+                // Params : x - the x-value, y - the y-value, yLow - the lower bound of the y-interval, yHigh - the upper bound of the y-interval.
 
-            val historySeries = historySeriesData.toYIntervalSeries(seriesName)
-
-            List(newestSeries, historySeries)
+                historySeries.add(x, meanForThisPoint, yLowThis, yHighThis)
+                newestSeries.add(x, measurement.value, yLowNewest, yHighNewest)
+              }
+              dataset.addSeries(historySeries)
+              dataset.addSeries(newestSeries)
+            }
           }
-        }
 
+          dataset
+        }
         /* We may want to call other methods from the JFreeChart API, as there are a
            lot of them related to appearance in class DeviationRenderer and in its parent classes */
         def paintCurves(renderer: DeviationRenderer) {
@@ -155,6 +160,7 @@ object ChartReporter {
           renderer.setAlpha(0.25F)
         }
 
+        val dataset = createDataset
         val chartName = scopename
         val xAxisName = cs.head.measurements.head.params.axisData.head._1
 
@@ -168,6 +174,7 @@ object ChartReporter {
         chart.plot.range.axis.label = "value"
 
         chart.plot.setBackgroundPaint(new java.awt.Color(200, 200, 200))
+        chart.plot.setRenderer(renderer)
         // There are many other configurable appearance options !
         chart.antiAlias = true
         chart
