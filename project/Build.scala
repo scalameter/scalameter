@@ -8,9 +8,8 @@ import java.io.File
 object ScalaMeterBuild extends Build {
 
   val publishUser = "SONATYPE_USER"
-  
   val publishPass = "SONATYPE_PASS"
-  
+
   val userPass = for {
     user <- sys.env.get(publishUser)
     pass <- sys.env.get(publishPass)
@@ -25,16 +24,16 @@ object ScalaMeterBuild extends Build {
   })
 
   val scalaMeterSettings = Defaults.defaultSettings ++ publishCreds ++ Seq(
-    scalaVersion := "2.10.2",
+    scalaVersion := "2.10.3",
     scalacOptions ++= Seq("-deprecation", "-unchecked", "-feature", "-Xlint"),
     resolvers ++= Seq(
       "Sonatype OSS Snapshots" at "https://oss.sonatype.org/content/repositories/snapshots",
       "Sonatype OSS Releases" at "https://oss.sonatype.org/content/repositories/releases"
     ),
     libraryDependencies ++= List(
-      "org.scalatest" % "scalatest_2.10" % "1.9.1" % "test",
-      "jfree" % "jfreechart" % "1.0.12",
-      "org.apache.commons" % "commons-math3" % "3.0",
+      "org.scalatest" %% "scalatest" % "2.1.0" % "test",
+      "com.github.wookietreiber" %% "scala-chart" % "0.4.0-SNAPSHOT",
+      "org.apache.commons" % "commons-math3" % "3.2",
       "org.scala-tools.testing" % "test-interface" % "0.5"
     ),
     publishMavenStyle := true,
@@ -57,7 +56,7 @@ object ScalaMeterBuild extends Build {
         </license>
       </licenses>
       <scm>
-        <url>git@github.com:axel22/scalameter.git</url>
+        <url>git@github.com:scalameter/scalameter.git</url>
         <connection>scm:git:git@github.com:scalameter/scalameter.git</connection>
       </scm>
       <developers>
@@ -68,14 +67,14 @@ object ScalaMeterBuild extends Build {
         </developer>
       </developers>
   )
-  
+
   /* projects */
-  
+
   lazy val scalameter = Project(
     "scalameter",
     file("."),
     settings = scalaMeterSettings
   ) dependsOn (
   )
-  
+
 }
