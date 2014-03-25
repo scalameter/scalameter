@@ -83,8 +83,8 @@ object ChartReporter {
 
         val chart = XYLineChart(dataset)
         chart.title = scopename
-        chart.domainAxisLabel = cs.head.measurements.head.params.axisData.head._1
-        chart.rangeAxisLabel = "value"
+        chart.plot.domain.axis.label = cs.head.measurements.head.params.axisData.head._1
+        chart.plot.range.axis.label = "value"
 
         chart.plot.setBackgroundPaint(new java.awt.Color(180, 180, 180))
         chart.antiAlias = true
@@ -158,8 +158,15 @@ object ChartReporter {
         val chartName = scopename
         val xAxisName = cs.head.measurements.head.params.axisData.head._1
 
-        val chart = XYDeviationChart(seriess.flatten, title = chartName, domainAxisLabel = xAxisName, rangeAxisLabel = "value")
-        paintCurves(chart.plot.getRenderer.asInstanceOf[DeviationRenderer])
+        // instantiate a DeviationRenderer (lines, shapes)
+        val renderer = new DeviationRenderer(true, true)
+        paintCurves(renderer)
+
+        val chart = XYLineChart(dataset)
+        chart.title = chartName
+        chart.plot.domain.axis.label = xAxisName
+        chart.plot.range.axis.label = "value"
+
         chart.plot.setBackgroundPaint(new java.awt.Color(200, 200, 200))
         // There are many other configurable appearance options !
         chart.antiAlias = true
@@ -206,7 +213,11 @@ object ChartReporter {
           series = s"""$curveName $measurementParams"""
         } yield (series,(category,measurement.value))
 
-        val chart = BarChart(data, title = scopename, domainAxisLabel = "Date", rangeAxisLabel = "Value")
+        val chart = BarChart(data)
+        chart.title = scopename
+        chart.plot.domain.axis.label = "Date"
+        chart.plot.range.axis.label = "Value"
+
         val plot = chart.plot
         val renderer: BarRenderer = plot.getRenderer.asInstanceOf[BarRenderer]
         renderer.setDrawBarOutline(false)
@@ -311,7 +322,11 @@ object ChartReporter {
           series = s"""$curveName#$formattedDate"""
         } yield (series,(measurementParams,measurement.value))
 
-        val chart = BarChart(data, title = scopename, domainAxisLabel = "Parameters", rangeAxisLabel = "Value")
+        val chart = BarChart(data)
+        chart.title = scopename
+        chart.plot.domain.axis.label = "Parameters"
+        chart.plot.range.axis.label = "Value"
+
         val plot = chart.plot
         val renderer: BarRenderer = plot.getRenderer.asInstanceOf[BarRenderer]
         renderer.setDrawBarOutline(false)
