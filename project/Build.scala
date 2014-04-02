@@ -67,7 +67,7 @@ object ScalaMeterBuild extends Build {
   def dependencies(scalaVersion: String) = CrossVersion.partialVersion(scalaVersion) match {
     case Some((2,11)) => List (
       "org.scalatest" %% "scalatest" % "2.1.2" % "test",
-      "com.github.wookietreiber" %% "scala-chart" % "0.4.0-SNAPSHOT",
+      "com.github.wookietreiber" %% "scala-chart" % "0.4.0",
       "org.apache.commons" % "commons-math3" % "3.2",
       "org.scala-tools.testing" % "test-interface" % "0.5",
       "org.scala-lang" % "scala-reflect" % "2.11.0-RC3",
@@ -77,7 +77,7 @@ object ScalaMeterBuild extends Build {
 
     case Some((2,10)) => List (
       "org.scalatest" %% "scalatest" % "2.1.0" % "test",
-      "com.github.wookietreiber" %% "scala-chart" % "0.4.0-SNAPSHOT",
+      "com.github.wookietreiber" %% "scala-chart" % "0.4.0",
       "org.apache.commons" % "commons-math3" % "3.2",
       "org.scala-tools.testing" % "test-interface" % "0.5"
     )
