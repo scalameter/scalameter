@@ -30,7 +30,7 @@ object Log {
       println(msg)
     }
     def debug(msg: String) {
-      if (initialContext(Key.verbose)) log synchronized {
+      if (currentContext(Key.verbose)) log synchronized {
         println(msg)
       }
     }

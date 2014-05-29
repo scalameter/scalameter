@@ -5,5 +5,5 @@ case class CurveData(measurements: Seq[Measurement], info: Map[Key[_], Any], con
 }
 
 object CurveData {
-  def empty = CurveData(Seq(), Map(), initialContext)
+  def empty = CurveData(Seq(), Map(), currentContext)
 }

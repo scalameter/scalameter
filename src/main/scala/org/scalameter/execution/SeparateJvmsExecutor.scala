@@ -24,7 +24,7 @@ class SeparateJvmsExecutor(val warmer: Warmer, val aggregator: Aggregator, val m
 
   def createJvmContext(ctx: Context) = {
     val existingFlags = ctx(exec.jvmflags)
-    val flags = s"${if (initialContext(Key.verbose)) "-verbose:gc" else ""} " + existingFlags
+    val flags = s"${if (currentContext(Key.verbose)) "-verbose:gc" else ""} " + existingFlags
     ctx + (exec.jvmflags -> flags)
   }
 
@@ -44,7 +44,7 @@ class SeparateJvmsExecutor(val warmer: Warmer, val aggregator: Aggregator, val m
     val jvmContext = createJvmContext(context)
 
     def sample(idx: Int, reps: Int): Try[Seq[(Parameters, Seq[Double])]] = runner.run(jvmContext) {
-      dyn.initialContext.value = context
+      dyn.currentContext.value = context
       
       log.verbose(s"Sampling $reps measurements in separate JVM invocation $idx - ${context.scope}, ${context(dsl.curve)}.")
 

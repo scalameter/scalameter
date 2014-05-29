@@ -78,7 +78,7 @@ object RegressionReporter {
   import Key._
 
   object ansi {
-    val colors = initialContext(Key.reports.colors)
+    val colors = currentContext(Key.reports.colors)
     def ifcolor(s: String) = if (colors) s else ""
 
     val red = ifcolor("\u001B[31m")

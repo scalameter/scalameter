@@ -37,7 +37,7 @@ class ScalaMeterFramework extends Framework {
       def warn(msg: String) = l.warn(msg)
       def trace(t: Throwable) = l.trace(t)
       def info(msg: String) = l.info(msg)
-      def debug(msg: String) = if (initialContext(Key.verbose)) {
+      def debug(msg: String) = if (currentContext(Key.verbose)) {
         // if verbose is on, treat this as a normal message
         info(msg)
       } else l.debug(msg)
@@ -53,7 +53,7 @@ class ScalaMeterFramework extends Framework {
       for {
         _ <- dyn.log.using(complog)
         _ <- dyn.events.using(tievents)
-        _ <- dyn.initialContext.using(initialContext ++ Main.Configuration.fromCommandLineArgs(args).context + (Key.classpath -> testcp))
+        _ <- dyn.currentContext.using(currentContext ++ Main.Configuration.fromCommandLineArgs(args).context + (Key.classpath -> testcp))
       } try fingerprint match {
         case fp: SubclassFingerprint =>
           if (!fp.isModule) {

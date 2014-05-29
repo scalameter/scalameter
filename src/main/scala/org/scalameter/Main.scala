@@ -18,7 +18,7 @@ object Main {
   def run(configuration: Configuration) {
     // prepare initial context
     // identify test objects
-    dyn.initialContext.withValue(Context.topLevel ++ configuration.context) {
+    dyn.currentContext.withValue(Context.topLevel ++ configuration.context) {
       import configuration._
 
       // schedule benchmarks

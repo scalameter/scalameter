@@ -12,6 +12,7 @@ import collection._
 package object scalameter extends MeasureBuilder[Unit, Double](
   Context.inlineBenchmarking,
   Warmer.Zero,
+  MeasureBuilder.timeMeasurer,
   MeasureBuilder.unitRegen,
   MeasureBuilder.doNothing,
   MeasureBuilder.doNothing,
@@ -21,12 +22,12 @@ package object scalameter extends MeasureBuilder[Unit, Double](
   type KeyValue = (Key[T], T) forSome { type T }
 
   private[scalameter] object dyn {
-    val initialContext = new MonadicDynVar(Context.topLevel)
+    val currentContext = new MonadicDynVar(Context.topLevel)
     val log = new MonadicDynVar[Log](Log.Console)
     val events = new MonadicDynVar[Events](Events.None)
   }
 
-  def initialContext: Context = dyn.initialContext.value
+  def currentContext: Context = dyn.currentContext.value
 
   def log: Log = dyn.log.value
 

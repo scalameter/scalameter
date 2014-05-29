@@ -45,7 +45,8 @@ object Context {
     exec.benchRuns -> 1,
     exec.minWarmupRuns -> 10,
     exec.maxWarmupRuns -> 50,
-    exec.requireGC -> false
+    exec.requireGC -> false,
+    verbose -> false
   )
 
   def machine = Context(

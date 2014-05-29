@@ -11,7 +11,7 @@ abstract class PerformanceTest extends PerformanceTest.Initialization with Seria
 
   def main(args: Array[String]) {
     val ctx = Main.Configuration.fromCommandLineArgs(args).context
-    val ok = dyn.initialContext.withValue(ctx) {
+    val ok = dyn.currentContext.withValue(ctx) {
       executeTests()
     }
 
@@ -51,7 +51,7 @@ object PerformanceTest {
   }
 
   private def setupFilter(setup: Setup[_]): Boolean = {
-    val sf = initialContext(Key.scopeFilter)
+    val sf = currentContext(Key.scopeFilter)
     val fullname = setup.context.scope + "." + setup.context.curve
     val regex = sf.r
     regex.findFirstIn(fullname) != None

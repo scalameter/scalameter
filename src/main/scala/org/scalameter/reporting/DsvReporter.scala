@@ -22,7 +22,7 @@ case class DsvReporter(delimiter: Char) extends Reporter {
 
   def report(result: Tree[CurveData], persistor: Persistor) = {
     val currentDate = new Date
-    val resultdir = initialContext(Key.reports.resultDir)
+    val resultdir = currentContext(Key.reports.resultDir)
 
     new File(s"$resultdir").mkdirs()
 

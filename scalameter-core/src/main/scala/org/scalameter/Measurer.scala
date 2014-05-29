@@ -88,8 +88,10 @@ object Measurer {
 
         @volatile var gc = false
         val time = withGCNotification { n =>
-          gc = true
-          log.verbose("GC detected.")
+          dyn.currentContext.withValue(context) {
+            gc = true
+            log.verbose("GC detected.")
+          }
         } {
           val start = System.nanoTime
           snippet(value)
