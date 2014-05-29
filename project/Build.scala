@@ -25,16 +25,16 @@ object ScalaMeterBuild extends Build {
 
   val scalaMeterSettings = Defaults.defaultSettings ++ publishCreds ++ Seq(
     name := "scalameter",
-    organization := "com.github.axel22",
+    organization := "com.storm-enroute",
     version := "0.5-SNAPSHOT",
     scalaVersion := "2.11.0",
     crossScalaVersions := Seq("2.10.4", "2.11.0"),
     scalacOptions ++= Seq("-deprecation", "-unchecked", "-feature", "-Xlint"),
+    libraryDependencies <++= (scalaVersion)(sv => dependencies(sv)),
     resolvers ++= Seq(
       "Sonatype OSS Snapshots" at "https://oss.sonatype.org/content/repositories/snapshots",
       "Sonatype OSS Releases" at "https://oss.sonatype.org/content/repositories/releases"
     ),
-    libraryDependencies <++= (scalaVersion)(sv => dependencies(sv)),
     publishMavenStyle := true,
     publishTo <<= version { (v: String) =>
       val nexus = "https://oss.sonatype.org/"
@@ -88,16 +88,16 @@ object ScalaMeterBuild extends Build {
 
   val scalaMeterCoreSettings = Defaults.defaultSettings ++ publishCreds ++ Seq(
     name := "scalameter-core",
-    organization := "com.github.axel22",
+    organization := "com.storm-enroute",
     version := "0.5-SNAPSHOT",
     scalaVersion := "2.11.0",
     crossScalaVersions := Seq("2.10.4", "2.11.0"),
     scalacOptions ++= Seq("-deprecation", "-unchecked", "-feature", "-Xlint"),
+    libraryDependencies <++= (scalaVersion)(sv => coreDependencies(sv)),
     resolvers ++= Seq(
       "Sonatype OSS Snapshots" at "https://oss.sonatype.org/content/repositories/snapshots",
       "Sonatype OSS Releases" at "https://oss.sonatype.org/content/repositories/releases"
     ),
-    libraryDependencies <++= (scalaVersion)(sv => coreDependencies(sv)),
     publishMavenStyle := true,
     publishTo <<= version { (v: String) =>
       val nexus = "https://oss.sonatype.org/"
