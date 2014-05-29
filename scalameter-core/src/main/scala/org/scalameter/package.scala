@@ -43,6 +43,11 @@ package object scalameter {
   def extractClasspath(classLoader: ClassLoader, default: => String): String =
     ClassPath.extract(classLoader, default)
 
-  def singletonInstance[C](module: Class[C]) = module.getField("MODULE$").get(null).asInstanceOf[PerformanceTest]
+}
 
+
+package scalameter {
+
+  case class MeasurementData(complete: Seq[Double], success: Boolean) 
+  
 }

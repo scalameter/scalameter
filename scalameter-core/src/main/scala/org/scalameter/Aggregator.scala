@@ -5,7 +5,7 @@ object Aggregator {
   def apply(n: String)(f: Seq[Double] => Double) = new Aggregator {
     def name = n
     def apply(times: Seq[Double]) = f(times)
-    def data(times: Seq[Double]) = Measurement.Data(times, true)
+    def data(times: Seq[Double]) = MeasurementData(times, true)
   }
 
   def min = Aggregator("min") { _.min }
@@ -29,5 +29,5 @@ object Aggregator {
 trait Aggregator extends (Seq[Double] => Double) with Serializable {
   def name: String
   def apply(times: Seq[Double]): Double
-  def data(times: Seq[Double]): Measurement.Data
+  def data(times: Seq[Double]): MeasurementData
 }

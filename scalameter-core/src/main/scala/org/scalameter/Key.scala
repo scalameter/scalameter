@@ -36,7 +36,6 @@ class Keys {
   object dsl {
     lazy val curve = Key[String]("curve", "")
     lazy val scope = Key[List[String]]("scope", Nil)
-    lazy val executor = Key[Executor]("executor")
   }
 
   object machine {

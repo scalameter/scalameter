@@ -61,7 +61,7 @@ class ScalaMeterFramework extends Framework {
             ptest.executeTests()
           } else {
             val module = Class.forName(testClassName + "$", true, testClassLoader)
-            val ptest = singletonInstance(module)
+            val ptest = utils.Reflect.singletonInstance(module)
             ptest.executeTests()
           }
       } catch {

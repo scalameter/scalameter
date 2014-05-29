@@ -57,7 +57,7 @@ trait DSL {
   def isModule = this.getClass.getSimpleName.endsWith("$")
 
   def include[T <: PerformanceTest.Initialization: Manifest] = {
-    if (isModule) singletonInstance(manifest[T].runtimeClass).testbody.value.apply()
+    if (isModule) utils.Reflect.singletonInstance(manifest[T].runtimeClass).testbody.value.apply()
     else manifest[T].runtimeClass.newInstance.asInstanceOf[PerformanceTest].testbody.value.apply()
   }
 

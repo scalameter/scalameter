@@ -35,7 +35,7 @@ case class Tree[T](context: Context, items: Seq[T], children: Seq[Tree[T]]) {
     }
   }
 
-  override def toString = s"Tree(${context.get(Key.dsl.executor)}, $items, $children)"
+  override def toString = s"Tree(${context.get(FrameworkKey.dsl.executor)}, $items, $children)"
 }
 
 
