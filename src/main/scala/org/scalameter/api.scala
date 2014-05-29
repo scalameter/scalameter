@@ -45,7 +45,8 @@ object api extends Keys {
   val SeparateJvmsExecutor = execution.SeparateJvmsExecutor
 
   val Aggregator = org.scalameter.Aggregator
-  val Warmer = Executor.Warmer
+  val Warmer = org.scalameter.Warmer
+  val Measurer = org.scalameter.Measurer
 
   /* reporting */
 

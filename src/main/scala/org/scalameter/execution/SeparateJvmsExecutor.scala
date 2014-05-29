@@ -16,7 +16,7 @@ import utils.Tree
  *  This produces more stable results, as the performance related effects of each JVM instantiation
  *  are averaged.
  */
-class SeparateJvmsExecutor(val warmer: Executor.Warmer, val aggregator: Aggregator, val measurer: Measurer) extends Executor {
+class SeparateJvmsExecutor(val warmer: Warmer, val aggregator: Aggregator, val measurer: Measurer) extends Executor {
 
   import Key._
 
@@ -125,7 +125,7 @@ class SeparateJvmsExecutor(val warmer: Executor.Warmer, val aggregator: Aggregat
 
 object SeparateJvmsExecutor extends Executor.Factory[SeparateJvmsExecutor] {
 
-  def apply(w: Executor.Warmer, agg: Aggregator, m: Measurer) = new SeparateJvmsExecutor(w, agg, m)
+  def apply(w: Warmer, agg: Aggregator, m: Measurer) = new SeparateJvmsExecutor(w, agg, m)
 
 }
 

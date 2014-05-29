@@ -23,7 +23,7 @@ abstract class PerformanceTest extends PerformanceTest.Initialization with Seria
 
 object PerformanceTest {
 
-  trait Initialization extends DSL with DelayedInit {
+  trait Initialization extends DSL {
 
     import DSL._
 
@@ -40,7 +40,6 @@ object PerformanceTest {
     def executeTests(): Boolean = {
       val datestart: Option[Date] = Some(new Date)
       DSL.setupzipper.value = Tree.Zipper.root[Setup[_]].modifyContext(_ ++ defaultConfig)
-      testbody.value.apply()
       val rawsetuptree = DSL.setupzipper.value.result
       val setuptree = rawsetuptree.filter(setupFilter)
       val resulttree = executor.run(setuptree.asInstanceOf[Tree[Setup[SameType]]], reporter, persistor)
@@ -48,14 +47,6 @@ object PerformanceTest {
 
       val datedtree = resulttree.copy(context = resulttree.context + (Key.reports.startDate -> datestart) + (Key.reports.endDate -> dateend))
       reporter.report(datedtree, persistor)
-    }
-
-    def delayedInit(body: =>Unit) {
-      // Save the *current* value of testbody.value, so that next line closes
-      // over this value and not testbody itself.
-      val current = testbody.value
-      testbody.value = () => { current(); body }
-      testbodySet = true
     }
 
   }
@@ -72,7 +63,7 @@ object PerformanceTest {
    */
   trait Quickbenchmark extends PerformanceTest {
     def executor = new execution.LocalExecutor(
-      Executor.Warmer.Default(),
+      Warmer.Default(),
       Aggregator.min,
       measurer
     )
@@ -85,7 +76,7 @@ object PerformanceTest {
    *  Reports results into the console.
    */
   trait Microbenchmark extends PerformanceTest {
-    def warmer = Executor.Warmer.Default()
+    def warmer = Warmer.Default()
     def aggregator = Aggregator.min
     def measurer = new Measurer.IgnoringGC with Measurer.PeriodicReinstantiation {
       override val defaultFrequency = 12
@@ -101,7 +92,7 @@ object PerformanceTest {
   trait HTMLReport extends PerformanceTest {
     import reporting._
     def persistor = new persistence.SerializationPersistor
-    def warmer = Executor.Warmer.Default()
+    def warmer = Warmer.Default()
     def aggregator = Aggregator.average
     def measurer: Measurer = new Measurer.IgnoringGC with Measurer.PeriodicReinstantiation with Measurer.OutlierElimination with Measurer.RelativeNoise
     def executor: Executor = new execution.SeparateJvmsExecutor(warmer, aggregator, measurer)
@@ -146,7 +137,7 @@ object PerformanceTest {
   @deprecated("This performance test is now deprecated, please use `OnlineRegressionReport` instead.", "0.5")
   trait Regression extends PerformanceTest {
     import reporting._
-    def warmer = Executor.Warmer.Default()
+    def warmer = Warmer.Default()
     def aggregator = Aggregator.average
     def measurer: Measurer = new Measurer.IgnoringGC with Measurer.PeriodicReinstantiation with Measurer.OutlierElimination with Measurer.RelativeNoise
     def executor: Executor = new execution.SeparateJvmsExecutor(warmer, aggregator, measurer)

@@ -26,7 +26,7 @@ import utils.Tree
  *  most triggered GC cycles are fast because they collect only
  *  the young generation.
  */
-class LocalExecutor(val warmer: Executor.Warmer, val aggregator: Aggregator, val measurer: Measurer) extends Executor {
+class LocalExecutor(val warmer: Warmer, val aggregator: Aggregator, val measurer: Measurer) extends Executor {
 
   import Key._
 
@@ -102,7 +102,7 @@ class LocalExecutor(val warmer: Executor.Warmer, val aggregator: Aggregator, val
 
 object LocalExecutor extends Executor.Factory[LocalExecutor] {
 
-  def apply(w: Executor.Warmer, a: Aggregator, m: Measurer) = new LocalExecutor(w, a, m)
+  def apply(w: Warmer, a: Aggregator, m: Measurer) = new LocalExecutor(w, a, m)
 
 }
 

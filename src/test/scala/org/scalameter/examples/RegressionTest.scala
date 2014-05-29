@@ -6,9 +6,7 @@ import org.scalameter.api._
 
 
 
-class RegressionTest extends PerformanceTest.Regression {
-
-  def persistor = new SerializationPersistor
+class RegressionTest extends PerformanceTest.OfflineRegressionReport {
 
   val sizes = Gen.range("size")(1000000, 5000000, 2000000)
 
@@ -28,9 +26,7 @@ class RegressionTest extends PerformanceTest.Regression {
 }
 
 
-class RegressionTest2 extends PerformanceTest.Regression {
-
-  def persistor = new SerializationPersistor
+class RegressionTest2 extends PerformanceTest.OfflineRegressionReport {
 
   val sizes = Gen.range("size")(1000000, 2000000, 500000)
 
@@ -51,9 +47,7 @@ class RegressionTest2 extends PerformanceTest.Regression {
 }
 
 
-class RegressionTest3 extends PerformanceTest.Regression {
-
-  def persistor = new SerializationPersistor
+class RegressionTest3 extends PerformanceTest.OfflineRegressionReport {
 
   val sizes = Gen.single("size")(5000000)
 

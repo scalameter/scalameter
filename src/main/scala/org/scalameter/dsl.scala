@@ -2,6 +2,7 @@ package org.scalameter
 
 
 
+import scala.reflect.ClassTag
 import scala.util.DynamicVariable
 import utils.Tree
 
@@ -10,14 +11,6 @@ import utils.Tree
 trait DSL {
 
   import DSL._
-
-  @transient protected[scalameter] var testbodySet = false
-  @transient private[scalameter] val testbody = new DynamicVariable[() => Any]({ () =>
-      if (!testbodySet)
-        ???
-      else
-        ()
-    })
 
   case object performance {
     def of(modulename: String) = Scope(modulename, setupzipper.value.current.context)
@@ -56,9 +49,12 @@ trait DSL {
 
   def isModule = this.getClass.getSimpleName.endsWith("$")
 
-  def include[T <: PerformanceTest.Initialization: Manifest] = {
-    if (isModule) utils.Reflect.singletonInstance(manifest[T].runtimeClass).testbody.value.apply()
-    else manifest[T].runtimeClass.newInstance.asInstanceOf[PerformanceTest].testbody.value.apply()
+  def include[T <: PerformanceTest.Initialization: ClassTag] {
+    val cls = implicitly[ClassTag[T]].runtimeClass
+    if (isModule) org.scalameter.events.emit(Event(
+      cls.getName, s"The `include` can only be used with benchmarks in classes -- make ${cls.getName} a class.",
+      Events.Error, new Exception("Cannot instantiate singleton object.")))
+    else cls.newInstance.asInstanceOf[PerformanceTest]
   }
 
   /** Runs all the tests in this test class or singleton object.

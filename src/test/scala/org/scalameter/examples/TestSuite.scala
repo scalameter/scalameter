@@ -8,9 +8,7 @@ import Key._
 
 
 
-class TestSuite extends PerformanceTest.Regression {
-  def persistor = new persistence.SerializationPersistor
-
+class TestSuite extends PerformanceTest.OfflineRegressionReport {
   include[MemoryTest]
   include[RegressionTest]
 }

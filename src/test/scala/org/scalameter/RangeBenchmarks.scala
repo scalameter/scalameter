@@ -11,7 +11,7 @@ extends PerformanceTest {
 
   /* configuration */
 
-  lazy val executor = SeparateJvmsExecutor(Executor.Warmer.Default(), Aggregator.min, new Measurer.Default)
+  lazy val executor = SeparateJvmsExecutor(Warmer.Default(), Aggregator.min, new Measurer.Default)
   lazy val reporter = ChartReporter(ChartFactory.XYLine())
   lazy val persistor = Persistor.None
 
@@ -65,7 +65,7 @@ extends PerformanceTest {
 
   /* configuration */
 
-  lazy val executor = SeparateJvmsExecutor(Executor.Warmer.Default(), Aggregator.min, new Measurer.Default)
+  lazy val executor = SeparateJvmsExecutor(Warmer.Default(), Aggregator.min, new Measurer.Default)
   lazy val reporter = new LoggingReporter
   lazy val persistor = Persistor.None
 

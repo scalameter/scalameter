@@ -8,10 +8,8 @@ import Key._
 
 
 
-class MemoryTest extends PerformanceTest.Regression {
-
-  def persistor = new persistence.SerializationPersistor
-  override def measurer = new Executor.Measurer.MemoryFootprint
+class MemoryTest extends PerformanceTest.OfflineRegressionReport {
+  override def measurer = new Measurer.MemoryFootprint
 
   val sizes = Gen.range("size")(1000000, 5000000, 2000000)
 
