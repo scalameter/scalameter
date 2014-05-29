@@ -51,10 +51,12 @@ trait DSL {
 
   def include[T <: PerformanceTest.Initialization: ClassTag] {
     val cls = implicitly[ClassTag[T]].runtimeClass
-    if (isModule) org.scalameter.events.emit(Event(
-      cls.getName, s"The `include` can only be used with benchmarks in classes -- make ${cls.getName} a class.",
-      Events.Error, new Exception("Cannot instantiate singleton object.")))
-    else cls.newInstance.asInstanceOf[PerformanceTest]
+    if (isModule) {
+      log.error(s"Can only use `include` with class benchmarks -- make ${cls.getName} a class.")
+      events.emit(Event(
+        cls.getName, s"The `include` can only be used with benchmarks in classes -- make ${cls.getName} a class.",
+        Events.Error, new Exception("Cannot instantiate singleton object.")))
+    } else cls.newInstance.asInstanceOf[PerformanceTest]
   }
 
   /** Runs all the tests in this test class or singleton object.
