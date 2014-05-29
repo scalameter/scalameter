@@ -4,7 +4,7 @@ set +x
 
 TRAVIS_SCALA_VERSION_ARG=$1
 
-if [[ $TRAVIS_PULL_REQUEST == "false" ]];
+if [ $TRAVIS_PULL_REQUEST = "false" ];
 then
 	echo "Testing before publishing the snapshot"
 	sbt test
