@@ -7,8 +7,8 @@ jdk:
 script: ./tools/validate-pr.sh ++${TRAVIS_SCALA_VERSION}
 env:
   global:
-    - secure: "adngy4wHe+DLnkLW0K7S8KFe+GR2mTMHx3VPs4YFooXSkJlRZMzhMzd2nJN0VNb2U7zkIrtLvsykLGIaeKF3u02iheHt3RCpRoKmxOjAkFXSRm6V7Z1J+EMVHqAG/72L2P2KkjJEaXrQqE3yG6e6elRk+qp2V3zKpQ6E5sS/g3c="
-    - secure: "fjMyfWi+UndcsT+Voqxt1NVvIbqPKwDzipxK18zd+eEgASam+L4fgtmDsIXjbgdBaTX59w+Q1DNnAOT7x34XpneU+GDASDmoNdj6oCoZOHiQb/odu2WOBWf/iINCTpJtPMMr8cLQaQ3CsnSyOojaJiFERDMcO9i58kDfU1gXa/4="
+    - secure: "U0Nvkrz3X123a2zC8NbzOxSjEoori/wInvjHU5OYhnPxiPJ2ELo1FQVQlEUmbPihyw+Sx80TP/ARzZNIzq037VcGK6dm+ygIxJROeCySmM4+LXzmZlI5m5fex/wnc30VYkw1sugTtKVnvWKQjThduQolK6rvCX1YPydiGaG1T6w="
+    - secure: "L9dKSo9jkFmUT+8N8jKL6ENllD1weHG04u9icIACgDxF6v2vYujzOXELLIjaILQ/eUsRbEM+QzO4TgpeFUhctE22nsHVSvsfzi7xqxpPpVw8gL0f3u+V0XmJM27n27sAOm3M31F38M5pVrzOuQZs2K+t3VPu4Jabo4GyGI/w/qQ="
 branches:
   only:
     - master
