@@ -41,6 +41,12 @@ object Context {
     reports.regression.significance -> 1e-10
   )
 
+  val inlineBenchmarking = machine ++ Context(
+    exec.benchRuns -> 1,
+    exec.minWarmupRuns -> 10,
+    exec.maxWarmupRuns -> 50
+  )
+
   def machine = Context(
     Key.machine.jvm.version -> sys.props("java.vm.version"),
     Key.machine.jvm.vendor -> sys.props("java.vm.vendor"),

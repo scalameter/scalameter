@@ -76,7 +76,7 @@ object PerformanceTest {
       Aggregator.min,
       measurer
     )
-    def measurer = new Executor.Measurer.Default
+    def measurer = new Measurer.Default
     def reporter = new reporting.LoggingReporter
     def persistor = Persistor.None
   }
@@ -85,7 +85,6 @@ object PerformanceTest {
    *  Reports results into the console.
    */
   trait Microbenchmark extends PerformanceTest {
-    import Executor.Measurer
     def warmer = Executor.Warmer.Default()
     def aggregator = Aggregator.min
     def measurer = new Measurer.IgnoringGC with Measurer.PeriodicReinstantiation {
@@ -100,7 +99,6 @@ object PerformanceTest {
   /** A base for benchmarks generating a more detailed (regression) report, potentially online.
    */
   trait HTMLReport extends PerformanceTest {
-    import Executor.Measurer
     import reporting._
     def persistor = new persistence.SerializationPersistor
     def warmer = Executor.Warmer.Default()
@@ -148,7 +146,6 @@ object PerformanceTest {
   @deprecated("This performance test is now deprecated, please use `OnlineRegressionReport` instead.", "0.5")
   trait Regression extends PerformanceTest {
     import reporting._
-    import Executor.Measurer
     def warmer = Executor.Warmer.Default()
     def aggregator = Aggregator.average
     def measurer: Measurer = new Measurer.IgnoringGC with Measurer.PeriodicReinstantiation with Measurer.OutlierElimination with Measurer.RelativeNoise
