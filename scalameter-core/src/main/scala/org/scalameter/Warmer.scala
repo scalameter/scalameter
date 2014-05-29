@@ -34,6 +34,7 @@ object Warmer {
       val covThreshold = ctx(exec.warmupCovThreshold)
 
       def foreach[U](f: Int => U): Unit = {
+        var steady = false
         val withgc = new utils.SlidingWindow(minwarmups)
         val withoutgc = new utils.SlidingWindow(minwarmups)
         @volatile var nogc = true
@@ -64,10 +65,12 @@ object Warmer {
             log.verbose(f"$i. warmup run running time: $runningtime (covNoGC: ${covNoGC}%.4f, covGC: ${covGC}%.4f)")
             if ((withoutgc.size >= minwarmups && covNoGC < covThreshold) || (withgc.size >= minwarmups && covGC < covThreshold)) {
               log.verbose(s"Steady-state detected.")
+              steady = true
               i = maxwarmups
             } else i += 1
           }
-          log.verbose(s"Ending warmup.")
+          if (steady) log.verbose(s"Ending warmup.")
+          else log.verbose(s"Steady-state not detected.")
         }
       }
     }
