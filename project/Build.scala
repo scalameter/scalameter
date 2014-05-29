@@ -27,8 +27,8 @@ object ScalaMeterBuild extends Build {
     name := "scalameter",
     organization := "com.storm-enroute",
     version := "0.5-SNAPSHOT",
-    scalaVersion := "2.11.0",
-    crossScalaVersions := Seq("2.10.4", "2.11.0"),
+    scalaVersion := "2.11.1",
+    crossScalaVersions := Seq("2.10.4", "2.11.1"),
     scalacOptions ++= Seq("-deprecation", "-unchecked", "-feature", "-Xlint"),
     libraryDependencies <++= (scalaVersion)(sv => dependencies(sv)),
     resolvers ++= Seq(
@@ -90,8 +90,8 @@ object ScalaMeterBuild extends Build {
     name := "scalameter-core",
     organization := "com.storm-enroute",
     version := "0.5-SNAPSHOT",
-    scalaVersion := "2.11.0",
-    crossScalaVersions := Seq("2.10.4", "2.11.0"),
+    scalaVersion := "2.11.1",
+    crossScalaVersions := Seq("2.10.4", "2.11.1"),
     scalacOptions ++= Seq("-deprecation", "-unchecked", "-feature", "-Xlint"),
     libraryDependencies <++= (scalaVersion)(sv => coreDependencies(sv)),
     resolvers ++= Seq(
