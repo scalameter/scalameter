@@ -8,9 +8,7 @@ import Key._
 
 
 
-class BeforeAfterTest extends PerformanceTest.Regression {
-
-  def persistor = new persistence.SerializationPersistor
+class BeforeAfterTest extends PerformanceTest.OfflineRegressionReport {
 
   val sizes = Gen.range("size")(1000000, 5000000, 2000000)
 

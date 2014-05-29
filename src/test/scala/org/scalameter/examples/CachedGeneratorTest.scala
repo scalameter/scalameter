@@ -8,9 +8,7 @@ import Key._
 
 
 
-class CachedGeneratorTest extends PerformanceTest.Regression {
-
-  def persistor = new persistence.SerializationPersistor
+class CachedGeneratorTest extends PerformanceTest.OfflineRegressionReport {
 
   val sizes = Gen.range("size")(100000000, 500000000, 200000000)
   val parallelismLevels = Gen.enumeration("parallelismLevel")(1, 2, 4, 8)

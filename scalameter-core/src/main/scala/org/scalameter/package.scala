@@ -9,7 +9,14 @@ import language.existentials
 import collection._
 
 
-package object scalameter extends MeasureBuilder(Context.inlineBenchmarking) {
+package object scalameter extends MeasureBuilder[Unit, Double](
+  Context.inlineBenchmarking,
+  Warmer.Zero,
+  MeasureBuilder.unitRegen,
+  MeasureBuilder.doNothing,
+  MeasureBuilder.doNothing,
+  MeasureBuilder.average
+) {
 
   type KeyValue = (Key[T], T) forSome { type T }
 

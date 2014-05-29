@@ -77,6 +77,7 @@ class Keys {
     lazy val independentSamples = Key[Int]("independent-samples", 9)
     lazy val jvmflags = Key[String]("jvm-flags", "")
     lazy val jvmcmd = Key[String]("jvm-cmd", "java -server")
+    lazy val requireGC = Key[Boolean]("require-gc", false)
 
     object reinstantiation {
       lazy val frequency = Key[Int]("frequency")

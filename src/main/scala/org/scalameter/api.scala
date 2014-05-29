@@ -48,6 +48,9 @@ object api extends Keys {
   val Warmer = org.scalameter.Warmer
   val Measurer = org.scalameter.Measurer
 
+  type Warmer = org.scalameter.Warmer
+  type Measurer = org.scalameter.Measurer
+
   /* reporting */
 
   type ChartReporter = reporting.ChartReporter

@@ -44,7 +44,8 @@ object Context {
   val inlineBenchmarking = machine ++ Context(
     exec.benchRuns -> 1,
     exec.minWarmupRuns -> 10,
-    exec.maxWarmupRuns -> 50
+    exec.maxWarmupRuns -> 50,
+    exec.requireGC -> false
   )
 
   def machine = Context(

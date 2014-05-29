@@ -18,6 +18,14 @@ object Warmer {
 
   import Key._
 
+  case object Zero extends Warmer {
+    private val foreachObj = new Foreach[Int] {
+      def foreach[U](f: Int => U): Unit = {}
+    }
+    def name = "Warmer.Zero"
+    def warming(ctx: Context, setup: () => Any, teardown: () => Any) = foreachObj
+  }
+
   case class Default() extends Warmer {
     def name = "Warmer.Default"
     def warming(ctx: Context, setup: () => Any, teardown: () => Any) = new Foreach[Int] {
