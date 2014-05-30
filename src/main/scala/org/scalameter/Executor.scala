@@ -27,6 +27,12 @@ object Executor {
 
   import Key._
 
+  type Warmer = org.scalameter.Warmer
+  type Measurer = org.scalameter.Measurer
+
+  val Warmer = org.scalameter.Warmer
+  val Measurer = org.scalameter.Measurer
+
   object None extends Executor {
     def runSetup[T](setup: Setup[T]): CurveData = ???
   }
