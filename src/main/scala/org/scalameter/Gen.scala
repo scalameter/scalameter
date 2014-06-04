@@ -143,7 +143,7 @@ object Gen {
     def vectors = for {
       size <- sizes
     } yield (0 until size).toVector
-  
+   
     def arraybuffers = for {
       size <- sizes
     } yield mutable.ArrayBuffer(0 until size: _*)
@@ -161,6 +161,7 @@ object Gen {
       for (x <- 0 until size) hm(x) = x
       hm
     }
+   
   
     def linkedhashtablemaps = for {
       size <- sizes
@@ -169,7 +170,7 @@ object Gen {
       for (x <- 0 until size) hm(x) = x
       hm
     }
-  
+    
     def hashtriemaps = for {
       size <- sizes
     } yield {
@@ -195,7 +196,7 @@ object Gen {
       for (x <- 0 until size) hs.add(x)
       hs
     }
-  
+    
     def linkedhashtablesets = for {
       size <- sizes
     } yield {
@@ -203,7 +204,7 @@ object Gen {
       for (x <- 0 until size) hs.add(x)
       hs
     }
-  
+    
     def avlsets = for {
       size <- sizes
     } yield {

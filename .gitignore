@@ -13,3 +13,5 @@ tmp*
 .settings
 
 .gitattributes
+
+.metadata/

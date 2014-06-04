@@ -1,11 +1,8 @@
 package org.scalameter
 
-
-
-import collection._
-import utils.Tree
 import java.util.Date
-
+import scala.collection._
+import utils.Tree
 
 abstract class PerformanceTest extends PerformanceTest.Initialization with Serializable {
 
@@ -56,7 +53,7 @@ object PerformanceTest {
     val regex = sf.r
     regex.findFirstIn(fullname) != None
   }
-
+  
   /** Quick benchmark run in the same JVM.
    *  Reports result into the console.
    */

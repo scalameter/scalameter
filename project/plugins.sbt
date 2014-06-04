@@ -14,4 +14,4 @@
 // ```
 // This should give you access to the repository.
 
-
+addSbtPlugin("com.typesafe.sbteclipse" % "sbteclipse-plugin" % "2.2.0")
