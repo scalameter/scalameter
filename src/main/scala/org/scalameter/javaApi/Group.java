@@ -1,5 +1,7 @@
 package org.scalameter.javaApi;
 
-public interface Group {
+import java.io.Serializable;
+
+public interface Group extends Serializable{
 	
 }

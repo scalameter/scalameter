@@ -69,6 +69,9 @@ class TimeWithIgnoringGCWithOutlierElimination extends Measurer {
 class TimeWithIngoringGCWithPeriodicReinstantiationWithOutlierElimination extends Measurer {
   def get = new org.scalameter.Executor.Measurer.IgnoringGC with org.scalameter.Executor.Measurer.PeriodicReinstantiation with org.scalameter.Executor.Measurer.OutlierElimination
 }
+class MemoryFootprint extends Measurer {
+  def get = new org.scalameter.Executor.Measurer.MemoryFootprint
+}
 class NonePersistor extends Persistor {
   def get: org.scalameter.Persistor = org.scalameter.Persistor.None
 }

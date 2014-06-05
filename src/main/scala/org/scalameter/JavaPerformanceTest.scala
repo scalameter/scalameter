@@ -1,4 +1,5 @@
 package org.scalameter
+import org.scalameter.javaApi.Group
 import org.scalameter.execution.LocalExecutor
 import org.scalameter.Executor.Measurer
 import org.scalameter.reporting.LoggingReporter
@@ -12,7 +13,7 @@ import org.scalameter.javaApi.JavaGenerator
 import scala.collection.JavaConverters._
 import scala.collection.mutable.ArrayBuffer
 
-abstract class JavaPerformanceTest extends DSL with DelayedInit {
+abstract class JavaPerformanceTest extends DSL with DelayedInit with Serializable{
 
   //usefull for match on class interface
   val Group = classOf[org.scalameter.javaApi.Group]
@@ -99,6 +100,16 @@ abstract class JavaPerformanceTest extends DSL with DelayedInit {
               case s: String => kv = (exec.jvmcmd -> s) :: kv
               case _ =>
             }
+            case javaApi.exec.outliersCovMultiplier => config.get(k) match {
+              case i: Int => kv = (exec.outliers.covMultiplier -> i.toDouble) :: kv
+              case d: Double => kv = (exec.outliers.covMultiplier -> d) :: kv
+              case _ => 
+            }
+            case javaApi.exec.outliersSuspectPercent => config.get(k) match {
+              case i: Int => kv = (exec.outliers.suspectPercent -> i) :: kv
+              case d: Double => kv = (exec.outliers.suspectPercent -> d.toInt) :: kv
+              case _ => 
+            }
             case _ =>
           }
         }
@@ -144,7 +155,7 @@ abstract class JavaPerformanceTest extends DSL with DelayedInit {
 
           val oldscope = s.context(Key.dsl.scope)
 
-          val method = c.getMethod("snippet", classOf[Object])
+          val method = new SerializableMethod(c.getMethod("snippet", classOf[Object]))
           val context = DSL.setupzipper.value.current.context + (Key.dsl.scope -> (c.getSimpleName() :: oldscope))
           DSL.setupzipper.value = DSL.setupzipper.value.descend.setContext(context)
 
@@ -154,32 +165,33 @@ abstract class JavaPerformanceTest extends DSL with DelayedInit {
           var setp: Option[Object => Any] = None
           var teardown: Option[Object => Any] = None
           val gen = c.getMethod("generator").invoke(instance).asInstanceOf[JavaGenerator[Any]]
-          for (m <- c.getMethods) {
-            m.getName match {
+          for (ms <- c.getMethods) {
+            val m = new SerializableMethod(ms)
+            ms.getName match {
               case "beforeTests" => {
                 setupbeforeall = Some(() => { m.invoke(instance) })
               }
               case "afterTests" => teardownafterall = Some(() => { m.invoke(instance) })
               case "setup" => {
                 if (classOf[org.scalameter.javaApi.VoidGen] isAssignableFrom gen.getClass) {
-                  setp = Some((v: Object) => { m.invoke(instance, null) })
+                  setp = Some((v: Object) => { m.invokeA(instance, null) })
                 } else {
-                  setp = Some((v: Object) => { m.invoke(instance, v) })
+                  setp = Some((v: Object) => { m.invokeA(instance, v) })
                 }
               }
               case "teardown" => {
                 if (classOf[org.scalameter.javaApi.VoidGen] isAssignableFrom gen.getClass) {
-                  teardown = Some((v: Object) => { m.invoke(instance, null) })
+                  teardown = Some((v: Object) => { m.invokeA(instance, null) })
                 } else {
-                  teardown = Some((v: Object) => { m.invoke(instance, v) })
+                  teardown = Some((v: Object) => { m.invokeA(instance, v) })
                 }
               }
               case _ =>
             }
           }
-          var snippet = (s: Object) => { method.invoke(instance, s) }
+          var snippet = (s: Object) => { method.invokeA(instance, s) }
           if (classOf[org.scalameter.javaApi.VoidGen] isAssignableFrom gen.getClass) {
-            snippet = (s: Object) => { method.invoke(instance, null) }
+            snippet = (s: Object) => { method.invokeA(instance, null) }
           }
           val generator = gen.get
 
@@ -236,27 +248,40 @@ abstract class Microbenchmark extends JavaPerformanceTest {
   import Executor.Measurer
   def warmer = org.scalameter.Executor.Warmer.Default()
   def aggregator = Aggregator.min
-  override def measurer = new Measurer.IgnoringGC with Measurer.PeriodicReinstantiation {
-    override val defaultFrequency = 12
-    override val defaultFullGC = true
+  override def measurer = javaMeasurer match {
+    case null => new Measurer.IgnoringGC with Measurer.PeriodicReinstantiation {
+
+      override val defaultFrequency = 12
+      override val defaultFullGC = true
+    }
+    case _ => javaMeasurer.get
   }
-  def javaMeasurer = ???
-  override def executor = execution.SeparateJvmsExecutor(warmer, aggregator, measurer)
-  def javaExecutor = ???
-  def javaReporter = new org.scalameter.javaApi.LoggingReporter
-  def javaPersistor = new org.scalameter.javaApi.NonePersistor
+  def javaMeasurer: org.scalameter.javaApi.Measurer = null
+  override def executor = javaExecutor match{
+    case null => execution.SeparateJvmsExecutor(warmer, aggregator, measurer)
+    case _ => javaExecutor.get
+  }
+  def javaExecutor: org.scalameter.javaApi.Executor = null
+  def javaReporter: org.scalameter.javaApi.Reporter = new org.scalameter.javaApi.LoggingReporter
+  def javaPersistor: org.scalameter.javaApi.Persistor = new org.scalameter.javaApi.NonePersistor
 }
 
 abstract class HTMLReport extends JavaPerformanceTest {
   import Executor.Measurer
   import reporting._
-  def javaPersistor = new org.scalameter.javaApi.SerializationPersistor
+  def javaPersistor: org.scalameter.javaApi.Persistor = new org.scalameter.javaApi.SerializationPersistor
   def warmer = Executor.Warmer.Default()
   def aggregator = Aggregator.average
-  override def measurer: Measurer = new Measurer.IgnoringGC with Measurer.PeriodicReinstantiation with Measurer.OutlierElimination with Measurer.RelativeNoise
-  def javaMeasurer = ???
-  override def executor: Executor = new execution.SeparateJvmsExecutor(warmer, aggregator, measurer)
-  def javaExecutor = ???
+  override def measurer: Measurer = javaMeasurer match {
+    case null => new Measurer.IgnoringGC with Measurer.PeriodicReinstantiation with Measurer.OutlierElimination with Measurer.RelativeNoise
+    case _ => javaMeasurer.get
+  }
+  def javaMeasurer: org.scalameter.javaApi.Measurer = null
+  override def executor: Executor = javaExecutor match {
+    case null => new execution.SeparateJvmsExecutor(warmer, aggregator, measurer)
+    case _ => javaExecutor.get
+  }
+  def javaExecutor: org.scalameter.javaApi.Executor = null
 
   def tester: RegressionReporter.Tester = javaTester.get
   def historian: RegressionReporter.Historian = javaHistorian.get
@@ -268,21 +293,21 @@ abstract class HTMLReport extends JavaPerformanceTest {
 
 abstract class OnlineRegressionReport extends HTMLReport {
   import reporting._
-  def javaTester = new org.scalameter.javaApi.OverlapIntervals()
+  def javaTester: org.scalameter.javaApi.RegressionReporterTester = new org.scalameter.javaApi.OverlapIntervals()
   def javaHistorian = new org.scalameter.javaApi.ExponentialBackoff()
   def online = true
 }
 
 abstract class OfflineRegressionReport extends HTMLReport {
   import reporting._
-  def javaTester = new org.scalameter.javaApi.OverlapIntervals()
-  def javaHistorian = new org.scalameter.javaApi.ExponentialBackoff()
+  def javaTester: org.scalameter.javaApi.RegressionReporterTester = new org.scalameter.javaApi.OverlapIntervals()
+  def javaHistorian: org.scalameter.javaApi.RegressionReporterHistorian = new org.scalameter.javaApi.ExponentialBackoff()
   def online = false
 }
 
 abstract class OfflineReport extends HTMLReport {
   import reporting._
-  def javaTester = new org.scalameter.javaApi.Accepter()
-  def javaHistorian = new org.scalameter.javaApi.ExponentialBackoff()
+  def javaTester: org.scalameter.javaApi.RegressionReporterTester = new org.scalameter.javaApi.Accepter()
+  def javaHistorian: org.scalameter.javaApi.RegressionReporterHistorian = new org.scalameter.javaApi.ExponentialBackoff()
   def online = false
 }

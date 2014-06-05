@@ -8,7 +8,7 @@ import java.util.Collection
 import scala.collection.mutable.ArrayBuffer
 import scala.collection.mutable.HashMap
 
-abstract class JavaGenerator[T] {
+abstract class JavaGenerator[T] extends Serializable{
   def get(): Gen[_]
   def map[T, S](m: MapFunction[T, S]): JavaGenerator[S] = {
     def f: T => S = (t: T) => { m.map(t) }
@@ -59,7 +59,7 @@ class Tupled3Gen[P, Q, R](p: JavaGenerator[P], q: JavaGenerator[Q], r: JavaGener
 class Tupled4Gen[P, Q, R, S](p: JavaGenerator[P], q: JavaGenerator[Q], r: JavaGenerator[R], s: JavaGenerator[S]) extends JavaGenerator[Tuple4[P, Q, R, S]] {
   def get: Gen[(P, Q, R, S)] = Gen.tupled(p.get.asInstanceOf[Gen[P]], q.get.asInstanceOf[Gen[Q]], r.get.asInstanceOf[Gen[R]], s.get.asInstanceOf[Gen[S]])
 }
-class JavaGen[T](g: Gen[T]) extends JavaGenerator[T] {
+class JavaGen[T](g: Gen[T]) extends JavaGenerator[T] with Serializable{
   def get = g
 }
 
@@ -87,7 +87,7 @@ class Collections(sizes: JavaGenerator[Integer]) {
 
   def avlsets: JavaGenerator[java.util.TreeSet[Integer]] = new JavaGen(s.javaavlsets)
 
-  class C(s: JavaGenerator[Integer]) extends Gen.Collections {
+  class C(s: JavaGenerator[Integer]) extends Gen.Collections{
     def sizes = s.get.asInstanceOf[Gen[Int]]
 
     def javaLists = for {
