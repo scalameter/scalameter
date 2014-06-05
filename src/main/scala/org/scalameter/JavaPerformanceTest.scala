@@ -13,7 +13,7 @@ import org.scalameter.javaApi.JavaGenerator
 import scala.collection.JavaConverters._
 import scala.collection.mutable.ArrayBuffer
 
-abstract class JavaPerformanceTest extends DSL with DelayedInit with Serializable{
+abstract class JavaPerformanceTest extends DSL with Serializable{
 
   //usefull for match on class interface
   val Group = classOf[org.scalameter.javaApi.Group]
@@ -208,8 +208,8 @@ abstract class JavaPerformanceTest extends DSL with DelayedInit with Serializabl
   // copy/paste from PerformanceTest
   def executeTests(): Boolean = {
     val datestart: Option[Date] = Some(new Date)
-    DSL.setupzipper.value = Tree.Zipper.root[Setup[_]].modifyContext(_ ++ defaultConfig)
-    testbody.value.apply()
+//    DSL.setupzipper.value = Tree.Zipper.root[Setup[_]].modifyContext(_ ++ defaultConfig)
+//    testbody.value.apply()
     val rawsetuptree = DSL.setupzipper.value.result
     val setuptree = rawsetuptree.filter(setupFilter)
     val resulttree = executor.run(setuptree.asInstanceOf[Tree[Setup[SameType]]], reporter, persistor)
@@ -217,14 +217,8 @@ abstract class JavaPerformanceTest extends DSL with DelayedInit with Serializabl
     val datedtree = resulttree.copy(context = resulttree.context + (Key.reports.startDate -> datestart) + (Key.reports.endDate -> dateend))
     reporter.report(datedtree, persistor)
   }
-
-  def delayedInit(body: => Unit) {
-    val current = testbody.value
-    testbody.value = () => { current(); body }
-    testbodySet = true
-  }
   private def setupFilter(setup: Setup[_]): Boolean = {
-    val sf = initialContext(Key.scopeFilter)
+    val sf = currentContext(Key.scopeFilter)
     val fullname = setup.context.scope + "." + setup.context.curve
     val regex = sf.r
     regex.findFirstIn(fullname) != None
