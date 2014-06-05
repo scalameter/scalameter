@@ -11,7 +11,8 @@ tmp*
 .classpath
 .project
 .settings
-
+.travis.yml
+build.sbt
 .gitattributes
 
 .metadata/
