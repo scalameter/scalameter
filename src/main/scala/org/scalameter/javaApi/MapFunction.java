@@ -1,5 +1,7 @@
 package org.scalameter.javaApi;
 
-public interface MapFunction<T, S> {
+import java.io.Serializable;
+
+public interface MapFunction<T, S> extends Serializable{
 	public S map(T t);
 }

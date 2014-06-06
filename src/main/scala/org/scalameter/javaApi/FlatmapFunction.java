@@ -1,5 +1,7 @@
 package org.scalameter.javaApi;
 
-public interface FlatmapFunction<T, S> {
+import java.io.Serializable;
+
+public interface FlatmapFunction<T, S> extends Serializable{
 	public JavaGenerator<S> flatmap(T t);
 }

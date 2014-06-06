@@ -1,5 +1,4 @@
 package org.scalameter.examples;
-import java.io.Serializable;
 import java.util.HashMap;
 
 import org.scalameter.OnlineRegressionReport;

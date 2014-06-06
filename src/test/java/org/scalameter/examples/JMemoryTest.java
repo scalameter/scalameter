@@ -6,14 +6,19 @@ import java.util.HashMap;
 import org.scalameter.OnlineRegressionReport;
 import org.scalameter.javaApi.Group;
 import org.scalameter.javaApi.JavaGenerator;
+import org.scalameter.javaApi.Measurer;
 import org.scalameter.javaApi.Persistor;
 import org.scalameter.javaApi.RangeGen;
 import org.scalameter.javaApi.SerializationPersistor;
 import org.scalameter.javaApi.exec;
+
 public class JMemoryTest extends OnlineRegressionReport{
 	public Persistor javaPersistor(){
 		return new SerializationPersistor();
 	}
+	public Measurer javaMeasurer(){
+		return new org.scalameter.javaApi.MemoryFootprint();
+  }
 	public class MemoryFootprint implements Group{
 		public HashMap<exec, Object> config(){
 			HashMap<exec, Object> config = new HashMap<exec, Object>();

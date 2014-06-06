@@ -227,9 +227,9 @@ abstract class JavaPerformanceTest extends DSL with Serializable{
 }
 
 abstract class QuickBenchmark extends JavaPerformanceTest {
-  def javaReporter = new org.scalameter.javaApi.LoggingReporter
+  def javaReporter: org.scalameter.javaApi.Reporter = new org.scalameter.javaApi.LoggingReporter
 
-  def javaPersistor = new org.scalameter.javaApi.NonePersistor
+  def javaPersistor: org.scalameter.javaApi.Persistor = new org.scalameter.javaApi.NonePersistor
 
   def javaExecutor: org.scalameter.javaApi.Executor = new org.scalameter.javaApi.LocalExecutor(
     new org.scalameter.Executor.Warmer.Default(),
@@ -277,18 +277,18 @@ abstract class HTMLReport extends JavaPerformanceTest {
   }
   def javaExecutor: org.scalameter.javaApi.Executor = null
 
-  def tester: RegressionReporter.Tester = javaTester.get
-  def historian: RegressionReporter.Historian = javaHistorian.get
+//  def tester: RegressionReporter.Tester = javaTester.get
+//  def historian: RegressionReporter.Historian = javaHistorian.get
   def online: Boolean
   def javaTester: org.scalameter.javaApi.RegressionReporterTester
   def javaHistorian: org.scalameter.javaApi.RegressionReporterHistorian
-  def javaReporter = new org.scalameter.javaApi.CompositeReporter(tester, historian, online)
+  def javaReporter: org.scalameter.javaApi.Reporter = new org.scalameter.javaApi.CompositeReporter(javaTester, javaHistorian, online)
 }
 
 abstract class OnlineRegressionReport extends HTMLReport {
   import reporting._
   def javaTester: org.scalameter.javaApi.RegressionReporterTester = new org.scalameter.javaApi.OverlapIntervals()
-  def javaHistorian = new org.scalameter.javaApi.ExponentialBackoff()
+  def javaHistorian: org.scalameter.javaApi.RegressionReporterHistorian = new org.scalameter.javaApi.ExponentialBackoff()
   def online = true
 }
 

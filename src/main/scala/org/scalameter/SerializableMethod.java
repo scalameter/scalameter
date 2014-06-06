@@ -35,9 +35,10 @@ public class SerializableMethod implements Serializable {
 			e.printStackTrace();
 		}
     }
-    public void invokeA(Object o1, Object o2){
+    public Object invokeA(Object o1, Object o2){
+    	Object ret = null;
     	try {
-			method.invoke(o1, o2);
+			ret = method.invoke(o1, o2);
 		} catch (IllegalAccessException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -48,6 +49,7 @@ public class SerializableMethod implements Serializable {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+    	return ret;
     }
     private void writeObject(ObjectOutputStream out) throws IOException
     {
