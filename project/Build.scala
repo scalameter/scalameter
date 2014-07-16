@@ -10,7 +10,7 @@ object ScalaMeterBuild extends Build {
   val publishUser = "SONATYPE_USER"
   val publishPass = "SONATYPE_PASS"
 
-  val scalaMeterVersion = "0.5-SNAPSHOT"
+  val scalaMeterVersion = "0.6-SNAPSHOT"
 
   val userPass = for {
     user <- sys.env.get(publishUser)
