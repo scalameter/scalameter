@@ -10,6 +10,8 @@ object ScalaMeterBuild extends Build {
   val publishUser = "SONATYPE_USER"
   val publishPass = "SONATYPE_PASS"
 
+  val scalaMeterVersion = "0.5-SNAPSHOT"
+
   val userPass = for {
     user <- sys.env.get(publishUser)
     pass <- sys.env.get(publishPass)
@@ -26,7 +28,7 @@ object ScalaMeterBuild extends Build {
   val scalaMeterSettings = Defaults.defaultSettings ++ publishCreds ++ Seq(
     name := "scalameter",
     organization := "com.storm-enroute",
-    version := "0.5-SNAPSHOT",
+    version := scalaMeterVersion,
     scalaVersion := "2.11.1",
     crossScalaVersions := Seq("2.10.4", "2.11.1"),
     scalacOptions ++= Seq("-deprecation", "-unchecked", "-feature", "-Xlint"),
@@ -89,7 +91,7 @@ object ScalaMeterBuild extends Build {
   val scalaMeterCoreSettings = Defaults.defaultSettings ++ publishCreds ++ Seq(
     name := "scalameter-core",
     organization := "com.storm-enroute",
-    version := "0.5-SNAPSHOT",
+    version := scalaMeterVersion,
     scalaVersion := "2.11.1",
     crossScalaVersions := Seq("2.10.4", "2.11.1"),
     scalacOptions ++= Seq("-deprecation", "-unchecked", "-feature", "-Xlint"),
