@@ -9,7 +9,15 @@ import language.existentials
 import collection._
 
 
-package object scalameter {
+package object scalameter extends MeasureBuilder[Unit, Double](
+  Context.inlineBenchmarking,
+  Warmer.Zero,
+  MeasureBuilder.timeMeasurer,
+  MeasureBuilder.unitRegen,
+  MeasureBuilder.doNothing,
+  MeasureBuilder.doNothing,
+  MeasureBuilder.average
+) {
 
   type KeyValue = (Key[T], T) forSome { type T }
 
@@ -24,16 +32,6 @@ package object scalameter {
   def log: Log = dyn.log.value
 
   def events: Events = dyn.events.value
-
-  val inline = new MeasureBuilder[Unit, Double](
-    Context.inlineBenchmarking,
-    Warmer.Zero,
-    MeasureBuilder.timeMeasurer,
-    MeasureBuilder.unitRegen,
-    MeasureBuilder.doNothing,
-    MeasureBuilder.doNothing,
-    MeasureBuilder.average
-  )
 
   /* decorators */
 
