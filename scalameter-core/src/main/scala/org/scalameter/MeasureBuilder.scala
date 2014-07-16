@@ -32,7 +32,8 @@ class MeasureBuilder[T, U](
       val x = regen()
       warmer match {
         case Warmer.Zero => // do nothing
-        case _ => warmer.warming(ctx, () => setup(x), () => teardown(x))
+        case _ =>
+          for (i <- warmer.warming(ctx, () => setup(x), () => teardown(x))) b(x)
       }
   
       if (ctx(Key.exec.requireGC)) compat.Platform.collectGarbage()
