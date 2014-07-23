@@ -8,6 +8,7 @@ object ClassPath {
   def extract(classLoader: ClassLoader, default: => String): String =
     classLoader match {
       case urlclassloader: java.net.URLClassLoader => extractFromUrlCL(urlclassloader)
+      case null => sys.props("sun.boot.class.path")
       case _ =>
         val parent = classLoader.getParent
         if (parent != null)
