@@ -53,7 +53,7 @@ class ScalaMeterFramework extends Framework {
         try fingerprint match {
           case fp: SubclassFingerprint =>
             if (!fp.isModule) {
-              val ptest = testClassLoader.loadClass(testClassName).newInstance.asInstanceOf[PerformanceTest]
+              val ptest = testClassLoader.loadClass(testClassName).newInstance.asInstanceOf[BasePerformanceTest]
               ptest.executeTests()
             } else {
               val module = Class.forName(testClassName + "$", true, testClassLoader)
