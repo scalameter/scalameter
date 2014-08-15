@@ -18,8 +18,8 @@ public class JavaRegressionTest3 extends OnlineRegressionReport {
 			public final JContext config = JContext.create()
 			  .put("exec.benchRuns", 20)
 			  .put("exec.independentSamples", 1)
-			  .put("exec.outliersCovMultiplier", 1.5)
-			  .put("exec.outliersSuspectPercent", 40);
+			  .put("exec.outliers.covMultiplier", 1.5)
+			  .put("exec.outliers.suspectPercent", 40);
 			public JavaGenerator<LinkedList<Integer>> generator() {
 				JavaGenerator<Integer> sizes = new SingleGen("size", 5000000);
 				return new CollectionGenerators(sizes).lists();

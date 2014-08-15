@@ -45,27 +45,26 @@ abstract class JavaPerformanceTest extends BasePerformanceTest with Serializable
 
   type SameType
 
-  constructScope(this.getClass)
+  constructScope(this, this.getClass)
 
-  def getClassInstance(s: String): Object = {
+  def getClassInstance(enclosing: Object, s: String): Object = {
     val clss = Class.forName(s)
     var outerClasses = clss.getEnclosingClass()
     if (outerClasses == null) {
       Class.forName(s).newInstance.asInstanceOf[Object]
     } else {
-      val obj = getClassInstance(outerClasses.getName)
-      val c = Class.forName(s).getDeclaredConstructors()(0)
-      c.newInstance(obj.asInstanceOf[Object]).asInstanceOf[Object]
+      val ctor = Class.forName(s).getDeclaredConstructors()(0)
+      println(ctor, enclosing, s)
+      ctor.newInstance(enclosing).asInstanceOf[Object]
     }
   }
 
-  def config(c: Class[_]): List[KeyValue] = {
+  def config(instance: Object, c: Class[_]): List[KeyValue] = {
     val fields = c.getDeclaredFields
     fields.find(_.getName == "config") match {
       case None =>
         List()
       case Some(f) =>
-        val instance = getClassInstance(c.getName)
         val jcontext = f.get(instance).asInstanceOf[JContext]
         val kvs = for ((kname, value) <- jcontext.getKeyMap.asScala) yield {
           val key = org.scalameter.Key.parseKey(kname)
@@ -75,33 +74,35 @@ abstract class JavaPerformanceTest extends BasePerformanceTest with Serializable
     }
   }
 
-  def constructScope(c: Class[_]): Unit = {
-    for (clzz <- c.getClasses()) {
-      classScope(clzz)
+  def isGroupOrUsing(c: Class[_]) = Group.isAssignableFrom(c) || UsingInterface.isAssignableFrom(c)
+
+  def constructScope(instance: Object, c: Class[_]): Unit = {
+    for (clzz <- c.getClasses() if isGroupOrUsing(clzz)) {
+      classScope(getClassInstance(this, clzz.getName), clzz)
     }
   }
 
-  def classScope(c: Class[_]): Unit = {
-    val cl = c.getInterfaces
-    if (!cl.isEmpty) {
-      cl.head match {
+  def classScope(instance: Object, c: Class[_]): Unit = {
+    for (interface <- c.getInterfaces) {
+      interface match {
         case Group =>
           val classGroupName = c.getName
-          val kvs = config(c)
+          val kvs = config(instance, c)
           val s = Scope(classGroupName, setupzipper.value.current.context).config(kvs: _*)
-          
           val oldscope = s.context(Key.dsl.scope)
           val ct = s.context + (Key.dsl.scope -> (c.getSimpleName() :: oldscope))
+
           setupzipper.value = setupzipper.value.descend.setContext(ct)
-          for (clzz <- c.getClasses) classScope(clzz)
+          for (clzz <- c.getClasses if isGroupOrUsing(clzz)) {
+            classScope(getClassInstance(instance, clzz.getName), clzz)
+          }
           setupzipper.value = setupzipper.value.ascend
         case UsingInterface =>
           val classGroupName = c.getName
-          val kvs = config(c)
+          val kvs = config(instance, c)
           val s = Scope(classGroupName, setupzipper.value.current.context).config(kvs: _*)
           val oldscope = s.context(Key.dsl.scope)
           val snippetMethod = new SerializableMethod(c.getMethod("snippet", classOf[Object]))
-          val instance = getClassInstance(c.getName)
 
           var setupbeforeall: Option[() => Unit] = None
           var teardownafterall: Option[() => Unit] = None
