@@ -22,7 +22,7 @@ public class JavaRegressionTest3 extends OnlineRegressionReport {
 			  .put("exec.outliersSuspectPercent", 40);
 			public JavaGenerator<LinkedList<Integer>> generator() {
 				JavaGenerator<Integer> sizes = new SingleGen("size", 5000000);
-				return new Collections(sizes).lists();
+				return new CollectionGenerators(sizes).lists();
 			}
 			public HashMap<Integer, LinkedList<Integer>> snippet(LinkedList<Integer> in) {
 				HashMap<Integer, LinkedList<Integer>> hm = new HashMap<Integer, LinkedList<Integer>>();

@@ -21,7 +21,7 @@ public class JavaRegressionTest extends OnlineRegressionReport {
 						return t.toString();
 					}
 				});
-				return new Collections(sizes).arrays();
+				return new CollectionGenerators(sizes).arrays();
 			}
 			public Integer snippet(int[] in) {
 				int sum = 0;

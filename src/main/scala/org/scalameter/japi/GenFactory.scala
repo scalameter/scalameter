@@ -84,27 +84,28 @@ class TupledJavaGen[P, Q](g: Gen[(P, Q)]) extends JavaGenerator[scala.Tuple2[P, 
 }
 
 
-class Collections(sizes: JavaGenerator[Integer]) {
-  def s = new C(sizes)
-  def lists: JavaGen[java.util.LinkedList[Integer]] = new JavaGen(s.javaLists)
+class CollectionGenerators(sizes: JavaGenerator[Integer]) {
+  def collectionGenerators = new ScalaCollections(sizes)
 
-  def arrays: JavaGen[Array[Int]] = new JavaGen(s.arrays.asInstanceOf[Gen[Array[Int]]])
+  def lists: JavaGen[java.util.LinkedList[Integer]] = new JavaGen(collectionGenerators.javaLists)
 
-  def vectors: JavaGen[java.util.Vector[Integer]] = new JavaGen(s.javavectors)
+  def arrays: JavaGen[Array[Int]] = new JavaGen(collectionGenerators.arrays.asInstanceOf[Gen[Array[Int]]])
 
-  def hashtablemaps: JavaGenerator[java.util.HashMap[Integer, Integer]] = new JavaGen(s.javahashtablemaps)
+  def vectors: JavaGen[java.util.Vector[Integer]] = new JavaGen(collectionGenerators.javavectors)
 
-  def linkedhashtablemaps: JavaGenerator[java.util.LinkedHashMap[Integer, Integer]] = new JavaGen(s.javalinkedhashtablemaps)
+  def hashtablemaps: JavaGenerator[java.util.HashMap[Integer, Integer]] = new JavaGen(collectionGenerators.javahashtablemaps)
 
-  def treemap: JavaGenerator[java.util.TreeMap[Integer, Integer]] = new JavaGen(s.javaredblackmaps)
+  def linkedhashtablemaps: JavaGenerator[java.util.LinkedHashMap[Integer, Integer]] = new JavaGen(collectionGenerators.javalinkedhashtablemaps)
 
-  def hashtablesets: JavaGenerator[java.util.HashSet[Integer]] = new JavaGen(s.javahashtablesets)
+  def treemap: JavaGenerator[java.util.TreeMap[Integer, Integer]] = new JavaGen(collectionGenerators.javaredblackmaps)
 
-  def linkedhashtablesets: JavaGenerator[java.util.LinkedHashSet[Integer]] = new JavaGen(s.javalinkedhashtablesets)
+  def hashtablesets: JavaGenerator[java.util.HashSet[Integer]] = new JavaGen(collectionGenerators.javahashtablesets)
 
-  def avlsets: JavaGenerator[java.util.TreeSet[Integer]] = new JavaGen(s.javaavlsets)
+  def linkedhashtablesets: JavaGenerator[java.util.LinkedHashSet[Integer]] = new JavaGen(collectionGenerators.javalinkedhashtablesets)
 
-  class C(s: JavaGenerator[Integer]) extends Gen.Collections{
+  def avlsets: JavaGenerator[java.util.TreeSet[Integer]] = new JavaGen(collectionGenerators.javaavlsets)
+
+  class ScalaCollections(s: JavaGenerator[Integer]) extends Gen.Collections {
     def sizes = s.get.asInstanceOf[Gen[Int]]
 
     def javaLists = for {

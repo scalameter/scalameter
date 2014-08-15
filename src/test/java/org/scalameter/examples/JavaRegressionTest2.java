@@ -15,7 +15,7 @@ public class JavaRegressionTest2 extends OnlineRegressionReport {
 			public final JContext config = JContext.create().put("exec.independentSamples", 6);
 			public JavaGenerator<LinkedList<Integer>> generator() {
 				JavaGenerator<Integer> sizes = new RangeGen("size", 1000000, 2000000, 500000);
-				return new Collections(sizes).lists();
+				return new CollectionGenerators(sizes).lists();
 			}
 			public LinkedList<Integer> snippet(LinkedList<Integer> in) {
 				ListIterator<Integer> it = in.listIterator();

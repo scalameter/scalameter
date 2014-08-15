@@ -59,18 +59,18 @@ abstract class JavaPerformanceTest extends DSL with Serializable {
 
   def config(c: Class[_]): List[KeyValue] = {
     val fields = c.getDeclaredFields
-    for (f <- fields) {
-      if (f.getName == "config") {
+    fields.find(_.getName == "config") match {
+      case None =>
+        List()
+      case Some(f) =>
         val instance = getClassInstance(c.getName)
         val jcontext = f.get(instance).asInstanceOf[JContext]
         val kvs = for ((kname, value) <- jcontext.getKeyMap.asScala) yield {
           val key = org.scalameter.Key.parseKey(kname)
           (key, value).asInstanceOf[KeyValue]
         }
-        return kvs.toList
-      }
+        kvs.toList
     }
-    return List()
   }
 
   def constructScope(c: Class[_]): Unit = {
@@ -85,13 +85,9 @@ abstract class JavaPerformanceTest extends DSL with Serializable {
       cl.head match {
         case Group =>
           val classGroupName = c.getName
-          var s = Scope(classGroupName, DSL.setupzipper.value.current.context)
-          val configuration = config(c)
+          val kvs = config(c)
+          val s = Scope(classGroupName, DSL.setupzipper.value.current.context).config(kvs: _*)
           
-          if (!configuration.isEmpty) {
-            s = s.config(configuration: _*)
-          }
-
           val oldscope = s.context(Key.dsl.scope)
           val ct = s.context + (Key.dsl.scope -> (c.getSimpleName() :: oldscope))
           DSL.setupzipper.value = DSL.setupzipper.value.descend.setContext(ct)
@@ -99,13 +95,11 @@ abstract class JavaPerformanceTest extends DSL with Serializable {
           DSL.setupzipper.value = DSL.setupzipper.value.ascend
         case UsingInterface =>
           val classGroupName = c.getName
-          var s = Scope(classGroupName, DSL.setupzipper.value.current.context)
-          val configuration = config(c)
-
-          if (!configuration.isEmpty) s = s.config(configuration: _*)
+          val kvs = config(c)
+          val s = Scope(classGroupName, DSL.setupzipper.value.current.context).config(kvs: _*)
 
           val oldscope = s.context(Key.dsl.scope)
-          val method = new SerializableMethod(c.getMethod("snippet", classOf[Object]))
+          val snippetMethod = new SerializableMethod(c.getMethod("snippet", classOf[Object]))
           val context = DSL.setupzipper.value.current.context + (Key.dsl.scope -> (c.getSimpleName() :: oldscope))
           DSL.setupzipper.value = DSL.setupzipper.value.descend.setContext(context)
 
@@ -141,9 +135,9 @@ abstract class JavaPerformanceTest extends DSL with Serializable {
             }
           }
 
-          var snippet = (s: Object) => { method.invokeA(instance, s) }
+          var snippet = (s: Object) => { snippetMethod.invokeA(instance, s) }
           if (classOf[org.scalameter.japi.VoidGen] isAssignableFrom gen.getClass) {
-            snippet = (s: Object) => { method.invokeA(instance, null) }
+            snippet = (s: Object) => { snippetMethod.invokeA(instance, null) }
           }
           val generator = gen.get
           val setup = Setup(context, generator.asInstanceOf[Gen[Object]], setupbeforeall, teardownafterall, setp, teardown, None, snippet, executor)
