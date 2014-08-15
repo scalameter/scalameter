@@ -8,7 +8,7 @@ import utils.Tree
 
 
 
-trait DSL {
+abstract class DSL {
 
   import DSL._
 
@@ -56,7 +56,7 @@ trait DSL {
       events.emit(Event(
         cls.getName, s"The `include` can only be used with benchmarks in classes -- make ${cls.getName} a class.",
         Events.Error, new Exception("Cannot instantiate singleton object.")))
-    } else cls.newInstance.asInstanceOf[PerformanceTest]
+    } else cls.newInstance.asInstanceOf[DSL]
   }
 
   /** Runs all the tests in this test class or singleton object.

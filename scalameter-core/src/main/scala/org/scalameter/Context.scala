@@ -1,9 +1,11 @@
 package org.scalameter
 
-import language.implicitConversions
 
+
+import language.implicitConversions
 import scala.collection.{Seq, immutable}
 import org.scalameter.Key._
+
 
 
 case class Context(properties: immutable.Map[Key[_], Any]) {
@@ -18,11 +20,11 @@ case class Context(properties: immutable.Map[Key[_], Any]) {
   }
   def goe[T](key: Key[T], v: T) = properties.getOrElse(key, v).asInstanceOf[T]
   def apply[T](key: KeyWithDefault[T]) = properties.get(key).asInstanceOf[Option[T]].getOrElse(key.defaultValue)
-
   def scope = scopeList.mkString(".")
   def scopeList = apply(dsl.scope).reverse
   def curve = apply(dsl.curve)
 }
+
 
 object Context {
   def apply(xs: KeyValue*) = new Context(xs.asInstanceOf[Seq[(Key[_], Any)]].toMap)
