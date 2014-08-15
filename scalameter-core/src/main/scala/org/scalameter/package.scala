@@ -51,6 +51,15 @@ package object scalameter extends MeasureBuilder[Unit, Double](
   def extractClasspath(classLoader: ClassLoader, default: => String): String =
     ClassPath.extract(classLoader, default)
 
+  def withTestContext[U](ctx: Context, log: Log, handler: Events)(body: =>U) = {
+    var res: U = null.asInstanceOf[U]
+    for {
+      _ <- dyn.log.using(log)
+      _ <- dyn.events.using(handler)
+      _ <- dyn.currentContext.using(ctx)
+    } res = body
+    res
+  }
 }
 
 

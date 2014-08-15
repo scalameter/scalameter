@@ -11,8 +11,8 @@ import utils.Tree
 abstract class PerformanceTest extends PerformanceTest.Initialization with Serializable {
 
   def main(args: Array[String]) {
-    val ctx = Main.Configuration.fromCommandLineArgs(args).context
-    val ok = dyn.currentContext.withValue(ctx) {
+    val ctx = dyn.currentContext.value ++ Main.Configuration.fromCommandLineArgs(args).context
+    val ok = withTestContext(ctx, Log.Console, Events.None) {
       executeTests()
     }
 
