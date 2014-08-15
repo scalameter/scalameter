@@ -373,8 +373,10 @@ object Measurer {
         Platform.collectGarbage()
 
         utils.withGCNotification { n =>
-          log.verbose("GC detected.")
-          count += 1
+          dyn.currentContext.withValue(context) {
+            log.verbose("GC detected.")
+            count += 1
+          }
         } {
           snippet(value)
         }
