@@ -13,7 +13,9 @@ import scala.collection.mutable.ArrayBuffer
 
 
 
-abstract class JavaPerformanceTest extends DSL with Serializable {
+abstract class JavaPerformanceTest extends BasePerformanceTest with Serializable {
+  import BasePerformanceTest._
+
   private val Group = classOf[org.scalameter.japi.Group]
   private val UsingInterface = classOf[org.scalameter.japi.Using[Object, Object]]
 
@@ -86,22 +88,22 @@ abstract class JavaPerformanceTest extends DSL with Serializable {
         case Group =>
           val classGroupName = c.getName
           val kvs = config(c)
-          val s = Scope(classGroupName, DSL.setupzipper.value.current.context).config(kvs: _*)
+          val s = Scope(classGroupName, setupzipper.value.current.context).config(kvs: _*)
           
           val oldscope = s.context(Key.dsl.scope)
           val ct = s.context + (Key.dsl.scope -> (c.getSimpleName() :: oldscope))
-          DSL.setupzipper.value = DSL.setupzipper.value.descend.setContext(ct)
+          setupzipper.value = setupzipper.value.descend.setContext(ct)
           for (clzz <- c.getClasses) classScope(clzz)
-          DSL.setupzipper.value = DSL.setupzipper.value.ascend
+          setupzipper.value = setupzipper.value.ascend
         case UsingInterface =>
           val classGroupName = c.getName
           val kvs = config(c)
-          val s = Scope(classGroupName, DSL.setupzipper.value.current.context).config(kvs: _*)
+          val s = Scope(classGroupName, setupzipper.value.current.context).config(kvs: _*)
 
           val oldscope = s.context(Key.dsl.scope)
           val snippetMethod = new SerializableMethod(c.getMethod("snippet", classOf[Object]))
-          val context = DSL.setupzipper.value.current.context + (Key.dsl.scope -> (c.getSimpleName() :: oldscope))
-          DSL.setupzipper.value = DSL.setupzipper.value.descend.setContext(context)
+          val context = setupzipper.value.current.context + (Key.dsl.scope -> (c.getSimpleName() :: oldscope))
+          setupzipper.value = setupzipper.value.descend.setContext(context)
 
           val instance = getClassInstance(c.getName)
           var setupbeforeall: Option[() => Unit] = None
@@ -141,8 +143,8 @@ abstract class JavaPerformanceTest extends DSL with Serializable {
           }
           val generator = gen.get
           val setup = Setup(context, generator.asInstanceOf[Gen[Object]], setupbeforeall, teardownafterall, setp, teardown, None, snippet, executor)
-          DSL.setupzipper.value = DSL.setupzipper.value.addItem(setup)
-          DSL.setupzipper.value = DSL.setupzipper.value.ascend
+          setupzipper.value = setupzipper.value.addItem(setup)
+          setupzipper.value = setupzipper.value.ascend
         case _ =>
           // ignore, does not contain any benchmark-related information
       }
@@ -151,7 +153,7 @@ abstract class JavaPerformanceTest extends DSL with Serializable {
 
   def executeTests(): Boolean = {
     val datestart: Option[Date] = Some(new Date)
-    val rawsetuptree = DSL.setupzipper.value.result
+    val rawsetuptree = setupzipper.value.result
     val setuptree = rawsetuptree.filter(setupFilter)
     val resulttree = executor.run(setuptree.asInstanceOf[Tree[Setup[SameType]]], reporter, persistor)
     val dateend: Option[Date] = Some(new Date)

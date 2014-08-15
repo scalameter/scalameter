@@ -26,7 +26,7 @@ object PerformanceTest {
 
   trait Initialization extends DSL {
 
-    import DSL._
+    import BasePerformanceTest._
 
     def executor: org.scalameter.Executor
 
@@ -40,7 +40,7 @@ object PerformanceTest {
 
     def executeTests(): Boolean = {
       val datestart: Option[Date] = Some(new Date)
-      val rawsetuptree = DSL.setupzipper.value.result
+      val rawsetuptree = BasePerformanceTest.setupzipper.value.result
       val setuptree = rawsetuptree.filter(setupFilter)
       val resulttree = executor.run(setuptree.asInstanceOf[Tree[Setup[SameType]]], reporter, persistor)
       val dateend: Option[Date] = Some(new Date)
