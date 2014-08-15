@@ -99,19 +99,15 @@ abstract class JavaPerformanceTest extends BasePerformanceTest with Serializable
           val classGroupName = c.getName
           val kvs = config(c)
           val s = Scope(classGroupName, setupzipper.value.current.context).config(kvs: _*)
-
           val oldscope = s.context(Key.dsl.scope)
           val snippetMethod = new SerializableMethod(c.getMethod("snippet", classOf[Object]))
-          val context = setupzipper.value.current.context + (Key.dsl.scope -> (c.getSimpleName() :: oldscope))
-          setupzipper.value = setupzipper.value.descend.setContext(context)
-
           val instance = getClassInstance(c.getName)
+
           var setupbeforeall: Option[() => Unit] = None
           var teardownafterall: Option[() => Unit] = None
           var setp: Option[Object => Any] = None
           var teardown: Option[Object => Any] = None
           val gen = c.getMethod("generator").invoke(instance).asInstanceOf[JavaGenerator[Any]]
-
           for (ms <- c.getMethods) {
             val m = new SerializableMethod(ms)
             ms.getName match {
@@ -142,9 +138,9 @@ abstract class JavaPerformanceTest extends BasePerformanceTest with Serializable
             snippet = (s: Object) => { snippetMethod.invokeA(instance, null) }
           }
           val generator = gen.get
+          val context = setupzipper.value.current.context
           val setup = Setup(context, generator.asInstanceOf[Gen[Object]], setupbeforeall, teardownafterall, setp, teardown, None, snippet, executor)
           setupzipper.value = setupzipper.value.addItem(setup)
-          setupzipper.value = setupzipper.value.ascend
         case _ =>
           // ignore, does not contain any benchmark-related information
       }
