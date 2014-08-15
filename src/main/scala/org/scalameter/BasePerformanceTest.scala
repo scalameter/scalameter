@@ -12,7 +12,7 @@ abstract class BasePerformanceTest {
   import BasePerformanceTest._
 
   protected case class Scope(name: String, context: Context) {
-    def config(kvs: KeyValue*): Scope = config(Context(kvs: _*))
+    def config(kvs: KeyValue*): Scope = config(context ++ Context(kvs: _*))
     def config(ctx: Context): Scope = Scope(name, context ++ ctx)
     def in(block: =>Unit): Unit = {
       val oldscope = context(Key.dsl.scope)

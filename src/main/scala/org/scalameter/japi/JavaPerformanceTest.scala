@@ -54,7 +54,6 @@ abstract class JavaPerformanceTest extends BasePerformanceTest with Serializable
       Class.forName(s).newInstance.asInstanceOf[Object]
     } else {
       val ctor = Class.forName(s).getDeclaredConstructors()(0)
-      println(ctor, enclosing, s)
       ctor.newInstance(enclosing).asInstanceOf[Object]
     }
   }
@@ -63,6 +62,7 @@ abstract class JavaPerformanceTest extends BasePerformanceTest with Serializable
     val fields = c.getDeclaredFields
     fields.find(_.getName == "config") match {
       case None =>
+        // println(s"no config found in $c")
         List()
       case Some(f) =>
         val jcontext = f.get(instance).asInstanceOf[JContext]
@@ -100,8 +100,6 @@ abstract class JavaPerformanceTest extends BasePerformanceTest with Serializable
         case UsingInterface =>
           val classGroupName = c.getName
           val kvs = config(instance, c)
-          val s = Scope(classGroupName, setupzipper.value.current.context).config(kvs: _*)
-          val oldscope = s.context(Key.dsl.scope)
           val snippetMethod = new SerializableMethod(c.getMethod("snippet", classOf[Object]))
 
           var setupbeforeall: Option[() => Unit] = None
@@ -139,7 +137,7 @@ abstract class JavaPerformanceTest extends BasePerformanceTest with Serializable
             snippet = (s: Object) => { snippetMethod.invokeA(instance, null) }
           }
           val generator = gen.get
-          val context = setupzipper.value.current.context
+          val context = setupzipper.value.current.context ++ kvs
           val setup = Setup(context, generator.asInstanceOf[Gen[Object]], setupbeforeall, teardownafterall, setp, teardown, None, snippet, executor)
           setupzipper.value = setupzipper.value.addItem(setup)
         case _ =>

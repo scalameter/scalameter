@@ -9,7 +9,7 @@ import org.scalameter.japi.*;
 
 
 
-public class JavaRegressionTest3 extends OnlineRegressionReport {
+public class JavaRegressionTest3 extends OfflineReport {
 	public Persistor javaPersistor() {
 		return new SerializationPersistor();
 	}
