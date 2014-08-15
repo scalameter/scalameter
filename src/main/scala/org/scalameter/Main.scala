@@ -20,10 +20,9 @@ object Main {
     // identify test objects
     dyn.currentContext.withValue(Context.topLevel ++ configuration.context) {
       import configuration._
-
       // schedule benchmarks
       val testResults = for (benchname <- benches) yield {
-        val bench = Class.forName(benchname).newInstance.asInstanceOf[PerformanceTest]
+        val bench = Class.forName(benchname).newInstance.asInstanceOf[DSL]
         bench.executeTests()
       }
 
