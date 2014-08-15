@@ -3,8 +3,6 @@ package org.scalameter
 
 
 import org.scalatools.testing._
-import collection._
-import util.matching.Regex._
 
 
 
@@ -49,26 +47,25 @@ class ScalaMeterFramework extends Framework {
       val complog = Log.Composite(loggers.map(TestInterfaceLog): _*)
       val tievents = TestInterfaceEvents(eventHandler)
       val testcp = computeClasspath
+      val ctx = currentContext ++ Main.Configuration.fromCommandLineArgs(args).context + (Key.classpath -> testcp)
 
-      for {
-        _ <- dyn.log.using(complog)
-        _ <- dyn.events.using(tievents)
-        _ <- dyn.currentContext.using(currentContext ++ Main.Configuration.fromCommandLineArgs(args).context + (Key.classpath -> testcp))
-      } try fingerprint match {
-        case fp: SubclassFingerprint =>
-          if (!fp.isModule) {
-            val ptest = testClassLoader.loadClass(testClassName).newInstance.asInstanceOf[PerformanceTest]
-            ptest.executeTests()
-          } else {
-            val module = Class.forName(testClassName + "$", true, testClassLoader)
-            val ptest = utils.Reflect.singletonInstance(module)
-            ptest.executeTests()
-          }
-      } catch {
-        case e: Exception =>
-          println("Test threw exception: " + e)
-          e.printStackTrace()
-          throw e
+      withTestContext(ctx, complog, tievents) {
+        try fingerprint match {
+          case fp: SubclassFingerprint =>
+            if (!fp.isModule) {
+              val ptest = testClassLoader.loadClass(testClassName).newInstance.asInstanceOf[PerformanceTest]
+              ptest.executeTests()
+            } else {
+              val module = Class.forName(testClassName + "$", true, testClassLoader)
+              val ptest = utils.Reflect.singletonInstance(module)
+              ptest.executeTests()
+            }
+        } catch {
+          case e: Exception =>
+            println("Test threw exception: " + e)
+            e.printStackTrace()
+            throw e
+        }
       }
     }
   }
