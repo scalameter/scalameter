@@ -355,6 +355,44 @@ object Measurer {
     override def eliminateLow = true
   }
 
+  class GarbageCollectionCycles extends Measurer {
+    def name = "Measurer.GarbageCollectionCycles"
+
+    def measure[T, U](context: Context, measurements: Int, setup: T => Any, tear: T => Any, regen: () => T, snippet: T => Any): Seq[Double] = {
+      val runtime = Runtime.getRuntime
+      var iteration = 0
+      var gcs = List[Double]()
+      var value: T = null.asInstanceOf[T]
+      @volatile var count = 0
+
+      while (iteration < measurements) {
+        value = regen()
+        count = 0
+
+        setup(value)
+        Platform.collectGarbage()
+
+        utils.withGCNotification { n =>
+          log.verbose("GC detected.")
+          count += 1
+        } {
+          snippet(value)
+        }
+
+        tear(value)
+        value = null.asInstanceOf[T]
+
+        gcs = count :: gcs
+        iteration += 1
+      }
+
+      log.verbose("Measurements: " + gcs.reverse.mkString(", "))
+      gcs.reverse
+    }
+
+    def units = "#"
+  }
+
 }
 
 

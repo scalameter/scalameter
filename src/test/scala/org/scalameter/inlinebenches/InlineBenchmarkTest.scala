@@ -39,4 +39,13 @@ class InlineBenchmarkTest extends FunSuite {
     println(s"Total memory: $mem")
   }
 
+  test("Should correctly measure gc cycles") {
+    val gc = config(
+      Key.exec.benchRuns -> 30
+    ) withMeasurer(new Measurer.GarbageCollectionCycles) measure {
+      for (i <- 0 until 15000000) yield i
+    }
+    println(s"Total gcs: $gc")
+  }
+
 }
