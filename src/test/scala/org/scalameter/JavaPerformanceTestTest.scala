@@ -12,7 +12,7 @@ class JavaPerformanceTestTest extends FunSuite {
 
   test("Correctly parse config block") {
     val test = new org.scalameter.examples.JavaRegressionTest3
-    
+    test.executeTests()
   }
 
 }

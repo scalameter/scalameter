@@ -26,13 +26,13 @@ public class JavaRegressionTest3 extends OnlineRegressionReport {
 			}
 			public HashMap<Integer, LinkedList<Integer>> snippet(LinkedList<Integer> in) {
 				HashMap<Integer, LinkedList<Integer>> hm = new HashMap<Integer, LinkedList<Integer>>();
-				for(int i = 0; i < 10; i++){
-					hm.put(0, new LinkedList<Integer>());
+				for(int i = 0; i < 10; i++) {
+					hm.put(i, new LinkedList<Integer>());
 				}
 				Iterator<Integer> it = in.iterator();
-				while(it.hasNext()){
+				while (it.hasNext()) {
 					Integer element = it.next();
-					LinkedList<Integer> tmp = hm.get(element%10);
+					LinkedList<Integer> tmp = hm.get(element % 10);
 					tmp.add(element);
 					hm.put(element % 10, tmp);
 				}

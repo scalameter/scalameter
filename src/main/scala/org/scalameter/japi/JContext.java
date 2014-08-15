@@ -6,7 +6,7 @@ import java.util.*;
 
 
 
-public class JContext {
+public class JContext implements java.io.Serializable {
 	private Map<String, Object> keymap;
 
 	public JContext(Map<String, Object> m) {
