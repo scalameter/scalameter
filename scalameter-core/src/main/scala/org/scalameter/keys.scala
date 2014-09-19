@@ -108,7 +108,7 @@ class Keys extends KeyContainer("", null) {
   }
 
   object exec extends KeyContainer("exec", Keys.this) {
-    val benchRuns = apply[Int]("benchRuns", 10)
+    val benchRuns = apply[Int]("benchRuns", 30)
     val minWarmupRuns = apply[Int]("minWarmupRuns", 10)
     val maxWarmupRuns = apply[Int]("maxWarmupRuns", 10)
     val warmupCovThreshold = apply[Double]("warmupCovThreshold", 0.1)
