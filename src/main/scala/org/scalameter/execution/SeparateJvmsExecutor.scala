@@ -50,31 +50,31 @@ class SeparateJvmsExecutor(val warmer: Warmer, val aggregator: Aggregator, val m
 
       // warmup
       setupBeforeAll()
-      customwarmup match {
-        case Some(warmup) =>
-          for (i <- 0 until warmups) warmup()
-        case _ =>
-          for (x <- gen.warmupset) {
-            for (i <- w.warming(context, setupFor(x), teardownFor(x))) snippet(x)
-          }
+      try {
+        customwarmup match {
+          case Some(warmup) =>
+            for (i <- 0 until warmups) warmup()
+          case _ =>
+            for (x <- gen.warmupset) {
+              for (i <- w.warming(context, setupFor(x), teardownFor(x))) snippet(x)
+            }
+        }
+
+        // perform GC
+        compat.Platform.collectGarbage()
+
+        // measure
+        val observations = new mutable.ArrayBuffer[(Parameters, Seq[Double])]()
+        for (params <- gen.dataset) {
+          val set = setupFor()
+          val tear = teardownFor()
+          val regen = regenerateFor(params)
+          observations += (params -> m.measure(context, reps, set, tear, regen, snippet))
+        }
+        observations
+      } finally {
+        teardownAfterAll()
       }
-      teardownAfterAll()
-
-      // perform GC
-      compat.Platform.collectGarbage()
-
-      // measure
-      setupBeforeAll()
-      val observations = new mutable.ArrayBuffer[(Parameters, Seq[Double])]()
-      for (params <- gen.dataset) {
-        val set = setupFor()
-        val tear = teardownFor()
-        val regen = regenerateFor(params)
-        observations += (params -> m.measure(context, reps, set, tear, regen, snippet))
-      }
-      teardownAfterAll()
-
-      observations
     }
 
     def sampleReport(idx: Int, reps: Int): Seq[(Parameters, Seq[Double])] = try {

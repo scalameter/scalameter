@@ -58,41 +58,41 @@ class LocalExecutor(val warmer: Warmer, val aggregator: Aggregator, val measurer
 
     // run warm up
     setupBeforeAll()
-    val warmups = context(exec.maxWarmupRuns)
-    customwarmup match {
-      case Some(warmup) =>
-        for (i <- 0 until warmups) warmup()
-      case _ =>
-        for (x <- gen.warmupset) {
-          for (i <- warmer.warming(context, setupFor(x), teardownFor(x))) snippet(x)
-        }
+    try {
+      val warmups = context(exec.maxWarmupRuns)
+      customwarmup match {
+        case Some(warmup) =>
+          for (i <- 0 until warmups) warmup()
+        case _ =>
+          for (x <- gen.warmupset) {
+            for (i <- warmer.warming(context, setupFor(x), teardownFor(x))) snippet(x)
+          }
+      }
+
+      // perform GC
+      Platform.collectGarbage()
+
+      // run tests
+      val measurements = new mutable.ArrayBuffer[Measurement]()
+      val repetitions = context(exec.benchRuns)
+
+      for (params <- gen.dataset) {
+        val set = setupFor()
+        val tear = teardownFor()
+        val regen = regenerateFor(params)
+
+        log.verbose(s"$repetitions repetitions of the snippet starting.")
+        val values = measurer.measure(context, repetitions, set, tear, regen, snippet)
+        log.verbose("Repetitions ended.")
+
+        val processedValues = aggregator(values)
+        val data = aggregator.data(values)
+        measurements += Measurement(processedValues, params, data, measurer.units)
+      }
+      CurveData(measurements, Map.empty, context)
+    } finally {
+      teardownAfterAll()
     }
-    teardownAfterAll()
-
-    // perform GC
-    Platform.collectGarbage()
-
-    // run tests
-    val measurements = new mutable.ArrayBuffer[Measurement]()
-    val repetitions = context(exec.benchRuns)
-
-    setupBeforeAll()
-    for (params <- gen.dataset) {
-      val set = setupFor()
-      val tear = teardownFor()
-      val regen = regenerateFor(params)
-
-      log.verbose(s"$repetitions repetitions of the snippet starting.")
-      val values = measurer.measure(context, repetitions, set, tear, regen, snippet)
-      log.verbose("Repetitions ended.")
-
-      val processedValues = aggregator(values)
-      val data = aggregator.data(values)
-      measurements += Measurement(processedValues, params, data, measurer.units)
-    }
-    teardownAfterAll()
-
-    CurveData(measurements, Map.empty, context)
   }
 
   override def toString = s"LocalExecutor(${aggregator.name}, ${measurer.name})"
