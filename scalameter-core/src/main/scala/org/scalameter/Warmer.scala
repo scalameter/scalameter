@@ -42,8 +42,10 @@ object Warmer {
         log.verbose(s"Starting warmup.")
 
         withGCNotification { n =>
-          nogc = false
-          log.verbose("GC detected.")
+          dyn.currentContext.withValue(ctx) {
+            nogc = false
+            log.verbose("GC detected.")
+          }
         } {
           var i = 0
           while (i < maxwarmups) {
