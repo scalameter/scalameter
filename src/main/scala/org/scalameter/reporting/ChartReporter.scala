@@ -216,7 +216,7 @@ object ChartReporter {
           (curve, category) <- curves zip categories
           measurement <- curve.measurements
           curveName = curve.context(dsl.curve)
-          measurementParams = (for(p <- measurement.params.axisData) yield (s"""$p._1 : $p._2""")).mkString("[", ", ", "]")
+          measurementParams = (for(p <- measurement.params.axisData) yield (s"""${p._1} : ${p._2}""")).mkString("[", ", ", "]")
           series = s"""$curveName $measurementParams"""
         } yield (series,(category,measurement.value))
 
@@ -325,7 +325,7 @@ object ChartReporter {
           (curve, formattedDate) <- curves zip formattedDates
           measurement <- curve.measurements
           curveName = curve.context(dsl.curve)
-          measurementParams = (for(p <- measurement.params.axisData) yield (s"""$p._1 : $p._2""")).mkString("[", ", ", "]")
+          measurementParams = (for(p <- measurement.params.axisData) yield (s"""${p._1} : ${p._2}""")).mkString("[", ", ", "]")
           series = s"""$curveName#$formattedDate"""
         } yield (series,(measurementParams,measurement.value))
 
