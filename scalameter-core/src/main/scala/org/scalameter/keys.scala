@@ -97,7 +97,7 @@ class Keys extends KeyContainer("", null) {
     val startDate = apply[Option[Date]]("startDate", None)
     val endDate = apply[Option[Date]]("endDate", None)
     val bigO = apply[String]("bigO")
-    val resultDir = apply[String]("resultDir", "tmp")
+    val resultDir = apply[String]("resultDir", "target/benchmarks")
     val colors = apply[Boolean]("colors", true)
 
     object regression extends KeyContainer("regression", reports) {
