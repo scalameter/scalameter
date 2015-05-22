@@ -1,11 +1,14 @@
-import sbt._
-import Keys._
-import Process._
 import java.io.File
+import org.stormenroute.mecha._
+import sbt._
+import sbt.Keys._
+import sbt.Process._
 
 
 
-object ScalaMeterBuild extends Build {
+object ScalaMeterBuild extends MechaRepoBuild {
+
+  def repoName = "scalameter"
 
   val publishUser = "SONATYPE_USER"
   val publishPass = "SONATYPE_PASS"
