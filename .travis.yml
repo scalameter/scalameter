@@ -12,4 +12,7 @@ env:
 branches:
   only:
     - master
+after_success:
+  - chmod 755 ./tools/build_examples.sh
+  - ./tools/build_examples.sh
 
