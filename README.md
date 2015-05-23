@@ -5,4 +5,4 @@ scalameter
 
 Microbenchmarking and performance regression testing framework for the JVM platform.
 
-
+Detailed information at [scalameter.github.io](scalameter.github.io).
