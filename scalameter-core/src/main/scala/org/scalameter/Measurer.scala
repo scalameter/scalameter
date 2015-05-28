@@ -36,8 +36,20 @@ object Measurer {
 
   }
 
+  object Default {
+    def apply() = new Default
+
+    def withNanos() = new Default(conversionFun = _.toDouble) {
+       override def units = "ns"
+    }
+  }
+
   /** A default measurer executes the test as many times as specified and returns the sequence of measured times. */
-  class Default extends Timer with IterationBasedValue {
+  class Default private(conversionFun: Long => Double) extends Timer with IterationBasedValue {
+    def this() {
+      this(conversionFun = _ / 1000000.0)
+    }
+
     def name = "Measurer.Default"
 
     def measure[T, U](context: Context, measurements: Int, setup: T => Any, tear: T => Any, regen: () => T, snippet: T => Any): Seq[Double] = {
@@ -52,7 +64,7 @@ object Measurer {
         val start = System.nanoTime
         snippet(value)
         val end = System.nanoTime
-        val time = (end - start) / 1000000.0
+        val time = conversionFun(end - start)
 
         tear(value)
 

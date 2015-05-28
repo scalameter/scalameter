@@ -107,6 +107,11 @@ class DefaultMeasurer extends Measurer {
 }
 
 
+class DefaultWithNanosMeasurer extends Measurer {
+  def get = org.scalameter.Executor.Measurer.Default.withNanos()
+}
+
+
 class TimeWithIgnoringGCMeasurer extends Measurer {
   def get = new org.scalameter.Executor.Measurer.IgnoringGC
 }
