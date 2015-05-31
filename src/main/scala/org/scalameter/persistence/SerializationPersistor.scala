@@ -14,7 +14,7 @@ case class SerializationPersistor(path: File) extends Persistor {
 
   def this(path: String) = this(new File(path))
 
-  def this() = this(currentContext.goe(resultDir, ""))
+  def this() = this(currentContext(resultDir))
 
   def sep = File.separator
 
