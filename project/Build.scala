@@ -1,10 +1,17 @@
 import java.io.File
+import com.typesafe.sbt.pgp.PgpKeys._
 import org.stormenroute.mecha._
 import sbt._
 import sbt.Keys._
 import sbt.Process._
 
+import sbtrelease._
+import sbtrelease.ReleasePlugin._
+import sbtrelease.ReleasePlugin.ReleaseKeys._
+import sbtrelease.ReleaseStateTransformations._
 
+import ReleaseExtras._
+import ReleaseExtras.ReleaseExtrasKeys._
 
 object ScalaMeterBuild extends MechaRepoBuild {
 
@@ -12,8 +19,6 @@ object ScalaMeterBuild extends MechaRepoBuild {
 
   val publishUser = "SONATYPE_USER"
   val publishPass = "SONATYPE_PASS"
-
-  val scalaMeterVersion = "0.7-SNAPSHOT"
 
   val userPass = for {
     user <- sys.env.get(publishUser)
@@ -28,10 +33,26 @@ object ScalaMeterBuild extends MechaRepoBuild {
       publish <<= streams.map(_.log.info("Publishing to Sonatype is disabled since the \"" + publishUser + "\" and/or \"" + publishPass + "\" environment variables are not set."))
   })
 
+  val releasePluginSettings =  releaseSettings ++ Seq(
+    releaseBranchName := s"version/${(version in ThisBuild).value}",
+    commitMessage := s"Set version to ${(version in ThisBuild).value}",
+    publishArtifactsAction <<= publishSigned.map(identity),
+    releaseProcess := Seq[ReleaseStep](
+      checkSnapshotDependencies,
+      inquireVersions,
+      runTest,
+      setReleaseVersion,
+      commitReleaseVersion,
+      branchRelease,
+      setNextVersion,
+      commitNextVersion,
+      pushChanges
+    )
+  )
+
   val scalaMeterSettings = Defaults.defaultSettings ++ publishCreds ++ Seq(
     name := "scalameter",
     organization := "com.storm-enroute",
-    version := scalaMeterVersion,
     scalaVersion := "2.11.1",
     crossScalaVersions := Seq("2.10.4", "2.11.1"),
     scalacOptions ++= Seq("-deprecation", "-unchecked", "-feature", "-Xlint"),
@@ -94,7 +115,6 @@ object ScalaMeterBuild extends MechaRepoBuild {
   val scalaMeterCoreSettings = Defaults.defaultSettings ++ publishCreds ++ Seq(
     name := "scalameter-core",
     organization := "com.storm-enroute",
-    version := scalaMeterVersion,
     scalaVersion := "2.11.1",
     crossScalaVersions := Seq("2.10.4", "2.11.1"),
     scalacOptions ++= Seq("-deprecation", "-unchecked", "-feature", "-Xlint"),
@@ -189,14 +209,16 @@ object ScalaMeterBuild extends MechaRepoBuild {
   lazy val scalaMeterCore = Project(
     "scalameter-core",
     file("scalameter-core"),
-    settings = scalaMeterCoreSettings
+    settings = scalaMeterCoreSettings ++ releasePluginSettings
   )
 
   lazy val scalaMeter = Project(
     "scalameter",
     file("."),
-    settings = scalaMeterSettings ++ Seq(javaCommandSetting, runsuiteTask)
+    settings = scalaMeterSettings ++ Seq(javaCommandSetting, runsuiteTask) ++ releasePluginSettings
   ) dependsOn (
+    scalaMeterCore
+  ) aggregate(
     scalaMeterCore
   )
 
