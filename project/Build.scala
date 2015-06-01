@@ -35,6 +35,12 @@ object ScalaMeterBuild extends MechaRepoBuild {
 
   val releasePluginSettings =  releaseSettings ++ Seq(
     releaseBranchName := s"version/${(version in ThisBuild).value}",
+    examples.repo := "git@github.com:scalameter/scalameter-examples.git",
+    examples.tag := "v%s",
+    examples.tagComment := "Release %s",
+    examples.commitMessage := "Set ScalaMeter version to %s",
+    examples.scalaMeterVersionFile := "version.sbt",
+    examples.scalaMeterVersionFileContent := globalVersionString,
     commitMessage := s"Set version to ${(version in ThisBuild).value}",
     publishArtifactsAction <<= publishSigned.map(identity),
     releaseProcess := Seq[ReleaseStep](
@@ -46,7 +52,8 @@ object ScalaMeterBuild extends MechaRepoBuild {
       branchRelease,
       setNextVersion,
       commitNextVersion,
-      pushChanges
+      pushChanges,
+      bumpUpVersionInExamples
     )
   )
 
