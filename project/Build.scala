@@ -53,8 +53,8 @@ object ScalaMeterBuild extends MechaRepoBuild {
   val scalaMeterSettings = Defaults.defaultSettings ++ publishCreds ++ Seq(
     name := "scalameter",
     organization := "com.storm-enroute",
-    scalaVersion := "2.11.1",
-    crossScalaVersions := Seq("2.10.4", "2.11.1"),
+    scalaVersion := "2.11.4",
+    crossScalaVersions := Seq("2.10.4", "2.11.4"),
     scalacOptions ++= Seq("-deprecation", "-unchecked", "-feature", "-Xlint"),
     libraryDependencies <++= (scalaVersion)(sv => dependencies(sv)),
     resolvers ++= Seq(
@@ -115,8 +115,8 @@ object ScalaMeterBuild extends MechaRepoBuild {
   val scalaMeterCoreSettings = Defaults.defaultSettings ++ publishCreds ++ Seq(
     name := "scalameter-core",
     organization := "com.storm-enroute",
-    scalaVersion := "2.11.1",
-    crossScalaVersions := Seq("2.10.4", "2.11.1"),
+    scalaVersion := "2.11.4",
+    crossScalaVersions := Seq("2.10.4", "2.11.4"),
     scalacOptions ++= Seq("-deprecation", "-unchecked", "-feature", "-Xlint"),
     libraryDependencies <++= (scalaVersion)(sv => coreDependencies(sv)),
     resolvers ++= Seq(
