@@ -74,27 +74,27 @@ object Gen {
 
   def unit(axisName: String): Gen[Unit] = new Gen[Unit] {
     def warmupset = Iterator.single(())
-    def dataset = Iterator.single(Parameters((axisName, ())))
+    def dataset = Iterator.single(Parameters((Parameter[Unit](axisName), ())))
     def generate(params: Parameters) = params[Unit](axisName)
   }
 
-  def single[T](axisName: String)(v: T): Gen[T] = enumeration(axisName)(v)
+  def single[T: Manifest](axisName: String)(v: T): Gen[T] = enumeration(axisName)(v)
 
   def range(axisName: String)(from: Int, upto: Int, hop: Int): Gen[Int] = new Gen[Int] {
     def warmupset = Iterator.single(upto)
-    def dataset = (from to upto by hop).iterator.map(x => Parameters(axisName -> x))
+    def dataset = (from to upto by hop).iterator.map(x => Parameters(Parameter[Int](axisName) -> x))
     def generate(params: Parameters) = params[Int](axisName)
   }
 
-  def enumeration[T](axisName: String)(xs: T*): Gen[T] = new Gen[T] {
+  def enumeration[T: Manifest](axisName: String)(xs: T*): Gen[T] = new Gen[T] {
     def warmupset = Iterator.single(xs.last)
-    def dataset = xs.iterator.map(x => Parameters(axisName -> x))
+    def dataset = xs.iterator.map(x => Parameters(Parameter[T](axisName) -> x))
     def generate(params: Parameters) = params[T](axisName)
   }
 
   def exponential(axisName: String)(from: Int, until: Int, factor: Int): Gen[Int] = new Gen[Int] {
     def warmupset = Iterator.single((until - from) / 2)
-    def dataset = Iterator.iterate(from)(_ * factor).takeWhile(_ <= until).map(x => Parameters(axisName -> x))
+    def dataset = Iterator.iterate(from)(_ * factor).takeWhile(_ <= until).map(x => Parameters(Parameter[Int](axisName) -> x))
     def generate(params: Parameters) = params[Int](axisName)
   }
 

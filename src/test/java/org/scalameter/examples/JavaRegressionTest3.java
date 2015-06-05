@@ -6,7 +6,8 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import org.scalameter.japi.*;
-
+import scala.reflect.Manifest;
+import scala.reflect.ManifestFactory$;
 
 
 public class JavaRegressionTest3 extends OfflineReport {
@@ -21,7 +22,7 @@ public class JavaRegressionTest3 extends OfflineReport {
 			  .put("exec.outliers.covMultiplier", 1.5)
 			  .put("exec.outliers.suspectPercent", 40);
 			public JavaGenerator<LinkedList<Integer>> generator() {
-				JavaGenerator<Integer> sizes = new SingleGen("size", 5000000);
+				JavaGenerator<Integer> sizes = new SingleGen("size", 5000000, ManifestFactory$.MODULE$.Int());
 				return new CollectionGenerators(sizes).lists();
 			}
 			public HashMap<Integer, LinkedList<Integer>> snippet(LinkedList<Integer> in) {

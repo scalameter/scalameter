@@ -91,7 +91,7 @@ object PerformanceTest {
    */
   trait HTMLReport extends PerformanceTest {
     import reporting._
-    def persistor: Persistor = new persistence.SerializationPersistor
+    def persistor: Persistor = new persistence.GZIPJSONSerializationPersistor
     def warmer: Warmer = Warmer.Default()
     def aggregator: Aggregator = Aggregator.average
     def measurer: Measurer = new Measurer.IgnoringGC with Measurer.PeriodicReinstantiation with Measurer.OutlierElimination with Measurer.RelativeNoise
