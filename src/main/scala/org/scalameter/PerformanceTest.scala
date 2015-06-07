@@ -62,38 +62,38 @@ object PerformanceTest {
    *  Reports result into the console.
    */
   trait Quickbenchmark extends PerformanceTest {
-    def executor = new execution.LocalExecutor(
+    def executor: Executor = new execution.LocalExecutor(
       Warmer.Default(),
       Aggregator.min,
       measurer
     )
-    def measurer = new Measurer.Default
-    def reporter = new reporting.LoggingReporter
-    def persistor = Persistor.None
+    def measurer: Measurer = new Measurer.Default
+    def reporter: Reporter = new reporting.LoggingReporter
+    def persistor: Persistor = Persistor.None
   }
 
   /** A more reliable benchmark run in a separate JVM.
    *  Reports results into the console.
    */
   trait Microbenchmark extends PerformanceTest {
-    def warmer = Warmer.Default()
-    def aggregator = Aggregator.min
-    def measurer = new Measurer.IgnoringGC with Measurer.PeriodicReinstantiation {
+    def warmer: Warmer = Warmer.Default()
+    def aggregator: Aggregator = Aggregator.min
+    def measurer: Measurer = new Measurer.IgnoringGC with Measurer.PeriodicReinstantiation {
       override val defaultFrequency = 12
       override val defaultFullGC = true
     }
-    def executor = execution.SeparateJvmsExecutor(warmer, aggregator, measurer)
-    def reporter = new reporting.LoggingReporter
-    def persistor = Persistor.None
+    def executor: Executor = execution.SeparateJvmsExecutor(warmer, aggregator, measurer)
+    def reporter: Reporter = new reporting.LoggingReporter
+    def persistor: Persistor = Persistor.None
   }
 
   /** A base for benchmarks generating a more detailed (regression) report, potentially online.
    */
   trait HTMLReport extends PerformanceTest {
     import reporting._
-    def persistor = new persistence.SerializationPersistor
-    def warmer = Warmer.Default()
-    def aggregator = Aggregator.average
+    def persistor: Persistor = new persistence.SerializationPersistor
+    def warmer: Warmer = Warmer.Default()
+    def aggregator: Aggregator = Aggregator.average
     def measurer: Measurer = new Measurer.IgnoringGC with Measurer.PeriodicReinstantiation with Measurer.OutlierElimination with Measurer.RelativeNoise
     def executor: Executor = new execution.SeparateJvmsExecutor(warmer, aggregator, measurer)
     def tester: RegressionReporter.Tester
@@ -137,8 +137,8 @@ object PerformanceTest {
   @deprecated("This performance test is now deprecated, please use `OnlineRegressionReport` instead.", "0.5")
   trait Regression extends PerformanceTest {
     import reporting._
-    def warmer = Warmer.Default()
-    def aggregator = Aggregator.average
+    def warmer: Warmer = Warmer.Default()
+    def aggregator: Aggregator = Aggregator.average
     def measurer: Measurer = new Measurer.IgnoringGC with Measurer.PeriodicReinstantiation with Measurer.OutlierElimination with Measurer.RelativeNoise
     def executor: Executor = new execution.SeparateJvmsExecutor(warmer, aggregator, measurer)
     def reporter: Reporter = Reporter.Composite(
