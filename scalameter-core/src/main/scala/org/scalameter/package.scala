@@ -65,6 +65,12 @@ package object scalameter extends MeasureBuilder[Unit, Double](
 
 package scalameter {
 
-  case class MeasurementData(complete: Seq[Double], success: Boolean) 
+  case class MeasurementData(complete: Seq[Double], success: Boolean)
+
+  trait TypeHintedKey[T] {
+    def name: String
+
+    def typeHint: Manifest[T]
+  }
   
 }

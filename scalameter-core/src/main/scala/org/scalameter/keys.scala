@@ -6,8 +6,8 @@ import java.util.Date
 import scala.collection._
 
 
-
-class Key[T](val name: String)(implicit container: KeyContainer) extends Serializable {
+class Key[T](val name: String)(implicit @transient container: KeyContainer, val typeHint: Manifest[T])
+  extends Serializable with TypeHintedKey[T] {
   container.keys(name) = this
 
   override def toString = name
@@ -16,11 +16,23 @@ class Key[T](val name: String)(implicit container: KeyContainer) extends Seriali
     case k: Key[_] => name == k.name
     case _ => false
   }
+
+  @annotation.tailrec
+  private def context(keyContainer: KeyContainer, acc: List[String] = Nil): String = {
+    if (keyContainer == null || keyContainer.containerName.isEmpty) acc.mkString(".")
+    else context(keyContainer.enclosing, keyContainer.containerName :: acc)
+  }
+
+  def fullname: String = {
+    val ctx = context(container)
+    if (ctx.isEmpty) name
+    else s"$ctx.$name"
+  }
 }
 
 
-class KeyWithDefault[T](name: String, val defaultValue: T)(implicit container: KeyContainer)
-extends Key[T](name)(container)
+class KeyWithDefault[T](name: String, val defaultValue: T)(implicit container: KeyContainer, m: Manifest[T])
+extends Key[T](name)(container, manifest)
 
 
 object Key extends Keys {
@@ -57,10 +69,10 @@ abstract class KeyContainer(val containerName: String, val enclosing: KeyContain
 
 class Keys extends KeyContainer("", null) {
 
-  def apply[T](name: String)(implicit container: KeyContainer) =
+  def apply[T: Manifest](name: String)(implicit container: KeyContainer) =
     new Key[T](name)
 
-  def apply[T](name: String, defaultValue: T)(implicit container: KeyContainer) =
+  def apply[T: Manifest](name: String, defaultValue: T)(implicit container: KeyContainer) =
     new KeyWithDefault[T](name, defaultValue)
 
   // Note: predefined keys need to be lazy

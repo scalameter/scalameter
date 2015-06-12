@@ -210,7 +210,7 @@ abstract class Microbenchmark extends JavaPerformanceTest {
 abstract class HTMLReport extends JavaPerformanceTest {
   import Executor.Measurer
   import reporting._
-  def javaPersistor: org.scalameter.japi.Persistor = new org.scalameter.japi.SerializationPersistor
+  def javaPersistor: org.scalameter.japi.Persistor = new org.scalameter.japi.GZIPJSONSerializationPersistor
   def javaWarmer = new org.scalameter.japi.Warmer {
     def get = new org.scalameter.Warmer.Default
   }

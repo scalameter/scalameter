@@ -3,62 +3,28 @@ package persistence
 
 
 
-import java.util.Date
 import java.io._
-import collection._
 import Key.reports._
 
 
 
-case class SerializationPersistor(path: File) extends Persistor {
+case class SerializationPersistor(path: File) extends IOStreamPersistor[ObjectInputStream, ObjectOutputStream] {
 
   def this(path: String) = this(new File(path))
 
   def this() = this(currentContext(resultDir))
 
-  def sep = File.separator
+  def fileExt: String = "dat"
 
-  private def loadHistory(dir: String, scope: String, curve: String): History = {
-    val file = new File(s"$path$sep$scope.$curve.dat")
-    if (!file.exists || !file.isFile) History(Nil)
-    else {
-      val fis = new FileInputStream(file)
-      val ois = new ObjectInputStream(fis) {
-        override def resolveClass(desc: ObjectStreamClass) = Class.forName(desc.getName)
-      }
-      try {
-        ois.readObject().asInstanceOf[History]
-      } finally {
-        ois.close()
-      }
-    }
+  protected def inputStream(file: File): ObjectInputStream = new ObjectInputStream(new FileInputStream(file)) {
+    override def resolveClass(desc: ObjectStreamClass) = Class.forName(desc.getName)
   }
 
-  private def saveHistory(dir: String, scope: String, curve: String, h: History) {
-    path.mkdirs()
-    val file = new File(s"$path$sep$scope.$curve.dat")
-    val fos = new FileOutputStream(file)
-    val oos = new ObjectOutputStream(fos)
-    try {
-      oos.writeObject(h)
-    } finally {
-      oos.close()
-    }
-  }
+  protected def outputStream(file: File): ObjectOutputStream= new ObjectOutputStream(new FileOutputStream(file))
 
-  def load(context: Context): History = {
-    val scope = context.scope
-    val curve = context.curve
-    val resultdir = context(resultDir)
-    loadHistory(resultdir, scope, curve)
-  }
+  protected def loadFrom(is: ObjectInputStream): History = is.readObject().asInstanceOf[History]
 
-  def save(context: Context, h: History) {
-    val scope = context.scope
-    val curve = context.curve
-    val resultdir = context(resultDir)
-    saveHistory(resultdir, scope, curve, h)
-  }
+  protected def saveTo(history: History, os: ObjectOutputStream): Unit = os.writeObject(history)
 }
 
 

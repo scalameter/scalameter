@@ -83,7 +83,7 @@ object ChartReporter {
 
         val chart = XYLineChart(dataset)
         chart.title = scopename
-        chart.plot.domain.axis.label = cs.head.measurements.head.params.axisData.head._1
+        chart.plot.domain.axis.label = cs.head.measurements.head.params.axisData.head._1.name
         chart.plot.range.axis.label = "value"
 
         chart.plot.setBackgroundPaint(new java.awt.Color(180, 180, 180))
@@ -170,7 +170,7 @@ object ChartReporter {
 
         val chart = XYLineChart(dataset)
         chart.title = chartName
-        chart.plot.domain.axis.label = xAxisName
+        chart.plot.domain.axis.label = xAxisName.name
         chart.plot.range.axis.label = "value"
 
         chart.plot.setBackgroundPaint(new java.awt.Color(200, 200, 200))

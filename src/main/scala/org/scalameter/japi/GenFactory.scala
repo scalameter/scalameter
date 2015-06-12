@@ -33,8 +33,8 @@ class VoidGen(axisName: String) extends JavaGenerator[Void] {
 }
 
 
-class SingleGen[T](axisName: String, v: T) extends JavaGenerator[T] {
-  def get = Gen.single(axisName)(v)
+class SingleGen[T](axisName: String, v: T, manifest: Manifest[T]) extends JavaGenerator[T] {
+  def get = Gen.single(axisName)(v)(manifest)
 }
 
 
@@ -43,13 +43,13 @@ class RangeGen(axisName: String, from: Int, upto: Int, hop: Int) extends JavaGen
 }
 
 
-class EnumerationGen[T](axisName: String, xs: Array[T]) extends JavaGenerator[T] {
+class EnumerationGen[T](axisName: String, xs: Array[T], manifest: Manifest[T]) extends JavaGenerator[T] {
   def get = {
     var ys: List[T] = List()
     for (x <- xs) {
       ys = x :: ys
     }
-    Gen.enumeration(axisName)(ys: _*)
+    Gen.enumeration(axisName)(ys: _*)(manifest)
   }
 }
 
