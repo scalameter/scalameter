@@ -3,8 +3,8 @@ package org.scalameter
 import scala.collection.{Iterable, immutable}
 import org.scalameter.picklers.noPickler.instance
 
-@SerialVersionUID(4203959258570851398L)
-case class Parameters(axisData: immutable.ListMap[Parameter[_], Any]) {
+@SerialVersionUID(4203959258570851399L)
+case class Parameters(axisData: immutable.Map[Parameter[_], Any]) {
   def ++(that: Parameters) = Parameters(this.axisData ++ that.axisData)
   def apply[T](key: String) = axisData.apply(Parameter[T](key)).asInstanceOf[T]
   def map(f: ((String, Any)) => (String, Any)) = {

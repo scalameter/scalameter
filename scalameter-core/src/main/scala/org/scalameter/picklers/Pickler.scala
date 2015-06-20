@@ -16,3 +16,12 @@ abstract class Pickler[T] extends Serializable {
     obj
   }
 }
+
+object Pickler {
+  /** Makes instance of Pickler that can be either a scala object or a plain class.
+   */
+  def makeInstance[T](clazz: Class[_]): Pickler[T] = {
+    if (clazz.getName.endsWith("$")) clazz.getField("MODULE$").get(null).asInstanceOf[Pickler[T]]
+    else clazz.newInstance().asInstanceOf[Pickler[T]]
+  }
+}

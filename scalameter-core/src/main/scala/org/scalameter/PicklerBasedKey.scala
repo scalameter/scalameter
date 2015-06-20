@@ -13,3 +13,18 @@ trait PicklerBasedKey[T] extends Serializable {
 
   private[scalameter] final def repr: String = s"$fullName|${pickler.getClass.getName}"
 }
+
+object PicklerBasedKey {
+  /** Reconstructs key from serialized string.
+   *
+   * @param str serialized string
+   * @param constructor factory method to create specific key instance
+   */
+  def fromString[K <: PicklerBasedKey[_]](str: String, constructor: (String, Pickler[_]) => K): K = {
+    val splitIdx = str.lastIndexOf('|')
+    if (splitIdx == -1) sys.error("""Invalid key string. It should have following the form "fullName|picklerClass".""")
+    val pickler = Pickler.makeInstance[Any](Class.forName(str.substring(splitIdx + 1)))
+    val key = constructor(str.substring(0, splitIdx), pickler)
+    key
+  }
+}
