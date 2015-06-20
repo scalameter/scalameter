@@ -3,11 +3,14 @@ package org.scalameter
 
 
 import java.util.Date
+import scala.annotation.tailrec
 import scala.collection._
+import org.scalameter.picklers.Implicits._
+import org.scalameter.picklers.Pickler
 
 
 
-class Key[T](val name: String)(implicit container: KeyContainer) extends Serializable {
+class Key[T: Pickler](val name: String)(implicit container: KeyContainer) extends PicklerBasedKey[T] {
   container.keys(name) = this
 
   override def toString = name
@@ -16,11 +19,24 @@ class Key[T](val name: String)(implicit container: KeyContainer) extends Seriali
     case k: Key[_] => name == k.name
     case _ => false
   }
+
+  val fullName: String = {
+    @tailrec def context(keyContainer: KeyContainer, acc: List[String] = Nil): String = {
+      if (keyContainer == null || keyContainer.containerName.isEmpty) acc.mkString(".")
+      else context(keyContainer.enclosing, keyContainer.containerName :: acc)
+    }
+
+    val ctx = context(container)
+    if (ctx.isEmpty) name
+    else s"$ctx.$name"
+  }
+
+  val pickler: Pickler[T] = implicitly[Pickler[T]]
 }
 
 
-class KeyWithDefault[T](name: String, val defaultValue: T)(implicit container: KeyContainer)
-extends Key[T](name)(container)
+class KeyWithDefault[T: Pickler](name: String, val defaultValue: T)(implicit container: KeyContainer)
+extends Key[T](name)
 
 
 object Key extends Keys {
@@ -57,10 +73,10 @@ abstract class KeyContainer(val containerName: String, val enclosing: KeyContain
 
 class Keys extends KeyContainer("", null) {
 
-  def apply[T](name: String)(implicit container: KeyContainer) =
+  def apply[T: Pickler](name: String)(implicit container: KeyContainer) =
     new Key[T](name)
 
-  def apply[T](name: String, defaultValue: T)(implicit container: KeyContainer) =
+  def apply[T: Pickler](name: String, defaultValue: T)(implicit container: KeyContainer) =
     new KeyWithDefault[T](name, defaultValue)
 
   // Note: predefined keys need to be lazy

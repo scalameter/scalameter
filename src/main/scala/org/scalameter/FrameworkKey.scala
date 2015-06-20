@@ -1,5 +1,6 @@
 package org.scalameter
 
+import org.scalameter.picklers.noPickler._
 
 
 /** Object containing keys specific to the ScalaMeter benchmarking framework.

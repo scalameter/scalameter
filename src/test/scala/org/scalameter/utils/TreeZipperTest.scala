@@ -4,6 +4,7 @@ package utils
 
 
 import org.scalatest.FunSuite
+import org.scalameter.picklers.Implicits._
 
 
 

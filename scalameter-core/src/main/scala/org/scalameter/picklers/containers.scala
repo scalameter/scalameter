@@ -1,12 +1,15 @@
 package org.scalameter.picklers
 
-import scala.language.higherKinds
-import scala.collection.generic.CanBuildFrom
+import language.higherKinds
+
 import java.util.Date
+import scala.collection.generic.CanBuildFrom
 import Implicits._
 
 
-abstract class TraversablePickler[C[_] <: Traversable[_], T: Pickler](implicit cbf: CanBuildFrom[Nothing, T, C[T]]) extends Pickler[C[T]] {
+abstract class TraversablePickler[C[_] <: Traversable[_], T: Pickler] extends Pickler[C[T]] {
+  protected def canBuildFrom: CanBuildFrom[Nothing, T, C[T]]
+
   def pickle(x: C[T]): Array[Byte] = {
     val pickler = implicitly[Pickler[T]].asInstanceOf[Pickler[Any]]
     val builder = Array.newBuilder[Byte]
@@ -19,7 +22,7 @@ abstract class TraversablePickler[C[_] <: Traversable[_], T: Pickler](implicit c
 
   def unpickle(a: Array[Byte], from: Int): (C[T], Int) = {
     val pickler = implicitly[Pickler[T]]
-    val builder = cbf()
+    val builder = canBuildFrom()
 
     @annotation.tailrec
     def _unpickle(times: Int, from: Int): (C[T], Int) = {
@@ -52,8 +55,12 @@ abstract class OptionPickler[T: Pickler] extends Pickler[Option[T]] {
   }
 }
 
-object StringListPickler extends TraversablePickler[List, String]
+object StringListPickler extends TraversablePickler[List, String] {
+  protected def canBuildFrom = implicitly[CanBuildFrom[Nothing, String, List[String]]]
+}
 
-object LongSeqPickler extends TraversablePickler[Seq, Long]
+object LongSeqPickler extends TraversablePickler[Seq, Long]  {
+  protected def canBuildFrom = implicitly[CanBuildFrom[Nothing, Long, Seq[Long]]]
+}
 
 object DateOptionPickler extends OptionPickler[Date]

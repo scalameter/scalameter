@@ -3,6 +3,7 @@ package org.scalameter.examples
 
 
 import org.scalameter.api._
+import org.scalameter.picklers.Implicits._
 
 
 
