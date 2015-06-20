@@ -5,7 +5,7 @@ import scala.annotation.implicitNotFound
 
 @implicitNotFound(msg ="""No Pickler available for ${T}. Please define yours or
 import org.scalameter.picklers.noPickler._ and use SerializationPersistor.""")
-abstract class Pickler[T] {
+abstract class Pickler[T] extends Serializable {
   def pickle(x: T): Array[Byte]
 
   def unpickle(a: Array[Byte], from: Int): (T, Int)

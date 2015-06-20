@@ -4,6 +4,9 @@ package org.scalameter.japi
 
 import org.scalameter.Gen
 import java.lang.Integer
+import org.scalameter.picklers.Pickler
+import org.scalameter.picklers.Implicits._
+
 import scala.collection.JavaConverters._
 import java.util.Arrays
 import java.util.Collection
@@ -33,8 +36,16 @@ class VoidGen(axisName: String) extends JavaGenerator[Void] {
 }
 
 
-class SingleGen[T](axisName: String, v: T) extends JavaGenerator[T] {
-  def get = Gen.single(axisName)(v)
+class IntSingleGen(axisName: String, v: Int)
+  extends SingleGen[java.lang.Integer](axisName, v, intPickler.asInstanceOf[Pickler[java.lang.Integer]])
+
+
+class DoubleSingleGen(axisName: String, v: Double)
+  extends SingleGen[java.lang.Double](axisName, v, doublePickler.asInstanceOf[Pickler[java.lang.Double]])
+
+
+class SingleGen[T](axisName: String, v: T, pickler: Pickler[T]) extends JavaGenerator[T] {
+  def get = Gen.single(axisName)(v)(pickler)
 }
 
 
@@ -43,13 +54,21 @@ class RangeGen(axisName: String, from: Int, upto: Int, hop: Int) extends JavaGen
 }
 
 
-class EnumerationGen[T](axisName: String, xs: Array[T]) extends JavaGenerator[T] {
+class IntEnumerationGen(axisName: String, v: Array[java.lang.Integer])
+  extends EnumerationGen[java.lang.Integer](axisName, v, intPickler.asInstanceOf[Pickler[java.lang.Integer]])
+
+
+class DoubleEnumerationGen(axisName: String, v: Array[java.lang.Double])
+  extends EnumerationGen[java.lang.Double](axisName, v, doublePickler.asInstanceOf[Pickler[java.lang.Double]])
+
+
+class EnumerationGen[T](axisName: String, xs: Array[T], pickler: Pickler[T]) extends JavaGenerator[T] {
   def get = {
     var ys: List[T] = List()
     for (x <- xs) {
       ys = x :: ys
     }
-    Gen.enumeration(axisName)(ys: _*)
+    Gen.enumeration(axisName)(ys: _*)(pickler)
   }
 }
 

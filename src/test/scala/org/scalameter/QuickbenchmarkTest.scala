@@ -5,6 +5,7 @@ package org.scalameter
 import org.scalatest.FunSuite
 import org.scalameter.api._
 import util.Properties.javaVersion
+import org.scalameter.picklers.Implicits._
 
 
 

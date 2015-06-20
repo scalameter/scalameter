@@ -21,7 +21,7 @@ public class JavaRegressionTest3 extends OfflineReport {
 			  .put("exec.outliers.covMultiplier", 1.5)
 			  .put("exec.outliers.suspectPercent", 40);
 			public JavaGenerator<LinkedList<Integer>> generator() {
-				JavaGenerator<Integer> sizes = new SingleGen("size", 5000000);
+				JavaGenerator<Integer> sizes = new IntSingleGen("size", 5000000);
 				return new CollectionGenerators(sizes).lists();
 			}
 			public HashMap<Integer, LinkedList<Integer>> snippet(LinkedList<Integer> in) {

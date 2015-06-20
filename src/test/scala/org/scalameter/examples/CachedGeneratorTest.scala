@@ -5,6 +5,7 @@ package examples
 
 import reporting._
 import Key._
+import org.scalameter.picklers.Implicits._
 
 
 
