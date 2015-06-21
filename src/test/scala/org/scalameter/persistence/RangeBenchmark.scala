@@ -1,9 +1,15 @@
 package org.scalameter.persistence
 
 import org.scalameter._
+import org.scalameter.reporting.RegressionReporter
 
 
 class RangeBenchmark(override val persistor: Persistor) extends PerformanceTest.Quickbenchmark {
+  override def reporter = new reporting.RegressionReporter(
+    RegressionReporter.Tester.Accepter(),
+    RegressionReporter.Historian.Complete()
+  )
+
   val sizes = Gen.range("size")(300000, 1500000, 300000)
 
   val ranges = for {

@@ -1,14 +1,18 @@
 package org.scalameter
 package persistence
 
+import java.io.File
+
 import scala.collection.mutable
 
 
 /** Intercepts [[org.scalameter.History]] before serializing it
- *  using underlying [[org.scalameter.Persistor]] to allow testing of correctness.
+ *  using underlying [[org.scalameter.persistence.IOStreamPersistor]] to allow testing of correctness.
  */
-class InterceptingPersistor(underlying: Persistor) extends Persistor {
+class InterceptingPersistor(underlying: IOStreamPersistor[_, _]) extends Persistor {
   private val _cache: mutable.Map[Context, History] = mutable.Map.empty
+
+  def fileFor(ctx: Context): File = underlying.fileFor(ctx)
 
   def load(context: Context): History = {
     underlying.load(context)
