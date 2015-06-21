@@ -12,4 +12,6 @@ case class Parameter[T: Pickler](fullName: String) extends PicklerBasedKey[T] {
     case p: Parameter[_] => fullName == p.fullName
     case _ => false
   }
+
+  override def toString: String = fullName
 }

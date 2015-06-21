@@ -61,7 +61,7 @@ object DsvReporter {
       p("date")
       p(delimiter)
       for (paramname <- cd.measurements.head.params.axisData.keys) {
-        p("param-" + paramname)
+        p("param-" + paramname.fullName)
         p(delimiter)
       }
       p("value")
