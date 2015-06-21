@@ -2,7 +2,6 @@ package org.scalameter
 package persistence
 
 import java.io._
-import Key.reports._
 
 
 /** Base for persistors that actually write and read [[org.scalameter.History]].
@@ -23,10 +22,11 @@ trait IOStreamPersistor[I <: InputStream, O <: OutputStream] extends Persistor {
 
   protected def saveTo(history: History, os: O): Unit
 
-  private def directorySeparator: String = File.separator
+  protected[scalameter] def fileFor(context: Context) =
+    new File(s"$path${File.separator}${context.scope}.${context.curve}.$fileExtension")
 
-  private def loadHistory(scope: String, curve: String): History = {
-    val file = new File(s"$path$directorySeparator$scope.$curve.$fileExtension")
+  final def load(context: Context): History = {
+    val file = fileFor(context)
     if (!file.exists || !file.isFile) History(Nil)
     else {
       val is = inputStream(file)
@@ -38,26 +38,14 @@ trait IOStreamPersistor[I <: InputStream, O <: OutputStream] extends Persistor {
     }
   }
 
-  private def saveHistory(scope: String, curve: String, h: History) {
+  final def save(context: Context, h: History) {
     path.mkdirs()
-    val file = new File(s"$path$directorySeparator$scope.$curve.$fileExtension")
+    val file = fileFor(context)
     val os = outputStream(file)
     try {
       saveTo(h, os)
     } finally {
       os.close()
     }
-  }
-
-  def load(context: Context): History = {
-    val scope = context.scope
-    val curve = context.curve
-    loadHistory(scope, curve)
-  }
-
-  def save(context: Context, h: History) {
-    val scope = context.scope
-    val curve = context.curve
-    saveHistory(scope, curve, h)
   }
 }
