@@ -31,5 +31,6 @@ package object json {
   private[persistence] lazy val jsonMapper = {
     val mapper = new ObjectMapper with ScalaObjectMapper
     mapper.registerModules(DefaultScalaModule, ScalaMeterModule)
+    mapper
   }
 }

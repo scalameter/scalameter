@@ -142,6 +142,16 @@ class SerializationPersistor extends Persistor {
 }
 
 
+class JSONSerializationPersistor extends Persistor {
+  def get = new org.scalameter.persistence.JSONSerializationPersistor
+}
+
+
+class GZIPJSONSerializationPersistor extends Persistor {
+  def get = new org.scalameter.persistence.GZIPJSONSerializationPersistor
+}
+
+
 class LoggingReporter extends Reporter {
   def get: org.scalameter.Reporter = org.scalameter.reporting.LoggingReporter()
 }
