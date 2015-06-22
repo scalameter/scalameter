@@ -15,11 +15,11 @@ class SerializationPersistorTest extends FunSuite with PersistorTest with Matche
     }
   }
 
-  test("Should produce data which occupies less than 8.1kB") {
+  test("Should produce data which occupies less than 8.5kB") {
     executeBenchmark() { persistor =>
       for ((ctx, _) <- persistor.intercepted) {
         val file = persistor.fileFor(ctx)
-        compareSpaceConsumption(file, 8.1)
+        compareSpaceConsumption(file, 8.5)
       }
     }
   }

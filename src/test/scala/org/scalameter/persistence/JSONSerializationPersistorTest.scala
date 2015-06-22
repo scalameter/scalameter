@@ -15,11 +15,11 @@ class JSONSerializationPersistorTest extends FunSuite with PersistorTest with Ma
     }
   }
 
-  test("Should produce data which occupies less than 10.1kB") {
+  test("Should produce data which occupies less than 10.5kB") {
     executeBenchmark() { persistor =>
       for ((ctx, _) <- persistor.intercepted) {
         val file = persistor.fileFor(ctx)
-        compareSpaceConsumption(file, 10.1)
+        compareSpaceConsumption(file, 10.5)
       }
     }
   }
