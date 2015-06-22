@@ -77,4 +77,9 @@ object api extends Keys {
   type SerializationPersistor = persistence.SerializationPersistor
   val SerializationPersistor = persistence.SerializationPersistor
 
+  type JSONSerializationPersistor = persistence.JSONSerializationPersistor
+  val JSONSerializationPersistor = persistence.JSONSerializationPersistor
+
+  type GZIPJSONSerializationPersistor = persistence.GZIPJSONSerializationPersistor
+  val GZIPJSONSerializationPersistor = persistence.GZIPJSONSerializationPersistor
 }
