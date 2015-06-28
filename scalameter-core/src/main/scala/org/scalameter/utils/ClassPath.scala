@@ -8,10 +8,16 @@ import java.net._
 
 
 object ClassPath {
+  /** Returns the default classpath string, surrounded by quotes.
+   */
   def default: String = {
     extract(this.getClass.getClassLoader, sys.props("java.class.path"))
   }
 
+  /** Extracts the classpath from the given `classLoader` if it is a `URLClassLoader` or
+   *  from the first parent that is a `URLClassLoader`.
+   *  If no `URLClassLoader` can be found, returns the `default` classpath.
+   */
   def extract(classLoader: ClassLoader, default: => String): String =
     classLoader match {
       case urlclassloader: URLClassLoader => extractFromUrlCL(urlclassloader)
