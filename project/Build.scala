@@ -33,7 +33,7 @@ object ScalaMeterBuild extends MechaRepoBuild {
       publish <<= streams.map(_.log.info("Publishing to Sonatype is disabled since the \"" + publishUser + "\" and/or \"" + publishPass + "\" environment variables are not set."))
   })
 
-  val releasePluginSettings =  releaseSettings ++ Seq(
+  val releasePluginSettings = releaseSettings ++ Seq(
     releaseBranchName := s"version/${(version in ThisBuild).value}",
     examples.repo := "git@github.com:scalameter/scalameter-examples.git",
     examples.tag := "v%s",
@@ -64,6 +64,7 @@ object ScalaMeterBuild extends MechaRepoBuild {
     crossScalaVersions := Seq("2.10.4", "2.11.4"),
     scalacOptions ++= Seq("-deprecation", "-unchecked", "-feature", "-Xlint"),
     libraryDependencies <++= (scalaVersion)(sv => dependencies(sv)),
+    parallelExecution in Test := false,
     resolvers ++= Seq(
       "Sonatype OSS Snapshots" at "https://oss.sonatype.org/content/repositories/snapshots",
       "Sonatype OSS Releases" at "https://oss.sonatype.org/content/repositories/releases"
@@ -128,6 +129,7 @@ object ScalaMeterBuild extends MechaRepoBuild {
     crossScalaVersions := Seq("2.10.4", "2.11.4"),
     scalacOptions ++= Seq("-deprecation", "-unchecked", "-feature", "-Xlint"),
     libraryDependencies <++= (scalaVersion)(sv => coreDependencies(sv)),
+    parallelExecution in Test := false,
     resolvers ++= Seq(
       "Sonatype OSS Snapshots" at "https://oss.sonatype.org/content/repositories/snapshots",
       "Sonatype OSS Releases" at "https://oss.sonatype.org/content/repositories/releases"
