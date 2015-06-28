@@ -13,6 +13,7 @@ then
 		sbt $TRAVIS_SCALA_VERSION_ARG publish
 	else
 		echo "Tests failed -- no snapshot will be published!"
+    exit 1
 	fi
 else
 	echo "Pull request -- testing without publishing the snapshot."
