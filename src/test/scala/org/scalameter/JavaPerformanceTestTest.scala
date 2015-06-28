@@ -11,8 +11,14 @@ import util.Properties.javaVersion
 class JavaPerformanceTestTest extends FunSuite {
 
   test("Correctly parse config block") {
-    val test = new org.scalameter.examples.JavaRegressionTest3
-    test.executeTests()
+    try {
+      val test = new org.scalameter.examples.JavaRegressionTest3
+      test.executeTests()
+    } catch {
+      case t: Throwable =>
+        t.printStackTrace()
+        throw t
+    }
   }
 
 }
