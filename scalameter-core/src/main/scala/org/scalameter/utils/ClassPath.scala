@@ -1,10 +1,16 @@
 package org.scalameter.utils
 
+
+
 import java.io.File
 import java.net._
 
+
+
 object ClassPath {
-  def default = extract(this.getClass.getClassLoader, sys.props("java.class.path"))
+  def default: String = {
+    extract(this.getClass.getClassLoader, sys.props("java.class.path"))
+  }
 
   def extract(classLoader: ClassLoader, default: => String): String =
     classLoader match {
@@ -15,12 +21,12 @@ object ClassPath {
         if (parent != null)
           extract(parent, default)
         else
-          default
+          "\"" + default + "\""
     }
 
   private def extractFromUrlCL(urlclassloader: URLClassLoader): String = {
     val files = extractFileClasspaths(urlclassloader.getURLs)
-    files.mkString(File.pathSeparator)
+    files.mkString("\"", File.pathSeparator, "\"")
   }
 
   private[scalameter] def extractFileClasspaths(urls: Seq[URL]): Seq[String] = {

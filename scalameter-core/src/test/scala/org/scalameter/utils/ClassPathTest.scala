@@ -23,4 +23,13 @@ class ClassPathTest extends FunSuite with Matchers {
     assert(strings == expected)
   }
 
+  test("Classpath should have quotes around it") {
+    val cp = ClassPath.default
+    assert(cp.head == '\"')
+    assert(cp.last == '\"')
+    if (cp.length >= 3) {
+      assert(cp(1) != '\"')
+    }
+  }
+
 }
