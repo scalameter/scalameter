@@ -4,7 +4,7 @@ package utils
 
 
 import java.net.URL
-import org.apache.commons.lang.SystemUtils
+import org.apache.commons.lang3.SystemUtils
 import org.scalatest.{FunSuite, Matchers}
 
 

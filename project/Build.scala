@@ -106,7 +106,6 @@ object ScalaMeterBuild extends MechaRepoBuild {
       "org.scalatest" %% "scalatest" % "2.1.3" % "test",
       "com.github.wookietreiber" %% "scala-chart" % "0.4.2",
       "org.apache.commons" % "commons-math3" % "3.2",
-      "org.apache.commons" % "commons-lang3" % "3.4",
       "org.scala-tools.testing" % "test-interface" % "0.5",
       "org.scala-lang" % "scala-reflect" % "2.11.0",
       "org.scala-lang.modules" %% "scala-xml" % "1.0.1",
@@ -117,7 +116,6 @@ object ScalaMeterBuild extends MechaRepoBuild {
       "org.scalatest" %% "scalatest" % "2.1.2" % "test",
       "com.github.wookietreiber" %% "scala-chart" % "0.4.0",
       "org.apache.commons" % "commons-math3" % "3.2",
-      "org.apache.commons" % "commons-lang3" % "3.4",
       "org.scala-tools.testing" % "test-interface" % "0.5",
       "com.fasterxml.jackson.module" %% "jackson-module-scala" % "2.5.2"
       )
@@ -173,15 +171,17 @@ object ScalaMeterBuild extends MechaRepoBuild {
       "org.scalacheck" %% "scalacheck" % "1.12.4" % "test",
       "org.scalatest" %% "scalatest" % "2.1.3" % "test",
       "org.apache.commons" % "commons-math3" % "3.2",
+      "org.apache.commons" % "commons-lang3" % "3.4",
       "org.scala-lang" % "scala-reflect" % "2.11.0",
       "org.scala-lang.modules" %% "scala-xml" % "1.0.1",
       "org.scala-lang.modules" %% "scala-parser-combinators" % "1.0.1"
-      )
+    )
     case Some((2,10)) => List (
       "org.scalacheck" %% "scalacheck" % "1.12.4" % "test",
       "org.scalatest" %% "scalatest" % "2.1.3" % "test",
-      "org.apache.commons" % "commons-math3" % "3.2"
-      )
+      "org.apache.commons" % "commons-math3" % "3.2",
+      "org.apache.commons" % "commons-lang3" % "3.4"
+    )
     case _ => Nil
   }
 
