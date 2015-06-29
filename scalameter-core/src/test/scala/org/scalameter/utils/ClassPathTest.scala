@@ -1,8 +1,12 @@
 package org.scalameter
 package utils
 
+
+
 import java.net.URL
+import org.apache.commons.lang.SystemUtils
 import org.scalatest.{FunSuite, Matchers}
+
 
 
 class ClassPathTest extends FunSuite with Matchers {
@@ -24,11 +28,16 @@ class ClassPathTest extends FunSuite with Matchers {
   }
 
   test("Classpath should have quotes around it") {
-    val cp = ClassPath.default
-    assert(cp.head == '\"')
-    assert(cp.last == '\"')
-    if (cp.length >= 3) {
-      assert(cp(1) != '\"')
+    val cp = ClassPath.platformSpecificDefault
+    if (SystemUtils.IS_OS_WINDOWS) {
+      assert(cp.head == '\"')
+      assert(cp.last == '\"')
+      if (cp.length >= 3) {
+        assert(cp(1) != '\"')
+      }
+    } else {
+      assert(cp.head != '\"')
+      assert(cp.last != '\"')
     }
   }
 
