@@ -174,13 +174,15 @@ object ScalaMeterBuild extends MechaRepoBuild {
       "org.apache.commons" % "commons-lang3" % "3.4",
       "org.scala-lang" % "scala-reflect" % "2.11.0",
       "org.scala-lang.modules" %% "scala-xml" % "1.0.1",
-      "org.scala-lang.modules" %% "scala-parser-combinators" % "1.0.1"
+      "org.scala-lang.modules" %% "scala-parser-combinators" % "1.0.1",
+      "org.ow2.asm" % "asm" % "5.0.4"
     )
     case Some((2,10)) => List (
       "org.scalacheck" %% "scalacheck" % "1.12.4" % "test",
       "org.scalatest" %% "scalatest" % "2.1.3" % "test",
       "org.apache.commons" % "commons-math3" % "3.2",
-      "org.apache.commons" % "commons-lang3" % "3.4"
+      "org.apache.commons" % "commons-lang3" % "3.4",
+      "org.ow2.asm" % "asm" % "5.0.4"
     )
     case _ => Nil
   }
