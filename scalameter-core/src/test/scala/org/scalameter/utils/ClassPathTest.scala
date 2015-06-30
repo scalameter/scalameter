@@ -3,7 +3,7 @@ package utils
 
 
 
-import java.net.URL
+import java.net._
 import org.apache.commons.lang3.SystemUtils
 import org.scalatest.{FunSuite, Matchers}
 
@@ -27,7 +27,7 @@ class ClassPathTest extends FunSuite with Matchers {
     assert(strings == expected)
   }
 
-  test("Classpath should have quotes around it") {
+  test("Classpath should have quotes around it on Windows") {
     val cp = ClassPath.platformSpecificDefault
     if (SystemUtils.IS_OS_WINDOWS) {
       assert(cp.head == '\"')

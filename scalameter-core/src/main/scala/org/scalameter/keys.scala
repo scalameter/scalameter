@@ -130,7 +130,7 @@ class Keys extends KeyContainer("", null) {
     val warmupCovThreshold = apply[Double]("warmupCovThreshold", 0.1)
     val independentSamples = apply[Int]("independentSamples", 9)
     val jvmflags = apply[String]("jvmflags", "")
-    val jvmcmd = apply[String]("jvmcmd", "java -server")
+    val jvmcmd = apply[String]("jvmcmd", "java")
     val requireGC = apply[Boolean]("requireGC", false)
 
     object reinstantiation extends KeyContainer("reinstantiation", exec) {
