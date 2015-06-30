@@ -18,7 +18,7 @@ object ClassPath {
   /** Returns the default classpath string, surrounded by quotes on Windows.
    */
   def platformSpecificDefault: String = {
-    if (SystemUtils.IS_OS_WINDOWS) "\"" + default + "\"" else default
+    platformSpecificExtract(this.getClass.getClassLoader, sys.props("java.class.path"))
   }
 
   /** Same as `extract`, but returns a string surrounded with quotes on Windows.
