@@ -27,7 +27,7 @@ trait PersistorTest { this: Matchers =>
   /** Checks if size of file is less than value given in kB.
    */
   def compareSpaceConsumption(location: File, maxValue: Double): Unit = {
-    val bytes = Files.readAllBytes(location.toPath)
+    val bytes = utils.IO.readFromFile(location)
     val total = bytes.length / 1024d
     total should be < maxValue
   }
