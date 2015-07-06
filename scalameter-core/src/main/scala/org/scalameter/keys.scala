@@ -5,6 +5,7 @@ package org.scalameter
 import java.util.Date
 import scala.annotation.tailrec
 import scala.collection._
+import org.scalameter.execution.invocation.instrumentation.MethodSignature
 import org.scalameter.picklers.Implicits._
 import org.scalameter.picklers.Pickler
 import org.scalameter.utils.ClassPath
@@ -147,6 +148,12 @@ class Keys extends KeyContainer("", null) {
 
     object noise extends KeyContainer("noise", exec) {
       val magnitude = apply[Double]("magnitude", 0.0)
+    }
+
+    object measurers extends KeyContainer("measurers", exec) {
+      import picklers.noPickler._
+
+      private[scalameter] val methodInvocationLookupTable = apply[mutable.ArrayBuffer[MethodSignature]]("methodInvocationLookupTable")
     }
   }
 
