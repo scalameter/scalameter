@@ -9,16 +9,17 @@ import org.scalameter.Key._
 
 
 case class Context(properties: immutable.Map[Key[_], Any]) {
+  def -[T](t: Key[T]) = Context(properties - t)
   def +[T](t: (Key[T], T)) = Context(properties + t)
   def ++(that: Context) = Context(this.properties ++ that.properties)
   def ++(that: Seq[KeyValue]) = Context(this.properties ++ that)
-  def get[T](key: Key[T]) = properties.get(key).asInstanceOf[Option[T]].orElse {
+  def get[T](key: Key[T]): Option[T] = properties.get(key).asInstanceOf[Option[T]].orElse {
     key match {
-      case k: KeyWithDefault[_] => Some(k.defaultValue)
+      case k: KeyWithDefault[_] => Some(k.defaultValue.asInstanceOf[T])
       case _ => None
     }
   }
-  def goe[T](key: Key[T], v: T) = properties.getOrElse(key, v).asInstanceOf[T]
+  def goe[T](key: Key[T], v: => T) = properties.getOrElse(key, v).asInstanceOf[T]
   def apply[T](key: KeyWithDefault[T]) = properties.get(key).asInstanceOf[Option[T]].getOrElse(key.defaultValue)
   def scope = scopeList.mkString(".")
   def scopeList = apply(dsl.scope).reverse
@@ -38,7 +39,7 @@ object Context {
     exec.minWarmupRuns -> 10,
     exec.maxWarmupRuns -> 50,
     exec.jvmflags -> "-Xmx2048m -Xms2048m -XX:CompileThreshold=100",
-    classpath -> utils.ClassPath.platformSpecificDefault,
+    classpath -> utils.ClassPath.default,
     reports.regression.significance -> 1e-10
   )
 

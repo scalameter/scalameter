@@ -42,7 +42,7 @@ class ScalaMeterFramework extends Framework {
     }
 
     def computeClasspath = {
-      utils.ClassPath.platformSpecificExtract(
+      utils.ClassPath.extract(
         testClassLoader,
         sys.error(s"Cannot recognize classloader (not URLClassLoader): $testClassLoader"))
     }

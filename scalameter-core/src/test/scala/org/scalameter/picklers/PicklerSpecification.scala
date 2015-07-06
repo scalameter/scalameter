@@ -1,9 +1,11 @@
 package org.scalameter.picklers
 
+import java.io.File
 import java.util.Date
-import org.scalameter.picklers.Implicits._
 import org.scalatest.prop.PropertyChecks
 import org.scalatest.{FunSuite, Matchers}
+import org.scalameter.picklers.Implicits._
+import org.scalameter.utils.ClassPath
 
 
 class PicklerSpecification extends FunSuite with PropertyChecks with Matchers {
@@ -90,6 +92,12 @@ class PicklerSpecification extends FunSuite with PropertyChecks with Matchers {
   test("Option[Date] pickling") {
     forAll { o: Option[Date] =>
       validatePickler(o)
+    }
+  }
+
+  test("ClassPath pickling") {
+    forAll { o: List[String] =>
+      validatePickler(ClassPath(o.map(s => new File(s.replaceAll(s""""|${File.pathSeparatorChar}""", "")))))
     }
   }
 }

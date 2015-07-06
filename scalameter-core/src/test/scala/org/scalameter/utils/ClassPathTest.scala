@@ -3,6 +3,7 @@ package utils
 
 
 
+import java.io.File
 import java.net._
 import org.apache.commons.lang3.SystemUtils
 import org.scalatest.{FunSuite, Matchers}
@@ -20,24 +21,16 @@ class ClassPathTest extends FunSuite with Matchers {
     )
     val strings = ClassPath.extractFileClasspaths(urls)
     val expected = Seq(
-      "/home/enya/fav.jar",
-      "/C:/Users/John Wayne/aim.jar",
-      "/localhome/Deanna Troi/classes/"
+      new File("/home/enya/fav.jar"),
+      new File("/C:/Users/John Wayne/aim.jar"),
+      new File("/localhome/Deanna Troi/classes/")
     )
     assert(strings == expected)
   }
 
-  test("Classpath should have quotes around it on Windows") {
-    val cp = ClassPath.platformSpecificDefault
-    if (SystemUtils.IS_OS_WINDOWS) {
-      assert(cp.head == '\"')
-      assert(cp.last == '\"')
-      if (cp.length >= 3) {
-        assert(cp(1) != '\"')
-      }
-    } else {
-      assert(cp.head != '\"')
-      assert(cp.last != '\"')
+  test("Classpath construct should not allow for creation from strings containing classpath separator") {
+    intercept[IllegalArgumentException] {
+      ClassPath(new File(s"/home/test/${File.pathSeparatorChar}invalid") :: Nil)
     }
   }
 
