@@ -22,6 +22,11 @@ package object picklers {
     implicit val stringListPickler = StringListPickler
     implicit val longSeqPickler = LongSeqPickler
     implicit val dateOptionPickler = DateOptionPickler
+
+    /* More complex picklers */
+
+    // pickler for serializing ClassPath
+    implicit val classPathPickler = ClassPathPickler
   }
 
   object noPickler {

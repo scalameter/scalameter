@@ -45,11 +45,11 @@ package object scalameter extends MeasureBuilder[Unit, Double](
   import utils.ClassPath
 
   @deprecated("Use utils.ClassPath.default", "0.5")
-  def defaultClasspath = ClassPath.default
+  def defaultClasspath = ClassPath.default.mkString
 
   @deprecated("Use utils.ClassPath.extract", "0.5")
   def extractClasspath(classLoader: ClassLoader, default: => String): String =
-    ClassPath.extract(classLoader, default)
+    ClassPath.extract(classLoader, default).mkString
 
   def withTestContext[U](ctx: Context, log: Log, handler: Events)(body: =>U) = {
     var res: U = null.asInstanceOf[U]

@@ -32,7 +32,7 @@ final class JvmRunner {
   }
 
   private def runJvm(ctx: Context) {
-    val classpath = ctx.goe(Key.classpath, utils.ClassPath.platformSpecificDefault)
+    val classpath = ctx.goe(Key.classpath, utils.ClassPath.default)
     val flags = ctx(Key.exec.jvmflags)
     val jcmd = ctx(Key.exec.jvmcmd)
     val command = Seq(
@@ -40,7 +40,7 @@ final class JvmRunner {
       "-server",
       flags,
       "-cp",
-      classpath,
+      classpath.mkString,
       classOf[Main].getName,
       tmpfile.getPath)
       //s"$jcmd $flags -cp $classpath ${classOf[Main].getName} ${tmpfile.getPath}"

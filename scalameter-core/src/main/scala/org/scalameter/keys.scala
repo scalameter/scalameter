@@ -7,6 +7,7 @@ import scala.annotation.tailrec
 import scala.collection._
 import org.scalameter.picklers.Implicits._
 import org.scalameter.picklers.Pickler
+import org.scalameter.utils.ClassPath
 
 
 
@@ -83,7 +84,7 @@ class Keys extends KeyContainer("", null) {
   // due to initialization order issue with object Key
 
   val verbose = apply[Boolean]("verbose", true)
-  val classpath = apply[String]("classpath")
+  val classpath = apply[ClassPath]("classpath")
   val preJDK7 = apply[Boolean]("preJDK7", false)
   val scopeFilter = apply[String]("scopeFilter", "")
 
