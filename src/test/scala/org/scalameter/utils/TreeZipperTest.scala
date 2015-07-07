@@ -12,7 +12,7 @@ class ZipperTest extends FunSuite {
 
   test("Zipper.descend,ascend") {
     implicit val c = new KeyContainer("", null) {}
-    val zipper = Tree.Zipper.root[Int]
+    val zipper = Tree.Zipper.root[Int](currentContext)
     val one = Key[Int]("one")
     assert(zipper.descend.ascend.result == Tree[Int](currentContext, Seq(), Seq(
       Tree(currentContext, Seq(), Seq())

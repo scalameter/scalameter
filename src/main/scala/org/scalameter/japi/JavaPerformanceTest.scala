@@ -98,7 +98,6 @@ abstract class JavaPerformanceTest extends BasePerformanceTest with Serializable
           }
           setupzipper.value = setupzipper.value.ascend
         case UsingInterface =>
-          val classGroupName = c.getName
           val kvs = config(instance, c)
           val snippetMethod = new SerializableMethod(c.getMethod("snippet", classOf[Object]))
 
@@ -144,23 +143,6 @@ abstract class JavaPerformanceTest extends BasePerformanceTest with Serializable
           // ignore, does not contain any benchmark-related information
       }
     }
-  }
-
-  def executeTests(): Boolean = {
-    val datestart: Option[Date] = Some(new Date)
-    val rawsetuptree = setupzipper.value.result
-    val setuptree = rawsetuptree.filter(setupFilter)
-    val resulttree = executor.run(setuptree.asInstanceOf[Tree[Setup[SameType]]], reporter, persistor)
-    val dateend: Option[Date] = Some(new Date)
-    val datedtree = resulttree.copy(context = resulttree.context + (Key.reports.startDate -> datestart) + (Key.reports.endDate -> dateend))
-    reporter.report(datedtree, persistor)
-  }
-
-  private def setupFilter(setup: Setup[_]): Boolean = {
-    val sf = currentContext(Key.scopeFilter)
-    val fullname = setup.context.scope + "." + setup.context.curve
-    val regex = sf.r
-    regex.findFirstIn(fullname) != None
   }
 
 }

@@ -27,6 +27,7 @@ import utils.Tree
  *  the young generation.
  */
 class LocalExecutor(val warmer: Warmer, val aggregator: Aggregator, val measurer: Measurer) extends Executor {
+  require(!measurer.usesInstrumentedClasspath, s"${measurer.getClass.getName} should be run using SeparateJvmsExecutor.")
 
   import Key._
 
@@ -44,11 +45,7 @@ class LocalExecutor(val warmer: Warmer, val aggregator: Aggregator, val measurer
     }
 
     // for every benchmark - do a warmup, and then measure
-    for (bench <- setups) yield {
-      val cd = runSetup(bench)
-      reporter.report(cd, persistor)
-      cd
-    }
+    super.run(setups, reporter, persistor)
   }
 
   def runSetup[T](bsetup: Setup[T]): CurveData = {

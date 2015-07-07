@@ -2,9 +2,13 @@ package org.scalameter
 
 
 
-import collection._
-import compat._
-import utils.withGCNotification
+import org.scalameter.execution.invocation.InvocationCountMatcher
+import org.scalameter.execution.invocation.instrumentation.{Instrumentation, MethodInvocationCounter}
+import org.scalameter.utils.withGCNotification
+import scala.collection._
+import scala.compat._
+import scala.runtime.BoxesRunTime
+import scala.util.matching.Regex
 
 
 
@@ -12,6 +16,35 @@ trait Measurer extends Serializable {
   def name: String
   def measure[T, U](context: Context, measurements: Int, setup: T => Any, tear: T => Any, regen: () => T, snippet: T => Any): Seq[Double]
   def units: String
+
+  /** Indicates if a measurer uses instrumented classpath - if `true` measurer must be run using an executor that spawns separate JVMs. */
+  def usesInstrumentedClasspath: Boolean = false
+
+  /** Modifies the initial test context.
+   *
+   *  This method is invoked before the `PerformanceTest` object's constructor is invoked.
+   *  The key-value pairs that the [[org.scalameter.Measurer]] adds to the [[org.scalameter.Context]] in this method
+   *  are visible to all the test snippets within the `PerformanceTest` class.
+   *
+   *  Most measurers do not need to add any specific keys, so the default implementation just returns the `context`.
+   */
+  def prepareContext(context: Context): Context = context
+
+  /**  Does some side effects before execution of all benchmarks in a performance test.
+    *
+    *  This method is invoked in the `PerformanceTest` `executeTests` method just before execution of any benchmarks.
+    *
+    *  Most measurers do not need add additional context keys in [[prepareContext]], so the default implementation just does nothing.
+    */
+  def beforeExecution(context: Context): Unit = ()
+
+  /** Does some final cleanup after execution of all benchmarks in a performance test.
+   *
+   *  This method is invoked in the `PerformanceTest` `executeTests` method just after execution of all benchmarks.
+   *
+   *  Most measurers do not need to do any side effects in [[beforeExecution]], so the default implementation just does nothing.
+   */
+  def afterExecution(context: Context): Unit = ()
 }
 
 
@@ -371,7 +404,6 @@ object Measurer {
     def name = "Measurer.GarbageCollectionCycles"
 
     def measure[T, U](context: Context, measurements: Int, setup: T => Any, tear: T => Any, regen: () => T, snippet: T => Any): Seq[Double] = {
-      val runtime = Runtime.getRuntime
       var iteration = 0
       var gcs = List[Double]()
       var value: T = null.asInstanceOf[T]
@@ -405,6 +437,51 @@ object Measurer {
     }
 
     def units = "#"
+  }
+
+  private type Primitive = Boolean with Char with Byte with Short with Int with Long with Float with Double
+
+  /** Counts autoboxed by a Scala compiler values.
+   *
+   *  @param primitives primitive types whose autoboxing will be counted.
+   */
+  case class BoxingCount(primitives: Class[_ >: Primitive]*) extends InvocationCount {
+    val matcher: InvocationCountMatcher = {
+      import InvocationCountMatcher._
+
+      val primitiveToBoxedMethod: Map[Class[_ >: Primitive], String] = Map(
+        classOf[Boolean] -> "boxToBoolean",
+        classOf[Char] -> "boxToCharacter",
+        classOf[Byte] -> "boxToByte",
+        classOf[Short] -> "boxToShort",
+        classOf[Int] -> "boxToInteger",
+        classOf[Long] -> "boxToLong",
+        classOf[Float] -> "boxToFloat",
+        classOf[Double] -> "boxToDouble"
+      )
+
+      InvocationCountMatcher(
+        classMatcher = ClassMatcher.ClassName(classOf[BoxesRunTime]),
+        methodMatcher = MethodMatcher.Regex(
+          new Regex(primitives.map(p => s"(${primitiveToBoxedMethod(p)})").mkString("^", "|", "$")).pattern
+        )
+      )
+    }
+
+    def name: String = "Measurer.BoxingCount"
+  }
+
+  object BoxingCount {
+    /** Creates BoxingCount measurer that counts boxing of all primitive values -
+     *  boolean, char, byte, short, int, long, float and double.
+     */
+    def all() = new BoxingCount(classOf[Boolean], classOf[Char], classOf[Byte],
+      classOf[Short], classOf[Int], classOf[Long], classOf[Float], classOf[Double])
+  }
+
+  /** Counts invocations of arbitrary method(s) specified by [[org.scalameter.execution.invocation.InvocationCountMatcher]]. */
+  case class MethodInvocationCount(matcher: InvocationCountMatcher) extends InvocationCount {
+    def name: String = "Measurer.MethodInvocationCount"
   }
 
 }
