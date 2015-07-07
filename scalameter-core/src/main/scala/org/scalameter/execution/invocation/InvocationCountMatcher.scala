@@ -1,5 +1,6 @@
 package org.scalameter.execution.invocation
 
+import java.io.{ObjectInput, ObjectOutput, Externalizable}
 import java.lang.reflect.Method
 import java.util.regex.Pattern
 import org.objectweb.asm.Type
@@ -79,14 +80,18 @@ object InvocationCountMatcher {
       def matches(methodName: String, methodDescriptor: String): Boolean = regex.matcher(methodName).matches()
     }
 
-    /** Matches method with a [[java.lang.reflect.Method]].
+    /**  Matches method with a name and its descriptor.
       *
       *  That means that method name, method arguments and method return type are matched.
       */
-    case class Full(method: Method) extends MethodMatcher {
+    case class Full(name: String, descriptor: String) extends MethodMatcher {
       def matches(methodName: String, methodDescriptor: String): Boolean =
-        methodName == method.getName && methodDescriptor == Type.getMethodDescriptor(method)
-    }  
+        methodName == name && methodDescriptor == descriptor
+    }
+
+    object Full {
+      def apply(method: Method): Full = new Full(name = method.getName, descriptor = Type.getMethodDescriptor(method))
+    }
   }
 
   /** Matches allocations of a class. */
