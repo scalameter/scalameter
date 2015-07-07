@@ -3,8 +3,9 @@ package org.scalameter.picklers
 import language.higherKinds
 
 import java.util.Date
+import scala.annotation.tailrec
 import scala.collection.generic.CanBuildFrom
-import Implicits._
+import org.scalameter.picklers.Implicits._
 
 
 abstract class TraversablePickler[C[_] <: Traversable[_], T: Pickler] extends Pickler[C[T]] {
@@ -24,17 +25,17 @@ abstract class TraversablePickler[C[_] <: Traversable[_], T: Pickler] extends Pi
     val pickler = implicitly[Pickler[T]]
     val builder = canBuildFrom()
 
-    @annotation.tailrec
-    def _unpickle(times: Int, from: Int): (C[T], Int) = {
+    @tailrec
+    def unpickle(times: Int, from: Int): (C[T], Int) = {
       if (times > 0 && from > 0) {
         val (obj, newFrom) = pickler.unpickle(a, from)
         builder += obj
-        _unpickle(times - 1, newFrom)
+        unpickle(times - 1, newFrom)
       } else (builder.result(), from)
     }
 
     val (len, newFrom) = IntPickler.unpickle(a, from)
-    _unpickle(len, newFrom)
+    unpickle(len, newFrom)
   }
 }
 
