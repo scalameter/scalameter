@@ -12,7 +12,7 @@ abstract class Pickler[T] extends Serializable {
 
   final def unpickle(a: Array[Byte]): T = {
     val (obj, newPos) = unpickle(a, 0)
-    if (newPos > 0) sys.error(s"Malformed data. Input: ${a.toVector}. Remaining: ${a.toVector.slice(newPos, a.length)}, $newPos")
+    if (newPos > 0) sys.error(s"Malformed data. Input: ${a.mkString("[", ", ", "]")}. Remaining: ${a.slice(newPos, a.length).mkString("[", ", ", "]")}.")
     obj
   }
 }

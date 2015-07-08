@@ -14,15 +14,15 @@ object IO {
     val output = new ByteArrayOutputStream(chunkSize)
 
     @tailrec
-    def _readBytes() {
+    def readBytes() {
       val bytes = from.read(buffer)
       if (bytes > -1) {
         output.write(buffer, 0, bytes)
-        _readBytes()
+        readBytes()
       }
     }
 
-    _readBytes()
+    readBytes()
     output.toByteArray
   }
 
