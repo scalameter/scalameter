@@ -2,6 +2,9 @@ package org.scalameter
 
 import org.scalameter.Measurer._
 import org.scalameter.execution.invocation.InvocationCountMatcher
+import org.scalameter.execution.invocation.InvocationCountMatcher.{MethodMatcher, ClassMatcher}
+
+import scala.util.Try
 
 
 class InvocationCountTest extends MeasurerTest[InvocationCount] {
@@ -25,7 +28,7 @@ class InvocationCountTest extends MeasurerTest[InvocationCount] {
     } (_ should === (9.0))
   }
 
-  test("MethodInvocationCounting with matcher without any method pattern should count specific class allocations") {
+  test("MethodInvocationCount with matcher without any method pattern should count specific class allocations") {
     measureWith(MethodInvocationCount(InvocationCountMatcher.allocations(classOf[Range]))) {
       val r = 0 until 10
       r.map(_ + 1)
@@ -44,5 +47,38 @@ class InvocationCountTest extends MeasurerTest[InvocationCount] {
       List(5, 6, 7, 8, 9)
       11 to 20
     } (_ should === (5.0))
+  }
+
+  test("MethodInvocationCount with ClassMatcher.Descendants should match all descendants") {
+    measureWith(new MethodInvocationCount(InvocationCountMatcher(
+      classMatcher = ClassMatcher.Descendants(classOf[List[_]], direct = false, withSelf = false),
+      methodMatcher = MethodMatcher.MethodName("head")
+    ))) {
+      List(1, 2, 3).head
+      Vector(5, 6).head
+      Set(1, 4).head
+      Try(Nil.head)
+    } (_ should === (2.0))
+
+    measureWith(new MethodInvocationCount(InvocationCountMatcher(
+      classMatcher = ClassMatcher.Descendants(classOf[collection.Seq[_]], direct = false, withSelf = false),
+      methodMatcher = MethodMatcher.MethodName("head")
+    ))) {
+      List(1, 2, 3).head
+      Vector(5, 6).head
+      Set(1, 4).head
+      Try(Nil.head)
+    } (_ should === (3.0))
+
+    measureWith(new MethodInvocationCount(InvocationCountMatcher(
+      classMatcher = ClassMatcher.Descendants(classOf[collection.Seq[_]], direct = false, withSelf = false),
+      methodMatcher = MethodMatcher.MethodName("head")
+    ))) {
+      List(1, 2, 3).head
+      Vector(5, 6).head
+      Set(1, 4).head
+      Try(Nil.head)
+      Stream(7, 8, 9).head
+    } (_ should === (4.0))
   }
 }

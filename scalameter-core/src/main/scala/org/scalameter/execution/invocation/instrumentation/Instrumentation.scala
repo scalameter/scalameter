@@ -47,7 +47,7 @@ private[scalameter] object Instrumentation {
     } else { // if it's not directory try to read it as zip/jar file
       val zipFile = new ZipFile(in)
       zipFile.entries().asScala.collect {
-        case entry if p(entry.getName.stripSuffix(".class").replace('/', '.')) =>
+        case entry if entry.getName.endsWith(".class") && p(entry.getName.stripSuffix(".class").replace('/', '.')) =>
           entry.getName -> zipFile.getInputStream(entry)
       }
     }
