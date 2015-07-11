@@ -11,8 +11,8 @@ import com.fasterxml.jackson.databind.module.SimpleModule
 import com.fasterxml.jackson.databind.ser.Serializers
 import com.fasterxml.jackson.databind.ser.std.StdSerializer
 import com.fasterxml.jackson.databind.`type`.MapLikeType
-import scala.collection.immutable
 import org.scalameter.picklers.Pickler
+import scala.collection.immutable
 
 
 /** Serializer for maps with keys whose are subtype of [[org.scalameter.PicklerBasedKey]].
@@ -27,8 +27,10 @@ class PicklerBasedMapSerializer[MapKey <: PicklerBasedKey[_]](clazz: Class[immut
   def serialize(value: immutable.Map[MapKey, Any], jgen: JsonGenerator, provider: SerializerProvider): Unit = {
     jgen.writeStartObject()
     value.foreach { case (k, v) =>
-      jgen.writeFieldName(k.repr)
-      jgen.writeBinary(k.pickler.asInstanceOf[Pickler[Any]].pickle(v))
+      if (!k.isTransient) {
+        jgen.writeFieldName(k.repr)
+        jgen.writeBinary(k.pickler.asInstanceOf[Pickler[Any]].pickle(v))
+      }
     }
     jgen.writeEndObject()
   }

@@ -2,13 +2,14 @@ package org.scalameter
 
 
 
+import java.io.File
 import java.util.Date
-import scala.annotation.tailrec
-import scala.collection._
 import org.scalameter.execution.invocation.instrumentation.MethodSignature
 import org.scalameter.picklers.Implicits._
 import org.scalameter.picklers.Pickler
 import org.scalameter.utils.ClassPath
+import scala.annotation.tailrec
+import scala.collection._
 
 
 
@@ -134,6 +135,7 @@ class Keys extends KeyContainer("", null) {
     val jvmflags = apply[String]("jvmflags", "")
     val jvmcmd = apply[String]("jvmcmd", "java")
     val requireGC = apply[Boolean]("requireGC", false)
+    val assumeDeterministicRun = apply[Boolean]("assumeDeterministicRun", true)
 
     object reinstantiation extends KeyContainer("reinstantiation", exec) {
       val frequency = apply[Int]("frequency")
@@ -153,7 +155,12 @@ class Keys extends KeyContainer("", null) {
     object measurers extends KeyContainer("measurers", exec) {
       import picklers.noPickler._
 
-      private[scalameter] val methodInvocationLookupTable = apply[mutable.ArrayBuffer[MethodSignature]]("methodInvocationLookupTable")
+      private[scalameter] val methodInvocationLookupTable = new Key[mutable.ArrayBuffer[MethodSignature]]("methodInvocationLookupTable") {
+        override def isTransient: Boolean = true
+      }
+      private[scalameter] val instrumentedJarPath = new Key[File]("instrumentedJarPath") {
+        override def isTransient: Boolean = true
+      }
     }
   }
 

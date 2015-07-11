@@ -1,13 +1,15 @@
 package org.scalameter
 
 
-import collection._
-import compat._
-import utils.{withGCNotification, Tree}
+import org.scalameter.utils.Tree
 
 
 
 trait Executor {
+
+  def measurer: Measurer
+
+  def warmer: Warmer
 
   def run[T](setuptree: Tree[Setup[T]], reporter: Reporter, persistor: Persistor): Tree[CurveData] = {
     for (setup <- setuptree) yield {
@@ -34,6 +36,10 @@ object Executor {
   val Measurer = org.scalameter.Measurer
 
   object None extends Executor {
+    def measurer: Measurer = ???
+
+    def warmer: Warmer = ???
+
     def runSetup[T](setup: Setup[T]): CurveData = ???
   }
 

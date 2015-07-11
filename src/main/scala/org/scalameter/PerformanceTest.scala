@@ -3,12 +3,11 @@ package org.scalameter
 
 
 import java.util.Date
-import scala.collection._
-import utils.Tree
+import org.scalameter.utils.Tree
 
 
 
-abstract class PerformanceTest extends PerformanceTest.Initialization with Serializable {
+abstract class PerformanceTest extends DSL with Serializable {
 
   def main(args: Array[String]) {
     val ctx = dyn.currentContext.value ++ Main.Configuration.fromCommandLineArgs(args).context
@@ -23,40 +22,6 @@ abstract class PerformanceTest extends PerformanceTest.Initialization with Seria
 
 
 object PerformanceTest {
-
-  trait Initialization extends DSL {
-
-    import BasePerformanceTest._
-
-    def executor: org.scalameter.Executor
-
-    def reporter: org.scalameter.Reporter
-
-    def persistor: Persistor
-
-    def defaultConfig: Context = Context.empty
-
-    type SameType
-
-    def executeTests(): Boolean = {
-      val datestart: Option[Date] = Some(new Date)
-      val rawsetuptree = BasePerformanceTest.setupzipper.value.result
-      val setuptree = rawsetuptree.filter(setupFilter)
-      val resulttree = executor.run(setuptree.asInstanceOf[Tree[Setup[SameType]]], reporter, persistor)
-      val dateend: Option[Date] = Some(new Date)
-
-      val datedtree = resulttree.copy(context = resulttree.context + (Key.reports.startDate -> datestart) + (Key.reports.endDate -> dateend))
-      reporter.report(datedtree, persistor)
-    }
-
-  }
-
-  private def setupFilter(setup: Setup[_]): Boolean = {
-    val sf = currentContext(Key.scopeFilter)
-    val fullname = setup.context.scope + "." + setup.context.curve
-    val regex = sf.r
-    regex.findFirstIn(fullname) != None
-  }
   
   /** Quick benchmark run in the same JVM.
    *  Reports result into the console.

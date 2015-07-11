@@ -59,7 +59,7 @@ object Tree {
     case object Top extends Path[Nothing]
     case class Node[T](context: Context, items: Seq[T], left: Seq[Tree[T]], up: Path[T]) extends Path[T]
 
-    def root[T]: Zipper[T] = Zipper(Tree(currentContext, Seq(), Seq()), Top)
+    def root[T](initialContext: Context): Zipper[T] = Zipper(Tree(initialContext, Seq(), Seq()), Top)
   }
 
 }

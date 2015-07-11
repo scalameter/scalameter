@@ -32,7 +32,11 @@ final class JvmRunner {
   }
 
   private def runJvm(ctx: Context) {
-    val classpath = ctx.goe(Key.classpath, utils.ClassPath.default)
+    // TODO split classpath key into two separate: initial and classpath that is a result of possible changes by executors, measurers, etc
+    val classpath = {
+      val cl = ctx.goe(Key.classpath, utils.ClassPath.default)
+      ctx.get(Key.exec.measurers.instrumentedJarPath).map(_ +: cl).getOrElse(cl)
+    }
     val flags = ctx(Key.exec.jvmflags)
     val jcmd = ctx(Key.exec.jvmcmd)
     val command = Seq(

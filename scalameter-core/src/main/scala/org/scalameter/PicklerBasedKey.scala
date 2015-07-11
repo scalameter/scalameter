@@ -5,11 +5,14 @@ import org.scalameter.picklers.Pickler
 
 /* A mixin for keys whose values require pickler based serialization. */
 trait PicklerBasedKey[T] extends Serializable {
-  /* Name of the key that will be serialized. */
+  /** Name of the key that will be serialized. */
   def fullName: String
 
-  /* Pickler used to deserialize value to which the key refers. */
+  /** Pickler used to deserialize value to which the key refers. */
   def pickler: Pickler[T]
+
+  /** Indicates if a key should be skipped during serialization - if `true`, the key will not be serialized. */
+  def isTransient: Boolean = false
 
   private[scalameter] final def repr: String = s"$fullName|${pickler.getClass.getName}"
 }
@@ -17,8 +20,8 @@ trait PicklerBasedKey[T] extends Serializable {
 object PicklerBasedKey {
   /** Reconstructs key from serialized string.
    *
-   * @param str serialized string
-   * @param constructor factory method to create specific key instance
+   *  @param str serialized string
+   *  @param constructor factory method to create specific key instance
    */
   def fromString[K <: PicklerBasedKey[_]](str: String, constructor: (String, Pickler[_]) => K): K = {
     val splitIdx = str.lastIndexOf('|')
