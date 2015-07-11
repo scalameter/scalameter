@@ -41,8 +41,8 @@ final class JvmRunner {
     val jcmd = ctx(Key.exec.jvmcmd)
     val command = Seq(
       jcmd,
-      "-server",
-      flags,
+      "-server"
+    ) ++ flags ++ Seq(
       "-cp",
       classpath.mkString,
       classOf[Main].getName,
