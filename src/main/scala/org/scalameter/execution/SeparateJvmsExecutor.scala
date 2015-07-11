@@ -24,7 +24,7 @@ class SeparateJvmsExecutor(val warmer: Warmer, val aggregator: Aggregator, val m
 
   def createJvmContext(ctx: Context) = {
     val existingFlags = ctx(exec.jvmflags)
-    val flags = s"${if (currentContext(Key.verbose)) "-verbose:gc" else ""} " + existingFlags
+    val flags = if (currentContext(Key.verbose)) "-verbose:gc" :: existingFlags else existingFlags
     ctx + (exec.jvmflags -> flags)
   }
 

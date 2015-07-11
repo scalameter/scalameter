@@ -132,7 +132,7 @@ class Keys extends KeyContainer("", null) {
     val maxWarmupRuns = apply[Int]("maxWarmupRuns", 10)
     val warmupCovThreshold = apply[Double]("warmupCovThreshold", 0.1)
     val independentSamples = apply[Int]("independentSamples", 9)
-    val jvmflags = apply[String]("jvmflags", "")
+    val jvmflags = apply[List[String]]("jvmflags", Nil)
     val jvmcmd = apply[String]("jvmcmd", "java")
     val requireGC = apply[Boolean]("requireGC", false)
     val assumeDeterministicRun = apply[Boolean]("assumeDeterministicRun", true)
