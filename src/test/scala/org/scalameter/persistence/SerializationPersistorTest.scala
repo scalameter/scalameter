@@ -19,7 +19,7 @@ class SerializationPersistorTest extends FunSuite with PersistorTest with Matche
     executeBenchmark() { persistor =>
       for ((ctx, _) <- persistor.intercepted) {
         val file = persistor.fileFor(ctx)
-        compareSpaceConsumption(file, 8.5)
+        compareSpaceConsumption(file, 11.0)
       }
     }
   }
