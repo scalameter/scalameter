@@ -16,7 +16,7 @@ trait InvocationCount extends Measurer {
   def units: String = "#"
 
   def measure[T, U](context: Context, measurements: Int, setup: (T) => Any, tear: (T) => Any, regen: () => T, snippet: (T) => Any): Seq[Double] = {
-    val invocationsBuilder = List.newBuilder[Double]
+    val invocationsBuilder = mutable.ListBuffer.empty[Double]
     var obj: Any = null.asInstanceOf[Any]
     val numMethods = context.goe(exec.measurers.methodInvocationLookupTable,
       sys.error("Measurer.prepareContext should be called before Measurer.measure")).length
@@ -34,8 +34,11 @@ trait InvocationCount extends Measurer {
       obj
     }
 
-    if (context(exec.assumeDeterministicRun)) obj = measureSnippet(regen())
-    else {
+    if (context(exec.assumeDeterministicRun)) {
+      obj = measureSnippet(regen())
+      val count = invocationsBuilder.head
+      invocationsBuilder ++= List.fill(measurements - 1)(count)
+    } else {
       var iteration = 0
       while (iteration < measurements) {
         obj = measureSnippet(regen())
