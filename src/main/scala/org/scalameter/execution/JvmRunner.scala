@@ -4,6 +4,7 @@ package org.scalameter.execution
 
 import java.io._
 import org.scalameter._
+import org.scalameter.utils.ClassPath
 import scala.util.{Success, Failure, Try}
 import scala.sys.process._
 
@@ -32,11 +33,7 @@ final class JvmRunner {
   }
 
   private def runJvm(ctx: Context) {
-    // TODO split classpath key into two separate: initial and classpath that is a result of possible changes by executors, measurers, etc
-    val classpath = {
-      val cl = ctx.goe(Key.classpath, utils.ClassPath.default)
-      ctx.get(Key.exec.measurers.instrumentedJarPath).map(_ +: cl).getOrElse(cl)
-    }
+    val classpath = ctx(Key.finalClasspath)
     val flags = ctx(Key.exec.jvmflags)
     val jcmd = ctx(Key.exec.jvmcmd)
     val command = Seq(

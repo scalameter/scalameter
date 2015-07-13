@@ -4,6 +4,7 @@ import java.io.File
 import org.scalameter.Key._
 import org.scalameter.execution.invocation.InvocationCountMatcher
 import org.scalameter.execution.invocation.instrumentation.{MethodSignature, Instrumentation, MethodInvocationCounter}
+import org.scalameter.utils.ClassPath
 import scala.collection.Seq
 import scala.collection.mutable
 
@@ -50,17 +51,21 @@ trait InvocationCount extends Measurer {
   override def usesInstrumentedClasspath: Boolean = true
 
   /** Creates the [[Key.exec.measurers.instrumentedJarPath]] with an abstract temporary file,
-   *  and the [[Key.exec.measurers.methodInvocationLookupTable]] with an empty [[scala.collection.mutable.AbstractBuffer]].
+   *  the [[Key.exec.measurers.methodInvocationLookupTable]] with an empty [[scala.collection.mutable.AbstractBuffer]],
+   *  and the [[Key.finalClasspath]] with a classpath that consists of an instrumented jar and the [[Key.classpath]].
    *
    *  @param context [[org.scalameter.Context]] that should the setup tree context
    */
+
   override def prepareContext(context: Context): Context = {
+    val cl = context(classpath)
     val jar = File.createTempFile(s"scalameter-bench-", "-instrumented.jar")
     jar.deleteOnExit()
 
     context ++ Context(
       exec.measurers.methodInvocationLookupTable -> mutable.ArrayBuffer.empty[MethodSignature],
-      exec.measurers.instrumentedJarPath -> jar
+      exec.measurers.instrumentedJarPath -> jar,
+      finalClasspath -> (jar +: cl)
     )
   }
 
