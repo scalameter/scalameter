@@ -128,6 +128,11 @@ object InvocationCountMatcher {
       def matches(methodName: String, methodDescriptor: String): Boolean = methodName == method
     }
 
+    /** Matches class allocations, which are basically call to special `<init>` method. */
+    case object Allocation extends MethodMatcher {
+      def matches(methodName: String, methodDescriptor: String): Boolean = methodName == "<init>"
+    }
+
     /** Matches method with a regex. */
     case class Regex(regex: Pattern) extends MethodMatcher {
       def matches(methodName: String, methodDescriptor: String): Boolean = regex.matcher(methodName).matches()
@@ -149,7 +154,7 @@ object InvocationCountMatcher {
 
   /** Matches allocations of a class. */
   def allocations(clazz: Class[_]) = 
-    new InvocationCountMatcher(ClassMatcher.ClassName(clazz), MethodMatcher.MethodName("<init>"))
+    new InvocationCountMatcher(ClassMatcher.ClassName(clazz), MethodMatcher.Allocation)
 
   /** Matches method name in a class. */
   def forName(className: String, methodName: String) =
