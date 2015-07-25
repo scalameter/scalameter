@@ -19,7 +19,7 @@ object Warmer {
   import Key._
 
   case object Zero extends Warmer {
-    private val foreachObj = new Foreach[Int] {
+    private val foreachObj = new Foreach[Int] with Serializable {
       def foreach[U](f: Int => U): Unit = {}
     }
     def name = "Warmer.Zero"

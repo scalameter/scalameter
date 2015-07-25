@@ -61,7 +61,6 @@ class KeyWithDefaultKey[T: Pickler](name: String, val default: KeyWithDefaultVal
 
 object Key extends Keys {
   implicit val ordering: Ordering[Key[_]] = Ordering.by(_.name)
-
 }
 
 
