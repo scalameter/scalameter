@@ -13,7 +13,8 @@ import scala.collection._
 
 
 
-class Key[T: Pickler](val name: String)(implicit container: KeyContainer) extends PicklerBasedKey[T] {
+class Key[T: Pickler](val name: String)(implicit container: KeyContainer)
+extends PicklerBasedKey[T] {
   container.keys(name) = this
 
   override def toString = name
@@ -24,7 +25,8 @@ class Key[T: Pickler](val name: String)(implicit container: KeyContainer) extend
   }
 
   val fullName: String = {
-    @tailrec def context(keyContainer: KeyContainer, acc: List[String] = Nil): String = {
+    @tailrec def context(keyContainer: KeyContainer, acc: List[String] = Nil):
+      String = {
       if (keyContainer == null || keyContainer.containerName.isEmpty) acc.mkString(".")
       else context(keyContainer.enclosing, keyContainer.containerName :: acc)
     }
@@ -38,7 +40,9 @@ class Key[T: Pickler](val name: String)(implicit container: KeyContainer) extend
 }
 
 
-class KeyWithDefault[T: Pickler](name: String, val defaultValue: T)(implicit container: KeyContainer)
+class KeyWithDefault[T: Pickler]
+  (name: String, val defaultValue: T)
+  (implicit container: KeyContainer)
 extends Key[T](name)
 
 
@@ -61,7 +65,8 @@ abstract class KeyContainer(val containerName: String, val enclosing: KeyContain
     parseKeyRecursive(keyName, parts.toList)
   }
 
-  private[scalameter] def parseKeyRecursive(fullname: String, keyParts: List[String]): Key[_] = keyParts match {
+  private[scalameter] def parseKeyRecursive(fullname: String, keyParts: List[String]):
+    Key[_] = keyParts match {
     case name :: Nil =>
       // println(containerName, subs, keys, keyParts)
       keys(name)
@@ -79,7 +84,8 @@ class Keys extends KeyContainer("", null) {
   def apply[T: Pickler](name: String)(implicit container: KeyContainer) =
     new Key[T](name)
 
-  def apply[T: Pickler](name: String, defaultValue: T)(implicit container: KeyContainer) =
+  def apply[T: Pickler](name: String, defaultValue: T)
+    (implicit container: KeyContainer) =
     new KeyWithDefault[T](name, defaultValue)
 
   // Note: predefined keys need to be lazy
@@ -155,12 +161,14 @@ class Keys extends KeyContainer("", null) {
     object measurers extends KeyContainer("measurers", exec) {
       import picklers.noPickler._
 
-      private[scalameter] val methodInvocationLookupTable = new Key[mutable.ArrayBuffer[MethodSignature]]("methodInvocationLookupTable") {
-        override def isTransient: Boolean = true
-      }
-      private[scalameter] val instrumentedJarPath = new Key[File]("instrumentedJarPath") {
-        override def isTransient: Boolean = true
-      }
+      private[scalameter] val methodInvocationLookupTable =
+        new Key[mutable.ArrayBuffer[MethodSignature]]("methodInvocationLookupTable") {
+          override def isTransient: Boolean = true
+        }
+      private[scalameter] val instrumentedJarPath =
+        new Key[File]("instrumentedJarPath") {
+          override def isTransient: Boolean = true
+        }
     }
   }
 
