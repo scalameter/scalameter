@@ -1,6 +1,6 @@
 version: '{build}'
 os: Windows Server 2012
-clone_folder: "c:\My Workspaces\scalameter"
+clone_folder: c:\workspaces\scalameter
 branches:
   only:
     - master
