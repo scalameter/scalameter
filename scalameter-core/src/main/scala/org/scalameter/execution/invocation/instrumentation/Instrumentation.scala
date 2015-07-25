@@ -42,7 +42,8 @@ private[scalameter] object Instrumentation {
       classesFromCurrentDir ++ classessFromSubdirs
     }
 
-    if (in.isDirectory) {
+    if (!in.exists()) Iterator.empty
+    else if (in.isDirectory) {
       filterClasses(in, rootPath = "")
     } else { // if it's not directory try to read it as zip/jar file
       val zipFile = new ZipFile(in)

@@ -39,11 +39,24 @@ extends PicklerBasedKey[T] {
   val pickler: Pickler[T] = implicitly[Pickler[T]]
 }
 
+/** Base for keys that have some kind of default value. */
+class KeyWithDefault[T: Pickler](name: String)(implicit container: KeyContainer) extends Key[T](name)
 
-class KeyWithDefault[T: Pickler]
-  (name: String, val defaultValue: T)
+/** Key that defaults to [[default]] if value under key is not found in a context.
+ *
+ *  Note that this key type is handled in [[org.scalameter.Context.apply)]].
+ */
+class KeyWithDefaultValue[T: Pickler](name: String, val default: T)
   (implicit container: KeyContainer)
-extends Key[T](name)
+  extends KeyWithDefault[T](name)
+
+/** Key that chains finding default value to [[KeyWithDefaultValue]] if value under key is not found in a context.
+  *
+  * Note that this key type is handled in [[org.scalameter.Context.apply)]].
+  */
+class KeyWithDefaultKey[T: Pickler](name: String, val default: KeyWithDefaultValue[T])
+  (implicit container: KeyContainer)
+  extends KeyWithDefault[T](name)
 
 
 object Key extends Keys {
@@ -86,15 +99,19 @@ class Keys extends KeyContainer("", null) {
 
   def apply[T: Pickler](name: String, defaultValue: T)
     (implicit container: KeyContainer) =
-    new KeyWithDefault[T](name, defaultValue)
+    new KeyWithDefaultValue[T](name, defaultValue)
 
   // Note: predefined keys need to be lazy
   // due to initialization order issue with object Key
 
   val verbose = apply[Boolean]("verbose", true)
-  val classpath = apply[ClassPath]("classpath")
+  val classpath = apply[ClassPath]("classpath", ClassPath.default)
   val preJDK7 = apply[Boolean]("preJDK7", false)
   val scopeFilter = apply[String]("scopeFilter", "")
+
+  private[scalameter] val finalClasspath = new KeyWithDefaultKey[ClassPath]("finalClasspath", classpath) {
+    override def isTransient: Boolean = true
+  }
 
   object dsl extends KeyContainer("dsl", Keys.this) {
     val curve = apply[String]("curve", "")

@@ -22,11 +22,13 @@ class InvocationCountMeasurerPerformanceTest extends PerformanceTest.OnlineRegre
 class BoxingCountTest extends InvocationCountMeasurerPerformanceTest {
   override lazy val measurer: Measurer = Measurer.BoxingCount.all()
 
+  override def defaultConfig = Context(
+    exec.independentSamples -> 1
+  )
+
   performance of "List" in {
     measure method "map" in {
-      using(lists) config (
-        exec.independentSamples -> 2
-      ) in { xs =>
+      using(lists) in { xs =>
         xs.map(_ + 1)
       }
     }
@@ -38,11 +40,13 @@ class MethodInvocationCountTest1 extends InvocationCountMeasurerPerformanceTest 
     InvocationCountMatcher.allocations(classOf[Some[_]])
   )
 
+  override def defaultConfig = Context(
+    exec.independentSamples -> 1
+  )
+
   performance of "List" in {
     measure method "map" in {
-      using(lists) config (
-        exec.independentSamples -> 2
-      ) in { xs =>
+      using(lists) in { xs =>
         xs.map(Some(_))
       }
     }

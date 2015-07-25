@@ -15,12 +15,20 @@ case class Context(properties: immutable.Map[Key[_], Any]) {
   def ++(that: Seq[KeyValue]) = Context(this.properties ++ that)
   def get[T](key: Key[T]): Option[T] = properties.get(key).asInstanceOf[Option[T]].orElse {
     key match {
-      case k: KeyWithDefault[_] => Some(k.defaultValue.asInstanceOf[T])
+      case k: KeyWithDefaultValue[_] => Some(k.default.asInstanceOf[T])
       case _ => None
     }
   }
   def goe[T](key: Key[T], v: => T) = properties.getOrElse(key, v).asInstanceOf[T]
-  def apply[T](key: KeyWithDefault[T]) = properties.get(key).asInstanceOf[Option[T]].getOrElse(key.defaultValue)
+  def apply[T](key: KeyWithDefault[T]) = {
+    val value = key match {
+      case k: KeyWithDefaultKey[_] =>
+        properties.getOrElse(key, properties.getOrElse(k.default, k.default.default))
+      case k: KeyWithDefaultValue[_] =>
+        properties.getOrElse(k, k.default)
+    }
+    value.asInstanceOf[T]
+  }
   def scope = scopeList.mkString(".")
   def scopeList = apply(dsl.scope).reverse
   def curve = apply(dsl.curve)
