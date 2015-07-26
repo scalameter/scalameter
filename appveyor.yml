@@ -19,7 +19,7 @@ install:
 build_script:
   - sbt clean compile
 test_script:
-  - sbt test
+  - sbt "testOnly org.scalameter.windows.*"
 cache:
   - C:\sbt\
   - C:\Users\appveyor\.m2
