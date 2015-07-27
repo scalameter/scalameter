@@ -79,17 +79,17 @@ class ExponentialGen(axisName: String, from: Int, until: Int, factor: Int) exten
 
 
 class TupledGen[P, Q](p: JavaGenerator[P], q: JavaGenerator[Q]) extends JavaGenerator[Tuple2[P, Q]] {
-  def get: Gen[(P, Q)] = Gen.tupled(p.get.asInstanceOf[Gen[P]], q.get.asInstanceOf[Gen[Q]])
+  def get: Gen[(P, Q)] = Gen.crossProduct(p.get.asInstanceOf[Gen[P]], q.get.asInstanceOf[Gen[Q]])
 }
 
 
 class Tupled3Gen[P, Q, R](p: JavaGenerator[P], q: JavaGenerator[Q], r: JavaGenerator[R]) extends JavaGenerator[Tuple3[P, Q, R]] {
-  def get: Gen[(P, Q, R)] = Gen.tupled(p.get.asInstanceOf[Gen[P]], q.get.asInstanceOf[Gen[Q]], r.get.asInstanceOf[Gen[R]])
+  def get: Gen[(P, Q, R)] = Gen.crossProduct(p.get.asInstanceOf[Gen[P]], q.get.asInstanceOf[Gen[Q]], r.get.asInstanceOf[Gen[R]])
 }
 
 
 class Tupled4Gen[P, Q, R, S](p: JavaGenerator[P], q: JavaGenerator[Q], r: JavaGenerator[R], s: JavaGenerator[S]) extends JavaGenerator[Tuple4[P, Q, R, S]] {
-  def get: Gen[(P, Q, R, S)] = Gen.tupled(p.get.asInstanceOf[Gen[P]], q.get.asInstanceOf[Gen[Q]], r.get.asInstanceOf[Gen[R]], s.get.asInstanceOf[Gen[S]])
+  def get: Gen[(P, Q, R, S)] = Gen.crossProduct(p.get.asInstanceOf[Gen[P]], q.get.asInstanceOf[Gen[Q]], r.get.asInstanceOf[Gen[R]], s.get.asInstanceOf[Gen[S]])
 }
 
 

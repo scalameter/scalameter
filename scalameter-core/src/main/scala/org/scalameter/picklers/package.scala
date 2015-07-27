@@ -2,6 +2,11 @@ package org.scalameter
 
 
 package object picklers {
+
+}
+
+
+package picklers {
   object Implicits {
     // primitives
     implicit val unitPickler = UnitPickler

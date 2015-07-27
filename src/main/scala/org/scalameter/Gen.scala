@@ -8,7 +8,7 @@ import org.scalameter.picklers.Implicits._
 
 
 
-trait Gen[T] extends Serializable {
+abstract class Gen[T] extends Serializable {
   self =>
 
   def map[S](f: T => S): Gen[S] = new Gen[S] {
@@ -102,14 +102,14 @@ object Gen {
 
   /* combinators */
 
-  def tupled[P, Q](p: Gen[P], q: Gen[Q]): Gen[(P, Q)] = {
+  def crossProduct[P, Q](p: Gen[P], q: Gen[Q]): Gen[(P, Q)] = {
     for {
       pv <- p
       qv <- q
     } yield (pv, qv)
   }
 
-  def tupled[P, Q, R](p: Gen[P], q: Gen[Q], r: Gen[R]): Gen[(P, Q, R)] = {
+  def crossProduct[P, Q, R](p: Gen[P], q: Gen[Q], r: Gen[R]): Gen[(P, Q, R)] = {
     for {
       pv <- p
       qv <- q
@@ -117,7 +117,7 @@ object Gen {
     } yield (pv, qv, rv)
   }
 
-  def tupled[P, Q, R, S](p: Gen[P], q: Gen[Q], r: Gen[R], s: Gen[S]): Gen[(P, Q, R, S)] = {
+  def crossProduct[P, Q, R, S](p: Gen[P], q: Gen[Q], r: Gen[R], s: Gen[S]): Gen[(P, Q, R, S)] = {
     for {
       pv <- p
       qv <- q
