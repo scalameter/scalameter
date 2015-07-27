@@ -17,6 +17,8 @@ package object picklers {
     // additional simple types
     implicit val stringPickler = StringPickler
     implicit val datePickler = DatePickler
+    implicit def enumPickler[T <: Enum[T]]: Pickler[T] =
+      EnumPickler.asInstanceOf[Pickler[T]]
 
     // containers
     implicit val stringListPickler = StringListPickler
@@ -33,7 +35,10 @@ package object picklers {
     implicit def instance[T] = errorPickler.asInstanceOf[Pickler[T]]
 
     private val errorPickler = new Pickler[Any] {
-      private def throwError = sys.error("This Pickler is not intended to use with json based persistors. Please use SerializationPersistor instead.")
+      private def throwError = sys.error(
+        "This Pickler is not intended to use with json based persistors. " +
+          "Please use SerializationPersistor instead."
+      )
 
       def pickle(x: Any): Array[Byte] = throwError
 
