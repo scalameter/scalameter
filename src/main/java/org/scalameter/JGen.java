@@ -1,12 +1,14 @@
 package org.scalameter;
 
+import java.io.Serializable;
 import org.scalameter.picklers.*;
 import scala.Tuple2;
 import scala.Tuple3;
 import scala.Tuple4;
+import scala.Unit;
 import scala.collection.immutable.List;
 import scala.collection.mutable.ArrayOps;
-import scala.runtime.AbstractFunction1;
+import scala.runtime.BoxedUnit;
 
 
 /** Java version of the [[org.scalameter.Gen]].
@@ -16,7 +18,7 @@ import scala.runtime.AbstractFunction1;
  *  Note that it's immutable, so every method return new JGen.
  */
 @SuppressWarnings({"unchecked"})
-public class JGen<T> {
+public class JGen<T> implements Serializable {
   private final Gen<T> gen;
 
   public JGen(Gen<T> gen) {
@@ -36,7 +38,7 @@ public class JGen<T> {
   }
 
   public <S> JGen<S> map(final Fun1<T, S> f) {
-    return new JGen<S>(this.gen.map(new AbstractFunction1<T, S>() {
+    return new JGen<S>(this.gen.map(new SerializableAbstractFunction1<T, S>() {
       public S apply(T v) {
         return f.apply(v);
       }
@@ -62,8 +64,8 @@ public class JGen<T> {
     );
   }
 
-  public static JGen<Void> none(String axisName) {
-    return new JGen<Void>((Gen<Void>)(Object) Gen.unit(axisName));
+  public static JGen<BoxedUnit> none(String axisName) {
+    return new JGen<BoxedUnit>(Gen.unit(axisName));
   }
 
 

@@ -1,5 +1,7 @@
 package org.scalameter;
 
+import java.io.Serializable;
+
 
 /** JGen function interface for `map` combinator.
  *
@@ -16,6 +18,6 @@ package org.scalameter;
  *    })
  *  }}
  */
-public interface Fun1<T, R> {
+public interface Fun1<T, R> extends Serializable {
   R apply(T v);
 }
