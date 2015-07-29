@@ -1,11 +1,11 @@
-package org.scalameter;
+package org.scalameter.japi;
 
 import java.io.Serializable;
+import org.scalameter.Gen;
 import org.scalameter.picklers.*;
 import scala.Tuple2;
 import scala.Tuple3;
 import scala.Tuple4;
-import scala.Unit;
 import scala.collection.immutable.List;
 import scala.collection.mutable.ArrayOps;
 import scala.runtime.BoxedUnit;

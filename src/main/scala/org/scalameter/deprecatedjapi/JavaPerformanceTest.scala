@@ -1,8 +1,8 @@
 package org.scalameter
-package japi
+package deprecatedjapi
 
 
-
+import org.scalameter.japi.SerializableMethod
 import utils.Tree
 import java.util.Date
 import scala.util.DynamicVariable
@@ -16,8 +16,8 @@ import scala.collection.mutable.ArrayBuffer
 abstract class JavaPerformanceTest extends BasePerformanceTest with Serializable {
   import BasePerformanceTest._
 
-  private val Group = classOf[org.scalameter.japi.Group]
-  private val UsingInterface = classOf[org.scalameter.japi.Using[Object, Object]]
+  private val Group = classOf[org.scalameter.deprecatedjapi.Group]
+  private val UsingInterface = classOf[org.scalameter.deprecatedjapi.Using[Object, Object]]
 
   final def warmer: org.scalameter.Warmer = javaWarmer.get
 
@@ -31,17 +31,17 @@ abstract class JavaPerformanceTest extends BasePerformanceTest with Serializable
 
   final def persistor: org.scalameter.Persistor = javaPersistor.get
 
-  def javaWarmer: org.scalameter.japi.Warmer
+  def javaWarmer: org.scalameter.deprecatedjapi.Warmer
 
-  def javaAggregator: org.scalameter.japi.Aggregator
+  def javaAggregator: org.scalameter.deprecatedjapi.Aggregator
 
-  def javaExecutor: org.scalameter.japi.Executor
+  def javaExecutor: org.scalameter.deprecatedjapi.Executor
 
-  def javaMeasurer: org.scalameter.japi.Measurer
+  def javaMeasurer: org.scalameter.deprecatedjapi.Measurer
 
-  def javaPersistor: org.scalameter.japi.Persistor
+  def javaPersistor: org.scalameter.deprecatedjapi.Persistor
 
-  def javaReporter: org.scalameter.japi.Reporter
+  def javaReporter: org.scalameter.deprecatedjapi.Reporter
 
   type SameType
 
@@ -114,14 +114,14 @@ abstract class JavaPerformanceTest extends BasePerformanceTest with Serializable
               }
               case "afterTests" => teardownafterall = Some(() => { m.invoke(instance) })
               case "setup" => {
-                if (classOf[org.scalameter.japi.VoidGen] isAssignableFrom gen.getClass) {
+                if (classOf[org.scalameter.deprecatedjapi.VoidGen] isAssignableFrom gen.getClass) {
                   setp = Some((v: Object) => { m.invokeA(instance, null) })
                 } else {
                   setp = Some((v: Object) => { m.invokeA(instance, v) })
                 }
               }
               case "teardown" => {
-                if (classOf[org.scalameter.japi.VoidGen] isAssignableFrom gen.getClass) {
+                if (classOf[org.scalameter.deprecatedjapi.VoidGen] isAssignableFrom gen.getClass) {
                   teardown = Some((v: Object) => { m.invokeA(instance, null) })
                 } else {
                   teardown = Some((v: Object) => { m.invokeA(instance, v) })
@@ -132,7 +132,7 @@ abstract class JavaPerformanceTest extends BasePerformanceTest with Serializable
           }
 
           var snippet = (s: Object) => { snippetMethod.invokeA(instance, s) }
-          if (classOf[org.scalameter.japi.VoidGen] isAssignableFrom gen.getClass) {
+          if (classOf[org.scalameter.deprecatedjapi.VoidGen] isAssignableFrom gen.getClass) {
             snippet = (s: Object) => { snippetMethod.invokeA(instance, null) }
           }
           val generator = gen.get
@@ -149,21 +149,21 @@ abstract class JavaPerformanceTest extends BasePerformanceTest with Serializable
 
 
 abstract class QuickBenchmark extends JavaPerformanceTest {
-  def javaReporter: org.scalameter.japi.Reporter = new org.scalameter.japi.LoggingReporter
+  def javaReporter: org.scalameter.deprecatedjapi.Reporter = new org.scalameter.deprecatedjapi.LoggingReporter
 
-  def javaPersistor: org.scalameter.japi.Persistor = new org.scalameter.japi.NonePersistor
+  def javaPersistor: org.scalameter.deprecatedjapi.Persistor = new org.scalameter.deprecatedjapi.NonePersistor
 
-  def javaExecutor = new org.scalameter.japi.LocalExecutor(javaWarmer, javaAggregator, javaMeasurer)
+  def javaExecutor = new org.scalameter.deprecatedjapi.LocalExecutor(javaWarmer, javaAggregator, javaMeasurer)
 
-  def javaMeasurer = new org.scalameter.japi.Measurer {
+  def javaMeasurer = new org.scalameter.deprecatedjapi.Measurer {
     def get = new org.scalameter.Executor.Measurer.Default()
   }
 
-  def javaWarmer = new org.scalameter.japi.Warmer {
+  def javaWarmer = new org.scalameter.deprecatedjapi.Warmer {
     def get = new org.scalameter.Executor.Warmer.Default()
   }
 
-  def javaAggregator = new org.scalameter.japi.Aggregator {
+  def javaAggregator = new org.scalameter.deprecatedjapi.Aggregator {
     def get = org.scalameter.Aggregator.min
   }
 }
@@ -171,42 +171,42 @@ abstract class QuickBenchmark extends JavaPerformanceTest {
 
 abstract class Microbenchmark extends JavaPerformanceTest {
   import Executor.Measurer
-  def javaWarmer = new org.scalameter.japi.Warmer {
+  def javaWarmer = new org.scalameter.deprecatedjapi.Warmer {
     def get = new org.scalameter.Warmer.Default
   }
-  def javaAggregator = new org.scalameter.japi.MinAggregator
-  def javaMeasurer = new org.scalameter.japi.Measurer {
+  def javaAggregator = new org.scalameter.deprecatedjapi.MinAggregator
+  def javaMeasurer = new org.scalameter.deprecatedjapi.Measurer {
     def get = new org.scalameter.Measurer.IgnoringGC with org.scalameter.Measurer.PeriodicReinstantiation {
       override val defaultFrequency = 12
       override val defaultFullGC = true
     }
   }
-  def javaExecutor = new org.scalameter.japi.Executor {
+  def javaExecutor = new org.scalameter.deprecatedjapi.Executor {
     def get = execution.SeparateJvmsExecutor(warmer, aggregator, measurer)
   }
-  def javaReporter: org.scalameter.japi.Reporter = new org.scalameter.japi.LoggingReporter
-  def javaPersistor: org.scalameter.japi.Persistor = new org.scalameter.japi.NonePersistor
+  def javaReporter: org.scalameter.deprecatedjapi.Reporter = new org.scalameter.deprecatedjapi.LoggingReporter
+  def javaPersistor: org.scalameter.deprecatedjapi.Persistor = new org.scalameter.deprecatedjapi.NonePersistor
 }
 
 
 abstract class HTMLReport extends JavaPerformanceTest {
   import Executor.Measurer
   import reporting._
-  def javaPersistor: org.scalameter.japi.Persistor = new org.scalameter.japi.GZIPJSONSerializationPersistor
-  def javaWarmer = new org.scalameter.japi.Warmer {
+  def javaPersistor: org.scalameter.deprecatedjapi.Persistor = new org.scalameter.deprecatedjapi.GZIPJSONSerializationPersistor
+  def javaWarmer = new org.scalameter.deprecatedjapi.Warmer {
     def get = new org.scalameter.Warmer.Default
   }
-  def javaAggregator = new org.scalameter.japi.AverageAggregator
-  def javaMeasurer = new org.scalameter.japi.Measurer {
+  def javaAggregator = new org.scalameter.deprecatedjapi.AverageAggregator
+  def javaMeasurer = new org.scalameter.deprecatedjapi.Measurer {
     def get = new Measurer.IgnoringGC with Measurer.PeriodicReinstantiation with Measurer.OutlierElimination with Measurer.RelativeNoise
   }
-  def javaExecutor = new org.scalameter.japi.Executor {
+  def javaExecutor = new org.scalameter.deprecatedjapi.Executor {
     def get = new execution.SeparateJvmsExecutor(warmer, aggregator, measurer)
   }
   def online: Boolean
-  def javaTester: org.scalameter.japi.RegressionReporterTester
-  def javaHistorian: org.scalameter.japi.RegressionReporterHistorian
-  def javaReporter: org.scalameter.japi.Reporter = new org.scalameter.japi.Reporter {
+  def javaTester: org.scalameter.deprecatedjapi.RegressionReporterTester
+  def javaHistorian: org.scalameter.deprecatedjapi.RegressionReporterHistorian
+  def javaReporter: org.scalameter.deprecatedjapi.Reporter = new org.scalameter.deprecatedjapi.Reporter {
     def get = new org.scalameter.Reporter.Composite(
       new RegressionReporter(javaTester.get, javaHistorian.get),
       HtmlReporter(false)
@@ -217,23 +217,23 @@ abstract class HTMLReport extends JavaPerformanceTest {
 
 abstract class OnlineRegressionReport extends HTMLReport {
   import reporting._
-  def javaTester: org.scalameter.japi.RegressionReporterTester = new org.scalameter.japi.OverlapIntervalsTester()
-  def javaHistorian: org.scalameter.japi.RegressionReporterHistorian = new org.scalameter.japi.ExponentialBackoffHistorian()
+  def javaTester: org.scalameter.deprecatedjapi.RegressionReporterTester = new org.scalameter.deprecatedjapi.OverlapIntervalsTester()
+  def javaHistorian: org.scalameter.deprecatedjapi.RegressionReporterHistorian = new org.scalameter.deprecatedjapi.ExponentialBackoffHistorian()
   def online = true
 }
 
 
 abstract class OfflineRegressionReport extends HTMLReport {
   import reporting._
-  def javaTester: org.scalameter.japi.RegressionReporterTester = new org.scalameter.japi.OverlapIntervalsTester()
-  def javaHistorian: org.scalameter.japi.RegressionReporterHistorian = new org.scalameter.japi.ExponentialBackoffHistorian()
+  def javaTester: org.scalameter.deprecatedjapi.RegressionReporterTester = new org.scalameter.deprecatedjapi.OverlapIntervalsTester()
+  def javaHistorian: org.scalameter.deprecatedjapi.RegressionReporterHistorian = new org.scalameter.deprecatedjapi.ExponentialBackoffHistorian()
   def online = false
 }
 
 
 abstract class OfflineReport extends HTMLReport {
   import reporting._
-  def javaTester: org.scalameter.japi.RegressionReporterTester = new org.scalameter.japi.AccepterTester()
-  def javaHistorian: org.scalameter.japi.RegressionReporterHistorian = new org.scalameter.japi.ExponentialBackoffHistorian()
+  def javaTester: org.scalameter.deprecatedjapi.RegressionReporterTester = new org.scalameter.deprecatedjapi.AccepterTester()
+  def javaHistorian: org.scalameter.deprecatedjapi.RegressionReporterHistorian = new org.scalameter.deprecatedjapi.ExponentialBackoffHistorian()
   def online = false
 }

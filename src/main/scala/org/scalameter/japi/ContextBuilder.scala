@@ -1,4 +1,6 @@
-package org.scalameter
+package org.scalameter.japi
+
+import org.scalameter.{Context, Key}
 
 
 /** Builder for the [[org.scalameter.Context]] that constructs key from the path.

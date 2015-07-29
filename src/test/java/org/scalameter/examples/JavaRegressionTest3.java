@@ -5,7 +5,7 @@ package org.scalameter.examples;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
-import org.scalameter.japi.*;
+import org.scalameter.deprecatedjapi.*;
 
 
 
@@ -14,7 +14,7 @@ public class JavaRegressionTest3 extends OfflineReport {
 		return new SerializationPersistor();
 	}
 	public class List implements Group {
-		public class groupBy implements org.scalameter.japi.Using<LinkedList<Integer>, HashMap<Integer, LinkedList<Integer>>> {
+		public class groupBy implements org.scalameter.deprecatedjapi.Using<LinkedList<Integer>, HashMap<Integer, LinkedList<Integer>>> {
 			public final JContext config = JContext.create()
 			  .put("exec.benchRuns", 20)
 			  .put("exec.independentSamples", 1)

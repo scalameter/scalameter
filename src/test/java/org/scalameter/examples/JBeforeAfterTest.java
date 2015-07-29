@@ -2,8 +2,7 @@ package org.scalameter.examples;
 
 
 
-import java.util.HashMap;
-import org.scalameter.japi.*;
+import org.scalameter.deprecatedjapi.*;
 
 
 
@@ -12,7 +11,7 @@ public class JBeforeAfterTest extends OnlineRegressionReport {
 		public final JContext config = JContext.create()
 		  .put("exec.benchRuns", 30)
 		  .put("exec.independentSamples", 3);
-		public class ToArray implements org.scalameter.japi.Using<Integer, int[]> {
+		public class ToArray implements org.scalameter.deprecatedjapi.Using<Integer, int[]> {
 			public JavaGenerator<Integer> generator() {
 				return new RangeGen("size", 1000000, 5000000, 2000000);
 			}
