@@ -4,7 +4,7 @@ import org.scalameter._
 import org.scalameter.reporting.RegressionReporter
 
 
-class RangeBenchmark(override val persistor: Persistor) extends PerformanceTest.Quickbenchmark {
+class RangeBenchmark(override val persistor: Persistor) extends Bench.Quick {
   override def reporter = new reporting.RegressionReporter(
     RegressionReporter.Tester.Accepter(),
     RegressionReporter.Historian.Complete()

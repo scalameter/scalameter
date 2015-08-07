@@ -8,7 +8,7 @@ import Key._
 
 
 
-class TestSuite extends PerformanceTest.OfflineRegressionReport {
+class TestSuite extends Bench.OfflineRegressionReport {
   include[MemoryTest]
   include[RegressionTest]
 }

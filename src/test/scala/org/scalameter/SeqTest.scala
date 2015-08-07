@@ -6,10 +6,10 @@ import collection._
 
 
 
-class RegressionSeqTest extends SeqTesting with PerformanceTest.Regression
+class RegressionSeqTest extends SeqTesting with Bench.Regression
 
 
-abstract class SeqTesting extends PerformanceTest {
+abstract class SeqTesting extends Bench {
 
   def persistor = new persistence.SerializationPersistor()
 

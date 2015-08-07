@@ -8,7 +8,7 @@ import Key._
 
 
 
-trait Collections extends PerformanceTest {
+trait Collections extends Bench {
 
   /* data */
 
