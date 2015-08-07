@@ -1,4 +1,4 @@
-package org.scalameter.japi;
+package org.scalameter.deprecatedjapi;
 
 
 

@@ -2,8 +2,7 @@ package org.scalameter.examples;
 
 
 
-import java.util.HashMap;
-import org.scalameter.japi.*;
+import org.scalameter.deprecatedjapi.*;
 
 
 
@@ -12,7 +11,7 @@ public class JavaRegressionTest extends OnlineRegressionReport {
 		return new SerializationPersistor();
 	}
 	public class Array implements Group {
-		public class foreach implements org.scalameter.japi.Using<int[], Integer> {
+		public class foreach implements org.scalameter.deprecatedjapi.Using<int[], Integer> {
 			public final JContext config = JContext.create().put("exec.independentSamples", 6);
 			public JavaGenerator<int[]> generator() {
 				JavaGenerator<Integer> sizes = new RangeGen("size", 1000000, 5000000, 2000000);

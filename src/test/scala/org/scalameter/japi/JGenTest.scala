@@ -1,7 +1,8 @@
-package org.scalameter
+package org.scalameter.japi
 
+import org.scalameter.Gen
 import org.scalameter.picklers.Implicits._
-import org.scalatest.{Matchers, FunSuite}
+import org.scalatest.{FunSuite, Matchers}
 
 
 class JGenTest extends FunSuite with Matchers {

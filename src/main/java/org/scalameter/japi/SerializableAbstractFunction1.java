@@ -1,4 +1,4 @@
-package org.scalameter;
+package org.scalameter.japi;
 
 import java.io.Serializable;
 import scala.runtime.AbstractFunction1;

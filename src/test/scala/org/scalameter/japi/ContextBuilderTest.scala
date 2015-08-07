@@ -1,4 +1,4 @@
-package org.scalameter
+package org.scalameter.japi
 
 import org.scalameter.api._
 import org.scalameter.utils.ClassPath

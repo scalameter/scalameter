@@ -51,9 +51,17 @@ abstract class BasePerformanceTest {
 
   def defaultConfig: Context = Context.empty
 
+  /** Allows rebuilding of setup zipper after test initialization.
+   *
+   *  Default implementation is empty.
+   */
+  def rebuildSetupZipper(): Unit = {}
+
   /** Runs all the tests in this test class or singleton object.
    */
   final def executeTests(): Boolean = {
+    rebuildSetupZipper()
+
     val datestart: Option[Date] = Some(new Date)
     val rawsetuptree = BasePerformanceTest.setupzipper.value.result
     val setuptree = rawsetuptree.filter(setupFilter)

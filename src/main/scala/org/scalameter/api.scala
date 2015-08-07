@@ -82,4 +82,18 @@ object api extends Keys {
 
   type GZIPJSONSerializationPersistor = persistence.GZIPJSONSerializationPersistor
   val GZIPJSONSerializationPersistor = persistence.GZIPJSONSerializationPersistor
+
+  /* annotation based frontend */
+
+  type benchmark = japi.annotation.benchmark
+  type ctx = japi.annotation.ctx
+  type curve = japi.annotation.curve
+  type gen = japi.annotation.gen
+  type scopeCtx = japi.annotation.scopeCtx
+  type scopes = japi.annotation.scopes
+  type setup = japi.annotation.setup
+  type setupBeforeAll = japi.annotation.setupBeforeAll
+  type teardown = japi.annotation.teardown
+  type teardownAfterAll = japi.annotation.teardownAfterAll
+  type warmup = japi.annotation.warmup
 }

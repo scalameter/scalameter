@@ -2,16 +2,15 @@ package org.scalameter.examples;
 
 
 
-import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.ListIterator;
-import org.scalameter.japi.*;
+import org.scalameter.deprecatedjapi.*;
 
 
 
 public class JavaRegressionTest2 extends OnlineRegressionReport {
 	public class List implements Group {
-		public class map implements org.scalameter.japi.Using<LinkedList<Integer>, LinkedList<Integer>> {
+		public class map implements org.scalameter.deprecatedjapi.Using<LinkedList<Integer>, LinkedList<Integer>> {
 			public final JContext config = JContext.create().put("exec.independentSamples", 6);
 			public JavaGenerator<LinkedList<Integer>> generator() {
 				JavaGenerator<Integer> sizes = new RangeGen("size", 1000000, 2000000, 500000);

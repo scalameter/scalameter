@@ -2,9 +2,7 @@ package org.scalameter.examples;
 
 
 
-import java.io.Serializable;
-import java.util.HashMap;
-import org.scalameter.japi.*;
+import org.scalameter.deprecatedjapi.*;
 
 
 
@@ -13,13 +11,13 @@ public class JMemoryTest extends OnlineRegressionReport {
 		return new SerializationPersistor();
 	}
 	public Measurer javaMeasurer(){
-		return new org.scalameter.japi.MemoryFootprintMeasurer();
+		return new org.scalameter.deprecatedjapi.MemoryFootprintMeasurer();
 	}
 	public class MemoryFootprint implements Group {
 		public final JContext config = JContext.create()
 			.put("exec.benchRuns", 10)
 			.put("exec.independentSamples", 2);
-		public class Array implements org.scalameter.japi.Using<Integer, int[]> {
+		public class Array implements org.scalameter.deprecatedjapi.Using<Integer, int[]> {
 			public int[] snippet(Integer in) {
 				int[] array = new int[in];
 				for(int i = 0; i < in; i++){
