@@ -180,7 +180,7 @@ abstract class JBench extends BasePerformanceTest with Serializable {
 }
 
 object JBench {
-  /** Annotation based equivalent of the [[org.scalameter.PerformanceTest.Quickbenchmark]] */
+  /** Annotation based equivalent of the [[org.scalameter.Bench.Quick]] */
   abstract class Quick extends JBench {
     def aggregator: Aggregator = Aggregator.min
 
@@ -199,7 +199,7 @@ object JBench {
     )
   }
 
-  /** Annotation based equivalent of the [[org.scalameter.PerformanceTest.Microbenchmark]] */
+  /** Annotation based equivalent of the [[org.scalameter.Bench.Micro]] */
   abstract class Micro extends JBench {
     def aggregator: Aggregator = Aggregator.min
 
@@ -222,7 +222,7 @@ object JBench {
     )
   }
 
-  /** Annotation base equivalent of the [[org.scalameter.PerformanceTest.HTMLReport]] */
+  /** Annotation base equivalent of the [[org.scalameter.Bench.HTMLReport]] */
   abstract class HTMLReport extends JBench {
     def aggregator: Aggregator = Aggregator.average
 
@@ -252,7 +252,7 @@ object JBench {
     def tester: RegressionReporter.Tester
   }
 
-  /** Annotation base equivalent of the [[org.scalameter.PerformanceTest.OnlineRegressionReport]] */
+  /** Annotation base equivalent of the [[org.scalameter.Bench.OnlineRegressionReport]] */
   abstract class OnlineRegressionReport extends HTMLReport {
     def historian: RegressionReporter.Historian =
       RegressionReporter.Historian.ExponentialBackoff()
@@ -263,7 +263,7 @@ object JBench {
       RegressionReporter.Tester.OverlapIntervals()
   }
 
-  /** Annotation base equivalent of the [[org.scalameter.PerformanceTest.OfflineRegressionReport]] */
+  /** Annotation base equivalent of the [[org.scalameter.Bench.OfflineRegressionReport]] */
   abstract class OfflineRegressionReport extends HTMLReport {
     def historian: RegressionReporter.Historian =
       RegressionReporter.Historian.ExponentialBackoff()
@@ -274,7 +274,7 @@ object JBench {
       RegressionReporter.Tester.OverlapIntervals()
   }
 
-  /** Annotation base equivalent of the [[org.scalameter.PerformanceTest.OfflineReport]] */
+  /** Annotation base equivalent of the [[org.scalameter.Bench.OfflineReport]] */
   abstract class OfflineReport extends HTMLReport {
     def historian: RegressionReporter.Historian =
       RegressionReporter.Historian.ExponentialBackoff()

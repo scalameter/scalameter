@@ -1,11 +1,11 @@
 package org.scalameter
 
-import org.scalameter.examples.InvocationCountMeasurerPerformanceTest
+import org.scalameter.examples.InvocationCountMeasurerBench
 import org.scalatest.{Matchers, FunSuite}
 
 
 abstract class InvocationCountMeasurerTest extends FunSuite with Matchers {
-  def checkInvocationCountMeasurerTest(test: InvocationCountMeasurerPerformanceTest): Any = {
+  def checkInvocationCountMeasurerTest(test: InvocationCountMeasurerBench): Any = {
     try {
       test.executeTests()
       try {

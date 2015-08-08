@@ -5,7 +5,7 @@ import org.scalameter.execution.invocation.InvocationCountMatcher
 import org.scalameter.persistence.InterceptingPersistor
 
 
-class InvocationCountMeasurerPerformanceTest extends PerformanceTest.OnlineRegressionReport {
+class InvocationCountMeasurerBench extends PerformanceTest.OnlineRegressionReport {
   override val persistor: InterceptingPersistor = new InterceptingPersistor(new GZIPJSONSerializationPersistor)
 
   def min: Int = 5000
@@ -19,7 +19,7 @@ class InvocationCountMeasurerPerformanceTest extends PerformanceTest.OnlineRegre
   val lists = for (sz <- sizes) yield (0 until sz).toList
 }
 
-class BoxingCountTest extends InvocationCountMeasurerPerformanceTest {
+class BoxingCountTest extends InvocationCountMeasurerBench {
   override lazy val measurer: Measurer = Measurer.BoxingCount.all()
 
   override def defaultConfig = Context(
@@ -35,7 +35,7 @@ class BoxingCountTest extends InvocationCountMeasurerPerformanceTest {
   }
 }
 
-class MethodInvocationCountTest1 extends InvocationCountMeasurerPerformanceTest {
+class MethodInvocationCountTest1 extends InvocationCountMeasurerBench {
   override lazy val measurer: Measurer = Measurer.MethodInvocationCount(
     InvocationCountMatcher.allocations(classOf[Some[_]])
   )

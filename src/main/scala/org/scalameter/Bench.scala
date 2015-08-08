@@ -7,7 +7,7 @@ import org.scalameter.utils.Tree
 
 
 
-abstract class PerformanceTest extends DSL with Serializable {
+abstract class Bench extends DSL with Serializable {
 
   def main(args: Array[String]) {
     val ctx = dyn.currentContext.value ++ Main.Configuration.fromCommandLineArgs(args).context
@@ -21,12 +21,15 @@ abstract class PerformanceTest extends DSL with Serializable {
 }
 
 
-object PerformanceTest {
+object Bench {
+
+  @deprecated("Please use Bench.Quick instead", "0.7")
+  type Quickbenchmark = Quick
   
   /** Quick benchmark run in the same JVM.
    *  Reports result into the console.
    */
-  trait Quickbenchmark extends PerformanceTest {
+  trait Quick extends Bench {
     def executor: Executor = new execution.LocalExecutor(
       Warmer.Default(),
       Aggregator.min,
@@ -37,10 +40,13 @@ object PerformanceTest {
     def persistor: Persistor = Persistor.None
   }
 
+  @deprecated("Please use Bench.Micro instead", "0.7")
+  type Microbenchmark = Micro
+  
   /** A more reliable benchmark run in a separate JVM.
    *  Reports results into the console.
    */
-  trait Microbenchmark extends PerformanceTest {
+  trait Micro extends Bench {
     def warmer: Warmer = Warmer.Default()
     def aggregator: Aggregator = Aggregator.min
     def measurer: Measurer = new Measurer.IgnoringGC with Measurer.PeriodicReinstantiation {
@@ -54,7 +60,7 @@ object PerformanceTest {
 
   /** A base for benchmarks generating a more detailed (regression) report, potentially online.
    */
-  trait HTMLReport extends PerformanceTest {
+  trait HTMLReport extends Bench {
     import reporting._
     def persistor: Persistor = new persistence.GZIPJSONSerializationPersistor
     def warmer: Warmer = Warmer.Default()
@@ -100,7 +106,7 @@ object PerformanceTest {
   }
 
   @deprecated("This performance test is now deprecated, please use `OnlineRegressionReport` instead.", "0.5")
-  trait Regression extends PerformanceTest {
+  trait Regression extends Bench {
     import reporting._
     def warmer: Warmer = Warmer.Default()
     def aggregator: Aggregator = Aggregator.average

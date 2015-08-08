@@ -11,7 +11,7 @@ import org.scalameter.picklers.Implicits._
 
 class QuickbenchmarkTest extends FunSuite {
 
-  object SomeBenchmark extends PerformanceTest.Quickbenchmark {
+  object SomeBenchmark extends Bench.Quick {
     performance of "single" in {
       using(Gen.single("single")(1)) in (_ + 0)
     }

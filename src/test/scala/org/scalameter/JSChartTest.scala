@@ -10,7 +10,7 @@ import parallel.ParIterable
 
 
 
-class JSChartTest extends PerformanceTest.Regression with Collections {
+class JSChartTest extends Bench.Regression with Collections {
 
   def persistor = new persistence.SerializationPersistor()
 
