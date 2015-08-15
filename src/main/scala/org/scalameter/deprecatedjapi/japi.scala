@@ -4,21 +4,22 @@ package org.scalameter.deprecatedjapi
 
 import org.scalameter.reporting
 import org.scalameter.reporting.ChartReporter
+import org.scalameter.picklers.Implicits._
 
 
 
-abstract class Executor {
-  def get: org.scalameter.Executor
+abstract class Executor[T] {
+  def get: org.scalameter.Executor[T]
 }
 
 
-abstract class Aggregator {
-  def get: org.scalameter.Aggregator
+abstract class Aggregator[T] {
+  def get: org.scalameter.Aggregator[T]
 }
 
 
-abstract class Measurer {
-  def get: org.scalameter.Executor.Measurer
+abstract class Measurer[T] {
+  def get: org.scalameter.Executor.Measurer[T]
 }
 
 
@@ -27,8 +28,8 @@ abstract class Persistor {
 }
 
 
-abstract class Reporter {
-  def get: org.scalameter.Reporter
+abstract class Reporter[T] {
+  def get: org.scalameter.Reporter[T]
 }
 
 
@@ -67,12 +68,12 @@ class CompleteHistorian extends RegressionReporterHistorian {
 }
 
 
-class LocalExecutor(w: Warmer, a: Aggregator, m: Measurer) extends Executor {
-  def get: org.scalameter.Executor = new org.scalameter.execution.LocalExecutor(w.get, a.get, m.get)
+class LocalExecutor(w: Warmer, a: Aggregator[Double], m: Measurer[Double]) extends Executor[Double] {
+  def get: org.scalameter.Executor[Double] = new org.scalameter.execution.LocalExecutor(w.get, a.get, m.get)
 }
 
 
-class SeparateJvmsExecutor(w: Warmer, a: Aggregator, m: Measurer) extends Executor {
+class SeparateJvmsExecutor(w: Warmer, a: Aggregator[Double], m: Measurer[Double]) extends Executor[Double] {
   def get = org.scalameter.execution.SeparateJvmsExecutor(w.get, a.get, m.get)
 }
 
@@ -82,52 +83,59 @@ abstract class Warmer {
 }
 
 
-class MinAggregator extends Aggregator {
+class MinAggregator[T: Ordering] extends Aggregator[T] {
   def get = org.scalameter.Aggregator.min
 }
 
 
-class AverageAggregator extends Aggregator {
+class AverageAggregator extends Aggregator[Double] {
   def get = org.scalameter.Aggregator.average
 }
 
 
-class MaxAggregator extends Aggregator {
+class MaxAggregator[T: Ordering] extends Aggregator[T] {
   def get = org.scalameter.Aggregator.max
 }
 
 
-class MedianAggregator extends Aggregator {
+class MedianAggregator[T: Ordering] extends Aggregator[T] {
   def get = org.scalameter.Aggregator.median
 }
 
 
-class DefaultMeasurer extends Measurer {
+class DefaultMeasurer extends Measurer[Double] {
   def get = new org.scalameter.Executor.Measurer.Default
 }
 
 
-class DefaultWithNanosMeasurer extends Measurer {
+class DefaultWithNanosMeasurer extends Measurer[Double] {
   def get = org.scalameter.Executor.Measurer.Default.withNanos()
 }
 
 
-class TimeWithIgnoringGCMeasurer extends Measurer {
+class TimeWithIgnoringGCMeasurer extends Measurer[Double] {
   def get = new org.scalameter.Executor.Measurer.IgnoringGC
 }
 
 
-class TimeWithIgnoringGCWithOutlierEliminationMeasurer extends Measurer {
-  def get = new org.scalameter.Executor.Measurer.IgnoringGC with org.scalameter.Executor.Measurer.OutlierElimination
+class TimeWithIgnoringGCWithOutlierEliminationMeasurer extends Measurer[Double] {
+  def get = new org.scalameter.Executor.Measurer.IgnoringGC
+    with org.scalameter.Executor.Measurer.OutlierElimination[Double] {
+    def numeric: Numeric[Double] = implicitly[Numeric[Double]]
+  }
 }
 
 
-class TimeWithIngoringGCWithPeriodicReinstantiationWithOutlierEliminationMeasurer extends Measurer {
-  def get = new org.scalameter.Executor.Measurer.IgnoringGC with org.scalameter.Executor.Measurer.PeriodicReinstantiation with org.scalameter.Executor.Measurer.OutlierElimination
+class TimeWithIngoringGCWithPeriodicReinstantiationWithOutlierEliminationMeasurer extends Measurer[Double] {
+  def get = new org.scalameter.Executor.Measurer.IgnoringGC
+    with org.scalameter.Executor.Measurer.PeriodicReinstantiation[Double]
+    with org.scalameter.Executor.Measurer.OutlierElimination[Double] {
+    def numeric: Numeric[Double] = implicitly[Numeric[Double]]
+  }
 }
 
 
-class MemoryFootprintMeasurer extends Measurer {
+class MemoryFootprintMeasurer extends Measurer[Double] {
   def get = new org.scalameter.Executor.Measurer.MemoryFootprint
 }
 
@@ -152,11 +160,11 @@ class GZIPJSONSerializationPersistor extends Persistor {
 }
 
 
-class LoggingReporter extends Reporter {
-  def get: org.scalameter.Reporter = org.scalameter.reporting.LoggingReporter()
+class LoggingReporter[T] extends Reporter[T] {
+  def get: org.scalameter.Reporter[T] = org.scalameter.reporting.LoggingReporter[T]()
 }
 
 
-class RegressionReporter(tester: RegressionReporterTester, historian: RegressionReporterHistorian) extends Reporter {
+class RegressionReporter(tester: RegressionReporterTester, historian: RegressionReporterHistorian) extends Reporter[Double] {
   def get = org.scalameter.reporting.RegressionReporter(tester.get, historian.get)
 }

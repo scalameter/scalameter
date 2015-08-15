@@ -3,11 +3,10 @@ package execution
 
 
 
-import java.io._
+import org.scalameter.picklers.Pickler
 import scala.collection._
-import scala.sys.process._
-import scala.util.{Try, Success, Failure}
-import utils.Tree
+import scala.util.Try
+import org.scalameter.PrettyPrinter.Implicits._
 
 
 
@@ -16,7 +15,8 @@ import utils.Tree
  *  This produces more stable results, as the performance related effects of each JVM instantiation
  *  are averaged.
  */
-class SeparateJvmsExecutor(val warmer: Warmer, val aggregator: Aggregator, val measurer: Measurer) extends Executor {
+class SeparateJvmsExecutor[V: Pickler: PrettyPrinter](val warmer: Warmer, val aggregator: Aggregator[V],
+  val measurer: Measurer[V]) extends Executor[V] {
 
   import Key._
 
@@ -28,7 +28,7 @@ class SeparateJvmsExecutor(val warmer: Warmer, val aggregator: Aggregator, val m
     ctx + (exec.jvmflags -> flags)
   }
 
-  def runSetup[T](setup: Setup[T]): CurveData = {
+  def runSetup[T](setup: Setup[T]): CurveData[V] = {
     import setup._
 
     val warmups = context(exec.maxWarmupRuns)
@@ -43,7 +43,7 @@ class SeparateJvmsExecutor(val warmer: Warmer, val aggregator: Aggregator, val m
     val w = warmer
     val jvmContext = createJvmContext(context)
 
-    def sample(idx: Int, reps: Int): Try[Seq[(Parameters, Seq[Double])]] = runner.run(jvmContext) {
+    def sample(idx: Int, reps: Int): Try[Seq[(Parameters, Seq[(V, String)])]] = runner.run(jvmContext) {
       dyn.currentContext.value = context
       
       log.verbose(s"Sampling $reps measurements in separate JVM invocation $idx - ${context.scope}, ${context(dsl.curve)}.")
@@ -64,12 +64,13 @@ class SeparateJvmsExecutor(val warmer: Warmer, val aggregator: Aggregator, val m
         compat.Platform.collectGarbage()
 
         // measure
-        val observations = new mutable.ArrayBuffer[(Parameters, Seq[Double])]()
+        val observations = new mutable.ArrayBuffer[(Parameters, Seq[(V, String)])]()
         for (params <- gen.dataset) {
           val set = setupFor()
           val tear = teardownFor()
           val regen = regenerateFor(params)
-          observations += (params -> m.measure(context, reps, set, tear, regen, snippet))
+          val results = m.measure(context, reps, set, tear, regen, snippet)
+          observations += ((params, results.map(q => q.value -> q.units))) // FIXME: workaround to `java.lang.ClassNotFoundException: org.scalameter.Quantity`
         }
         observations
       } finally {
@@ -77,8 +78,8 @@ class SeparateJvmsExecutor(val warmer: Warmer, val aggregator: Aggregator, val m
       }
     }
 
-    def sampleReport(idx: Int, reps: Int): Seq[(Parameters, Seq[Double])] = try {
-      sample(idx, reps).get
+    def sampleReport(idx: Int, reps: Int): Seq[(Parameters, Seq[Quantity[V]])] = try {
+      sample(idx, reps).get.map(v => (v._1, v._2.map(v => Quantity(v._1, v._2))))
     } catch {
       case t: Throwable =>
         log.error(s"Error running separate JVM: $t")
@@ -100,19 +101,21 @@ class SeparateJvmsExecutor(val warmer: Warmer, val aggregator: Aggregator, val m
       }
     }
 
-    def nice(vs: Seq[(Parameters, Seq[Double])]) = vs map {
-      case (params, seq) => params.axisData.mkString(", ") + ": " + seq.map(t => f"$t%.3f").mkString(", ")
+    def nice(vs: Seq[(Parameters, Seq[Quantity[V]])]) = vs map { case (params, seq) =>
+      params.axisData.mkString(", ") + ": " + seq.map(t => s"${t.value.prettyPrint}").mkString(", ")
     } mkString("\n")
 
     log.verbose(s"Obtained measurements:\n${nice(valueseq)}")
 
     val measurements = valueseq map {
-      case (params, values) => Measurement(
-        aggregator(values),
-        params,
-        aggregator.data(values),
-        m.units
-      )
+      case (params, values) =>
+        val single = aggregator(values)
+        Measurement(
+          single.value,
+          params,
+          aggregator.data(values),
+          single.units
+        )
     }
 
     CurveData(measurements.toSeq, Map.empty, context)
@@ -125,7 +128,8 @@ class SeparateJvmsExecutor(val warmer: Warmer, val aggregator: Aggregator, val m
 
 object SeparateJvmsExecutor extends Executor.Factory[SeparateJvmsExecutor] {
 
-  def apply(w: Warmer, agg: Aggregator, m: Measurer) = new SeparateJvmsExecutor(w, agg, m)
+  def apply[T: Pickler: PrettyPrinter](w: Warmer, agg: Aggregator[T], m: Measurer[T]) =
+    new SeparateJvmsExecutor(w, agg, m)
 
 }
 

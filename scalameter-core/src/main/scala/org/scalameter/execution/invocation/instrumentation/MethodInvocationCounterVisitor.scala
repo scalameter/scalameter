@@ -31,7 +31,7 @@ private[instrumentation] class MethodInvocationCounterVisitor(cv: ClassVisitor, 
 
     val mv = cv.visitMethod(access, name, desc, signature, exceptions)
     if (className != counterClass && pattern.methodMatches(name, desc) && (access & Opcodes.ACC_ABSTRACT) == 0) {
-      mv.visitLdcInsn(initialIndex)
+      mv.visitLdcInsn(initialIndex + rawMethods.length)
       mv.visitMethodInsn(Opcodes.INVOKESTATIC, counterClass, counterMethod, "(I)V", false)
       val method = MethodSignature(className = className, methodName = name, Type.getArgumentTypes(desc).map(_.getClassName): _*)
       rawMethods += method

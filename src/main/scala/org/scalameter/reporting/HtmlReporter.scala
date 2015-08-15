@@ -4,21 +4,20 @@ package reporting
 
 
 import java.io._
-import util.parsing.json._
-import collection._
-import utils.Tree
-import Key._
+import org.scalameter.Key._
+import org.scalameter.utils.Tree
+import scala.collection._
+import scala.util.parsing.json.{JSONObject, JSONArray}
 
 
-
-case class HtmlReporter(embedDsv: Boolean = true) extends Reporter {
+case class HtmlReporter[T: Numeric](embedDsv: Boolean = true) extends Reporter[T] {
   import HtmlReporter._
 
-  def report(result: CurveData, persistor: Persistor) {
+  def report(result: CurveData[T], persistor: Persistor) {
     // nothing - the charts are generated only at the end
   }
-  
-  def report(results: Tree[CurveData], persistor: Persistor) = {
+
+  def report(results: Tree[CurveData[T]], persistor: Persistor) = {
     if (!embedDsv) {
       new DsvReporter(dsvDelimiter).report(results, persistor)
     }
@@ -64,7 +63,7 @@ case class HtmlReporter(embedDsv: Boolean = true) extends Reporter {
       </ul>
     </div>
 
-  def date(results: Tree[CurveData]) = {
+  def date(results: Tree[CurveData[T]]) = {
     val dateoption = for {
       start <- results.context(reports.startDate)
       end <- results.context(reports.endDate)
@@ -75,9 +74,9 @@ case class HtmlReporter(embedDsv: Boolean = true) extends Reporter {
     </div>
     dateoption.getOrElse(<div>No date information.</div>)
   }
-  
-  def JSONIndex(results: Tree[CurveData]) = {
-    def JSONCurve(context: Context, curve: CurveData) = JSONObject(
+
+  def JSONIndex(results: Tree[CurveData[T]]) = {
+    def JSONCurve(context: Context, curve: CurveData[T]) = JSONObject(
       immutable.Map(
         "scope" -> new JSONArray(curve.context.scopeList),
         "name" -> curve.context.curve,
@@ -94,7 +93,7 @@ case class HtmlReporter(embedDsv: Boolean = true) extends Reporter {
     new JSONArray(JSONCurves.toList)
   }
 
-  def printTsv(results: Tree[CurveData], persistor: Persistor, pw: PrintWriter) {
+  def printTsv(results: Tree[CurveData[T]], persistor: Persistor, pw: PrintWriter) {
     val allCurves = for {
       (ctx, curves) <- results.scopes if curves.nonEmpty
       curve <- curves

@@ -5,14 +5,15 @@ import java.lang.reflect.Method
 import org.scalameter.BasePerformanceTest._
 import org.scalameter._
 import org.scalameter.japi.annotation._
+import org.scalameter.picklers.Implicits._
 import org.scalameter.reporting.{HtmlReporter, RegressionReporter}
 import scala.collection.mutable
 import scala.language.reflectiveCalls
-import scala.util.{DynamicVariable, Try}
+import scala.util.Try
 
 
 /** Base class for all annotation based benchmarks. */
-abstract class JBench extends BasePerformanceTest with Serializable {
+abstract class JBench[U] extends BasePerformanceTest[U] with Serializable {
 
   override final def rebuildSetupZipper() = constructSetupTree()
 
@@ -131,8 +132,7 @@ abstract class JBench extends BasePerformanceTest with Serializable {
       setup = setup,
       teardown = teardown,
       customwarmup = warmup,
-      snippet = snippet,
-      customExecutor = executor
+      snippet = snippet
     )
 
     setupzipper.value = setupzipper.value.addItem(benchmark)
@@ -181,18 +181,18 @@ abstract class JBench extends BasePerformanceTest with Serializable {
 
 object JBench {
   /** Annotation based equivalent of the [[org.scalameter.Bench.Quick]] */
-  abstract class Quick extends JBench {
-    def aggregator: Aggregator = Aggregator.min
+  abstract class Quick extends JBench[Double] {
+    def aggregator: Aggregator[Double] = Aggregator.min
 
-    def measurer: Measurer = new Measurer.Default()
+    def measurer: Measurer[Double] = new Measurer.Default()
 
     def persistor: Persistor = Persistor.None
 
-    def reporter: Reporter = new reporting.LoggingReporter
+    def reporter: Reporter[Double] = new reporting.LoggingReporter
 
     def warmer: Warmer = Warmer.Default()
 
-    final def executor: Executor = execution.LocalExecutor(
+    final def executor: Executor[Double] = execution.LocalExecutor(
       warmer,
       aggregator,
       measurer
@@ -200,22 +200,22 @@ object JBench {
   }
 
   /** Annotation based equivalent of the [[org.scalameter.Bench.Micro]] */
-  abstract class Micro extends JBench {
-    def aggregator: Aggregator = Aggregator.min
+  abstract class Micro extends JBench[Double] {
+    def aggregator: Aggregator[Double] = Aggregator.min
 
-    def measurer: Measurer =
-      new Measurer.IgnoringGC with Measurer.PeriodicReinstantiation {
+    def measurer: Measurer[Double] =
+      new Measurer.IgnoringGC with Measurer.PeriodicReinstantiation[Double] {
         override val defaultFrequency = 12
         override val defaultFullGC = true
       }
 
     def persistor: Persistor = Persistor.None
 
-    def reporter: Reporter = new reporting.LoggingReporter
+    def reporter: Reporter[Double] = new reporting.LoggingReporter
 
     def warmer: Warmer = Warmer.Default()
 
-    final def executor: Executor = execution.SeparateJvmsExecutor(
+    final def executor: Executor[Double] = execution.SeparateJvmsExecutor(
       warmer,
       aggregator,
       measurer
@@ -223,22 +223,24 @@ object JBench {
   }
 
   /** Annotation base equivalent of the [[org.scalameter.Bench.HTMLReport]] */
-  abstract class HTMLReport extends JBench {
-    def aggregator: Aggregator = Aggregator.average
+  abstract class HTMLReport extends JBench[Double] {
+    def aggregator: Aggregator[Double] = Aggregator.average
 
-    def executor: Executor = new execution.SeparateJvmsExecutor(
+    def executor: Executor[Double] = new execution.SeparateJvmsExecutor(
       warmer,
       aggregator,
       measurer
     )
 
-    def measurer: Measurer =
-      new Measurer.IgnoringGC with Measurer.PeriodicReinstantiation
-        with Measurer.OutlierElimination with Measurer.RelativeNoise
+    def measurer: Measurer[Double] =
+      new Measurer.IgnoringGC with Measurer.PeriodicReinstantiation[Double]
+        with Measurer.OutlierElimination[Double] with Measurer.RelativeNoise {
+        def numeric: Numeric[Double] = implicitly[Numeric[Double]]
+      }
 
     def persistor: Persistor = new persistence.GZIPJSONSerializationPersistor
 
-    def reporter: Reporter = Reporter.Composite(
+    def reporter: Reporter[Double] = Reporter.Composite(
       new RegressionReporter(tester, historian),
       HtmlReporter(!online)
     )

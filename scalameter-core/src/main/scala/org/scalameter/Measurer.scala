@@ -3,7 +3,6 @@ package org.scalameter
 
 
 import org.scalameter.execution.invocation.InvocationCountMatcher
-import org.scalameter.execution.invocation.instrumentation.{Instrumentation, MethodInvocationCounter}
 import org.scalameter.utils.withGCNotification
 import scala.collection._
 import scala.compat._
@@ -12,37 +11,62 @@ import scala.util.matching.Regex
 
 
 
-trait Measurer extends Serializable {
+trait Measurer[V] extends Serializable { self =>
   def name: String
-  def measure[T, U](context: Context, measurements: Int, setup: T => Any, tear: T => Any, regen: () => T, snippet: T => Any): Seq[Double]
-  def units: String
 
-  /** Indicates if a measurer uses instrumented classpath - if `true` measurer must be run using an executor that spawns separate JVMs. */
+  def measure[T](context: Context, measurements: Int, setup: T => Any,
+    tear: T => Any, regen: () => T, snippet: T => Any): Seq[Quantity[V]]
+
+  def map[U](f: Quantity[V] => Quantity[U]) = new Measurer[U] {
+    def name = self.name
+
+    def measure[T](context: Context, measurements: Int, setup: T => Any,
+      tear: T => Any, regen: () => T, snippet: T => Any): Seq[Quantity[U]] =
+      self.measure(context, measurements, setup, tear, regen, snippet).map(f)
+
+    override def usesInstrumentedClasspath: Boolean = self.usesInstrumentedClasspath
+
+    override def prepareContext(context: Context): Context = self.prepareContext(context)
+
+    override def beforeExecution(context: Context): Unit = self.beforeExecution(context)
+
+    override def afterExecution(context: Context): Unit = self.afterExecution(context)
+  }
+
+  /** Indicates if a measurer uses instrumented classpath -
+   *  if `true` measurer must be run using an executor that spawns separate JVMs.
+   */
   def usesInstrumentedClasspath: Boolean = false
 
   /** Modifies the initial test context.
    *
    *  This method is invoked before the `PerformanceTest` object's constructor is invoked.
-   *  The key-value pairs that the [[org.scalameter.Measurer]] adds to the [[org.scalameter.Context]] in this method
-   *  are visible to all the test snippets within the `PerformanceTest` class.
+   *  The key-value pairs that the [[org.scalameter.Measurer]] adds to
+   *  the [[org.scalameter.Context]] in this method are visible to all
+   *  the test snippets within the `PerformanceTest` class.
    *
-   *  Most measurers do not need to add any specific keys, so the default implementation just returns the `context`.
+   *  Most measurers do not need to add any specific keys,
+   *  so the default implementation just returns the `context`.
    */
   def prepareContext(context: Context): Context = context
 
-  /**  Does some side effects before execution of all benchmarks in a performance test.
-    *
-    *  This method is invoked in the `PerformanceTest` `executeTests` method just before execution of any benchmarks.
-    *
-    *  Most measurers do not need add additional context keys in [[prepareContext]], so the default implementation just does nothing.
-    */
+  /** Does some side effects before execution of all benchmarks in a performance test.
+   *
+   *  This method is invoked in the `PerformanceTest` `executeTests` method
+   *  just before execution of any benchmarks.
+   *
+   *  Most measurers do not need add additional context keys in [[prepareContext]],
+   *  so the default implementation just does nothing.
+   */
   def beforeExecution(context: Context): Unit = ()
 
   /** Does some final cleanup after execution of all benchmarks in a performance test.
    *
-   *  This method is invoked in the `PerformanceTest` `executeTests` method just after execution of all benchmarks.
+   *  This method is invoked in the `PerformanceTest` `executeTests` method
+   *  just after execution of all benchmarks.
    *
-   *  Most measurers do not need to do any side effects in [[beforeExecution]], so the default implementation just does nothing.
+   *  Most measurers do not need to do any side effects in [[beforeExecution]],
+   *  so the default implementation just does nothing.
    */
   def afterExecution(context: Context): Unit = ()
 }
@@ -52,12 +76,10 @@ object Measurer {
 
   import Key._
 
-  trait Timer extends Measurer {
-    def units = "ms"
-  }
+  trait Timer extends Measurer[Double]
 
   /** Mixin for measurers whose benchmarked value is based on the current iteration. */
-  trait IterationBasedValue extends Timer {
+  trait IterationBasedValue {
 
     /** Returns the value used for the benchmark at `iteration`.
      *  May optionally call `regen` to obtain a new value for the benchmark.
@@ -72,22 +94,19 @@ object Measurer {
   object Default {
     def apply() = new Default
 
-    def withNanos() = new Default(conversionFun = _.toDouble) {
-       override def units = "ns"
+    def withNanos() = new Default map { case Quantity(v, _) => 
+      Quantity(v * 1000000.0, "ns") 
     }
   }
 
   /** A default measurer executes the test as many times as specified and returns the sequence of measured times. */
-  class Default private(conversionFun: Long => Double) extends Timer with IterationBasedValue {
-    def this() {
-      this(conversionFun = _ / 1000000.0)
-    }
-
+  class Default extends Timer with IterationBasedValue {
     def name = "Measurer.Default"
 
-    def measure[T, U](context: Context, measurements: Int, setup: T => Any, tear: T => Any, regen: () => T, snippet: T => Any): Seq[Double] = {
+    def measure[T](context: Context, measurements: Int, setup: T => Any,
+      tear: T => Any, regen: () => T, snippet: T => Any): Seq[Quantity[Double]] = {
       var iteration = 0
-      var times = List[Double]()
+      val times = mutable.ListBuffer.empty[Quantity[Double]]
       var value = regen()
 
       while (iteration < measurements) {
@@ -97,17 +116,17 @@ object Measurer {
         val start = System.nanoTime
         snippet(value)
         val end = System.nanoTime
-        val time = conversionFun(end - start)
+        val time = Quantity((end - start) / 1000000.0, "ms")
 
         tear(value)
 
-        times ::= time
+        times += time
         iteration += 1
       }
 
       log.verbose(s"measurements: ${times.mkString(", ")}")
 
-      times
+      times.result()
     }
   }
 
@@ -120,8 +139,9 @@ object Measurer {
   class IgnoringGC extends Timer with IterationBasedValue {
     override def name = "Measurer.IgnoringGC"
 
-    def measure[T, U](context: Context, measurements: Int, setup: T => Any, tear: T => Any, regen: () => T, snippet: T => Any): Seq[Double] = {
-      var times = List[Double]()
+    def measure[T](context: Context, measurements: Int, setup: T => Any,
+      tear: T => Any, regen: () => T, snippet: T => Any): Seq[Quantity[Double]] = {
+      val times = mutable.ListBuffer.empty[Quantity[Double]]
       var okcount = 0
       var gccount = 0
       var ignoring = true
@@ -141,7 +161,7 @@ object Measurer {
           val start = System.nanoTime
           snippet(value)
           val end = System.nanoTime
-          (end - start) / 1000000.0
+          Quantity((end - start) / 1000000.0, "ms")
         }
 
         tear(value)
@@ -151,14 +171,15 @@ object Measurer {
           if (gccount - okcount > measurements) ignoring = false
         } else {
           okcount += 1
-          times ::= time
+          times += time
         }
       }
 
-      log.verbose(s"${if (ignoring) "All GC time ignored" else "Some GC time recorded"}, accepted: $okcount, ignored: $gccount")
+      log.verbose(s"${if (ignoring) "All GC time ignored"
+        else "Some GC time recorded"}, accepted: $okcount, ignored: $gccount")
       log.verbose(s"measurements: ${times.mkString(", ")}")
 
-      times
+      times.result()
     }
   }
 
@@ -166,7 +187,7 @@ object Measurer {
    *  every `Key.exec.reinstantiation.frequency` measurements.
    *  Before the new value has been instantiated, a full GC cycle is invoked if `Key.exec.reinstantiation.fullGC` is `true`.
    */
-  trait PeriodicReinstantiation extends IterationBasedValue {
+  trait PeriodicReinstantiation[V] extends Measurer[V] with IterationBasedValue {
     import exec.reinstantiation._
 
     abstract override def name = s"${super.name}+PeriodicReinstantiation"
@@ -210,9 +231,11 @@ object Measurer {
    *
    *  A potential outlier (suffix) is removed if removing it increases the coefficient of variance by at least `Key.exec.outliers.covMultiplier` times.
    */
-  trait OutlierElimination extends Measurer {
+  trait OutlierElimination[V] extends Measurer[V] {
 
     import exec.outliers._
+
+    implicit def numeric: Numeric[V]
 
     abstract override def name = s"${super.name}+OutlierElimination"
 
@@ -220,9 +243,12 @@ object Measurer {
 
     def covMultiplierModifier = 1.0
 
-    abstract override def measure[T, U](context: Context, measurements: Int, setup: T => Any, tear: T => Any, regen: () => T, snippet: T => Any): Seq[Double] = {
+    abstract override def measure[T](context: Context, measurements: Int, setup: T => Any,
+      tear: T => Any, regen: () => T, snippet: T => Any): Seq[Quantity[V]] = {
       import utils.Statistics._
+      import Numeric.Implicits._
 
+      implicit val ord = Ordering.by((q: Quantity[V]) => q.value)
       var results = super.measure(context, measurements, setup, tear, regen, snippet).sorted
       val suspectp = context(suspectPercent)
       val covmult = context(covMultiplier)
@@ -251,19 +277,20 @@ object Measurer {
       }
 
       var best = results
-      while (outlierExists(results) && retleft > 0) {
-        val prefixlen = suffixLength(results.reverse)
-        val suffixlen = suffixLength(results)
-        val formatted = results.map(t => f"$t%.3f")
+      while (outlierExists(results.map(_.value.toDouble())) && retleft > 0) {
+        val prefixlen = suffixLength(results.reverse.map(_.value.toDouble()))
+        val suffixlen = suffixLength(results.map(_.value.toDouble()))
+        val formatted = results.map(t => f"${t.value.toDouble()}%.3f")
         log.verbose(s"Detected $suffixlen outlier(s): ${formatted.mkString(", ")}")
         results = {
           if (eliminateLow) (
             super.measure(context, prefixlen, setup, tear, regen, snippet) ++
             results.drop(prefixlen).dropRight(suffixlen) ++
             super.measure(context, suffixlen, setup, tear, regen, snippet)
-          ).sorted else (results.dropRight(suffixlen) ++ super.measure(context, suffixlen, setup, tear, regen, snippet)).sorted
+          ).sorted else (results.dropRight(suffixlen) ++
+            super.measure(context, suffixlen, setup, tear, regen, snippet)).sorted
         }
-        if (CoV(results) < CoV(best)) best = results
+        if (CoV(results.map(_.value.toDouble())) < CoV(best.map(_.value.toDouble()))) best = results
         retleft -= 1
       }
 
@@ -279,21 +306,22 @@ object Measurer {
    *  susceptible to actual randomness, because adding artificial noise increases
    *  the confidence intervals.
    */
-  trait Noise extends Measurer {
+  trait Noise extends Measurer[Double] {
 
     import exec.noise._
 
     def noiseFunction(observations: Seq[Double], magnitude: Double): Double => Double
 
-    abstract override def measure[T, U](context: Context, measurements: Int, setup: T => Any, tear: T => Any, regen: () => T, snippet: T => Any): Seq[Double] = {
+    abstract override def measure[T](context: Context, measurements: Int, setup: T => Any,
+      tear: T => Any, regen: () => T, snippet: T => Any): Seq[Quantity[Double]] = {
       val observations = super.measure(context, measurements, setup, tear, regen, snippet)
       val magni = context(magnitude)
-      val noise = noiseFunction(observations, magni)
+      val noise = noiseFunction(observations.map(_.value), magni)
       val withnoise = observations map {
-        x => (x + noise(x))
+        x => x.copy(value = x.value + noise(x.value))
       }
 
-      val formatted = withnoise.map(t => f"$t%.3f")
+      val formatted = withnoise.map(t => f"${t.value}%.3f")
       log.verbose("After applying noise: " + formatted.mkString(", "))
 
       withnoise
@@ -350,13 +378,14 @@ object Measurer {
 
   }
 
-  abstract class BaseMemoryFootprint extends Measurer {
+  abstract class BaseMemoryFootprint extends Measurer[Double] {
     def name = "Measurer.MemoryFootprint"
 
-    def measure[T, U](context: Context, measurements: Int, setup: T => Any, tear: T => Any, regen: () => T, snippet: T => Any): Seq[Double] = {
+    def measure[T](context: Context, measurements: Int, setup: T => Any,
+      tear: T => Any, regen: () => T, snippet: T => Any): Seq[Quantity[Double]] = {
       val runtime = Runtime.getRuntime
       var iteration = 0
-      var memories = List[Double]()
+      val memories = mutable.ListBuffer.empty[Quantity[Double]]
       var value: T = null.asInstanceOf[T]
       var obj: Any = null.asInstanceOf[Any]
 
@@ -378,34 +407,36 @@ object Measurer {
         Platform.collectGarbage()
         val memafter = runtime.totalMemory - runtime.freeMemory
 
-        val memory = (memafter - membefore) / 1000.0
+        val memory = Quantity((memafter - membefore) / 1000.0, "kB")
 
-        memories ::= memory
+        memories += memory
         iteration += 1
       }
 
-      log.verbose("Measurements: " + memories.reverse.mkString(", "))
+      log.verbose("Measurements: " + memories.mkString(", "))
 
-      memories.reverse
+      memories.result()
     }
 
-    def units = "kB"
   }
 
   /** Measures the total memory footprint of an object created by the benchmarking snippet.
    *
    *  Eliminates outliers.
    */
-  class MemoryFootprint extends BaseMemoryFootprint with OutlierElimination {
+  class MemoryFootprint extends BaseMemoryFootprint with OutlierElimination[Double] {
     override def eliminateLow = true
+
+    def numeric: Numeric[Double] = implicitly[Numeric[Double]]
   }
 
-  class GarbageCollectionCycles extends Measurer {
+  class GarbageCollectionCycles extends Measurer[Int] {
     def name = "Measurer.GarbageCollectionCycles"
 
-    def measure[T, U](context: Context, measurements: Int, setup: T => Any, tear: T => Any, regen: () => T, snippet: T => Any): Seq[Double] = {
+    def measure[T](context: Context, measurements: Int, setup: T => Any,
+      tear: T => Any, regen: () => T, snippet: T => Any): Seq[Quantity[Int]] = {
       var iteration = 0
-      var gcs = List[Double]()
+      val gcs = mutable.ListBuffer.empty[Quantity[Int]]
       var value: T = null.asInstanceOf[T]
       @volatile var count = 0
 
@@ -428,18 +459,17 @@ object Measurer {
         tear(value)
         value = null.asInstanceOf[T]
 
-        gcs = count :: gcs
+        gcs += Quantity(count, "#")
         iteration += 1
       }
 
-      log.verbose("Measurements: " + gcs.reverse.mkString(", "))
-      gcs.reverse
+      log.verbose("Measurements: " + gcs.mkString(", "))
+      gcs.result()
     }
-
-    def units = "#"
   }
 
-  private type Primitive = Boolean with Char with Byte with Short with Int with Long with Float with Double
+  type Primitive = Boolean with Char with Byte
+    with Short with Int with Long with Float with Double
 
   /** Counts autoboxed by a Scala compiler values.
    *
@@ -463,7 +493,9 @@ object Measurer {
       InvocationCountMatcher(
         classMatcher = ClassMatcher.ClassName(classOf[BoxesRunTime]),
         methodMatcher = MethodMatcher.Regex(
-          new Regex(primitives.map(p => s"(${primitiveToBoxedMethod(p)})").mkString("^", "|", "$")).pattern
+          new Regex(primitives.map(p =>
+            s"(${primitiveToBoxedMethod(p)})"
+          ).mkString("^", "|", "$")).pattern
         )
       )
     }
@@ -479,7 +511,9 @@ object Measurer {
       classOf[Short], classOf[Int], classOf[Long], classOf[Float], classOf[Double])
   }
 
-  /** Counts invocations of arbitrary method(s) specified by [[org.scalameter.execution.invocation.InvocationCountMatcher]]. */
+  /** Counts invocations of arbitrary method(s) specified by
+   *  [[org.scalameter.execution.invocation.InvocationCountMatcher]].
+   */
   case class MethodInvocationCount(matcher: InvocationCountMatcher) extends InvocationCount {
     def name: String = "Measurer.MethodInvocationCount"
   }

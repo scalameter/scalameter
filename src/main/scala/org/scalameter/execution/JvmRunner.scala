@@ -18,7 +18,7 @@ final class JvmRunner {
   def run[R](ctx: Context)(body: =>R): Try[R] = {
     serializeInput(() => body)
     runJvm(ctx)
-    readOutput[R]()
+    readOutput[R](ctx)
   }
 
   private def serializeInput[T](config: T) {
@@ -49,10 +49,11 @@ final class JvmRunner {
     command.!
   }
 
-  private def readOutput[R](): Try[R] = {
+  private def readOutput[R](ctx: Context): Try[R] = {
     val fis = new FileInputStream(tmpfile)
     val ois = new ObjectInputStream(fis)
     try {
+      val cl = ctx(Key.finalClasspath)
       val result = ois.readObject()
       result match {
         case SeparateJvmFailure(t) => Failure(t)

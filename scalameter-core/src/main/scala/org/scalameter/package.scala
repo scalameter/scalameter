@@ -1,12 +1,12 @@
 package org
 
-import language.implicitConversions
-import language.postfixOps
-import language.existentials
+import scala.language.implicitConversions
+import scala.language.postfixOps
+import scala.language.existentials
 
 
 
-import collection._
+import scala.collection._
 
 
 package object scalameter extends MeasureBuilder[Unit, Double](
@@ -33,13 +33,6 @@ package object scalameter extends MeasureBuilder[Unit, Double](
 
   def events: Events = dyn.events.value
 
-  /* decorators */
-
-  @deprecated("Use Aggregator.apply", "0.5")
-  implicit def fun2ops(f: Seq[Double] => Double) = new {
-    def toAggregator(n: String) = Aggregator(n)(f)
-  }
-
   /* misc */
 
   import utils.ClassPath
@@ -65,6 +58,6 @@ package object scalameter extends MeasureBuilder[Unit, Double](
 
 package scalameter {
 
-  case class MeasurementData(complete: Seq[Double], success: Boolean) 
+  case class MeasurementData[T](complete: Seq[T], success: Boolean)
   
 }

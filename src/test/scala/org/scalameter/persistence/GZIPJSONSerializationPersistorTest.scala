@@ -15,11 +15,11 @@ class GZIPJSONSerializationPersistorTest extends FunSuite with PersistorTest wit
     }
   }
 
-  test("Should produce data which occupies less than 3kB") {
+  test("Should produce data which occupies less than 3.5kB") {
     executeBenchmark() { persistor =>
       for ((ctx, _) <- persistor.intercepted) {
         val file = persistor.fileFor(ctx)
-        compareSpaceConsumption(file, 3.0)
+        compareSpaceConsumption(file, 3.5)
       }
     }
   }

@@ -4,13 +4,14 @@ package persistence
 
 
 import java.io._
-import Key.reports._
+import org.scalameter.Key.reports._
 
 
 
 /** Serializes [[org.scalameter.History]] to binary format using Java serialization.
   */
-case class SerializationPersistor(path: File) extends IOStreamPersistor[ObjectInputStream, ObjectOutputStream] {
+case class SerializationPersistor(path: File)
+  extends IOStreamPersistor[ObjectInputStream, ObjectOutputStream] {
 
   def this(path: String) = this(new File(path))
 
@@ -18,15 +19,19 @@ case class SerializationPersistor(path: File) extends IOStreamPersistor[ObjectIn
 
   def fileExtension: String = "dat"
 
-  protected def inputStream(file: File): ObjectInputStream = new ObjectInputStream(new FileInputStream(file)) {
+  protected def inputStream(file: File): ObjectInputStream =
+    new ObjectInputStream(new FileInputStream(file)) {
     override def resolveClass(desc: ObjectStreamClass) = Class.forName(desc.getName)
   }
 
-  protected def outputStream(file: File): ObjectOutputStream = new ObjectOutputStream(new FileOutputStream(file))
+  protected def outputStream(file: File): ObjectOutputStream =
+    new ObjectOutputStream(new FileOutputStream(file))
 
-  protected def loadFrom(is: ObjectInputStream): History = is.readObject().asInstanceOf[History]
+  protected def loadFrom[T](is: ObjectInputStream): History[T] =
+    is.readObject().asInstanceOf[History[T]]
 
-  protected def saveTo(history: History, os: ObjectOutputStream): Unit = os.writeObject(history)
+  protected def saveTo[T](history: History[T], os: ObjectOutputStream): Unit =
+    os.writeObject(history)
 }
 
 

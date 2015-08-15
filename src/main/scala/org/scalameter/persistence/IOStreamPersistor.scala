@@ -18,14 +18,14 @@ trait IOStreamPersistor[I <: InputStream, O <: OutputStream] extends Persistor {
 
   protected def outputStream(file: File): O
 
-  protected def loadFrom(is: I): History
+  protected def loadFrom[T](is: I): History[T]
 
-  protected def saveTo(history: History, os: O): Unit
+  protected def saveTo[T](history: History[T], os: O): Unit
 
   protected[scalameter] def fileFor(context: Context) =
     new File(s"$path${File.separator}${context.scope}.${context.curve}.$fileExtension")
 
-  final def load(context: Context): History = {
+  final def load[T](context: Context): History[T] = {
     val file = fileFor(context)
     if (!file.exists || !file.isFile) History(Nil)
     else {
@@ -38,7 +38,7 @@ trait IOStreamPersistor[I <: InputStream, O <: OutputStream] extends Persistor {
     }
   }
 
-  final def save(context: Context, h: History) {
+  final def save[T](context: Context, h: History[T]) {
     path.mkdirs()
     val file = fileFor(context)
     val os = outputStream(file)

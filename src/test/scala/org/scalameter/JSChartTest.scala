@@ -14,7 +14,7 @@ class JSChartTest extends Bench.Regression with Collections {
 
   def persistor = new persistence.SerializationPersistor()
 
-  override def reporter: Reporter = org.scalameter.Reporter.Composite(
+  override def reporter = org.scalameter.Reporter.Composite(
     new RegressionReporter(
       RegressionReporter.Tester.OverlapIntervals(),
       RegressionReporter.Historian.ExponentialBackoff() ),

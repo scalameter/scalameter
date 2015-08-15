@@ -3,29 +3,24 @@ package org.scalameter
 import java.io.File
 import org.scalameter.Key._
 import org.scalameter.execution.invocation.InvocationCountMatcher
-import org.scalameter.execution.invocation.instrumentation.MethodInvocationCounter
-import org.scalameter.execution.invocation.instrumentation.MethodSignature
-import org.scalameter.execution.invocation.instrumentation.Instrumentation
-import org.scalameter.utils.ClassPath
-import scala.collection.Seq
-import scala.collection.mutable
+import org.scalameter.execution.invocation.instrumentation.{Instrumentation, MethodInvocationCounter, MethodSignature}
+import scala.collection.{Seq, mutable}
 
 
 /** Mixin for all [[org.scalameter.Measurer]] implementations that perform any kind of
  *  method invocation counting.
  */
-trait InvocationCount extends Measurer {
+trait InvocationCount extends Measurer[Map[String, Long]] {
   def matcher: InvocationCountMatcher
 
-  def units: String = "#"
-
-  def measure[T, U](context: Context, measurements: Int, setup: (T) => Any,
-    tear: (T) => Any, regen: () => T, snippet: (T) => Any): Seq[Double] = {
-    val invocationsBuilder = mutable.ListBuffer.empty[Double]
+  def measure[T](context: Context, measurements: Int, setup: (T) => Any,
+    tear: (T) => Any, regen: () => T, snippet: (T) => Any):
+  Seq[Quantity[Map[String, Long]]] = {
+    val invocations = mutable.ListBuffer.empty[Quantity[Map[String, Long]]]
     var obj: Any = null.asInstanceOf[Any]
-    val numMethods = context.goe(exec.measurers.methodInvocationLookupTable,
+    val methodTable = context.goe(exec.measurers.methodInvocationLookupTable,
       sys.error("Measurer.prepareContext should be called before Measurer.measure"))
-        .length
+    val numMethods = methodTable.length
 
     def measureSnippet(value: T): Any = {
       MethodInvocationCounter.setup(numMethods)
@@ -36,14 +31,19 @@ trait InvocationCount extends Measurer {
       MethodInvocationCounter.stop()
       tear(value)
 
-      invocationsBuilder += MethodInvocationCounter.counts.sum
+      invocations += Quantity(
+        methodTable.map(_.toString).zip(MethodInvocationCounter.counts())
+          .groupBy(_._1).map { case (k, v) =>
+          k -> v.iterator.map(_._2).sum
+        }(collection.breakOut), "#"
+      )
       obj
     }
 
     if (context(exec.assumeDeterministicRun)) {
       obj = measureSnippet(regen())
-      val count = invocationsBuilder.head
-      invocationsBuilder ++= List.fill(measurements - 1)(count)
+      val count = invocations.head
+      invocations ++= List.fill(measurements - 1)(count)
     } else {
       var iteration = 0
       while (iteration < measurements) {
@@ -52,17 +52,16 @@ trait InvocationCount extends Measurer {
       }
     }
 
-    val invocations = invocationsBuilder.result()
     log.verbose("Measurements: " + invocations.mkString(", "))
-    invocations
+    invocations.result()
   }
 
   override def usesInstrumentedClasspath: Boolean = true
 
   /** Creates the [[Key.exec.measurers.instrumentedJarPath]] with an abstract temporary
    *  file, the [[Key.exec.measurers.methodInvocationLookupTable]] with an empty
-   *  [[scala.collection.mutable.AbstractBuffer]], and the [[Key.finalClasspath]] with a
-   *  classpath that consists of an instrumented jar and the [[Key.classpath]].
+   *  [[scala.collection.mutable.AbstractBuffer]], and the [[Key.finalClasspath]]
+   *  with a classpath that consists of an instrumented jar and the [[Key.classpath]].
    *
    *  @param context [[org.scalameter.Context]] that should the setup tree context
    */

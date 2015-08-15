@@ -27,18 +27,18 @@ object api extends Keys {
   type Context = org.scalameter.Context
   val Context = org.scalameter.Context
 
-  type Bench = org.scalameter.Bench
+  type Bench[T] = org.scalameter.Bench[T]
   val Bench = org.scalameter.Bench
 
   @deprecated("Please use Bench instead", "0.7")
-  type PerformanceTest = org.scalameter.Bench
+  type PerformanceTest[T] = org.scalameter.Bench[T]
   @deprecated("Please use Bench instead", "0.7")
   val PerformanceTest = org.scalameter.Bench
 
-  type Executor = org.scalameter.Executor
+  type Executor[T] = org.scalameter.Executor[T]
   val Executor = org.scalameter.Executor
 
-  type Reporter = org.scalameter.Reporter
+  type Reporter[T] = org.scalameter.Reporter[T]
   val Reporter = org.scalameter.Reporter
 
   type Persistor = org.scalameter.Persistor
@@ -54,23 +54,23 @@ object api extends Keys {
   val Measurer = org.scalameter.Measurer
 
   type Warmer = org.scalameter.Warmer
-  type Measurer = org.scalameter.Measurer
+  type Measurer[T] = org.scalameter.Measurer[T]
 
   /* reporting */
 
-  type ChartReporter = reporting.ChartReporter
+  type ChartReporter[T] = reporting.ChartReporter[T]
   val ChartReporter = reporting.ChartReporter
 
-  type HtmlReporter = reporting.HtmlReporter
+  type HtmlReporter[T] = reporting.HtmlReporter[T]
   val HtmlReporter = reporting.HtmlReporter
 
-  type LoggingReporter = reporting.LoggingReporter
+  type LoggingReporter[T] = reporting.LoggingReporter[T]
   val LoggingReporter = reporting.LoggingReporter
 
-  type RegressionReporter = reporting.RegressionReporter
+  type RegressionReporter[T] = reporting.RegressionReporter[T]
   val RegressionReporter = reporting.RegressionReporter
 
-  type DsvReporter = reporting.DsvReporter
+  type DsvReporter[T] = reporting.DsvReporter[T]
   val DsvReporter = reporting.DsvReporter
 
   val Tester = reporting.RegressionReporter.Tester

@@ -3,18 +3,19 @@ package sctest
 
 
 import org.scalameter.api._
+import org.scalameter.picklers.Implicits._
+import org.scalameter.picklers.Pickler
 
 
 
 object RangeBenchmark
-extends PerformanceTest {
-
+extends Bench[Double] {
   /* configuration */
 
   lazy val measurer = new Measurer.Default
 
-  lazy val executor = SeparateJvmsExecutor(Warmer.Default(), Aggregator.min, measurer)
-  lazy val reporter = ChartReporter(ChartFactory.XYLine())
+  lazy val executor = SeparateJvmsExecutor(Warmer.Default(), Aggregator.min[Double], measurer)
+  lazy val reporter = ChartReporter[Double](ChartFactory.XYLine())
   lazy val persistor = Persistor.None
 
   /* inputs */
@@ -38,7 +39,7 @@ extends PerformanceTest {
 
 
 object RangeBenchmark0
-extends PerformanceTest.Quick {
+extends Bench.Quick {
 
   /* configuration */
 
@@ -63,14 +64,13 @@ extends PerformanceTest.Quick {
 
 
 object RangeBenchmark1
-extends PerformanceTest {
-
+extends Bench[Double] {
   /* configuration */
 
   lazy val measurer = new Measurer.Default
 
-  lazy val executor = SeparateJvmsExecutor(Warmer.Default(), Aggregator.min, measurer)
-  lazy val reporter = new LoggingReporter
+  lazy val executor = SeparateJvmsExecutor(Warmer.Default(), Aggregator.min[Double], measurer)
+  lazy val reporter = new LoggingReporter[Double]
   lazy val persistor = Persistor.None
 
   /* inputs */

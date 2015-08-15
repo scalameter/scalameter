@@ -31,7 +31,7 @@ trait PersistorTest { this: Matchers =>
     total should be < maxValue
   }
 
-  def compareHistory(actual: History, expected: History): Unit = {
+  def compareHistory(actual: History[_], expected: History[_]): Unit = {
     actual.results.size should === (expected.results.size)
     actual.results.zip(expected.results).foreach { case (actualR, expectedR) =>
       actualR._1 should equal (expectedR._1)

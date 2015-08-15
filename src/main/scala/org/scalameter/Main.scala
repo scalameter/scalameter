@@ -22,7 +22,7 @@ object Main {
       import configuration._
       // schedule benchmarks
       val testResults = for (benchname <- benches) yield {
-        val bench = Class.forName(benchname).newInstance.asInstanceOf[DSL]
+        val bench = Class.forName(benchname).newInstance.asInstanceOf[DSL[_]]
         bench.executeTests()
       }
 

@@ -2,16 +2,14 @@ package org.scalameter
 
 
 
-import collection._
+import scala.collection._
 
 
 
-class RegressionSeqTest extends SeqTesting with Bench.Regression
+class RegressionSeqTest extends Bench.OnlineRegressionReport with SeqTesting
 
 
-abstract class SeqTesting extends Bench {
-
-  def persistor = new persistence.SerializationPersistor()
+trait SeqTesting { this: Bench[Double] =>
 
   /* data */
 
