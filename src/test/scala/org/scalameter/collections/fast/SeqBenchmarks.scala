@@ -9,7 +9,7 @@ import Key._
 
 
 
-class SeqBenchmarks extends PerformanceTest.Regression with Collections {
+class SeqBenchmarks extends Bench.Regression with Collections {
 
   def persistor = new persistence.SerializationPersistor()
 

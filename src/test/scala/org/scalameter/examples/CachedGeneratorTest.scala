@@ -9,12 +9,12 @@ import org.scalameter.picklers.Implicits._
 
 
 
-class CachedGeneratorTest extends PerformanceTest.OfflineRegressionReport {
+class CachedGeneratorTest extends Bench.OfflineRegressionReport {
 
   val sizes = Gen.range("size")(100000000, 500000000, 200000000)
   val parallelismLevels = Gen.enumeration("parallelismLevel")(1, 2, 4, 8)
   val pools = (for (par <- parallelismLevels) yield new collection.parallel.ForkJoinTaskSupport(new concurrent.forkjoin.ForkJoinPool(par))).cached
-  val inputs = Gen.tupled(sizes, pools)
+  val inputs = Gen.crossProduct(sizes, pools)
 
   performance of "foreach" in {
     performance of "ParRange" in {

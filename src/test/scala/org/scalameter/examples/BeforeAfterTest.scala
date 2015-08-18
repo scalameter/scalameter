@@ -8,7 +8,7 @@ import Key._
 
 
 
-class BeforeAfterTest extends PerformanceTest.OfflineRegressionReport {
+class BeforeAfterTest extends Bench.OfflineRegressionReport {
 
   val sizes = Gen.range("size")(1000000, 5000000, 2000000)
 

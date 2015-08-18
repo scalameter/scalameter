@@ -38,7 +38,7 @@ extends PerformanceTest {
 
 
 object RangeBenchmark0
-extends PerformanceTest.Quickbenchmark {
+extends PerformanceTest.Quick {
 
   /* configuration */
 

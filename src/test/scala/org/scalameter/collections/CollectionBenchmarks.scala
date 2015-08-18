@@ -6,7 +6,7 @@ package collections
 
 
 
-class CollectionBenchmarks extends PerformanceTest.Regression {
+class CollectionBenchmarks extends Bench.Regression {
 
   def persistor = new persistence.SerializationPersistor
 

@@ -100,4 +100,14 @@ class PicklerSpecification extends FunSuite with PropertyChecks with Matchers {
       validatePickler(ClassPath(o.map(s => new File(s.replaceAll(s""""|${File.pathSeparatorChar}""", "")))))
     }
   }
+
+  test("Enum pickling") {
+    forAll { o: TestEnum1 =>
+      validatePickler(o)
+    }
+
+    forAll { o: TestEnum2 =>
+      validatePickler(o)
+    }
+  }
 }

@@ -29,3 +29,25 @@ object DatePickler extends Pickler[Date] {
     (new Date(obj), pos)
   }
 }
+
+object EnumPickler extends Pickler[java.lang.Enum[_]] {
+  def pickle(x: Enum[_]): Array[Byte] = {
+    val enumClazz = x.getDeclaringClass.getName
+    val enumName = x.name()
+    val buffer = ByteBuffer.allocate(
+      IntPickler.numBytes + enumClazz.length + IntPickler.numBytes + enumName.length
+    )
+    buffer.put(StringPickler.pickle(enumClazz))
+    buffer.put(StringPickler.pickle(enumName))
+    buffer.array()
+  }
+
+  def unpickle(a: Array[Byte], from: Int): (Enum[_], Int) = {
+    val (className, newFrom) = StringPickler.unpickle(a, from)
+    val (enumName, pos) = StringPickler.unpickle(a, newFrom)
+    val enumClass = Class.forName(className).asInstanceOf[Class[Enum[_]]]
+    val enum = enumClass.getEnumConstants.find(_.toString == enumName)
+      .getOrElse(sys.error("Corrupted stream. Expected java enum."))
+    (enum, pos)
+  }
+}
