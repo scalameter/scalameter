@@ -3,13 +3,13 @@ package reporting
 
 
 
-import utils.Tree
+import org.scalameter.utils.Tree
 
 
 
-case class LoggingReporter() extends Reporter {
+case class LoggingReporter[T]() extends Reporter[T] {
 
-  def report(result: CurveData, persistor: Persistor) {
+  def report(result: CurveData[T], persistor: Persistor) {
     // output context
     log(s"::Benchmark ${result.context.scope}::")
     for ((key, value) <- result.context.properties.filterKeys(Context.machine.properties.keySet.contains).toSeq.sortBy(_._1)) {
@@ -25,7 +25,7 @@ case class LoggingReporter() extends Reporter {
     log("")
   }
 
-  def report(result: Tree[CurveData], persistor: Persistor) = true
+  def report(result: Tree[CurveData[T]], persistor: Persistor) = true
 
 }
 

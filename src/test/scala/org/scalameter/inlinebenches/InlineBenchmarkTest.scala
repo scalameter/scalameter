@@ -42,7 +42,7 @@ class InlineBenchmarkTest extends FunSuite {
   test("Should correctly measure gc cycles") {
     val gc = config(
       Key.exec.benchRuns -> 30
-    ) withMeasurer(new Measurer.GarbageCollectionCycles) measure {
+    ) withMeasurer(new Measurer.GarbageCollectionCycles, Aggregator.median[Int]) measure {
       for (i <- 0 until 15000000) yield i
     }
     println(s"Total gcs: $gc")

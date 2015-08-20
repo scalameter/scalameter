@@ -2,13 +2,21 @@ package org.scalameter
 
 
 import java.util.Date
+import org.scalameter.picklers.Pickler
 import org.scalameter.utils.Tree
+import scala.language.existentials
 import scala.util.DynamicVariable
 
 
 
-abstract class BasePerformanceTest {
+/** Abstract required for the [[org.scalameter.ScalaMeterFramework]] to find all performance tests.
+ */
+sealed trait AbstractPerformanceTest {
+  def executeTests(): Boolean
+}
 
+abstract class BasePerformanceTest[U] extends AbstractPerformanceTest {
+  
   import BasePerformanceTest._
 
   setupzipper.value = Tree.Zipper.root[Setup[_]](measurer.prepareContext(currentContext ++ defaultConfig))
@@ -77,11 +85,11 @@ abstract class BasePerformanceTest {
 
   /** The optional executor assigned to a particular body of DSL code.
    */
-  def executor: Executor
+  def executor: Executor[U]
 
-  def measurer: Measurer
+  def measurer: Measurer[U]
 
-  def reporter: Reporter
+  def reporter: Reporter[U]
 
   def persistor: Persistor
 }

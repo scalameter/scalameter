@@ -1,50 +1,50 @@
 package org.scalameter
 
 
+import org.scalameter.picklers.Pickler
 import org.scalameter.utils.Tree
+import scala.language.higherKinds
 
 
 
-trait Executor {
+trait Executor[V] {
 
-  def measurer: Measurer
+  def measurer: Measurer[V]
 
   def warmer: Warmer
 
-  def run[T](setuptree: Tree[Setup[T]], reporter: Reporter, persistor: Persistor): Tree[CurveData] = {
+  def run[T](setuptree: Tree[Setup[T]], reporter: Reporter[V],
+    persistor: Persistor): Tree[CurveData[V]] = {
     for (setup <- setuptree) yield {
-      val exec = Option(setup.customExecutor).getOrElse(this)
-      val cd = exec.runSetup(setup)
+      val cd = runSetup(setup)
       reporter.report(cd, persistor)
       cd
     }
   }
 
-  def runSetup[T](setup: Setup[T]): CurveData
+  def runSetup[T](setup: Setup[T]): CurveData[V]
 
 }
 
 
 object Executor {
 
-  import Key._
-
   type Warmer = org.scalameter.Warmer
-  type Measurer = org.scalameter.Measurer
+  type Measurer[T] = org.scalameter.Measurer[T]
 
   val Warmer = org.scalameter.Warmer
   val Measurer = org.scalameter.Measurer
 
-  object None extends Executor {
-    def measurer: Measurer = ???
+  def None[U] = new Executor[U] {
+    def measurer: Measurer[U] = ???
 
     def warmer: Warmer = ???
 
-    def runSetup[T](setup: Setup[T]): CurveData = ???
+    def runSetup[T](setup: Setup[T]): CurveData[U] = ???
   }
 
-  trait Factory[E <: Executor] {
-    def apply(warmer: Warmer, aggregator: Aggregator, m: Measurer): E
+  trait Factory[E[_] <: Executor[_]] {
+    def apply[T: Pickler: PrettyPrinter](warmer: Warmer, aggregator: Aggregator[T], m: Measurer[T]): E[T]
   }
   
 }

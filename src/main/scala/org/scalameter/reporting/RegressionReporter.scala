@@ -4,33 +4,35 @@ package reporting
 
 
 import java.util.Date
-import collection._
-import utils.Tree
-import utils.Statistics._
+import scala.collection._
+import scala.Numeric.Implicits._
+import org.scalameter.utils.Tree
+import org.scalameter.utils.Statistics._
 
 
 
-case class RegressionReporter(test: RegressionReporter.Tester, historian: RegressionReporter.Historian) extends Reporter {
+case class RegressionReporter[T: Numeric](test: RegressionReporter.Tester,
+  historian: RegressionReporter.Historian) extends Reporter[T] {
   import RegressionReporter.ansi
 
-  private val historyCache = mutable.Map[Context, History]()
+  private val historyCache = mutable.Map[Context, History[T]]()
 
   def loadHistory(ctx: Context, persistor: Persistor) = historyCache.get(ctx) match {
     case Some(h) => h
     case None =>
-      val h = persistor.load(ctx)
+      val h = persistor.load[T](ctx)
       historyCache.put(ctx, h)
       h
   }
 
-  def report(curvedata: CurveData, persistor: Persistor) {
+  def report(curvedata: CurveData[T], persistor: Persistor) {
     val ctx = curvedata.context
     val history = loadHistory(ctx, persistor)
     val corresponding = if (history.curves.nonEmpty) history.curves else Seq(curvedata)
     test(ctx, curvedata, corresponding)
   }
 
-  def report(results: Tree[CurveData], persistor: Persistor) = {
+  def report(results: Tree[CurveData[T]], persistor: Persistor) = {
     log("")
     log(s"${ansi.green}:::Summary of regression test results - $test:::${ansi.reset}")
 
@@ -55,7 +57,7 @@ case class RegressionReporter(test: RegressionReporter.Tester, historian: Regres
 
       log("")
 
-      val allpassed = testedcurves.forall(_.measurements.forall(_.success))
+      val allpassed = testedcurves.forall(_.success)
       if (allpassed) events.emit(Event(context.scope, "Test succeeded", Events.Success, null))
       else events.emit(Event(context.scope, "Test failed", Events.Failure, null))
 
@@ -93,7 +95,7 @@ object RegressionReporter {
     /** Given an old history and the latest curve and its date, returns a new history,
      *  possibly discarding some of the entries.
      */
-    def bookkeep(ctx: Context, h: History, newest: CurveData, d: Date): History
+    def bookkeep[T](ctx: Context, h: History[T], newest: CurveData[T], d: Date): History[T]
   }
 
   object Historian {
@@ -101,13 +103,14 @@ object RegressionReporter {
     /** Preserves all historic results.
      */
     case class Complete() extends Historian {
-      def bookkeep(ctx: Context, h: History, newest: CurveData, d: Date) = History(h.results :+ ((d, ctx, newest)))
+      def bookkeep[T](ctx: Context, h: History[T], newest: CurveData[T], d: Date) =
+        History(h.results :+ ((d, ctx, newest)))
     }
 
     /** Preserves only last `size` results.
      */
     case class Window(size: Int) extends Historian {
-      def bookkeep(ctx: Context, h: History, newest: CurveData, d: Date) = {
+      def bookkeep[T](ctx: Context, h: History[T], newest: CurveData[T], d: Date) = {
         val newseries = h.results :+ ((d, ctx, newest))
         val prunedhistory = h.copy(results = newseries.takeRight(size))
         prunedhistory
@@ -119,7 +122,8 @@ object RegressionReporter {
      */
     case class ExponentialBackoff() extends Historian {
 
-      def push(series: Seq[History.Entry], indices: Seq[Long], newest: History.Entry): History = {
+      def push[T](series: Seq[History.Entry[T]], indices: Seq[Long],
+        newest: History.Entry[T]): History[T] = {
         val entries = series.reverse zip indices
         val sizes = Stream.from(0).map(1L << _).scanLeft(0L)(_ + _)
         val buckets = sizes zip sizes.tail
@@ -137,7 +141,7 @@ object RegressionReporter {
         History(newentries.toBuffer.reverse :+ newest, immutable.Map(reports.regression.timeIndices -> (1L +: newindices.toBuffer)))
       }
 
-      def push(h: History, newest: History.Entry): History = {
+      def push[T](h: History[T], newest: History.Entry[T]): History[T] = {
         log.verbose("Pushing to history with info: " + h.infomap)
 
         val indices = h.info[Seq[Long]](reports.regression.timeIndices, (0 until h.results.length) map { 1L << _ })
@@ -148,7 +152,8 @@ object RegressionReporter {
         newhistory
       }
 
-      def bookkeep(ctx: Context, h: History, newest: CurveData, d: Date) = push(h, (d, ctx, newest))
+      def bookkeep[T](ctx: Context, h: History[T], newest: CurveData[T], d: Date) =
+        push(h, (d, ctx, newest))
     }
 
   }
@@ -161,11 +166,12 @@ object RegressionReporter {
      *  of the latest curve, such that if any of the tests fail, the new sequence of curves will have the
      *  `success` field set to `false` for those measurements that are considered to fail the test.
      */
-    def apply(context: Context, curvedata: CurveData, corresponding: Seq[CurveData]): CurveData
+    def apply[T: Numeric](context: Context, curvedata: CurveData[T], corresponding: Seq[CurveData[T]]): CurveData[T]
 
     /** Returns a confidence interval for a given set of observations.
      */
-    def confidenceInterval(ctx: Context, alt: Seq[Double]): (Double, Double) = sys.error("Confidence intervals can only be computed by testers which use them.")
+    def confidenceInterval[T: Numeric](ctx: Context, alt: Seq[T]): (Double, Double) =
+      sys.error("Confidence intervals can only be computed by testers which use them.")
   }
 
   object Tester {
@@ -175,13 +181,14 @@ object RegressionReporter {
     case class Accepter() extends Tester {
       def cistr(ci: (Double, Double), units: String) = f"<${ci._1}%.2f $units, ${ci._2}%.2f $units>"
 
-      def apply(context: Context, curvedata: CurveData, corresponding: Seq[CurveData]): CurveData = {
+      def apply[T: Numeric](context: Context, curvedata: CurveData[T],
+        corresponding: Seq[CurveData[T]]): CurveData[T] = {
         log(s"${ansi.green}- ${context.scope}.${curvedata.context.curve} measurements:${ansi.reset}")
 
         for (measurement <- curvedata.measurements) {
           val color = ansi.green
           val passed = "passed"
-          val mean = measurement.complete.sum / measurement.complete.size
+          val mean = measurement.complete.sum.toDouble() / measurement.complete.size
           val means = f"$mean%.2f ${measurement.units}"
           val ci = confidenceInterval(context, measurement.complete)
           val cis = cistr(ci, measurement.units)
@@ -193,10 +200,12 @@ object RegressionReporter {
         curvedata
       }
 
-      override def confidenceInterval(context: Context, alt: Seq[Double]): (Double, Double) = {
+      override def confidenceInterval[T: Numeric](context: Context,
+        alt: Seq[T]): (Double, Double) = {
         val significance = context(reports.regression.significance)
 
-        val citest = ConfidenceIntervalTest(true, alt, alt, significance)
+        val citest = ConfidenceIntervalTest(true, alt.map(_.toDouble()),
+          alt.map(_.toDouble()), significance)
         citest.ci1
       }
     }
@@ -204,7 +213,8 @@ object RegressionReporter {
     /** Applies analysis of variance to determine whether some test is statistically different.
      */
     case class ANOVA() extends Tester {
-      def apply(context: Context, curvedata: CurveData, corresponding: Seq[CurveData]): CurveData = {
+      def apply[T: Numeric](context: Context, curvedata: CurveData[T],
+        corresponding: Seq[CurveData[T]]): CurveData[T] = {
         log(s"${ansi.green}- ${context.scope}.${curvedata.context.curve} measurements:${ansi.reset}")
 
         val significance = curvedata.context(reports.regression.significance)
@@ -216,14 +226,15 @@ object RegressionReporter {
           val units = measurement.units
           val alternatives = measurementtable(measurement.params).filter(_.success).map(_.complete)
           try {
-            val ftest = ANOVAFTest(alternatives, significance)
+            val ftest = ANOVAFTest(alternatives.map(_.map(_.toDouble())), significance)
             val color = if (ftest) ansi.green else ansi.red
             val passed = if (ftest) "passed" else "failed"
 
             log(s"$color  - at ${measurement.params.axisData.mkString(", ")}, ${alternatives.size} alternatives: $passed${ansi.reset}")
             log(f"$color    (SSA: ${ftest.ssa}%.2f, SSE: ${ftest.sse}%.2f, F: ${ftest.F}%.2f, qf: ${ftest.quantile}%.2f, significance: $significance)${ansi.reset}")
             if (!ftest) {
-              def logalt(a: Seq[Double], units: String) = log(s"$color      ${a.map(_ + units).mkString(", ")}${ansi.reset}")
+              def logalt(a: Seq[T], units: String) =
+                log(s"$color      ${a.map(_.toString + units).mkString(", ")}${ansi.reset}")
               log(s"$color    History:")
               for (a <- alternatives.init) logalt(a, units)
               log(s"$color    Latest:")
@@ -244,19 +255,23 @@ object RegressionReporter {
     }
 
     case class ConfidenceIntervals(strict: Boolean = false) extends Tester {
+      import scala.Numeric.Implicits._
+
       def cistr(ci: (Double, Double), units: String) = f"<${ci._1}%.2f $units, ${ci._2}%.2f $units>"
 
-      def single(previous: Measurement, latest: Measurement, sig: Double): Measurement = {
+      def single[T: Numeric](previous: Measurement[T],
+        latest: Measurement[T], sig: Double): Measurement[T] = {
         try {
-          val citest = ConfidenceIntervalTest(strict, previous.complete, latest.complete, sig)
+          val citest = ConfidenceIntervalTest(strict, previous.complete.map(_.toDouble()),
+            latest.complete.map(_.toDouble()), sig)
           val units = latest.units
           
           if (!citest) {
             val color = ansi.red
             val ciprev = cistr(citest.ci1, units)
             val cilate = cistr(citest.ci2, units)
-            val prevform = previous.complete.map(v => f"$v%.2f")
-            val lateform = latest.complete.map(v => f"$v%.2f")
+            val prevform = previous.complete.map(v => f"${v.toDouble()}%.2f")
+            val lateform = latest.complete.map(v => f"${v.toDouble()}%.2f")
             log.error(
               f"$color      Failed confidence interval test: <${citest.ci._1}%.2f $units, ${citest.ci._2}%.2f $units> ${ansi.reset}\n" +
               f"$color      Previous (mean = ${citest.m1}%.2f $units, stdev = ${citest.s1}%.2f $units, ci = $ciprev): ${prevform.mkString(", ")}${ansi.reset}\n" +
@@ -271,20 +286,22 @@ object RegressionReporter {
         }
       }
 
-      def multiple(context: Context, previouss: Seq[Measurement], latest: Measurement): Measurement = {
+      def multiple[T: Numeric](context: Context, previouss: Seq[Measurement[T]],
+        latest: Measurement[T]): Measurement[T] = {
         val sig = context(reports.regression.significance)
         val tests = for (previous <- previouss if previous.success) yield single(previous, latest, sig)
         val allpass = tests.forall(_.success)
         val color = if (allpass) ansi.green else ansi.red
         val passed = if (allpass) "passed" else "failed"
-        val ci = confidenceInterval(context, latest.complete)
+        val ci = confidenceInterval(context, latest.complete.map(_.toDouble()))
         val cis = cistr(ci, latest.units)
         log(s"$color  - at ${latest.params.axisData.mkString(", ")}, ${previouss.size} alternatives: $passed${ansi.reset}")
         log(s"$color    (ci = $cis, significance = $sig)${ansi.reset}")
         tests.find(!_.success).getOrElse(latest)
       }
 
-      def apply(context: Context, curvedata: CurveData, corresponding: Seq[CurveData]): CurveData = {
+      def apply[T: Numeric](context: Context, curvedata: CurveData[T],
+        corresponding: Seq[CurveData[T]]): CurveData[T] = {
         log(s"${ansi.green}- ${context.scope}.${curvedata.context.curve} measurements:${ansi.reset}")
 
         val previousmeasurements = corresponding map (_.measurements)
@@ -298,28 +315,34 @@ object RegressionReporter {
         curvedata.copy(measurements = newmeasurements)
       }
 
-      override def confidenceInterval(context: Context, alt: Seq[Double]): (Double, Double) = {
+      override def confidenceInterval[T: Numeric](context: Context,
+        alt: Seq[T]): (Double, Double) = {
         val significance = context(reports.regression.significance)
 
-        val citest = ConfidenceIntervalTest(strict, alt, alt, significance)
+        val citest = ConfidenceIntervalTest(strict, alt.map(_.toDouble()),
+          alt.map(_.toDouble()), significance)
         citest.ci1
       }
     }
 
     case class OverlapIntervals() extends Tester {
+      import scala.Numeric.Implicits._
+
       def cistr(ci: (Double, Double), units: String) = f"<${ci._1}%.2f $units, ${ci._2}%.2f $units>"
 
-      def single(previous: Measurement, latest: Measurement, sig: Double, noiseMagnitude: Double): Measurement = {
+      def single[T: Numeric](previous: Measurement[T], latest: Measurement[T],
+        sig: Double, noiseMagnitude: Double): Measurement[T] = {
         try {
-          val citest = OverlapTest(previous.complete, latest.complete, sig, noiseMagnitude)
+          val citest = OverlapTest(previous.complete.map(_.toDouble()),
+            latest.complete.map(_.toDouble()), sig, noiseMagnitude)
           val units = latest.units
           
           if (!citest) {
             val color = ansi.red
             val ciprev = cistr(citest.ci1, units)
             val cilate = cistr(citest.ci2, units)
-            val prevform = previous.complete.map(v => f"$v%.2f")
-            val lateform = latest.complete.map(v => f"$v%.2f")
+            val prevform = previous.complete.map(v => f"${v.toDouble()}%.2f")
+            val lateform = latest.complete.map(v => f"${v.toDouble()}%.2f")
             val msg = {
               f"$color      Failed overlap interval test. ${ansi.reset}\n" +
               f"$color      Previous (mean = ${citest.m1}%.2f $units, stdev = ${citest.s1}%.2f $units, ci = $ciprev): ${prevform.mkString(", ")}${ansi.reset}\n" +
@@ -335,21 +358,23 @@ object RegressionReporter {
         }
       }
 
-      def multiple(context: Context, previouss: Seq[Measurement], latest: Measurement): Measurement = {
+      def multiple[T: Numeric](context: Context, previouss: Seq[Measurement[T]],
+        latest: Measurement[T]): Measurement[T] = {
         val sig = context(reports.regression.significance)
         val noiseMagnitude = context(Key.reports.regression.noiseMagnitude)
         val tests = for (previous <- previouss if previous.success) yield single(previous, latest, sig, noiseMagnitude)
         val allpass = tests.forall(_.success)
         val color = if (allpass) ansi.green else ansi.red
         val passed = if (allpass) "passed" else "failed"
-        val ci = confidenceInterval(context, latest.complete)
+        val ci = confidenceInterval(context, latest.complete.map(_.toDouble()))
         val cis = cistr(ci, latest.units)
         log(s"$color  - at ${latest.params.axisData.mkString(", ")}, ${previouss.size} alternatives: $passed${ansi.reset}")
         log(s"$color    (ci = $cis, significance = $sig)${ansi.reset}")
         tests.find(!_.success).getOrElse(latest)
       }
 
-      def apply(context: Context, curvedata: CurveData, corresponding: Seq[CurveData]): CurveData = {
+      def apply[T: Numeric](context: Context, curvedata: CurveData[T],
+        corresponding: Seq[CurveData[T]]): CurveData[T] = {
         log(s"${ansi.green}- ${context.scope}.${curvedata.context.curve} measurements:${ansi.reset}")
 
         val previousmeasurements = corresponding map (_.measurements)
@@ -363,11 +388,12 @@ object RegressionReporter {
         curvedata.copy(measurements = newmeasurements)
       }
 
-      override def confidenceInterval(context: Context, alt: Seq[Double]): (Double, Double) = {
+      override def confidenceInterval[T: Numeric](context: Context,
+        alt: Seq[T]): (Double, Double) = {
         val significance = context(reports.regression.significance)
         val noisemag = context(Key.reports.regression.noiseMagnitude)
 
-        val test = OverlapTest(alt, alt, significance, noisemag)
+        val test = OverlapTest(alt.map(_.toDouble()), alt.map(_.toDouble()), significance, noisemag)
         test.ci1
       }
     }

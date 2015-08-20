@@ -8,23 +8,31 @@ package org.scalameter
 class MeasureBuilder[T, U](
   val ctx: Context,
   val warmer: Warmer,
-  val measurer: Measurer,
+  val measurer: Measurer[U],
   val regen: () => T,
   val setup: T => Unit,
   val teardown: T => Unit,
-  val resultFunction: Seq[Double] => U
+  val resultFunction: Seq[Quantity[U]] => Quantity[U]
 ) {
-  def config(kvs: KeyValue*) = new MeasureBuilder(ctx ++ Context(kvs: _*), warmer, measurer, regen, setup, teardown, resultFunction)
+  def config(kvs: KeyValue*) = new MeasureBuilder(ctx ++ Context(kvs: _*), warmer,
+    measurer, regen, setup, teardown, resultFunction)
 
-  def withWarmer(w: Warmer) = new MeasureBuilder(ctx, w, measurer, regen, setup, teardown, resultFunction)
+  def withWarmer(w: Warmer) =
+    new MeasureBuilder(ctx, w, measurer, regen, setup, teardown, resultFunction)
 
-  def withMeasurer(m: Measurer) = new MeasureBuilder(ctx, warmer, m, regen, setup, teardown, resultFunction)
+  def withMeasurer(m: Measurer[U]) =
+    new MeasureBuilder(ctx, warmer, m, regen, setup, teardown, resultFunction)
 
-  def setUp(b: T => Unit) = new MeasureBuilder(ctx, warmer, measurer, regen, b, teardown, resultFunction)
+  def withMeasurer[V, M <: Measurer[V]](m: M, a: Seq[Quantity[V]] => Quantity[V]) =
+    new MeasureBuilder(ctx, warmer, m, regen, setup, teardown, a)
 
-  def tearDown(b: T => Unit) = new MeasureBuilder(ctx, warmer, measurer, regen, setup, b, resultFunction)
+  def setUp(b: T => Unit) =
+    new MeasureBuilder(ctx, warmer, measurer, regen, b, teardown, resultFunction)
 
-  def measureWith[S](b: T => S): U = {
+  def tearDown(b: T => Unit) =
+    new MeasureBuilder(ctx, warmer, measurer, regen, setup, b, resultFunction)
+
+  def measureWith[S](b: T => S): Quantity[U] = {
     val oldctx = dyn.currentContext.value
     try {
       dyn.currentContext.value = ctx
@@ -38,7 +46,7 @@ class MeasureBuilder[T, U](
   
       if (ctx(Key.exec.requireGC)) compat.Platform.collectGarbage()
   
-      val measurements = measurer.measure[T, U](
+      val measurements = measurer.measure[T](
         ctx, ctx(Key.exec.benchRuns),
         setup, teardown, regen, b
       )
@@ -49,7 +57,7 @@ class MeasureBuilder[T, U](
     }
   }
 
-  def measure[S](b: =>S): U = {
+  def measure[S](b: =>S): Quantity[U] = {
     measureWith(_ => b)
   }
 }
@@ -58,15 +66,6 @@ class MeasureBuilder[T, U](
 object MeasureBuilder {
   val doNothing = (u: Unit) => {}
   val unitRegen = () => {}
-  val average: Seq[Double] => Double = ms => {
-    var i = 0
-    var sum = 0.0
-    while (i < ms.length) {
-      sum += ms(i)
-      i += 1
-    }
-    sum / ms.length
-  }
-
+  val average = Aggregator.average
   val timeMeasurer = new Measurer.Default
 }

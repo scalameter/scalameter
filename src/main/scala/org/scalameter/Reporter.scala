@@ -2,26 +2,25 @@ package org.scalameter
 
 
 
-import collection._
-import utils.Tree
+import org.scalameter.utils.Tree
 
 
 
-trait Reporter extends Serializable {
-  def report(result: CurveData, persistor: Persistor): Unit
-  def report(results: Tree[CurveData], persistor: Persistor): Boolean
+trait Reporter[T] extends Serializable {
+  def report(result: CurveData[T], persistor: Persistor): Unit
+  def report(results: Tree[CurveData[T]], persistor: Persistor): Boolean
 }
 
 
 object Reporter {
-  object None extends Reporter {
-    def report(result: CurveData, persistor: Persistor) {}
-    def report(results: Tree[CurveData], persistor: Persistor) = true
+  def None[T] = new Reporter[T] {
+    def report(result: CurveData[T], persistor: Persistor) {}
+    def report(results: Tree[CurveData[T]], persistor: Persistor) = true
   }
 
-  case class Composite(rs: Reporter*) extends Reporter {
-    def report(result: CurveData, persistor: Persistor) = for (r <- rs) r.report(result, persistor)
-    def report(results: Tree[CurveData], persistor: Persistor) = {
+  case class Composite[T](rs: Reporter[T]*) extends Reporter[T] {
+    def report(result: CurveData[T], persistor: Persistor) = for (r <- rs) r.report(result, persistor)
+    def report(results: Tree[CurveData[T]], persistor: Persistor) = {
       val oks = for (r <- rs) yield r.report(results, persistor)
       oks.forall(_ == true)
     }

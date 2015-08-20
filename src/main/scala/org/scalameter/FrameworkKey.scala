@@ -8,7 +8,7 @@ import org.scalameter.picklers.noPickler._
 object FrameworkKey extends KeyContainer("", null) {
 
   object dsl extends KeyContainer("dsl", FrameworkKey.this) {
-    lazy val executor = Key[Executor]("executor")
+    lazy val executor = Key[Executor[_]]("executor")
   }
 
 }

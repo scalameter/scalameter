@@ -6,15 +6,15 @@ package org.scalameter
 
 
 trait Persistor {
-  def load(context: Context): History
-  def save(context: Context, h: History): Unit
+  def load[T](context: Context): History[T]
+  def save[T](context: Context, h: History[T]): Unit
 }
 
 
 object Persistor {
   object None extends Persistor {
-    def load(context: Context): History = History(Nil)
-    def save(context: Context, h: History) {}
+    def load[T](context: Context): History[T] = History(Nil)
+    def save[T](context: Context, h: History[T]) {}
   }
 }
 

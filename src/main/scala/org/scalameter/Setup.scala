@@ -8,8 +8,7 @@ case class Setup[T](
   setup: Option[T => Any],
   teardown: Option[T => Any],
   customwarmup: Option[() => Any],
-  snippet: T => Any,
-  @transient customExecutor: Executor
+  snippet: T => Any
 ) {
   def setupBeforeAll = if (setupbeforeall.isEmpty) { () => } else { () => setupbeforeall.get.apply() }
   def teardownAfterAll = if (teardownafterall.isEmpty) { () => } else { () => teardownafterall.get.apply() }

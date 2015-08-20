@@ -10,18 +10,18 @@ import scala.collection.mutable
  *  using underlying [[org.scalameter.persistence.IOStreamPersistor]] to allow testing of correctness.
  */
 class InterceptingPersistor(underlying: IOStreamPersistor[_, _]) extends Persistor {
-  private val _cache: mutable.Map[Context, History] = mutable.Map.empty
+  private val _cache: mutable.Map[Context, History[_]] = mutable.Map.empty
 
   def fileFor(ctx: Context): File = underlying.fileFor(ctx)
 
-  def load(context: Context): History = {
+  def load[T](context: Context): History[T] = {
     underlying.load(context)
   }
 
-  def save(context: Context, h: History): Unit = synchronized {
+  def save[T](context: Context, h: History[T]): Unit = synchronized {
     _cache += context -> h
     underlying.save(context, h)
   }
 
-  def intercepted: Iterator[(Context, History)] = _cache.iterator
+  def intercepted: Iterator[(Context, History[_])] = _cache.iterator
 }

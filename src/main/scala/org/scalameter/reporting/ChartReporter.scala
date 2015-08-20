@@ -3,39 +3,37 @@ package reporting
 
 
 
-import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer
-import org.jfree.chart.renderer.xy.DeviationRenderer
+import java.awt.{BasicStroke, Color}
+import java.io._
+import java.text.DateFormat.{MEDIUM, getDateTimeInstance}
+import java.util.Date
+import org.jfree.chart.labels.{ItemLabelAnchor, ItemLabelPosition, StandardCategoryItemLabelGenerator}
 import org.jfree.chart.renderer.category.BarRenderer
+import org.jfree.chart.renderer.xy.{DeviationRenderer, XYLineAndShapeRenderer}
+import org.jfree.chart.{LegendItem, LegendItemCollection}
 import org.jfree.data.category.DefaultCategoryDataset
-
+import org.jfree.ui.TextAnchor
+import org.scalameter.Key.reports._
+import org.scalameter.utils.Statistics._
+import org.scalameter.utils.Tree
+import scala.Numeric.Implicits._
+import scala.collection._
+import scala.math.Pi
 import scalax.chart.Chart
 import scalax.chart.api._
 
-import java.io._
-import collection._
-import utils.Tree
-import utils.Statistics._
-import java.awt.BasicStroke
-import java.awt.Color
-import Key.reports._
-import java.text.DateFormat.{getDateTimeInstance, MEDIUM}
-import java.util.Date
-import org.jfree.chart.{LegendItemCollection, LegendItem}
-import org.jfree.chart.labels.{ItemLabelAnchor, ItemLabelPosition, StandardCategoryItemLabelGenerator}
-import org.jfree.ui.TextAnchor
-import scala.math.Pi
 
 
-
-case class ChartReporter(drawer: ChartReporter.ChartFactory, fileNamePrefix: String = "", wdt: Int = 1600, hgt: Int = 1200) extends Reporter {
+case class ChartReporter[T: Numeric](drawer: ChartReporter.ChartFactory,
+  fileNamePrefix: String = "", wdt: Int = 1600, hgt: Int = 1200) extends Reporter[T] {
 
   /** Does nothing, the charts are generated only at the end. */
-  override final def report(result: CurveData, persistor: Persistor): Unit = ()
+  override final def report(result: CurveData[T], persistor: Persistor): Unit = ()
 
-  def report(result: Tree[CurveData], persistor: Persistor) = {
+  def report(result: Tree[CurveData[T]], persistor: Persistor) = {
     for ((ctx, curves) <- result.scopes if curves.nonEmpty) {
       val scopename = ctx.scope
-      val histories = curves.map(c => persistor.load(c.context))
+      val histories = curves.map(c => persistor.load[T](c.context))
       val chart = drawer.createChart(scopename, curves, histories)
       val dir = result.context(resultDir)
       new File(dir).mkdirs()
@@ -58,17 +56,19 @@ object ChartReporter {
      *
      *  @param scopename      name of the chart
      *  @param cs             a list of curves that should appear on the chart
-     *  @param history        previous chart data for the same set of curves
+     *  @param histories        previous chart data for the same set of curves
      *  @param colors         specifies the colors assigned to the the first `colors.size` curves from `cs`.
      *                        The rest of the curves are assigned some default set of colors.
      */
-    def createChart(scopename: String, cs: Seq[CurveData], histories: Seq[History], colors: Seq[Color] = Seq()): Chart
+    def createChart[T: Numeric](scopename: String, cs: Seq[CurveData[T]],
+      histories: Seq[History[T]], colors: Seq[Color] = Seq()): Chart
   }
 
   object ChartFactory {
 
     case class XYLine() extends ChartFactory {
-      def createChart(scopename: String, cs: Seq[CurveData], histories: Seq[History], colors: Seq[Color] = Seq()): Chart = {
+      def createChart[T: Numeric](scopename: String, cs: Seq[CurveData[T]],
+        histories: Seq[History[T]], colors: Seq[Color] = Seq()): Chart = {
         val dataset = for ((curve, idx) <- cs.zipWithIndex) yield {
           val seriesName = curve.context.goe(dsl.curve, idx.toString)
 
@@ -97,15 +97,17 @@ object ChartReporter {
       }
     }
 
-    case class ConfidenceIntervals(showLatestCi: Boolean, showHistoryCi: Boolean, t: RegressionReporter.Tester) extends ChartFactory {
+    case class ConfidenceIntervals(showLatestCi: Boolean,
+      showHistoryCi: Boolean, t: RegressionReporter.Tester) extends ChartFactory {
 
-      private def ciFor(curve: CurveData, values: Seq[Double]) = if (showLatestCi) {
+      private def ciFor[T: Numeric](curve: CurveData[T], values: Seq[T]) = if (showLatestCi) {
         t.confidenceInterval(curve.context, values)
       } else {
         (0D, 0D)
       }
 
-      def createChart(scopename: String, cs: Seq[CurveData], histories: Seq[History], colors: Seq[Color] = Seq()): Chart = {
+      def createChart[T: Numeric](scopename: String, cs: Seq[CurveData[T]],
+        histories: Seq[History[T]], colors: Seq[Color] = Seq()): Chart = {
 
         def createDataset = {
           val dataset = new YIntervalSeriesCollection
@@ -114,7 +116,8 @@ object ChartReporter {
               val series = new YIntervalSeries(curve.context(dsl.curve))
               for (measurement <- curve.measurements) {
                 val (yLow,yHigh) = ciFor(curve, measurement.complete)
-                series.add(measurement.params.axisData.head._2.asInstanceOf[Int], measurement.value, yLow, yHigh)
+                series.add(measurement.params.axisData.head._2.asInstanceOf[Int],
+                  measurement.value.toDouble(), yLow, yHigh)
               }
               dataset.addSeries(series)
             } else {
@@ -136,11 +139,11 @@ object ChartReporter {
                 val (yLowThis,yHighThis) = ciFor(curve, previousMeasurementsObservations)
                 val (yLowNewest,yHighNewest) = ciFor(curve, measurement.complete)
 
-                val meanForThisPoint = mean(previousMeasurementsObservations)
+                val meanForThisPoint = mean(previousMeasurementsObservations.map(_.toDouble()))
                 // Params : x - the x-value, y - the y-value, yLow - the lower bound of the y-interval, yHigh - the upper bound of the y-interval.
 
                 historySeries.add(x, meanForThisPoint, yLowThis, yHighThis)
-                newestSeries.add(x, measurement.value, yLowNewest, yHighNewest)
+                newestSeries.add(x, measurement.value.toDouble(), yLowNewest, yHighNewest)
               }
               dataset.addSeries(historySeries)
               dataset.addSeries(newestSeries)
@@ -182,17 +185,18 @@ object ChartReporter {
     }
 
     /** Returns the data to dataset converter. */
-    private implicit val MyToCategoryDatasetConverter: ToCategoryDataset[Seq[(String,(String,Double))]] =
+    private implicit def MyToCategoryDatasetConverter[T: Numeric]: ToCategoryDataset[Seq[(String,(String, T))]] =
       ToCategoryDataset { coll =>
         coll.foldLeft(new DefaultCategoryDataset) { case (dataset,(series,(category,value))) =>
-          dataset.addValue(value.toDouble, series, category)
+          dataset.addValue(value.toDouble(), series, category)
           dataset
         }
       }
 
     case class TrendHistogram() extends ChartFactory {
 
-      def createChart(scopename: String, cs: Seq[CurveData], histories: Seq[History], colors: Seq[Color] = Seq()): Chart = {
+      def createChart[T: Numeric](scopename: String, cs: Seq[CurveData[T]],
+        histories: Seq[History[T]], colors: Seq[Color] = Seq()): Chart = {
         val now = new Date
         val df = getDateTimeInstance(MEDIUM, MEDIUM)
 
@@ -313,7 +317,8 @@ object ChartReporter {
     }
 
     case class NormalHistogram() extends ChartFactory {
-      def createChart(scopename: String, cs: Seq[CurveData], histories: Seq[History], colors: Seq[Color] = Seq()): Chart = {
+      def createChart[T: Numeric](scopename: String, cs: Seq[CurveData[T]],
+        histories: Seq[History[T]], colors: Seq[Color] = Seq()): Chart = {
         val now = new Date
         val df = getDateTimeInstance(MEDIUM, MEDIUM)
 

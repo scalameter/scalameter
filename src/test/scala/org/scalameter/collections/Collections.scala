@@ -8,7 +8,7 @@ import Key._
 
 
 
-trait Collections extends Bench {
+trait Collections {
 
   /* data */
 

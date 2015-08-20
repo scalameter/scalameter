@@ -3,9 +3,10 @@ package execution
 
 
 
-import collection._
-import compat.Platform
-import utils.Tree
+import org.scalameter.picklers.Pickler
+import org.scalameter.utils.Tree
+import scala.collection._
+import scala.compat.Platform
 
 
 
@@ -26,18 +27,19 @@ import utils.Tree
  *  most triggered GC cycles are fast because they collect only
  *  the young generation.
  */
-class LocalExecutor(val warmer: Warmer, val aggregator: Aggregator, val measurer: Measurer) extends Executor {
-  require(!measurer.usesInstrumentedClasspath, s"${measurer.getClass.getName} should be run using SeparateJvmsExecutor.")
+class LocalExecutor[V: Pickler](val warmer: Warmer, val aggregator: Aggregator[V],
+    val measurer: Measurer[V]) extends Executor[V] {
+  require(!measurer.usesInstrumentedClasspath,
+    s"${measurer.getClass.getName} should be run using SeparateJvmsExecutor.")
 
   import Key._
 
-  override def run[T](setups: Tree[Setup[T]], reporter: Reporter, persistor: Persistor) = {
+  override def run[T](setups: Tree[Setup[T]], reporter: Reporter[V], persistor: Persistor) = {
     // run all warmups for classloading purposes
     for (bench <- setups) {
       import bench._
       setupBeforeAll()
       for (x <- gen.warmupset) {
-        val warmups = context(exec.maxWarmupRuns)
         customwarmup.map(_())
         for (_ <- warmer.warming(context, setupFor(x), teardownFor(x))) snippet(x)
       }
@@ -48,7 +50,7 @@ class LocalExecutor(val warmer: Warmer, val aggregator: Aggregator, val measurer
     super.run(setups, reporter, persistor)
   }
 
-  def runSetup[T](bsetup: Setup[T]): CurveData = {
+  def runSetup[T](bsetup: Setup[T]): CurveData[V] = {
     import bsetup._
 
     log.verbose(s"Running test set for ${bsetup.context.scope}, curve ${bsetup.context(dsl.curve)}")
@@ -70,7 +72,7 @@ class LocalExecutor(val warmer: Warmer, val aggregator: Aggregator, val measurer
       Platform.collectGarbage()
 
       // run tests
-      val measurements = new mutable.ArrayBuffer[Measurement]()
+      val measurements = new mutable.ArrayBuffer[Measurement[V]]()
       val repetitions = context(exec.benchRuns)
 
       for (params <- gen.dataset) {
@@ -84,7 +86,7 @@ class LocalExecutor(val warmer: Warmer, val aggregator: Aggregator, val measurer
 
         val processedValues = aggregator(values)
         val data = aggregator.data(values)
-        measurements += Measurement(processedValues, params, data, measurer.units)
+        measurements += Measurement(processedValues.value, params, data, processedValues.units)
       }
       CurveData(measurements, Map.empty, context)
     } finally {
@@ -99,7 +101,8 @@ class LocalExecutor(val warmer: Warmer, val aggregator: Aggregator, val measurer
 
 object LocalExecutor extends Executor.Factory[LocalExecutor] {
 
-  def apply(w: Warmer, a: Aggregator, m: Measurer) = new LocalExecutor(w, a, m)
+  def apply[V: Pickler: PrettyPrinter](w: Warmer, a: Aggregator[V], m: Measurer[V]) =
+    new LocalExecutor(w, a, m)
 
 }
 

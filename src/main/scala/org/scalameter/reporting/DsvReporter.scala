@@ -4,29 +4,28 @@ package reporting
 
 
 import java.io._
-import java.util.Date
-import java.util.TimeZone
 import java.text.SimpleDateFormat
-import utils.Tree
+import java.util.{Date, TimeZone}
+import org.scalameter.utils.Tree
+import scala.Numeric.Implicits._
 
 
 
 /** Produces a DSV file with results that can be used by other visualization tools.
  */
-case class DsvReporter(delimiter: Char) extends Reporter {
+case class DsvReporter[T: Numeric](delimiter: Char) extends Reporter[T] {
 
   val sep = File.separator
 
-  def report(result: CurveData, persistor: Persistor) {
+  def report(result: CurveData[T], persistor: Persistor) {
   }
 
-  def report(result: Tree[CurveData], persistor: Persistor) = {
-    val currentDate = new Date
+  def report(result: Tree[CurveData[T]], persistor: Persistor) = {
     val resultdir = currentContext(Key.reports.resultDir)
 
     new File(s"$resultdir").mkdirs()
 
-    def reportCurve(cd: CurveData) {
+    def reportCurve(cd: CurveData[T]) {
       val filename = s"$resultdir$sep${cd.context.scope}.${cd.context.curve}.dsv"
       var writer: PrintWriter = null
 
@@ -52,12 +51,13 @@ object DsvReporter {
     (date) => df.format(date)
   }
 
-  def writeCurveData(cd: CurveData, persistor: Persistor, pw: PrintWriter, delimiter: Char, newline: String = "\n") {
-    val history = persistor.load(cd.context)
+  def writeCurveData[T: Numeric](cd: CurveData[T], persistor: Persistor,
+    pw: PrintWriter, delimiter: Char, newline: String = "\n") {
+    val history = persistor.load[T](cd.context)
     import pw._
     import pw.{print => p}
 
-    def header(cd: CurveData) {
+    def header(cd: CurveData[T]) {
       p("date")
       p(delimiter)
       for (paramname <- cd.measurements.head.params.axisData.keys) {
@@ -78,7 +78,7 @@ object DsvReporter {
       print(newline)
     }
 
-    def output(cd: CurveData, date: Date) {
+    def output(cd: CurveData[T], date: Date) {
       for (m <- cd.measurements) {
         p(dateISO(date))
         p(delimiter)
@@ -86,18 +86,20 @@ object DsvReporter {
           p(v)
           p(delimiter)
         }
-        p(m.value)
+        p(m.value.toDouble())
         p(delimiter)
         p(m.success)
         p(delimiter)
-        val ci = utils.Statistics.confidenceInterval(m.complete, cd.context(Key.reports.regression.significance))
+        val ci = utils.Statistics.confidenceInterval(
+          m.complete.map(_.toDouble()), cd.context(Key.reports.regression.significance)
+        )
         p(f"${ci._1}%.3f")
         p(delimiter)
         p(f"${ci._2}%.3f")
         p(delimiter)
         p(m.units)
         p(delimiter)
-        p("\"" + m.complete.mkString(" ") + "\"")
+        p("\"" + m.complete.map(_.toDouble()).mkString(" ") + "\"")
         print(newline)
       }
     }
