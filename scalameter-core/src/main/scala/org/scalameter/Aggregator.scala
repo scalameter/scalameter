@@ -2,6 +2,10 @@ package org.scalameter
 
 object Aggregator {
 
+  object Implicits {
+    implicit def mapOrdering[T]: Ordering[Map[String, T]] = Ordering.by(_.keys)
+  }
+
   def apply[T](n: String)(f: Seq[Quantity[T]] => Quantity[T]) = new Aggregator[T] {
     def name = n
 

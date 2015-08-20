@@ -1,7 +1,6 @@
 package org.scalameter.examples
 
 import org.scalameter.api._
-import org.scalameter.execution.{SeparateJvmsExecutor, LocalExecutor}
 import org.scalameter.execution.invocation.InvocationCountMatcher
 import org.scalameter.persistence.InterceptingPersistor
 import org.scalameter.picklers.Implicits._
@@ -25,47 +24,39 @@ trait Snippet[U] extends Bench[U] {
   }
 }
 
-class DefaultQuickBench extends Bench.Quick with Snippet[Double]
+class DefaultQuickBench extends Bench.LocalTime with Snippet[Double]
 
-class DefaultMicroBench extends Bench.Micro with Snippet[Double] {
+class DefaultMicroBench extends Bench.ForkedTime with Snippet[Double] {
   override def measurer: Measurer[Double] = new Measurer.Default
 }
 
-class IgnoringGCQuickBench extends Bench.Quick with Snippet[Double] {
+class IgnoringGCQuickBench extends Bench.LocalTime with Snippet[Double] {
   override def measurer: Measurer[Double] = new Measurer.IgnoringGC
 }
 
-class IgnoringGCMicroBench extends Bench.Micro with Snippet[Double]
+class IgnoringGCMicroBench extends Bench.ForkedTime with Snippet[Double]
 
-class MemoryQuickBench extends Bench.Quick with Snippet[Double] {
+class MemoryQuickBench extends Bench.LocalTime with Snippet[Double] {
   override def measurer: Measurer[Double] = new Measurer.MemoryFootprint
 }
 
-class MemoryMicroBench extends Bench.Micro with Snippet[Double] {
+class MemoryMicroBench extends Bench.ForkedTime with Snippet[Double] {
   override def measurer: Measurer[Double] = new Measurer.MemoryFootprint
 }
 
-class GCCountQuickBench extends Bench[Int] with Snippet[Int] {
-  def executor: Executor[Int] = new LocalExecutor(Warmer.Zero, Aggregator.median[Int], measurer)
+class GCCountQuickBench extends Bench.Local[Int] with Snippet[Int] {
+  def aggregator: Aggregator[Int] = Aggregator.median
 
   def measurer: Measurer[Int] = new Measurer.GarbageCollectionCycles
-
-  def persistor: Persistor = Persistor.None
-
-  def reporter: Reporter[Int] = new LoggingReporter
 }
 
-class GCCountMicroBench extends Bench[Int] with Snippet[Int] {
-  def executor: Executor[Int] = new SeparateJvmsExecutor(Warmer.Zero, Aggregator.median[Int], measurer)
+class GCCountMicroBench extends Bench.Forked[Int] with Snippet[Int] {
+  def aggregator: Aggregator[Int] = Aggregator.median
 
   def measurer: Measurer[Int] = new Measurer.GarbageCollectionCycles
-
-  def persistor: Persistor = Persistor.None
-
-  def reporter: Reporter[Int] = new LoggingReporter
 }
 
-class InvocationCountMeasurerBench extends Bench.Micro {
+class InvocationCountMeasurerBench extends Bench.ForkedTime {
   override val persistor: InterceptingPersistor =
     new InterceptingPersistor(new GZIPJSONSerializationPersistor)
 
@@ -81,7 +72,7 @@ class InvocationCountMeasurerBench extends Bench.Micro {
 }
 
 class BoxingCountBench extends InvocationCountMeasurerBench {
-  override lazy val measurer = Measurer.BoxingCount.all().map(v =>
+  override lazy val measurer = Measurer.BoxingCount(classOf[Int]).map(v =>
     v.copy(value = v.value.valuesIterator.sum.toDouble)
   )
 

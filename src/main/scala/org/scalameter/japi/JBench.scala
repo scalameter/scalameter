@@ -6,6 +6,7 @@ import org.scalameter.BasePerformanceTest._
 import org.scalameter._
 import org.scalameter.japi.annotation._
 import org.scalameter.picklers.Implicits._
+import org.scalameter.picklers.Pickler
 import org.scalameter.reporting.{HtmlReporter, RegressionReporter}
 import scala.collection.mutable
 import scala.language.reflectiveCalls
@@ -180,27 +181,64 @@ abstract class JBench[U] extends BasePerformanceTest[U] with Serializable {
 }
 
 object JBench {
-  /** Annotation based equivalent of the [[org.scalameter.Bench.Quick]] */
-  abstract class Quick extends JBench[Double] {
-    def aggregator: Aggregator[Double] = Aggregator.min
+  /** Annotation based equivalent of the [[org.scalameter.Bench.Local]] */
+  abstract class Local[U: Pickler] extends JBench[U] {
+    def warmer: Warmer = new Warmer.Default
 
-    def measurer: Measurer[Double] = new Measurer.Default()
+    def aggregator: Aggregator[U]
 
-    def persistor: Persistor = Persistor.None
-
-    def reporter: Reporter[Double] = new reporting.LoggingReporter
-
-    def warmer: Warmer = Warmer.Default()
-
-    final def executor: Executor[Double] = execution.LocalExecutor(
+    def executor: Executor[U] = new execution.LocalExecutor(
       warmer,
       aggregator,
       measurer
     )
+
+    def persistor: Persistor = Persistor.None
+
+    def reporter: Reporter[U] = new reporting.LoggingReporter
   }
 
-  /** Annotation based equivalent of the [[org.scalameter.Bench.Micro]] */
-  abstract class Micro extends JBench[Double] {
+  /** Annotation based equivalent of the [[org.scalameter.Bench.Forked]] */
+  abstract class Forked[U: Pickler: PrettyPrinter] extends JBench[U] {
+    def warmer: Warmer = new Warmer.Default
+
+    def aggregator: Aggregator[U]
+
+    def executor: Executor[U] = new execution.SeparateJvmsExecutor(
+      warmer,
+      aggregator,
+      measurer
+    )
+
+    def persistor: Persistor = Persistor.None
+
+    def reporter: Reporter[U] = new reporting.LoggingReporter
+  }
+
+  /** Annotation based equivalent of the [[org.scalameter.Bench.Persisted]] */
+  abstract class Persisted[U: Pickler: PrettyPrinter] extends JBench[U] {
+    def warmer: Warmer = new Warmer.Default
+
+    def aggregator: Aggregator[U]
+
+    def executor: Executor[U] = new execution.SeparateJvmsExecutor[U](
+      warmer,
+      aggregator,
+      measurer
+    )
+
+    def persistor: Persistor = new persistence.GZIPJSONSerializationPersistor
+  }
+
+  /** Annotation based equivalent of the [[org.scalameter.Bench.LocalTime]] */
+  abstract class LocalTime extends Local[Double] {
+    def aggregator: Aggregator[Double] = Aggregator.min
+
+    def measurer: Measurer[Double] = new Measurer.Default()
+  }
+
+  /** Annotation based equivalent of the [[org.scalameter.Bench.ForkedTime]] */
+  abstract class ForkedTime extends Forked[Double] {
     def aggregator: Aggregator[Double] = Aggregator.min
 
     def measurer: Measurer[Double] =
@@ -208,29 +246,11 @@ object JBench {
         override val defaultFrequency = 12
         override val defaultFullGC = true
       }
-
-    def persistor: Persistor = Persistor.None
-
-    def reporter: Reporter[Double] = new reporting.LoggingReporter
-
-    def warmer: Warmer = Warmer.Default()
-
-    final def executor: Executor[Double] = execution.SeparateJvmsExecutor(
-      warmer,
-      aggregator,
-      measurer
-    )
   }
 
   /** Annotation base equivalent of the [[org.scalameter.Bench.HTMLReport]] */
-  abstract class HTMLReport extends JBench[Double] {
+  abstract class HTMLReport extends Persisted[Double] {
     def aggregator: Aggregator[Double] = Aggregator.average
-
-    def executor: Executor[Double] = new execution.SeparateJvmsExecutor(
-      warmer,
-      aggregator,
-      measurer
-    )
 
     def measurer: Measurer[Double] =
       new Measurer.IgnoringGC with Measurer.PeriodicReinstantiation[Double]
@@ -238,14 +258,10 @@ object JBench {
         def numeric: Numeric[Double] = implicitly[Numeric[Double]]
       }
 
-    def persistor: Persistor = new persistence.GZIPJSONSerializationPersistor
-
     def reporter: Reporter[Double] = Reporter.Composite(
       new RegressionReporter(tester, historian),
       HtmlReporter(!online)
     )
-
-    def warmer: Warmer = Warmer.Default()
 
     def historian: RegressionReporter.Historian
 

@@ -53,6 +53,7 @@ object api extends Keys {
   val Warmer = org.scalameter.Warmer
   val Measurer = org.scalameter.Measurer
 
+  type Aggregator[T] = org.scalameter.Aggregator[T]
   type Warmer = org.scalameter.Warmer
   type Measurer[T] = org.scalameter.Measurer[T]
 
