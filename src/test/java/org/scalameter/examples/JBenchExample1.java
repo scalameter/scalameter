@@ -9,7 +9,7 @@ import org.scalameter.japi.annotation.*;
 @scopes({
     @scopeCtx(scope = "arrays", context = "root")
 })
-public class JBenchExample1 extends JBench.Quick {
+public class JBenchExample1 extends JBench.LocalTime {
   private Random random;
 
   public final Context root = new ContextBuilder()

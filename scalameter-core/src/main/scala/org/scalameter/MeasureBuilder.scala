@@ -23,7 +23,7 @@ class MeasureBuilder[T, U](
   def withMeasurer(m: Measurer[U]) =
     new MeasureBuilder(ctx, warmer, m, regen, setup, teardown, resultFunction)
 
-  def withMeasurer[V, M <: Measurer[V]](m: M, a: Seq[Quantity[V]] => Quantity[V]) =
+  def withMeasurer[V](m: Measurer[V], a: Seq[Quantity[V]] => Quantity[V]) =
     new MeasureBuilder(ctx, warmer, m, regen, setup, teardown, a)
 
   def setUp(b: T => Unit) =
