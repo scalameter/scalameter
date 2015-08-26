@@ -90,5 +90,3 @@ class ScalaMeterFramework extends Framework {
   }
 
 }
-
-

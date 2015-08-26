@@ -39,7 +39,7 @@ trait MemoryTest2 extends Bench.OfflineRegressionReport {
       using(sizes) config (
         exec.minWarmupRuns -> 2,
         exec.maxWarmupRuns -> 5,
-        exec.benchRuns -> 5,
+        exec.benchRuns -> 30,
         exec.independentSamples -> 1
       ) in { sz =>
         (0 until sz).toArray
