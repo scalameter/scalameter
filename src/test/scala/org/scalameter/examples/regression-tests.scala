@@ -16,7 +16,7 @@ class RegressionTest extends PerformanceTest.OfflineRegressionReport {
   performance of "Array" in {
     measure method "foreach" in {
       using(arrays) config (
-        exec.independentSamples -> 6
+        exec.independentSamples -> 1
       ) in { xs =>
         var sum = 0
         xs.foreach(x => sum += x)

@@ -16,8 +16,8 @@ class BeforeAfterTest extends Bench.OfflineRegressionReport {
     measure method "toArray" in {
 
       using(sizes) config (
-        exec.benchRuns -> 30,
-        exec.independentSamples -> 3
+        exec.benchRuns -> 10,
+        exec.independentSamples -> 2
       ) beforeTests {
         println("ABOUT TO START RANGE TESTS!")
       } afterTests {

@@ -1,6 +1,7 @@
 package org.scalameter
 
 
+
 import java.util.Date
 import org.scalameter.picklers.Pickler
 import org.scalameter.utils.Tree
@@ -9,17 +10,19 @@ import scala.util.DynamicVariable
 
 
 
-/** Abstract required for the [[org.scalameter.ScalaMeterFramework]] to find all performance tests.
+/** Abstract required for the [[org.scalameter.ScalaMeterFramework]] to find all
+ *  performance tests.
  */
 sealed trait AbstractPerformanceTest {
   def executeTests(): Boolean
 }
 
+
 abstract class BasePerformanceTest[U] extends AbstractPerformanceTest {
-  
   import BasePerformanceTest._
 
-  setupzipper.value = Tree.Zipper.root[Setup[_]](measurer.prepareContext(currentContext ++ defaultConfig))
+  setupzipper.value =
+    Tree.Zipper.root[Setup[_]](measurer.prepareContext(currentContext ++ defaultConfig))
 
   protected case class Scope(name: String, context: Context) {
     def config(kvs: KeyValue*): Scope = config(context ++ Context(kvs: _*))
@@ -33,14 +36,22 @@ abstract class BasePerformanceTest[U] extends AbstractPerformanceTest {
   }
 
   protected case class Using[T](benchmark: Setup[T]) {
-    def beforeTests(block: =>Any) = Using(benchmark.copy(setupbeforeall = Some(() => block)))
-    def setUp(block: T => Any) = Using(benchmark.copy(setup = Some(block)))
-    def tearDown(block: T => Any) = Using(benchmark.copy(teardown = Some(block)))
-    def afterTests(block: =>Any) = Using(benchmark.copy(teardownafterall = Some(() => block)))
-    def warmUp(block: =>Any) = Using(benchmark.copy(customwarmup = Some(() => block)))
-    def curve(name: String) = Using(benchmark.copy(context = benchmark.context + (Key.dsl.curve -> name)))
-    def config(kvs: KeyValue*): Using[T] = config(Context(kvs: _*))
-    def config(ctx: Context): Using[T] = Using(benchmark.copy(context = benchmark.context ++ ctx))
+    def beforeTests(block: =>Any) =
+      Using(benchmark.copy(setupbeforeall = Some(() => block)))
+    def setUp(block: T => Any) =
+      Using(benchmark.copy(setup = Some(block)))
+    def tearDown(block: T => Any) =
+      Using(benchmark.copy(teardown = Some(block)))
+    def afterTests(block: =>Any) =
+      Using(benchmark.copy(teardownafterall = Some(() => block)))
+    def warmUp(block: =>Any) =
+      Using(benchmark.copy(customwarmup = Some(() => block)))
+    def curve(name: String) =
+      Using(benchmark.copy(context = benchmark.context + (Key.dsl.curve -> name)))
+    def config(kvs: KeyValue*): Using[T] =
+      config(Context(kvs: _*))
+    def config(ctx: Context): Using[T] =
+      Using(benchmark.copy(context = benchmark.context ++ ctx))
     def in(block: T => Any) {
       setupzipper.value = setupzipper.value.addItem(benchmark.copy(snippet = block))
     }
@@ -75,11 +86,13 @@ abstract class BasePerformanceTest[U] extends AbstractPerformanceTest {
     val setuptree = rawsetuptree.filter(setupFilter)
 
     measurer.beforeExecution(setuptree.context)
-    val resulttree = executor.run(setuptree.asInstanceOf[Tree[Setup[SameType]]], reporter, persistor)
+    val resulttree =
+      executor.run(setuptree.asInstanceOf[Tree[Setup[SameType]]], reporter, persistor)
     measurer.afterExecution(setuptree.context)
 
     val dateend: Option[Date] = Some(new Date)
-    val datedtree = resulttree.copy(context = resulttree.context + (Key.reports.startDate -> datestart) + (Key.reports.endDate -> dateend))
+    val datedtree = resulttree.copy(context = resulttree.context +
+      (Key.reports.startDate -> datestart) + (Key.reports.endDate -> dateend))
     reporter.report(datedtree, persistor)
   }
 
@@ -97,7 +110,8 @@ abstract class BasePerformanceTest[U] extends AbstractPerformanceTest {
 
 object BasePerformanceTest {
 
-  private[scalameter] val setupzipper = new DynamicVariable(Tree.Zipper.root[Setup[_]](currentContext))
+  private[scalameter] val setupzipper =
+    new DynamicVariable(Tree.Zipper.root[Setup[_]](currentContext))
 
   private[scalameter] def descendInScope(name: String, context: Context)(body: =>Unit) {
     setupzipper.value = setupzipper.value.descend.setContext(context)
@@ -105,8 +119,10 @@ object BasePerformanceTest {
     setupzipper.value = setupzipper.value.ascend
   }
 
-  private[scalameter] val curveNameCount = new java.util.concurrent.atomic.AtomicInteger(0)
+  private[scalameter] val curveNameCount =
+    new java.util.concurrent.atomic.AtomicInteger(0)
 
-  private[scalameter] def freshCurveName(): String = "Test-" + curveNameCount.getAndIncrement()
+  private[scalameter] def freshCurveName(): String =
+    "Test-" + curveNameCount.getAndIncrement()
 
 }

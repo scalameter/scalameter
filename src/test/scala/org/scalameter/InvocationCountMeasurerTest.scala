@@ -1,7 +1,10 @@
 package org.scalameter
 
+
+
 import org.scalameter.examples.InvocationCountMeasurerBench
 import org.scalatest.{Matchers, FunSuite}
+
 
 
 abstract class InvocationCountMeasurerTest extends FunSuite with Matchers {

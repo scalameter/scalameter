@@ -2,10 +2,11 @@ package org.scalameter
 
 
 
-import org.scalatest.FunSuite
 import org.scalameter.api._
-import util.Properties.javaVersion
 import org.scalameter.picklers.Implicits._
+import org.scalatest.FunSuite
+import util.Properties.javaVersion
+
 
 
 class GenTest extends FunSuite {

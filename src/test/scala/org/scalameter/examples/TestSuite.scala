@@ -9,21 +9,5 @@ import Key._
 
 
 class TestSuite extends Bench.OfflineRegressionReport {
-  include[MemoryTest]
-  include[RegressionTest]
+  include(new MemoryTest2 {})
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

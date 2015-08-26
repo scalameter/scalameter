@@ -1,9 +1,13 @@
 package org.scalameter.examples
 
+
+
 import org.scalameter.api._
 import org.scalameter.execution.invocation.InvocationCountMatcher
 import org.scalameter.persistence.InterceptingPersistor
 import org.scalameter.picklers.Implicits._
+
+
 
 trait Snippet[U] extends Bench[U] {
   val sizes = Gen.single("size")(300000)
@@ -24,25 +28,32 @@ trait Snippet[U] extends Bench[U] {
   }
 }
 
+
 class DefaultQuickBench extends Bench.LocalTime with Snippet[Double]
+
 
 class DefaultMicroBench extends Bench.ForkedTime with Snippet[Double] {
   override def measurer: Measurer[Double] = new Measurer.Default
 }
 
+
 class IgnoringGCQuickBench extends Bench.LocalTime with Snippet[Double] {
   override def measurer: Measurer[Double] = new Measurer.IgnoringGC
 }
 
+
 class IgnoringGCMicroBench extends Bench.ForkedTime with Snippet[Double]
+
 
 class MemoryQuickBench extends Bench.LocalTime with Snippet[Double] {
   override def measurer: Measurer[Double] = new Measurer.MemoryFootprint
 }
 
+
 class MemoryMicroBench extends Bench.ForkedTime with Snippet[Double] {
   override def measurer: Measurer[Double] = new Measurer.MemoryFootprint
 }
+
 
 class GCCountQuickBench extends Bench.Local[Int] with Snippet[Int] {
   def aggregator: Aggregator[Int] = Aggregator.median
@@ -50,11 +61,13 @@ class GCCountQuickBench extends Bench.Local[Int] with Snippet[Int] {
   def measurer: Measurer[Int] = new Measurer.GarbageCollectionCycles
 }
 
+
 class GCCountMicroBench extends Bench.Forked[Int] with Snippet[Int] {
   def aggregator: Aggregator[Int] = Aggregator.median
 
   def measurer: Measurer[Int] = new Measurer.GarbageCollectionCycles
 }
+
 
 class InvocationCountMeasurerBench extends Bench.ForkedTime {
   override val persistor: InterceptingPersistor =
@@ -70,6 +83,7 @@ class InvocationCountMeasurerBench extends Bench.ForkedTime {
 
   val lists = for (sz <- sizes) yield (0 until sz).toList
 }
+
 
 class BoxingCountBench extends InvocationCountMeasurerBench {
   override lazy val measurer = Measurer.BoxingCount(classOf[Int]).map(v =>
@@ -88,6 +102,7 @@ class BoxingCountBench extends InvocationCountMeasurerBench {
     }
   }
 }
+
 
 class MethodInvocationCountBench extends InvocationCountMeasurerBench {
   override lazy val measurer = Measurer.MethodInvocationCount(
