@@ -17,7 +17,8 @@ class ScalaMeterFramework extends Framework {
 
   def testRunner(testClassLoader: ClassLoader, loggers: Array[Logger]) = new Runner2 {
     case class TestInterfaceEvents(eventHandler: EventHandler) extends Events {
-      def emit(e: org.scalameter.Event) = eventHandler.handle(new org.scalatools.testing.Event {
+      def emit(e: org.scalameter.Event) = eventHandler.handle(
+        new org.scalatools.testing.Event {
         def testName = e.testName
         def description = e.description
         def error = e.throwable
@@ -44,10 +45,12 @@ class ScalaMeterFramework extends Framework {
     def computeClasspath = {
       utils.ClassPath.extract(
         testClassLoader,
-        sys.error(s"Cannot recognize classloader (not URLClassLoader): $testClassLoader"))
+        sys.error(
+          s"Cannot recognize classloader (not URLClassLoader): $testClassLoader"))
     }
 
-    def run(testClassName: String, fingerprint: Fingerprint, eventHandler: EventHandler, args: Array[String]) {
+    def run(testClassName: String, fingerprint: Fingerprint, eventHandler: EventHandler,
+      args: Array[String]) {
       val complog = Log.Composite(loggers.map(TestInterfaceLog): _*)
       val tievents = TestInterfaceEvents(eventHandler)
       val testcp = computeClasspath
