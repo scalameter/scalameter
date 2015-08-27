@@ -52,7 +52,7 @@ public class JBenchExample2 extends JBench.OfflineReport {
   public Context defaultConfig() {
     return new ContextBuilder()
         .put("exec.benchRuns", 25)
-        .put("exec.independentSamples", 5)
+        .put("exec.independentSamples", 1)
         .build();
   }
 
