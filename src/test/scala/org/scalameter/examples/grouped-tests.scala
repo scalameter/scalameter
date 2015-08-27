@@ -18,7 +18,6 @@ class TestSuite extends Bench.Group {
   performance of "running time" config(
     Key.reports.resultDir -> "target/benchmarks/time"
   ) in {
-    println(currentContext)
     include(new RegressionTest3 {})
   }
 }

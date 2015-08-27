@@ -1,9 +1,12 @@
 package org.scalameter
 package persistence
 
+
+
 import java.io._
 import org.scalameter.Key.reports._
 import org.scalameter.persistence.json._
+
 
 
 /** Serializes [[org.scalameter.History]] to JSON using Jackson.

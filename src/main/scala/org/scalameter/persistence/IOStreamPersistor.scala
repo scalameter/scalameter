@@ -1,7 +1,10 @@
 package org.scalameter
 package persistence
 
+
+
 import java.io._
+
 
 
 /** Base for persistors that actually write and read [[org.scalameter.History]].

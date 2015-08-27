@@ -1,10 +1,13 @@
 package org.scalameter
 package persistence
 
+
+
 import java.io._
 import java.util.zip._
 import org.scalameter.Key.reports._
 import org.scalameter.persistence.json._
+
 
 
 /** Serializes [[org.scalameter.History]] to GZIP JSON using Jackson.
