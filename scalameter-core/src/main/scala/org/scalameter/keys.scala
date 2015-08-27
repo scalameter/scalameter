@@ -48,15 +48,16 @@ class KeyWithDefault[T: Pickler](name: String)(implicit container: KeyContainer)
  */
 class KeyWithDefaultValue[T: Pickler](name: String, val default: T)
   (implicit container: KeyContainer)
-  extends KeyWithDefault[T](name)
+extends KeyWithDefault[T](name)
 
-/** Key that chains finding default value to [[KeyWithDefaultValue]] if value under key is not found in a context.
-  *
-  * Note that this key type is handled in [[org.scalameter.Context.apply)]].
-  */
+/** Key that chains finding default value to [[KeyWithDefaultValue]]
+ *  if value under key is not found in a context.
+ * 
+ *  Note that this key type is handled in [[org.scalameter.Context.apply)]].
+ */
 class KeyWithDefaultKey[T: Pickler](name: String, val default: KeyWithDefaultValue[T])
   (implicit container: KeyContainer)
-  extends KeyWithDefault[T](name)
+extends KeyWithDefault[T](name)
 
 
 object Key extends Keys {
@@ -108,9 +109,10 @@ class Keys extends KeyContainer("", null) {
   val preJDK7 = apply[Boolean]("preJDK7", false)
   val scopeFilter = apply[String]("scopeFilter", "")
 
-  private[scalameter] val finalClasspath = new KeyWithDefaultKey[ClassPath]("finalClasspath", classpath) {
-    override def isTransient: Boolean = true
-  }
+  private[scalameter] val finalClasspath =
+    new KeyWithDefaultKey[ClassPath]("finalClasspath", classpath) {
+      override def isTransient: Boolean = true
+    }
 
   object dsl extends KeyContainer("dsl", Keys.this) {
     val curve = apply[String]("curve", "")

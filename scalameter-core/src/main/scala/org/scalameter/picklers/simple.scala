@@ -6,7 +6,7 @@ import java.util.Date
 
 object StringPickler extends Pickler[String] {
   def pickle(x: String): Array[Byte] = {
-    val strBytes = x.getBytes
+    val strBytes = x.getBytes("UTF-8")
     val buffer = ByteBuffer.allocate(IntPickler.numBytes + strBytes.length)
     buffer.putInt(strBytes.length)
     buffer.put(strBytes)
@@ -16,7 +16,7 @@ object StringPickler extends Pickler[String] {
   def unpickle(a: Array[Byte], from: Int): (String, Int) = {
     val (strLen, strFrom) = IntPickler.unpickle(a, from)
     val newFrom = if (strFrom + strLen == a.length) -1 else strFrom + strLen
-    if (strFrom > 0) (new String(a, strFrom, strLen), newFrom)
+    if (strFrom > 0) (new String(a, strFrom, strLen, "UTF-8"), newFrom)
     else ("", -1)
   }
 }

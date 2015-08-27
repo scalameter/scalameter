@@ -13,12 +13,13 @@ case class Context(properties: immutable.Map[Key[_], Any]) {
   def +[T](t: (Key[T], T)) = Context(properties + t)
   def ++(that: Context) = Context(this.properties ++ that.properties)
   def ++(that: Seq[KeyValue]) = Context(this.properties ++ that)
-  def get[T](key: Key[T]): Option[T] = properties.get(key).asInstanceOf[Option[T]].orElse {
-    key match {
-      case k: KeyWithDefaultValue[_] => Some(k.default.asInstanceOf[T])
-      case _ => None
+  def get[T](key: Key[T]): Option[T] =
+    properties.get(key).asInstanceOf[Option[T]].orElse {
+      key match {
+        case k: KeyWithDefaultValue[_] => Some(k.default.asInstanceOf[T])
+        case _ => None
+      }
     }
-  }
   def goe[T](key: Key[T], v: => T) = properties.getOrElse(key, v).asInstanceOf[T]
   def apply[T](key: KeyWithDefault[T]) = {
     val value = key match {
@@ -32,6 +33,12 @@ case class Context(properties: immutable.Map[Key[_], Any]) {
   def scope = scopeList.mkString(".")
   def scopeList = apply(dsl.scope).reverse
   def curve = apply(dsl.curve)
+  override def toString = {
+    val proplines = properties.map {
+      case (key, value) => s"$key -> $value"
+    } mkString("\n")
+    s"Context(\n$proplines\n)"
+  }
 }
 
 
@@ -69,6 +76,9 @@ object Context {
     Key.machine.hostname -> java.net.InetAddress.getLocalHost.getHostName
   )
 
-  @deprecated("This implicit will be removed in 0.6. Replace config(opts: _*) with config(opts).", "0.5")
-  implicit def toKeyValues(ctx: Context): Seq[KeyValue] = ctx.properties.toSeq.asInstanceOf[Seq[KeyValue]]
+  @deprecated(
+    "This implicit will be removed in 0.6. Replace config(opts: _*) with config(opts).",
+    "0.5")
+  implicit def toKeyValues(ctx: Context): Seq[KeyValue] =
+    ctx.properties.toSeq.asInstanceOf[Seq[KeyValue]]
 }

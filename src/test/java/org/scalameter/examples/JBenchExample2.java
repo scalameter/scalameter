@@ -9,7 +9,7 @@ import org.scalameter.japi.annotation.*;
 import scala.Tuple2;
 
 
-public class JBenchExample2 extends JBench.OfflineRegressionReport {
+public class JBenchExample2 extends JBench.OfflineReport {
   public final JGen<Integer> sizes = JGen.range("size", 1000, 25000, 4000);
 
   public final JGen<Tuple2<Integer, ArrayList<Integer>>> arrayLists = sizes.zip(

@@ -1,5 +1,7 @@
 package org.scalameter.picklers
 
+
+
 import java.io.File
 import java.util.Date
 import org.scalatest.prop.PropertyChecks
@@ -8,8 +10,14 @@ import org.scalameter.picklers.Implicits._
 import org.scalameter.utils.ClassPath
 
 
+
 class PicklerSpecification extends FunSuite with PropertyChecks with Matchers {
-  def validatePickler[T: Pickler](o: T) = implicitly[Pickler[T]].unpickle(implicitly[Pickler[T]].pickle(o)) should === (o)
+  def validatePickler[T: Pickler](o: T) = {
+    val pickler = implicitly[Pickler[T]]
+    val p = pickler.pickle(o)
+    val uo = pickler.unpickle(p)
+    uo should === (o)
+  }
 
   test("Unit pickling") {
     forAll { o: Unit =>
@@ -97,7 +105,8 @@ class PicklerSpecification extends FunSuite with PropertyChecks with Matchers {
 
   test("ClassPath pickling") {
     forAll { o: List[String] =>
-      validatePickler(ClassPath(o.map(s => new File(s.replaceAll(s""""|${File.pathSeparatorChar}""", "")))))
+      validatePickler(ClassPath(
+        o.map(s => new File(s.replaceAll(s""""|${File.pathSeparatorChar}""", "")))))
     }
   }
 

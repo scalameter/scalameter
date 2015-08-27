@@ -8,7 +8,7 @@ import Key._
 
 
 
-class MemoryTest extends Bench.OfflineRegressionReport {
+class MemoryTest extends Bench.OfflineReport {
   override def measurer = new Measurer.MemoryFootprint
 
   val sizes = Gen.range("size")(1000000, 5000000, 2000000)
@@ -29,7 +29,7 @@ class MemoryTest extends Bench.OfflineRegressionReport {
 }
 
 
-trait MemoryTest2 extends Bench.OfflineRegressionReport {
+trait MemoryTest2 extends Bench.OfflineReport {
   override def measurer = new Measurer.MemoryFootprint
 
   val sizes = Gen.range("size")(1000000, 5000000, 2000000)

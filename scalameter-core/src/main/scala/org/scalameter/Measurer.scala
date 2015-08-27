@@ -76,6 +76,13 @@ object Measurer {
 
   import Key._
 
+  /** Measurer that measures nothing. */
+  def None[V] = new Measurer[V] {
+    def name = "None"
+    def measure[T](context: Context, measurements: Int, setup: T => Any,
+      tear: T => Any, regen: () => T, snippet: T => Any): Seq[Quantity[V]] = ???
+  }
+
   trait Timer extends Measurer[Double]
 
   /** Mixin for measurers whose benchmarked value is based on the current iteration. */

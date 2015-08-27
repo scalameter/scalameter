@@ -25,7 +25,8 @@ abstract class DSL[U] extends BasePerformanceTest[U] {
     (Key.dsl.curve -> freshCurveName()), gen, None, None, None, None, None, null))
 
   @deprecated(
-    "This form of include is deprecated -- please use include(new MyBench {}), " +
+    "This form of include is deprecated -- please extend Bench.Group " +
+    "and use include(new MyBench {}), " +
     "where MyBench is a *trait*, and not a class or an object.",
     "0.7")
   def include[T <: BasePerformanceTest[_]: ClassTag]: Unit = {
@@ -39,22 +40,6 @@ abstract class DSL[U] extends BasePerformanceTest[U] {
         s"please make ${cls.getName} a class.",
         Events.Error, new Exception("Cannot instantiate singleton object or trait.")))
     } else cls.newInstance.asInstanceOf[DSL[_]]
-  }
-
-  def include[T <: BasePerformanceTest[_]: ClassTag](newBenchmark: =>T) = {
-    val cls = implicitly[ClassTag[T]].runtimeClass
-    if (cls.getSimpleName.endsWith("$") || !cls.isInterface) {
-      log.error(
-        s"Can only use `include` with anonymous classes instantiated from traits -- " +
-        s"please make ${cls.getName} a trait and " +
-        s"call include(new ${cls.getSimpleName} {}).")
-      events.emit(Event(
-        cls.getName,
-        s"Can only use `include` with anonymous classes instantiated from traits -- " +
-        s"please make ${cls.getName} a trait and " +
-        s"call include(new ${cls.getSimpleName} {}).",
-        Events.Error, new Exception("Cannot use non-anonymous benchmark class.")))
-    } else newBenchmark
   }
 
 }

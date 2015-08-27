@@ -8,7 +8,8 @@ import org.scalameter.picklers.Pickler
 abstract class Bench[U] extends DSL[U] with Serializable {
 
   def main(args: Array[String]) {
-    val ctx = dyn.currentContext.value ++ Main.Configuration.fromCommandLineArgs(args).context
+    val ctx = dyn.currentContext.value ++
+      Main.Configuration.fromCommandLineArgs(args).context
     val ok = withTestContext(ctx, Log.Console, Events.None) {
       executeTests()
     }
@@ -20,6 +21,13 @@ abstract class Bench[U] extends DSL[U] with Serializable {
 
 
 object Bench {
+
+  class Group extends Bench[Nothing] with GroupedPerformanceTest {
+    def measurer = Measurer.None
+    def executor = Executor.None
+    def persistor = Persistor.None
+    def reporter = Reporter.None
+  }
 
   /** Benchmark that runs snippets in the same JVM.
    *  Reports result into the console.
@@ -102,7 +110,8 @@ object Bench {
     }
   }
 
-  /** A base for benchmarks generating a more detailed (regression) report, potentially online.
+  /** A base for benchmarks generating a more detailed (regression) report,
+   *  potentially online.
    */
   abstract class HTMLReport extends Persisted[Double] {
     import reporting._
@@ -122,22 +131,27 @@ object Bench {
     )
   }
 
-
-  /** Runs in separate JVM, performs regression tests and prepares HTML document for online hosting.
+  /** Runs in separate JVM, performs regression tests and
+   *  prepares HTML document for online hosting.
    */
   abstract class OnlineRegressionReport extends HTMLReport {
     import reporting._
-    def tester: RegressionReporter.Tester = RegressionReporter.Tester.OverlapIntervals()
-    def historian: RegressionReporter.Historian = RegressionReporter.Historian.ExponentialBackoff()
+    def tester: RegressionReporter.Tester =
+      RegressionReporter.Tester.OverlapIntervals()
+    def historian: RegressionReporter.Historian =
+      RegressionReporter.Historian.ExponentialBackoff()
     def online = true
   }
 
-  /** Runs in separate JVM, performs regression tests and prepares an offline HTML document.
+  /** Runs in separate JVM, performs regression tests and
+   *  prepares an offline HTML document.
    */
   abstract class OfflineRegressionReport extends HTMLReport {
     import reporting._
-    def tester: RegressionReporter.Tester = RegressionReporter.Tester.OverlapIntervals()
-    def historian: RegressionReporter.Historian = RegressionReporter.Historian.ExponentialBackoff()
+    def tester: RegressionReporter.Tester =
+      RegressionReporter.Tester.OverlapIntervals()
+    def historian: RegressionReporter.Historian =
+      RegressionReporter.Historian.ExponentialBackoff()
     def online = false
   }
 
@@ -146,12 +160,17 @@ object Bench {
    */
   abstract class OfflineReport extends HTMLReport {
     import reporting._
-    def tester: RegressionReporter.Tester = RegressionReporter.Tester.Accepter()
-    def historian: RegressionReporter.Historian = RegressionReporter.Historian.ExponentialBackoff()
+    def tester: RegressionReporter.Tester =
+      RegressionReporter.Tester.Accepter()
+    def historian: RegressionReporter.Historian =
+      RegressionReporter.Historian.ExponentialBackoff()
     def online = false
   }
 
-  @deprecated("This performance test is now deprecated, please use `OnlineRegressionReport` instead.", "0.5")
+  @deprecated(
+    "This performance test is now deprecated, " +
+    "please use `OnlineRegressionReport` instead.",
+    "0.5")
   abstract class Regression extends Bench[Double] {
     import reporting._
     def warmer: Warmer = Warmer.Default()
@@ -162,29 +181,14 @@ object Bench {
       with Measurer.RelativeNoise {
       def numeric: Numeric[Double] = implicitly[Numeric[Double]]
     }
-    def executor: Executor[Double] = new execution.SeparateJvmsExecutor(warmer, aggregator, measurer)
+    def executor: Executor[Double] =
+      new execution.SeparateJvmsExecutor(warmer, aggregator, measurer)
     def reporter: Reporter[Double] = Reporter.Composite(
-      new RegressionReporter(RegressionReporter.Tester.OverlapIntervals(), RegressionReporter.Historian.ExponentialBackoff()),
+      new RegressionReporter(
+        RegressionReporter.Tester.OverlapIntervals(),
+        RegressionReporter.Historian.ExponentialBackoff()),
       HtmlReporter(false)
     )
   }
 
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

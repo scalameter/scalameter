@@ -8,7 +8,7 @@ import Key._
 
 
 
-class BeforeAfterTest extends Bench.OfflineRegressionReport {
+class BeforeAfterTest extends Bench.OfflineReport {
 
   val sizes = Gen.range("size")(1000000, 5000000, 2000000)
 
@@ -17,7 +17,7 @@ class BeforeAfterTest extends Bench.OfflineRegressionReport {
 
       using(sizes) config (
         exec.benchRuns -> 10,
-        exec.independentSamples -> 2
+        exec.independentSamples -> 1
       ) beforeTests {
         println("ABOUT TO START RANGE TESTS!")
       } afterTests {

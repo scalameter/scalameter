@@ -3,11 +3,22 @@ package examples
 
 
 
-import reporting._
-import Key._
+import org.scalameter.reporting._
+import org.scalameter.Key._
 
 
 
-class TestSuite extends Bench.OfflineRegressionReport {
-  include(new MemoryTest2 {})
+class TestSuite extends Bench.Group {
+  performance of "memory" config(
+    Key.reports.resultDir -> "target/benchmarks/memory"
+  ) in {
+    include(new MemoryTest2 {})
+  }
+
+  performance of "running time" config(
+    Key.reports.resultDir -> "target/benchmarks/time"
+  ) in {
+    println(currentContext)
+    include(new RegressionTest3 {})
+  }
 }

@@ -28,6 +28,8 @@ class ClassPath private (val paths: Seq[File]) extends Serializable {
   }
 
   override def hashCode(): Int = paths.map(_.getAbsolutePath).hashCode()
+
+  override def toString = s"ClassPath(${paths.mkString(":")})"
 }
 
 object ClassPath {

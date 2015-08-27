@@ -35,7 +35,8 @@ case class Tree[T](context: Context, items: Seq[T], children: Seq[Tree[T]]) {
     }
   }
 
-  override def toString = s"Tree(${context.get(FrameworkKey.dsl.executor)}, $items, $children)"
+  override def toString =
+    s"Tree(${context.get(FrameworkKey.dsl.executor)}, $items, $children)"
 }
 
 
@@ -43,13 +44,21 @@ object Tree {
 
   case class Zipper[T](current: Tree[T], path: Zipper.Path[T]) {
     import Zipper._
-    def addContext[S](kv: (Key[S], S)) = Zipper(current.copy(context = current.context + kv), path)
-    def modifyContext(f: Context => Context) = setContext(f(current.context))
-    def setContext(ctx: Context) = Zipper(current.copy(context = ctx), path)
-    def addItem(x: T) = Zipper(current.copy(items = current.items :+ x), path)
-    def descend = Zipper(Tree(current.context, Seq(), Seq()), Node(current.context, current.items, current.children, path))
+    def addContext[S](kv: (Key[S], S)) =
+      Zipper(current.copy(context = current.context + kv), path)
+    def modifyContext(f: Context => Context) =
+      setContext(f(current.context))
+    def setContext(ctx: Context) =
+      Zipper(current.copy(context = ctx), path)
+    def addItem(x: T) =
+      Zipper(current.copy(items = current.items :+ x), path)
+    def descend =
+      Zipper(
+        Tree(current.context, Seq(), Seq()),
+        Node(current.context, current.items, current.children, path))
     def ascend = path match {
-      case Node(ctx, its: Seq[T], left: Seq[Tree[T]], up: Path[T]) => Zipper(Tree(ctx, its, left :+ current), up)
+      case Node(ctx, its: Seq[T], left: Seq[Tree[T]], up: Path[T]) =>
+        Zipper(Tree(ctx, its, left :+ current), up)
     }
     def result = current
   }
@@ -57,9 +66,15 @@ object Tree {
   object Zipper {
     trait Path[+T]
     case object Top extends Path[Nothing]
-    case class Node[T](context: Context, items: Seq[T], left: Seq[Tree[T]], up: Path[T]) extends Path[T]
+    case class Node[T](
+      context: Context,
+      items: Seq[T],
+      left: Seq[Tree[T]],
+      up: Path[T]
+    ) extends Path[T]
 
-    def root[T](initialContext: Context): Zipper[T] = Zipper(Tree(initialContext, Seq(), Seq()), Top)
+    def root[T](initialContext: Context): Zipper[T] =
+      Zipper(Tree(initialContext, Seq(), Seq()), Top)
   }
 
 }

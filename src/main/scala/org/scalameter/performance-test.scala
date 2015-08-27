@@ -6,6 +6,8 @@ import java.util.Date
 import org.scalameter.picklers.Pickler
 import org.scalameter.utils.Tree
 import scala.language.existentials
+import scala.collection._
+import scala.reflect.ClassTag
 import scala.util.DynamicVariable
 
 
@@ -78,7 +80,7 @@ abstract class BasePerformanceTest[U] extends AbstractPerformanceTest {
 
   /** Runs all the tests in this test class or singleton object.
    */
-  final def executeTests(): Boolean = {
+  def executeTests(): Boolean = {
     rebuildSetupZipper()
 
     val datestart: Option[Date] = Some(new Date)
@@ -125,4 +127,41 @@ object BasePerformanceTest {
   private[scalameter] def freshCurveName(): String =
     "Test-" + curveNameCount.getAndIncrement()
 
+}
+
+
+trait GroupedPerformanceTest extends BasePerformanceTest[Nothing] {
+  private[scalameter] val includes =
+    mutable.Set[(BasePerformanceTest[_], Tree.Zipper[Setup[_]])]()
+
+  def include[T <: BasePerformanceTest[_]: ClassTag](newBenchmark: =>T) = {
+    val cls = implicitly[ClassTag[T]].runtimeClass
+    if (cls.getSimpleName.endsWith("$") || !cls.isInterface) {
+      log.error(
+        s"Can only use `include` with anonymous classes instantiated from traits -- " +
+        s"please make ${cls.getName} a trait and " +
+        s"call include(new ${cls.getSimpleName} {}).")
+      events.emit(Event(
+        cls.getName,
+        s"Can only use `include` with anonymous classes instantiated from traits -- " +
+        s"please make ${cls.getName} a trait and " +
+        s"call include(new ${cls.getSimpleName} {}).",
+        Events.Error, new Exception("Cannot use non-anonymous benchmark class.")))
+    } else {
+      val oldvalue = BasePerformanceTest.setupzipper.value
+      for (_ <- dyn.currentContext.using(oldvalue.current.context)) {
+        val bench = newBenchmark
+        includes += ((bench, BasePerformanceTest.setupzipper.value))
+      }
+      BasePerformanceTest.setupzipper.value = oldvalue
+    }
+  }
+
+  override def executeTests(): Boolean = {
+    val results = for ((b, z) <- includes) yield {
+      BasePerformanceTest.setupzipper.value = z
+      b.executeTests()
+    }
+    results.forall(_ == true)
+  }
 }
