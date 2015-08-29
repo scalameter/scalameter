@@ -61,7 +61,7 @@ object ScalaMeterBuild extends MechaRepoBuild {
     name := "scalameter",
     organization := "com.storm-enroute",
     scalaVersion := "2.11.4",
-    crossScalaVersions := Seq("2.10.4", "2.11.4"),
+    crossScalaVersions := Seq("2.10.4", "2.11.4", "2.12.0-M1"),
     scalacOptions ++= Seq("-deprecation", "-unchecked", "-feature", "-Xlint"),
     libraryDependencies <++= (scalaVersion)(sv => dependencies(sv)),
     parallelExecution in Test := false,
@@ -102,7 +102,17 @@ object ScalaMeterBuild extends MechaRepoBuild {
   )
 
   def dependencies(scalaVersion: String) = CrossVersion.partialVersion(scalaVersion) match {
-    case Some((2,11)) => List (
+    case Some((2, 12)) => List(
+      "org.scalatest" % "scalatest_2.12.0-M1" % "2.2.5-M1" % "test",
+      "com.github.wookietreiber" % "scala-chart_2.11" % "0.4.2",
+      "org.apache.commons" % "commons-math3" % "3.2",
+      "org.scala-tools.testing" % "test-interface" % "0.5",
+      "org.scala-lang" % "scala-reflect" % "2.11.0",
+      "org.scala-lang.modules" % "scala-xml_2.12.0-M1" % "1.0.5",
+      "org.scala-lang.modules" % "scala-parser-combinators_2.12.0-M1" % "1.0.4",
+      "com.fasterxml.jackson.module" % "jackson-module-scala_2.11" % "2.5.2"
+    )
+    case Some((2, 11)) => List(
       "org.scalatest" %% "scalatest" % "2.1.3" % "test",
       "com.github.wookietreiber" %% "scala-chart" % "0.4.2",
       "org.apache.commons" % "commons-math3" % "3.2",
@@ -111,14 +121,14 @@ object ScalaMeterBuild extends MechaRepoBuild {
       "org.scala-lang.modules" %% "scala-xml" % "1.0.1",
       "org.scala-lang.modules" %% "scala-parser-combinators" % "1.0.1",
       "com.fasterxml.jackson.module" %% "jackson-module-scala" % "2.5.2"
-      )
-    case Some((2,10)) => List (
+    )
+    case Some((2, 10)) => List(
       "org.scalatest" %% "scalatest" % "2.1.2" % "test",
       "com.github.wookietreiber" %% "scala-chart" % "0.4.0",
       "org.apache.commons" % "commons-math3" % "3.2",
       "org.scala-tools.testing" % "test-interface" % "0.5",
       "com.fasterxml.jackson.module" %% "jackson-module-scala" % "2.5.2"
-      )
+    )
     case _ => Nil
   }
 
@@ -126,7 +136,7 @@ object ScalaMeterBuild extends MechaRepoBuild {
     name := "scalameter-core",
     organization := "com.storm-enroute",
     scalaVersion := "2.11.4",
-    crossScalaVersions := Seq("2.10.4", "2.11.4"),
+    crossScalaVersions := Seq("2.10.4", "2.11.4", "2.12.0-M1"),
     scalacOptions ++= Seq("-deprecation", "-unchecked", "-feature", "-Xlint"),
     libraryDependencies <++= (scalaVersion)(sv => coreDependencies(sv)),
     parallelExecution in Test := false,
@@ -167,7 +177,17 @@ object ScalaMeterBuild extends MechaRepoBuild {
   )
 
   def coreDependencies(scalaVersion: String) = CrossVersion.partialVersion(scalaVersion) match {
-    case Some((2,11)) => List (
+    case Some((2, 12)) => List(
+      "org.scalacheck" % "scalacheck_2.12.0-M1" % "1.12.4" % "test",
+      "org.scalatest" % "scalatest_2.12.0-M1" % "2.2.5-M1" % "test",
+      "org.apache.commons" % "commons-math3" % "3.2",
+      "org.apache.commons" % "commons-lang3" % "3.4",
+      "org.scala-lang" % "scala-reflect" % "2.11.0",
+      "org.scala-lang.modules" % "scala-xml_2.12.0-M1" % "1.0.5",
+      "org.scala-lang.modules" % "scala-parser-combinators_2.12.0-M1" % "1.0.4",
+      "org.ow2.asm" % "asm" % "5.0.4"
+    )
+    case Some((2, 11)) => List(
       "org.scalacheck" %% "scalacheck" % "1.12.4" % "test",
       "org.scalatest" %% "scalatest" % "2.1.3" % "test",
       "org.apache.commons" % "commons-math3" % "3.2",
@@ -177,7 +197,7 @@ object ScalaMeterBuild extends MechaRepoBuild {
       "org.scala-lang.modules" %% "scala-parser-combinators" % "1.0.1",
       "org.ow2.asm" % "asm" % "5.0.4"
     )
-    case Some((2,10)) => List (
+    case Some((2, 10)) => List(
       "org.scalacheck" %% "scalacheck" % "1.12.4" % "test",
       "org.scalatest" %% "scalatest" % "2.1.3" % "test",
       "org.apache.commons" % "commons-math3" % "3.2",
