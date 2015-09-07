@@ -104,7 +104,7 @@ object ScalaMeterBuild extends MechaRepoBuild {
   def dependencies(scalaVersion: String) = CrossVersion.partialVersion(scalaVersion) match {
     case Some((2, 12)) => List(
       "org.scalatest" % "scalatest_2.12.0-M1" % "2.2.5-M1" % "test",
-      "com.github.wookietreiber" % "scala-chart_2.11" % "0.4.2",
+      "com.github.wookietreiber" % "scala-chart_2.12.0-M2" % "0.5.0",
       "org.apache.commons" % "commons-math3" % "3.2",
       "org.scala-tools.testing" % "test-interface" % "0.5",
       "org.scala-lang" % "scala-reflect" % "2.11.0",
