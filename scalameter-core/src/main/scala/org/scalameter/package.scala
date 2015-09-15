@@ -2,11 +2,10 @@ package org
 
 
 
+import scala.collection._
 import scala.language.implicitConversions
 import scala.language.postfixOps
 import scala.language.existentials
-
-import scala.collection._
 
 
 
