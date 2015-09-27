@@ -17,11 +17,11 @@ import scala.collection.mutable.HashMap
 
 abstract class JavaGenerator[T] extends Serializable {
   def get(): Gen[_]
-  def map[T, S](m: MapFunction[T, S]): JavaGenerator[S] = {
+  def map[S](m: MapFunction[T, S]): JavaGenerator[S] = {
     def f: T => S = (t: T) => { m.map(t) }
     return new JavaGen(get.asInstanceOf[Gen[T]].map(f))
   }
-  def flatmap[T, S](fm: FlatmapFunction[T, S]): JavaGenerator[S] = {
+  def flatmap[S](fm: FlatmapFunction[T, S]): JavaGenerator[S] = {
     def f: T => Gen[S] = t => fm.flatmap(t).get.asInstanceOf[Gen[S]]
     return new JavaGen(get.asInstanceOf[Gen[T]].flatMap(f))
   }
