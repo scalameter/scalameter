@@ -8,9 +8,7 @@ import Key._
 
 
 
-class SetBenchmarks extends Bench.Regression with Collections {
-
-  def persistor = new persistence.SerializationPersistor()
+class SetBenchmarks extends Bench.OnlineRegressionReport with Collections {
 
   /* tests */
 

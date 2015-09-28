@@ -8,9 +8,7 @@ import Key._
 
 
 
-class TraversableBenchmarks extends Bench.Regression with Collections {
-
-  def persistor = new persistence.SerializationPersistor()
+class TraversableBenchmarks extends Bench.OnlineRegressionReport with Collections {
 
   /* traversable collections */
 
