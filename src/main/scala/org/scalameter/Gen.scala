@@ -8,6 +8,12 @@ import org.scalameter.picklers.Implicits._
 
 
 
+/** Base class for ScalaMeter generators.
+ *
+ *  Generators create warmup and benchmark datasets for running benchmarks.
+ *  They support neat combinator-style syntax for composing more complex
+ *  generators out of simpler ones.
+ */
 abstract class Gen[T] extends Serializable {
   self =>
 

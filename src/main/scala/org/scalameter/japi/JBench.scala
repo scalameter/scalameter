@@ -13,7 +13,7 @@ import scala.language.reflectiveCalls
 import scala.util.Try
 
 
-/** Base class for all annotation based benchmarks. */
+/** Base class for all annotation-based benchmarks. */
 abstract class JBench[U] extends BasePerformanceTest[U] with Serializable {
 
   override final def rebuildSetupZipper() = constructSetupTree()

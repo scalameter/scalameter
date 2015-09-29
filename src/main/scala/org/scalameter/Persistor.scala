@@ -5,6 +5,8 @@ package org.scalameter
 
 
 
+/** Persistors are used to store historical data about benchmark runs.
+ */
 trait Persistor {
   def load[T](context: Context): History[T]
   def save[T](context: Context, h: History[T]): Unit

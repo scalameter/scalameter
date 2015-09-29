@@ -1,10 +1,14 @@
 package org.scalameter
 
 
+
 import org.scalameter.picklers.Implicits._
 import org.scalameter.picklers.Pickler
 
 
+
+/** Base class for ScalaMeter benchmarks.
+ */
 abstract class Bench[U] extends DSL[U] with Serializable {
 
   def main(args: Array[String]) {
