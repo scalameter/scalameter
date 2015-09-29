@@ -65,6 +65,3 @@ class SlidingWindowTest extends FunSuite {
   }
 
 }
-
-
-
