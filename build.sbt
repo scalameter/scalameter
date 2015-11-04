@@ -133,7 +133,7 @@ val scalaMeterCoreSettings = Defaults.defaultSettings ++ publishCreds ++ Seq(
   scalaVersion := "2.11.4",
   crossScalaVersions := Seq("2.10.4", "2.11.4", "2.12.0-M1"),
   scalacOptions ++= Seq("-deprecation", "-unchecked", "-feature", "-Xlint"),
-  libraryDependencies <++= (scalaVersion)(sv => coreDependencies(sv)),
+  libraryDependencies <++= (scalaVersion)(sv => coreJavaLibs ++ coreDependencies(sv)),
   parallelExecution in Test := false,
   resolvers ++= Seq(
     "Sonatype OSS Snapshots" at "https://oss.sonatype.org/content/repositories/snapshots",
@@ -171,35 +171,32 @@ val scalaMeterCoreSettings = Defaults.defaultSettings ++ publishCreds ++ Seq(
     </developers>
 )
 
+def coreJavaLibs = Seq(
+    "org.apache.commons" % "commons-math3" % "3.2",
+    "org.apache.commons" % "commons-lang3" % "3.4",
+    "org.ow2.asm" % "asm" % "5.0.4"
+  )
+
 def coreDependencies(scalaVersion: String) = CrossVersion.partialVersion(scalaVersion) match {
-  case Some((2, 12)) => List(
+  case Some((2, 12)) => Seq(
     "org.scalacheck" % "scalacheck_2.12.0-M1" % "1.12.4" % "test",
     "org.scalatest" % "scalatest_2.12.0-M1" % "2.2.5-M1" % "test",
-    "org.apache.commons" % "commons-math3" % "3.2",
-    "org.apache.commons" % "commons-lang3" % "3.4",
     "org.scala-lang" % "scala-reflect" % "2.11.0",
     "org.scala-lang.modules" % "scala-xml_2.12.0-M1" % "1.0.5",
-    "org.scala-lang.modules" % "scala-parser-combinators_2.12.0-M1" % "1.0.4",
-    "org.ow2.asm" % "asm" % "5.0.4"
+    "org.scala-lang.modules" % "scala-parser-combinators_2.12.0-M1" % "1.0.4"
   )
-  case Some((2, 11)) => List(
+  case Some((2, 11)) => Seq(
     "org.scalacheck" %% "scalacheck" % "1.12.4" % "test",
     "org.scalatest" %% "scalatest" % "2.1.3" % "test",
-    "org.apache.commons" % "commons-math3" % "3.2",
-    "org.apache.commons" % "commons-lang3" % "3.4",
     "org.scala-lang" % "scala-reflect" % "2.11.0",
     "org.scala-lang.modules" %% "scala-xml" % "1.0.1",
-    "org.scala-lang.modules" %% "scala-parser-combinators" % "1.0.1",
-    "org.ow2.asm" % "asm" % "5.0.4"
+    "org.scala-lang.modules" %% "scala-parser-combinators" % "1.0.1"
   )
-  case Some((2, 10)) => List(
+  case Some((2, 10)) => Seq(
     "org.scalacheck" %% "scalacheck" % "1.12.4" % "test",
-    "org.scalatest" %% "scalatest" % "2.1.3" % "test",
-    "org.apache.commons" % "commons-math3" % "3.2",
-    "org.apache.commons" % "commons-lang3" % "3.4",
-    "org.ow2.asm" % "asm" % "5.0.4"
+    "org.scalatest" %% "scalatest" % "2.1.3" % "test"
   )
-  case _ => Nil
+  case _ => Seq()
 }
 
 val javaCommand = TaskKey[String](
