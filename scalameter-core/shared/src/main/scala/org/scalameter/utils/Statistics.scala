@@ -6,10 +6,6 @@ import language.implicitConversions
 
 import collection._
 import math._
-import org.apache.commons.math3.distribution.TDistribution
-import org.apache.commons.math3.distribution.NormalDistribution
-import org.apache.commons.math3.distribution.FDistribution
-
 
 
 /** Standard statistics utilities.
@@ -19,7 +15,7 @@ import org.apache.commons.math3.distribution.FDistribution
  *  the significance level `alpha` should be set to `0.1`.
  *  In this example, the confidence level is `0.9`, and the significance level is `0.1`.
  */
-object Statistics {
+object Statistics extends Distributions {
 
 	trait Test {
 		def passed: Boolean
@@ -177,29 +173,6 @@ object Statistics {
 	}
 
 	def clamp(x: Double, below: Double, above: Double) = math.max(below, math.min(above, x))
-
-	/** Quantile function for the Student's t distribution.
-	 *  Let 0 < p < 1. The p-th quantile of the cumulative distribution function F(x) is defined as
-	 *  x_p = inf{x : F(x) >= p}
-	 *  For most of the continuous random variables, x_p is unique and is equal to x_p = F^(-1)(p), where
-	 *  F^(-1) is the inverse function of F. Thus, x_p is the value for which Pr(X <= x_p) = p. In particular,
-	 *  the 0.5-th quantile is called the median of F.
-	 */
-	private def qt(p: Double, df: Double): Double = {
-		new TDistribution(df).inverseCumulativeProbability(p)
-	}
-
-	/** Quantile function for the standard (μ = 0, σ = 1) normal distribution.
-	 */
-	private def qsnorm(p: Double): Double = {
-		new NormalDistribution().inverseCumulativeProbability(p)
-	}
-
-	/** Quantile function for the F distribution.
-	 */
-	private def qf(p: Double, df1: Double, df2: Double) = {
-		new FDistribution(df1, df2).inverseCumulativeProbability(p)
-	}
 
 }
 

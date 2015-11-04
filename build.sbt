@@ -244,7 +244,9 @@ lazy val scalaMeterCore = (crossProject.crossType(CrossType.Full) in file("scala
   releasePluginSettings : _*
 ).jvmSettings(
   scalaMeterCoreSettings : _*
-).jsSettings()
+).jsSettings(
+  jsDependencies += "org.webjars.bower" % "jstat" % "1.3.0" / "jstat.js" minified "jstat.min.js"
+)
 
 lazy val scalaMeterCoreJVM = scalaMeterCore.jvm
 lazy val scalaMeterCoreJS = scalaMeterCore.js
