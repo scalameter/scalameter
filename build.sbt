@@ -237,11 +237,13 @@ val runsuiteTask = InputKey[Unit](
 
 //projects
 
-lazy val scalaMeterCore = (crossProject in file("scalameter-core")).settings(
+lazy val scalaMeterCore = (crossProject.crossType(CrossType.Full) in file("scalameter-core")).settings(
   name := "scalameter-core",
   EclipseKeys.useProjectId := true
+).settings(
+  releasePluginSettings : _*
 ).jvmSettings(
-  scalaMeterCoreSettings ++ releasePluginSettings : _*
+  scalaMeterCoreSettings : _*
 ).jsSettings()
 
 lazy val scalaMeterCoreJVM = scalaMeterCore.jvm
