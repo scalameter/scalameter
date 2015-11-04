@@ -240,18 +240,21 @@ val runsuiteTask = InputKey[Unit](
 
 //projects
 
-lazy val scalaMeterCore = Project(
-  "scalameter-core",
-  file("scalameter-core"),
-  settings = scalaMeterCoreSettings ++ releasePluginSettings
-)
+lazy val scalaMeterCore = (crossProject in file("scalameter-core")).settings(
+  name := "scalameter-core"
+).jvmSettings(
+  scalaMeterCoreSettings ++ releasePluginSettings : _*
+).jsSettings()
+
+lazy val scalaMeterCoreJVM = scalaMeterCore.jvm
+lazy val scalaMeterCoreJS = scalaMeterCore.js
 
 lazy val scalaMeter = Project(
   "scalameter",
   file("."),
   settings = scalaMeterSettings ++ Seq(javaCommandSetting, runsuiteTask) ++ releasePluginSettings
 ) dependsOn (
-  scalaMeterCore
+  scalaMeterCoreJVM
 ) aggregate(
-  scalaMeterCore
+  scalaMeterCoreJVM
 )
