@@ -52,7 +52,7 @@ val releasePluginSettings = releaseSettings ++ Seq(
   )
 )
 
-val scalaMeterSettings = Defaults.defaultSettings ++ publishCreds ++ Seq(
+val scalaMeterSettings = publishCreds ++ Seq(
   name := "scalameter",
   organization := "com.storm-enroute",
   scalaVersion := "2.11.7",
@@ -127,7 +127,7 @@ def dependencies(scalaVersion: String) = CrossVersion.partialVersion(scalaVersio
   case _ => Nil
 }
 
-val scalaMeterCoreSettings = Defaults.defaultSettings ++ publishCreds ++ Seq(
+val scalaMeterCoreSettings = publishCreds ++ Seq(
   name := "scalameter-core",
   organization := "com.storm-enroute",
   scalaVersion := "2.11.7",
