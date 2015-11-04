@@ -55,8 +55,8 @@ val releasePluginSettings = releaseSettings ++ Seq(
 val scalaMeterSettings = Defaults.defaultSettings ++ publishCreds ++ Seq(
   name := "scalameter",
   organization := "com.storm-enroute",
-  scalaVersion := "2.11.4",
-  crossScalaVersions := Seq("2.10.4", "2.11.4", "2.12.0-M1"),
+  scalaVersion := "2.11.7",
+  crossScalaVersions := Seq("2.10.5", "2.11.7", "2.12.0-M1"),
   scalacOptions ++= Seq("-deprecation", "-unchecked", "-feature", "-Xlint"),
   libraryDependencies <++= (scalaVersion)(sv => dependencies(sv)),
   parallelExecution in Test := false,
@@ -102,7 +102,7 @@ def dependencies(scalaVersion: String) = CrossVersion.partialVersion(scalaVersio
     "com.github.wookietreiber" %% "scala-chart" % "0.5.0",
     "org.apache.commons" % "commons-math3" % "3.2",
     "org.scala-tools.testing" % "test-interface" % "0.5",
-    "org.scala-lang" % "scala-reflect" % "2.11.0",
+    "org.scala-lang" % "scala-reflect" % "2.11.7",
     "org.scala-lang.modules" % "scala-xml_2.12.0-M1" % "1.0.5",
     "org.scala-lang.modules" % "scala-parser-combinators_2.12.0-M1" % "1.0.4",
     "com.fasterxml.jackson.module" % "jackson-module-scala_2.11" % "2.5.2"
@@ -112,7 +112,7 @@ def dependencies(scalaVersion: String) = CrossVersion.partialVersion(scalaVersio
     "com.github.wookietreiber" %% "scala-chart" % "0.5.0",
     "org.apache.commons" % "commons-math3" % "3.2",
     "org.scala-tools.testing" % "test-interface" % "0.5",
-    "org.scala-lang" % "scala-reflect" % "2.11.0",
+    "org.scala-lang" % "scala-reflect" % "2.11.7",
     "org.scala-lang.modules" %% "scala-xml" % "1.0.1",
     "org.scala-lang.modules" %% "scala-parser-combinators" % "1.0.1",
     "com.fasterxml.jackson.module" %% "jackson-module-scala" % "2.5.2"
@@ -130,8 +130,8 @@ def dependencies(scalaVersion: String) = CrossVersion.partialVersion(scalaVersio
 val scalaMeterCoreSettings = Defaults.defaultSettings ++ publishCreds ++ Seq(
   name := "scalameter-core",
   organization := "com.storm-enroute",
-  scalaVersion := "2.11.4",
-  crossScalaVersions := Seq("2.10.4", "2.11.4", "2.12.0-M1"),
+  scalaVersion := "2.11.7",
+  crossScalaVersions := Seq("2.10.5", "2.11.7", "2.12.0-M1"),
   scalacOptions ++= Seq("-deprecation", "-unchecked", "-feature", "-Xlint"),
   libraryDependencies <++= (scalaVersion)(sv => coreJavaLibs ++ coreDependencies(sv)),
   parallelExecution in Test := false,
@@ -181,14 +181,14 @@ def coreDependencies(scalaVersion: String) = CrossVersion.partialVersion(scalaVe
   case Some((2, 12)) => Seq(
     "org.scalacheck" % "scalacheck_2.12.0-M1" % "1.12.4" % "test",
     "org.scalatest" % "scalatest_2.12.0-M1" % "2.2.5-M1" % "test",
-    "org.scala-lang" % "scala-reflect" % "2.11.0",
+    "org.scala-lang" % "scala-reflect" % "2.11.7",
     "org.scala-lang.modules" % "scala-xml_2.12.0-M1" % "1.0.5",
     "org.scala-lang.modules" % "scala-parser-combinators_2.12.0-M1" % "1.0.4"
   )
   case Some((2, 11)) => Seq(
     "org.scalacheck" %% "scalacheck" % "1.12.4" % "test",
     "org.scalatest" %% "scalatest" % "2.1.3" % "test",
-    "org.scala-lang" % "scala-reflect" % "2.11.0",
+    "org.scala-lang" % "scala-reflect" % "2.11.7",
     "org.scala-lang.modules" %% "scala-xml" % "1.0.1",
     "org.scala-lang.modules" %% "scala-parser-combinators" % "1.0.1"
   )
@@ -238,7 +238,8 @@ val runsuiteTask = InputKey[Unit](
 //projects
 
 lazy val scalaMeterCore = (crossProject in file("scalameter-core")).settings(
-  name := "scalameter-core"
+  name := "scalameter-core",
+  EclipseKeys.useProjectId := true
 ).jvmSettings(
   scalaMeterCoreSettings ++ releasePluginSettings : _*
 ).jsSettings()
