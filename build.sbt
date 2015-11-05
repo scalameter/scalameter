@@ -237,7 +237,7 @@ val runsuiteTask = InputKey[Unit](
 
 //projects
 
-lazy val scalaMeterCore = (crossProject.crossType(CrossType.Full) in file("scalameter-core")).settings(
+lazy val scalaMeterCore = (crossProject in file("scalameter-core")).settings(
   name := "scalameter-core",
   EclipseKeys.useProjectId := true
 ).settings(
@@ -251,12 +251,19 @@ lazy val scalaMeterCore = (crossProject.crossType(CrossType.Full) in file("scala
 lazy val scalaMeterCoreJVM = scalaMeterCore.jvm
 lazy val scalaMeterCoreJS = scalaMeterCore.js
 
-lazy val scalaMeter = Project(
-  "scalameter",
-  file("."),
-  settings = scalaMeterSettings ++ Seq(javaCommandSetting, runsuiteTask) ++ releasePluginSettings
+lazy val scalaMeter = (crossProject in file(".")).settings(
+  name := "scalameter",
+  EclipseKeys.useProjectId := true
+).settings(
+  releasePluginSettings : _*
+).jvmSettings(
+  scalaMeterSettings ++ Seq(javaCommandSetting, runsuiteTask) : _*
+).jsSettings(
 ) dependsOn (
-  scalaMeterCoreJVM
+  scalaMeterCore
 ) aggregate(
-  scalaMeterCoreJVM
+  scalaMeterCore
 )
+
+lazy val scalaMeterJVM = scalaMeter.jvm
+lazy val scalaMeterJs = scalaMeter.js
