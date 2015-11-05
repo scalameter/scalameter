@@ -4,8 +4,6 @@ package org.scalameter.utils
 
 import java.io.File
 import java.net._
-import org.apache.commons.lang3.SystemUtils
-
 
 
 class ClassPath private (val paths: Seq[File]) extends Serializable {
