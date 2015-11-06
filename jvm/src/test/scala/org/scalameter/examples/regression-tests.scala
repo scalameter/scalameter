@@ -7,7 +7,7 @@ import org.scalameter.picklers.Implicits._
 
 
 
-class RegressionTest extends Bench.OfflineReport {
+class RegressionTest extends OfflineReport {
 
   val sizes = Gen.range("size")(1000000, 5000000, 2000000)
 
@@ -27,7 +27,7 @@ class RegressionTest extends Bench.OfflineReport {
 }
 
 
-class RegressionTest2 extends Bench.OfflineReport {
+class RegressionTest2 extends OfflineReport {
 
   val sizes = Gen.range("size")(1000000, 2000000, 500000)
 
@@ -48,7 +48,7 @@ class RegressionTest2 extends Bench.OfflineReport {
 }
 
 
-trait RegressionTest3 extends Bench.OfflineReport {
+trait RegressionTest3 extends OfflineReport {
 
   val sizes = Gen.single("size")(500000)
 

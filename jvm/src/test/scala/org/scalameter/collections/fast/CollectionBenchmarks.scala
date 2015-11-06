@@ -5,7 +5,7 @@ package collections.fast
 
 
 
-class CollectionBenchmarks extends Bench.Regression {
+class CollectionBenchmarks extends api.Regression {
 
   def persistor = new persistence.SerializationPersistor
 

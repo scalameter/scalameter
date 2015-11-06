@@ -39,7 +39,7 @@ extends Bench[Double] {
 
 
 object RangeBenchmark0
-extends Bench.LocalTime {
+extends LocalTime {
 
   /* configuration */
 

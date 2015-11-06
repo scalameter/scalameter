@@ -4,11 +4,11 @@ package collections
 
 
 import collection._
-import Key._
+import api._
 
 
 
-class TraversableBenchmarks extends Bench.OnlineRegressionReport with Collections {
+class TraversableBenchmarks extends OnlineRegressionReport with Collections {
 
   /* traversable collections */
 

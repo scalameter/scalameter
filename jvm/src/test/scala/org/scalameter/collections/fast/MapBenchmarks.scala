@@ -5,11 +5,11 @@ package fast
 
 
 import collection._
-import Key._
+import api._
 
 
 
-class MapBenchmarks extends Bench.Regression with Collections {
+class MapBenchmarks extends Regression with Collections {
 
   def persistor = new persistence.SerializationPersistor()
 

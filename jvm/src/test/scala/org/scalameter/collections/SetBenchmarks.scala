@@ -4,11 +4,11 @@ package collections
 
 
 import collection._
-import Key._
+import api._
 
 
 
-class SetBenchmarks extends Bench.OnlineRegressionReport with Collections {
+class SetBenchmarks extends OnlineRegressionReport with Collections {
 
   /* tests */
 

@@ -5,11 +5,11 @@ package fast
 
 
 import collection._
-import Key._
+import api._
 
 
 
-class TraversableBenchmarks extends Bench.Regression with Collections {
+class TraversableBenchmarks extends Regression with Collections {
 
   def persistor = new persistence.SerializationPersistor()
 

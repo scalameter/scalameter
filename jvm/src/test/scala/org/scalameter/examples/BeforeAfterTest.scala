@@ -8,7 +8,7 @@ import Key._
 
 
 
-class BeforeAfterTest extends Bench.OfflineReport {
+class BeforeAfterTest extends bench.OfflineReport {
 
   val sizes = Gen.range("size")(1000000, 5000000, 2000000)
 

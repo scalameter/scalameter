@@ -11,7 +11,7 @@ import org.scalameter.picklers.Implicits._
 
 class QuickbenchmarkTest extends FunSuite {
 
-  object SomeBenchmark extends Bench.LocalTime {
+  object SomeBenchmark extends LocalTime {
     performance of "single" in {
       using(Gen.single("single")(1)) in (_ + 0)
     }

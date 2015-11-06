@@ -3,10 +3,11 @@ package org.scalameter
 
 
 import scala.collection._
+import api._
 
 
 
-class RegressionSeqTest extends Bench.OnlineRegressionReport with SeqTesting
+class RegressionSeqTest extends OnlineRegressionReport with SeqTesting
 
 
 trait SeqTesting { this: Bench[Double] =>

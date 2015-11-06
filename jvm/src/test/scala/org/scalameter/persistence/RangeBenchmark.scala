@@ -1,11 +1,10 @@
 package org.scalameter.persistence
 
-import org.scalameter._
-import org.scalameter.reporting.RegressionReporter
+import org.scalameter.api._
 
 
-class RangeBenchmark(override val persistor: Persistor) extends Bench.LocalTime {
-  override def reporter = new reporting.RegressionReporter(
+class RangeBenchmark(override val persistor: Persistor) extends LocalTime {
+  override def reporter = new RegressionReporter(
     RegressionReporter.Tester.Accepter(),
     RegressionReporter.Historian.Complete()
   )

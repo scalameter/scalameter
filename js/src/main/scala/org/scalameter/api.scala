@@ -43,36 +43,14 @@ object api extends Keys {
 
   type Persistor = org.scalameter.Persistor
   val Persistor = org.scalameter.Persistor
-  
+
   /* bench */
   type Local[U] = org.scalameter.bench.Local[U]
   type LocalTime = org.scalameter.bench.LocalTime
   
-  type Forked[U] = org.scalameter.bench.Forked[U]
-  type ForkedTime = org.scalameter.bench.ForkedTime
-  
-  type Persisted[U] = org.scalameter.bench.Persisted[U]
-  type HTMLReport = org.scalameter.bench.HTMLReport
-  type OnlineRegressionReport = org.scalameter.bench.OnlineRegressionReport
-  type OfflineRegressionReport = org.scalameter.bench.OfflineRegressionReport
-  type OfflineReport = org.scalameter.bench.OfflineReport
-  
-  @deprecated(
-  "This performance test is now deprecated, " +
-    "please use `OnlineRegressionReport` instead.",
-  "0.5")
-  type Regression = org.scalameter.bench.Regression
-  
-  @deprecated("Please use Bench.LocalTime instead", "0.7")
-  type Quickbenchmark = LocalTime
-  
-  @deprecated("Please use Bench.ForkedTime instead", "0.7")
-  type Microbenchmark = ForkedTime
-  
   /* execution */
 
   val LocalExecutor = execution.LocalExecutor
-  val SeparateJvmsExecutor = execution.SeparateJvmsExecutor
 
   val Aggregator = org.scalameter.Aggregator
   val Warmer = org.scalameter.Warmer
@@ -84,47 +62,16 @@ object api extends Keys {
 
   /* reporting */
 
-  type ChartReporter[T] = reporting.ChartReporter[T]
-  val ChartReporter = reporting.ChartReporter
-
-  type HtmlReporter[T] = reporting.HtmlReporter[T]
-  val HtmlReporter = reporting.HtmlReporter
-
   type LoggingReporter[T] = reporting.LoggingReporter[T]
   val LoggingReporter = reporting.LoggingReporter
 
   type RegressionReporter[T] = reporting.RegressionReporter[T]
   val RegressionReporter = reporting.RegressionReporter
-
-  type DsvReporter[T] = reporting.DsvReporter[T]
-  val DsvReporter = reporting.DsvReporter
-
+  
   val Tester = reporting.RegressionReporter.Tester
   val Historian = reporting.RegressionReporter.Historian
-  val ChartFactory = reporting.ChartReporter.ChartFactory
 
   /* persistence */
 
-  type SerializationPersistor = persistence.SerializationPersistor
-  val SerializationPersistor = persistence.SerializationPersistor
-
-  type JSONSerializationPersistor = persistence.JSONSerializationPersistor
-  val JSONSerializationPersistor = persistence.JSONSerializationPersistor
-
-  type GZIPJSONSerializationPersistor = persistence.GZIPJSONSerializationPersistor
-  val GZIPJSONSerializationPersistor = persistence.GZIPJSONSerializationPersistor
-
-  /* annotation based frontend */
-
-  type benchmark = japi.annotation.benchmark
-  type ctx = japi.annotation.ctx
-  type curve = japi.annotation.curve
-  type gen = japi.annotation.gen
-  type scopeCtx = japi.annotation.scopeCtx
-  type scopes = japi.annotation.scopes
-  type setup = japi.annotation.setup
-  type setupBeforeAll = japi.annotation.setupBeforeAll
-  type teardown = japi.annotation.teardown
-  type teardownAfterAll = japi.annotation.teardownAfterAll
-  type warmup = japi.annotation.warmup
+  // TODO
 }

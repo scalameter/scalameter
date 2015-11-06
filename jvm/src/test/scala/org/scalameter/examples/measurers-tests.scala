@@ -29,47 +29,47 @@ trait Snippet[U] extends Bench[U] {
 }
 
 
-class DefaultQuickBench extends Bench.LocalTime with Snippet[Double]
+class DefaultQuickBench extends LocalTime with Snippet[Double]
 
 
-class DefaultMicroBench extends Bench.ForkedTime with Snippet[Double] {
+class DefaultMicroBench extends ForkedTime with Snippet[Double] {
   override def measurer: Measurer[Double] = new Measurer.Default
 }
 
 
-class IgnoringGCQuickBench extends Bench.LocalTime with Snippet[Double] {
+class IgnoringGCQuickBench extends LocalTime with Snippet[Double] {
   override def measurer: Measurer[Double] = new Measurer.IgnoringGC
 }
 
 
-class IgnoringGCMicroBench extends Bench.ForkedTime with Snippet[Double]
+class IgnoringGCMicroBench extends ForkedTime with Snippet[Double]
 
 
-class MemoryQuickBench extends Bench.LocalTime with Snippet[Double] {
+class MemoryQuickBench extends LocalTime with Snippet[Double] {
   override def measurer: Measurer[Double] = new Measurer.MemoryFootprint
 }
 
 
-class MemoryMicroBench extends Bench.ForkedTime with Snippet[Double] {
+class MemoryMicroBench extends ForkedTime with Snippet[Double] {
   override def measurer: Measurer[Double] = new Measurer.MemoryFootprint
 }
 
 
-class GCCountQuickBench extends Bench.Local[Int] with Snippet[Int] {
+class GCCountQuickBench extends Local[Int] with Snippet[Int] {
   def aggregator: Aggregator[Int] = Aggregator.median
 
   def measurer: Measurer[Int] = new Measurer.GarbageCollectionCycles
 }
 
 
-class GCCountMicroBench extends Bench.Forked[Int] with Snippet[Int] {
+class GCCountMicroBench extends Forked[Int] with Snippet[Int] {
   def aggregator: Aggregator[Int] = Aggregator.median
 
   def measurer: Measurer[Int] = new Measurer.GarbageCollectionCycles
 }
 
 
-class InvocationCountMeasurerBench extends Bench.ForkedTime {
+class InvocationCountMeasurerBench extends ForkedTime {
   override val persistor: InterceptingPersistor =
     new InterceptingPersistor(new GZIPJSONSerializationPersistor)
 

@@ -1,14 +1,13 @@
 package org.scalameter
 
 import collection._
-import reporting._
-import Key._
+import api._
 import collections._
 import parallel.ParIterable
 
 
 
-class JSChartTestSimple extends Bench.Regression with Collections {
+class JSChartTestSimple extends Regression with Collections {
 
   def persistor = new persistence.SerializationPersistor()
 
