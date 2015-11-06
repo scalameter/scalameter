@@ -8,6 +8,6 @@ object ScalaRuntime extends AbstractScalaRuntime {
   
   def machineContext : Context = Context.empty
   
-  def defaultClassPath : ClassPath = ???
+  def defaultClassPath : ClassPath = ClassPath(Seq())
 
 }
