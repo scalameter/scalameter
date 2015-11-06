@@ -36,6 +36,8 @@ final class Class[A] private (data: ScalaJSClassData[A]) extends Object {
   def newInstance() : A = ???
   
   def getEnumConstants() : Array[A] = ??? 
+  
+  def getMethod(name: String, parameterTypes : Array[Class[_]] ) = ??? 
   /////////////////////////////
   
   override def toString(): String = {

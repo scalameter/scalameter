@@ -9,8 +9,12 @@ import scala.scalajs.runtime.assumingES6
 object System {
   
   def getProperty(key: String) : String = ""
+  def getProperty[T](key: T) : T = "".asInstanceOf[T]
   def setProperty(key: String, value : String) : String = ""
-  def getProperties() : java.util.Properties = new java.util.Properties()
+  def getProperties() : java.util.Properties = new java.util.Properties {
+      def get(key: String) : String = ""
+      override def getProperty(key: String) : String = ""
+  }
 
   //////////
   var out: PrintStream = new JSConsoleBasedPrintStream(isErr = false)
