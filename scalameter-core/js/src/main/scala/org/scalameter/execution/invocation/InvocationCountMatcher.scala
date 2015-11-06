@@ -58,46 +58,7 @@ object InvocationCountMatcher {
      *  @param withSelf when true class is also matched if it is the [[baseClazz]].
      */
     case class Descendants(baseClazz: String, direct: Boolean, withSelf: Boolean) extends ClassMatcher {
-      def matches(className: String): Boolean = {
-        /** Gets ancestors of a given class.
-         *
-         *  Note that it returns both superclass and interfaces.
-         */
-        def getAncestors(of: Class[_]): Set[Class[_]] = {
-          val interfaces = of.getInterfaces.toSet
-          val parent = of.getSuperclass.asInstanceOf[Class[_]]
-
-          if (parent != null) interfaces + parent else interfaces
-        }
-
-        /** Checks if any of ancestors is a [[baseClazz]].
-         *
-         *  Note that search is done in a breadth-first search manner.
-         */
-        @tailrec
-        def matches(parents: Iterator[Class[_]], visited: Set[Class[_]]): Boolean = {
-          val ancestors: Map[String, Class[_]] = (for {
-            parent <- parents
-            ancestor <- getAncestors(parent) if !visited.contains(ancestor)
-          } yield ancestor.getName -> ancestor).toMap
-
-          if (ancestors.contains(baseClazz)) true
-          else if (ancestors.isEmpty) false
-          else matches(ancestors.valuesIterator, visited ++ ancestors.valuesIterator)
-        }
-
-        val parents: Map[String, Class[_]] = try {
-          getAncestors(Class.forName(className)).iterator.map(clazz => clazz.getName -> clazz).toMap
-        } catch {
-          case ex: Throwable => Map.empty
-        }
-
-        if (!withSelf && className == baseClazz) false // early cut
-        else if (withSelf && className == baseClazz) true
-        else if (parents.contains(baseClazz)) true
-        else if (!direct) matches(parents.valuesIterator, Set.empty)
-        else false
-      }
+      def matches(className: String): Boolean = ???
     }
 
     object Descendants {

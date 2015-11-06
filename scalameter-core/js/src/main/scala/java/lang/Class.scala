@@ -19,12 +19,23 @@ private trait ScalaJSClassData[A] extends js.Object {
   def newArrayOfThisClass(dimensions: js.Array[Int]): AnyRef = js.native
 }
 
+object Class {
+  def forName(name : String) = ???
+}
+
 final class Class[A] private (data: ScalaJSClassData[A]) extends Object {
 
   def getClassLoader : ClassLoader = new ClassLoader {
       //override def getParent : ClassLoader = ???
   }
   
+  def getField(name: String) = new {
+      def get(a : Any) : Nothing = ???
+  }
+  
+  def newInstance() : A = ???
+  
+  def getEnumConstants() : Array[A] = ??? 
   /////////////////////////////
   
   override def toString(): String = {
