@@ -53,7 +53,6 @@ val releasePluginSettings = releaseSettings ++ Seq(
 )
 
 val scalaMeterSettings = publishCreds ++ Seq(
-  scalaVersion := "2.11.7",
   crossScalaVersions := Seq("2.10.5", "2.11.7", "2.12.0-M1"),
   scalacOptions ++= Seq("-deprecation", "-unchecked", "-feature", "-Xlint"),
   libraryDependencies <++= (scalaVersion)(sv => dependencies(sv)),
@@ -126,7 +125,6 @@ def dependencies(scalaVersion: String) = CrossVersion.partialVersion(scalaVersio
 }
 
 val scalaMeterCoreSettings = publishCreds ++ Seq(
-  scalaVersion := "2.11.7",
   crossScalaVersions := Seq("2.10.5", "2.11.7", "2.12.0-M1"),
   scalacOptions ++= Seq("-deprecation", "-unchecked", "-feature", "-Xlint"),
   libraryDependencies <++= (scalaVersion)(sv => coreJavaLibs ++ coreDependencies(sv)),
@@ -236,6 +234,7 @@ val runsuiteTask = InputKey[Unit](
 lazy val scalaMeterCore = (crossProject in file("scalameter-core")).settings(
   name := "scalameter-core",
   organization := "com.storm-enroute",
+  scalaVersion := "2.11.7",
   EclipseKeys.useProjectId := true
 ).settings(
   releasePluginSettings : _*
@@ -251,12 +250,14 @@ lazy val scalaMeterCoreJS = scalaMeterCore.js
 lazy val scalaMeter = (crossProject in file(".")).settings(
   name := "scalameter",
   organization := "com.storm-enroute",
+  scalaVersion := "2.11.7",
   EclipseKeys.useProjectId := true
 ).settings(
   releasePluginSettings : _*
 ).jvmSettings(
   scalaMeterSettings ++ Seq(javaCommandSetting, runsuiteTask) : _*
 ).jsSettings(
+  libraryDependencies += "org.scala-js" %%% "scala-parser-combinators" % "1.0.2"
 ) dependsOn (
   scalaMeterCore
 ) aggregate(
