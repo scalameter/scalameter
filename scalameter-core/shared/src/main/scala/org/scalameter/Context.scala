@@ -5,6 +5,7 @@ package org.scalameter
 import language.implicitConversions
 import scala.collection.{Seq, immutable}
 import org.scalameter.Key._
+import utils.ScalaRuntime
 
 
 

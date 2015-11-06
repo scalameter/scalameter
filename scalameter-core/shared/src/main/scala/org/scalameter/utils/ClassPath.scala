@@ -35,7 +35,7 @@ object ClassPath {
     val elem = location.getAbsolutePath
     require(!elem.contains(File.pathSeparatorChar),
       s"Classpath element contains illegal character: ${File.pathSeparatorChar}")
-    if (SystemUtils.IS_OS_WINDOWS) {
+    if (ScalaRuntime.IS_OS_WINDOWS) {
       require(!elem.contains("\""), "Classpath element contains illegal character: \"")
     }
   }
@@ -53,9 +53,7 @@ object ClassPath {
 
   /** Returns the default classpath string.
    */
-  def default: ClassPath = {
-    extract(this.getClass.getClassLoader, sys.props("java.class.path"))
-  }
+  def default: ClassPath = ScalaRuntime.defaultClassPath
 
   /** Extracts the classpath from the given `classLoader` if it is a `URLClassLoader` or
    *  from the first parent that is a `URLClassLoader`.

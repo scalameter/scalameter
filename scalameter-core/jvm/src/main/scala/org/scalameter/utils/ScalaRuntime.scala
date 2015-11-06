@@ -1,4 +1,7 @@
-package org.scalameter
+package org.scalameter.utils
+
+import org.apache.commons.lang3.SystemUtils
+import org.scalameter._
 
 object ScalaRuntime extends AbstractScalaRuntime {
 
@@ -10,5 +13,12 @@ object ScalaRuntime extends AbstractScalaRuntime {
     Key.machine.osArch -> sys.props("os.arch"),
     Key.machine.cores -> Runtime.getRuntime.availableProcessors,
     Key.machine.hostname -> java.net.InetAddress.getLocalHost.getHostName)
+
+  def defaultClassPath : ClassPath = {
+    ClassPath.extract(this.getClass.getClassLoader, sys.props("java.class.path"))
+  }
+  
+   def IS_OS_WINDOWS : Boolean =  SystemUtils.IS_OS_WINDOWS
+
 
 }
