@@ -13,7 +13,7 @@ object System {
   def setProperty(key: String, value : String) : String = ""
   def getProperties() : java.util.Properties = new java.util.Properties {
       def get(key: String) : String = ""
-      override def getProperty(key: String) : String = ""
+      def getProperty(key: String) : String = ""
   }
 
   //////////
