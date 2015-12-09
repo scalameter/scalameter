@@ -1,0 +1,36 @@
+build:
+  image: stormenroute/storm-enroute-build:0.7
+  cache:
+    mount:
+      - .ivy2
+  environment:
+    - SSH_KEY_PASS=$$SSH_KEY_PASS
+    - SONATYPE_USER=$$SONATYPE_USER
+    - SONATYPE_PASS=$$SONATYPE_PASS
+  commands:
+    - ssh-keyscan github.com >> ~/.ssh/known_hosts
+    - |
+      if [ "$DRONE_PULL_REQUEST" = "" ]; then
+        eval `ssh-agent -s`
+        echo "Setting up ssh-agent."
+        echo "exec cat" > ap-cat.sh
+        chmod a+x ap-cat.sh
+        export DISPLAY=1
+        echo "$SSH_KEY_PASS" | SSH_ASKPASS=./ap-cat.sh ssh-add ~/.ssh/id_rsa
+        rm ap-cat.sh
+        export SSH_KEY_PASS=""
+        export DISPLAY=""
+      else
+        echo "Resetting secrets."
+        export SONATYPE_USER=""
+        export SONATYPE_PASS=""
+      fi
+    - echo "Pull request no. $DRONE_PULL_REQUEST"
+    - |
+      while read v; do
+        if [ "$DRONE_PULL_REQUEST" = "" ]; then
+          sbt "++ $v ; package"
+        else
+          sbt "++ $v ; package"
+        fi
+      done <cross.conf
