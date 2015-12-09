@@ -32,3 +32,11 @@ build:
       else
         sbt "package"
       fi
+notify:
+  irc:
+    prefix: storm-enroute build
+    nick: eve-bot
+    channel: storm-enroute-dev
+    server:
+      host: chat.freenode.net
+      port: 6667
