@@ -27,10 +27,8 @@ build:
       fi
     - echo "Pull request no. $DRONE_PULL_REQUEST"
     - |
-      while read v; do
-        if [ "$DRONE_PULL_REQUEST" = "" ]; then
-          sbt "++ $v ; package"
-        else
-          sbt "++ $v ; package"
-        fi
-      done <cross.conf
+      if [ "$DRONE_PULL_REQUEST" = "" ]; then
+        sbt "package"
+      else
+        sbt "package"
+      fi
