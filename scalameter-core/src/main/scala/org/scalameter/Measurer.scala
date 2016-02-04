@@ -26,7 +26,8 @@ trait Measurer[V] extends Serializable { self =>
 
     override def usesInstrumentedClasspath: Boolean = self.usesInstrumentedClasspath
 
-    override def prepareContext(context: Context): Context = self.prepareContext(context)
+    override def prepareContext(context: Context): Context =
+      self.prepareContext(context)
 
     override def beforeExecution(context: Context): Unit = self.beforeExecution(context)
 
@@ -40,7 +41,7 @@ trait Measurer[V] extends Serializable { self =>
 
   /** Modifies the initial test context.
    *
-   *  This method is invoked before the `PerformanceTest` object's constructor is invoked.
+   *  This method is invoked before the `PerformanceTest` object's ctor is invoked.
    *  The key-value pairs that the [[org.scalameter.Measurer]] adds to
    *  the [[org.scalameter.Context]] in this method are visible to all
    *  the test snippets within the `PerformanceTest` class.
@@ -94,7 +95,9 @@ object Measurer {
      *  By default, the value `v` is always returned and the value for the
      *  benchmark is never regenerated.
      */
-    protected def valueAt[T](context: Context, iteration: Int, regen: () => T, v: T): T = v
+    protected def valueAt[T](
+      context: Context, iteration: Int, regen: () => T, v: T
+    ): T = v
 
   }
 
@@ -106,7 +109,9 @@ object Measurer {
     }
   }
 
-  /** A default measurer executes the test as many times as specified and returns the sequence of measured times. */
+  /** A default measurer executes the test as many times as specified and returns the
+   *  sequence of measured times.
+   */
   class Default extends Timer with IterationBasedValue {
     def name = "Measurer.Default"
 
@@ -137,11 +142,12 @@ object Measurer {
     }
   }
 
-  /** A measurer that discards measurements for which it detects that GC cycles occurred.
+  /** A measurer that discards measurements during which it detects GC cycles.
    *  
    *  Assume that `M` measurements are requested.
-   *  To prevent looping forever, after the number of measurement failed due to GC exceeds the number of successful
-   *  measurements by more than `M`, the subsequent measurements are accepted irregardless of whether GC cycles occur.
+   *  To prevent looping forever, after the number of measurement failed due to GC
+   *  exceeds the number of successful measurements by more than `M`, the subsequent
+   *  measurements are accepted regardless of whether GC cycles occur.
    */
   class IgnoringGC extends Timer with IterationBasedValue {
     override def name = "Measurer.IgnoringGC"
@@ -192,7 +198,8 @@ object Measurer {
 
   /** A mixin measurer which causes the value for the benchmark to be reinstantiated
    *  every `Key.exec.reinstantiation.frequency` measurements.
-   *  Before the new value has been instantiated, a full GC cycle is invoked if `Key.exec.reinstantiation.fullGC` is `true`.
+   *  Before the new value has been instantiated, a full GC cycle is invoked if
+   *  `Key.exec.reinstantiation.fullGC` is `true`.
    */
   trait PeriodicReinstantiation[V] extends Measurer[V] with IterationBasedValue {
     import exec.reinstantiation._
@@ -202,7 +209,9 @@ object Measurer {
     def defaultFrequency = 10
     def defaultFullGC = false
 
-    protected override def valueAt[T](context: Context, iteration: Int, regen: () => T, v: T) = {
+    protected override def valueAt[T](
+      context: Context, iteration: Int, regen: () => T, v: T
+    ) = {
       val freq = context.goe(frequency, defaultFrequency)
       val fullgc = context.goe(fullGC, defaultFullGC)
 
@@ -215,11 +224,13 @@ object Measurer {
     }
   }
 
-  /** A mixin measurer which detects outliers (due to an undetected GC or JIT) and requests additional measurements to replace them.
-   *  Outlier elimination can also eliminate some pretty bad allocation patterns in some cases.
-   *  Only outliers from above are considered.
+  /** A mixin measurer which detects outliers (due to an undetected GC or JIT) and
+   *  requests additional measurements to replace them.
+   *  Outlier elimination can also eliminate some pretty bad allocation patterns in
+   *  some cases. Only outliers from above are considered.
    *
-   *  When detecting an outlier, up to `Key.exec.outliers.suspectPercent`% (with a minimum of `1`) of worst times will be considered.
+   *  When detecting an outlier, up to `Key.exec.outliers.suspectPercent`% (with a
+   *  minimum of `1`) of worst times will be considered.
    *  For example, given `Key.exec.outliers.suspectPercent = 25` the times:
    *
    *  {{{
@@ -236,7 +247,8 @@ object Measurer {
    *  
    *  the time `55` will be considered for outlier elimination.
    *
-   *  A potential outlier (suffix) is removed if removing it increases the coefficient of variance by at least `Key.exec.outliers.covMultiplier` times.
+   *  A potential outlier (suffix) is removed if removing it increases the coefficient
+   *  of variance by at least `Key.exec.outliers.covMultiplier` times.
    */
   trait OutlierElimination[V] extends Measurer[V] {
 
@@ -250,13 +262,15 @@ object Measurer {
 
     def covMultiplierModifier = 1.0
 
-    abstract override def measure[T](context: Context, measurements: Int, setup: T => Any,
-      tear: T => Any, regen: () => T, snippet: T => Any): Seq[Quantity[V]] = {
+    abstract override def measure[T](context: Context, measurements: Int,
+      setup: T => Any, tear: T => Any, regen: () => T, snippet: T => Any
+    ): Seq[Quantity[V]] = {
       import utils.Statistics._
       import Numeric.Implicits._
 
       implicit val ord = Ordering.by((q: Quantity[V]) => q.value)
-      var results = super.measure(context, measurements, setup, tear, regen, snippet).sorted
+      var results =
+        super.measure(context, measurements, setup, tear, regen, snippet).sorted
       val suspectp = context(suspectPercent)
       val covmult = context(covMultiplier)
       val suspectnum = math.max(1, results.length * suspectp / 100)
@@ -269,7 +283,8 @@ object Measurer {
         while (minlen <= suspectnum) {
           val cov = CoV(rs)
           val covinit = CoV(rs.dropRight(minlen))
-          val confirmed = if (covinit != 0.0) cov > covmult * covinit * covMultiplierModifier
+          val confirmed =
+            if (covinit != 0.0) cov > covmult * covinit * covMultiplierModifier
             else mean(rs.takeRight(minlen)) > 1.2 * mean(rs.dropRight(minlen))
   
           if (confirmed) return minlen
@@ -297,7 +312,8 @@ object Measurer {
           ).sorted else (results.dropRight(suffixlen) ++
             super.measure(context, suffixlen, setup, tear, regen, snippet)).sorted
         }
-        if (CoV(results.map(_.value.toDouble())) < CoV(best.map(_.value.toDouble()))) best = results
+        if (CoV(results.map(_.value.toDouble())) < CoV(best.map(_.value.toDouble())))
+          best = results
         retleft -= 1
       }
 
@@ -308,8 +324,8 @@ object Measurer {
 
   /** A measurer which adds noise to the measurement.
    *
-   *  @define noise This measurer makes the regression tests more solid. While certain forms of
-   *  gradual regressions are harder to detect, the measurements become less
+   *  @define noise This measurer makes the regression tests more solid. While certain
+   *  forms of gradual regressions are harder to detect, the measurements become less
    *  susceptible to actual randomness, because adding artificial noise increases
    *  the confidence intervals.
    */
@@ -319,9 +335,11 @@ object Measurer {
 
     def noiseFunction(observations: Seq[Double], magnitude: Double): Double => Double
 
-    abstract override def measure[T](context: Context, measurements: Int, setup: T => Any,
-      tear: T => Any, regen: () => T, snippet: T => Any): Seq[Quantity[Double]] = {
-      val observations = super.measure(context, measurements, setup, tear, regen, snippet)
+    abstract override def measure[T](context: Context, measurements: Int,
+      setup: T => Any, tear: T => Any, regen: () => T, snippet: T => Any
+    ): Seq[Quantity[Double]] = {
+      val observations = super.measure(
+        context, measurements, setup, tear, regen, snippet)
       val magni = context(magnitude)
       val noise = noiseFunction(observations.map(_.value), magni)
       val withnoise = observations map {
@@ -338,12 +356,13 @@ object Measurer {
 
   import utils.Statistics.clamp
 
-  /** A mixin measurer which adds an absolute amount of Gaussian noise to the measurement.
+  /** A mixin measurer which adds an absolute amount of Gaussian noise to the
+   *  measurement.
    *  
    *  A random value is sampled from a Gaussian distribution for each measurement `x`.
-   *  This value is then multiplied with `Key.noiseMagnitude` and added to the measurement.
-   *  The default value for the noise magnitude is `0.0` - it has to be set manually
-   *  for tests requiring artificial noise.
+   *  This value is then multiplied with `Key.noiseMagnitude` and added to the
+   *  measurement. The default value for the noise magnitude is `0.0` - it has to be set
+   *  manually for tests requiring artificial noise.
    *  The resulting value is clamped into the range `x - magnitude, x + magnitude`.
    *  
    *  $noise
@@ -358,13 +377,13 @@ object Measurer {
 
   }
 
-  /** A mixin measurer which adds an amount of Gaussian noise to the measurement relative
-   *  to its mean.
+  /** A mixin measurer which adds an amount of Gaussian noise to the measurement
+   *  relative to its mean.
    * 
    *  An observations sequence mean `m` is computed.
-   *  A random Gaussian value is sampled for each measurement `x` in the observations sequence.
-   *  It is multiplied with `m / 10.0` times `Key.noiseMagnitude` (default `0.0`).
-   *  Call this multiplication factor `f`.
+   *  A random Gaussian value is sampled for each measurement `x` in the observations
+   *  sequence. It is multiplied with `m / 10.0` times `Key.noiseMagnitude`
+   *  (default `0.0`). Call this multiplication factor `f`.
    *  The resulting value is clamped into the range `x - f, x + f`.
    *
    *  The bottomline is - a `1.0` noise magnitude is a variation of `10%` of the mean.
@@ -427,7 +446,8 @@ object Measurer {
 
   }
 
-  /** Measures the total memory footprint of an object created by the benchmarking snippet.
+  /** Measures the total memory footprint of an object created by the benchmarking
+   *  snippet.
    *
    *  Eliminates outliers.
    */
@@ -521,7 +541,8 @@ object Measurer {
   /** Counts invocations of arbitrary method(s) specified by
    *  [[org.scalameter.execution.invocation.InvocationCountMatcher]].
    */
-  case class MethodInvocationCount(matcher: InvocationCountMatcher) extends InvocationCount {
+  case class MethodInvocationCount(matcher: InvocationCountMatcher)
+  extends InvocationCount {
     def name: String = "Measurer.MethodInvocationCount"
   }
 
