@@ -11,7 +11,8 @@ import scala.collection.generic.CanBuildFrom
 
 
 
-abstract class TraversablePickler[C[_] <: Traversable[_], T: Pickler] extends Pickler[C[T]] {
+abstract class TraversablePickler[C[_] <: Traversable[_], T: Pickler]
+extends Pickler[C[T]] {
   protected def canBuildFrom: CanBuildFrom[Nothing, T, C[T]]
 
   def pickle(x: C[T]): Array[Byte] = {

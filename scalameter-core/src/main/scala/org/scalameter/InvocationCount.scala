@@ -3,8 +3,10 @@ package org.scalameter
 import java.io.File
 import org.scalameter.Key._
 import org.scalameter.execution.invocation.InvocationCountMatcher
-import org.scalameter.execution.invocation.instrumentation.{Instrumentation, MethodInvocationCounter, MethodSignature}
-import scala.collection.{Seq, mutable}
+import org.scalameter.execution.invocation.instrumentation.Instrumentation
+import org.scalameter.execution.invocation.instrumentation.MethodInvocationCounter
+import org.scalameter.execution.invocation.instrumentation.MethodSignature
+import scala.collection._
 
 
 /** Mixin for all [[org.scalameter.Measurer]] implementations that perform any kind of
@@ -13,9 +15,10 @@ import scala.collection.{Seq, mutable}
 trait InvocationCount extends Measurer[Map[String, Long]] {
   def matcher: InvocationCountMatcher
 
-  def measure[T](context: Context, measurements: Int, setup: (T) => Any,
-    tear: (T) => Any, regen: () => T, snippet: (T) => Any):
-  Seq[Quantity[Map[String, Long]]] = {
+  def measure[T](
+    context: Context, measurements: Int, setup: (T) => Any, tear: (T) => Any,
+    regen: () => T, snippet: (T) => Any
+  ): Seq[Quantity[Map[String, Long]]] = {
     val invocations = mutable.ListBuffer.empty[Quantity[Map[String, Long]]]
     var obj: Any = null.asInstanceOf[Any]
     val methodTable = context.goe(exec.measurers.methodInvocationLookupTable,

@@ -39,8 +39,11 @@ extends PicklerBasedKey[T] {
   val pickler: Pickler[T] = implicitly[Pickler[T]]
 }
 
+
 /** Base for keys that have some kind of default value. */
-class KeyWithDefault[T: Pickler](name: String)(implicit container: KeyContainer) extends Key[T](name)
+class KeyWithDefault[T: Pickler](name: String)(implicit container: KeyContainer)
+extends Key[T](name)
+
 
 /** Key that defaults to [[default]] if value under key is not found in a context.
  *
@@ -49,6 +52,7 @@ class KeyWithDefault[T: Pickler](name: String)(implicit container: KeyContainer)
 class KeyWithDefaultValue[T: Pickler](name: String, val default: T)
   (implicit container: KeyContainer)
 extends KeyWithDefault[T](name)
+
 
 /** Key that chains finding default value to [[KeyWithDefaultValue]]
  *  if value under key is not found in a context.
@@ -148,6 +152,10 @@ class Keys extends KeyContainer("", null) {
       val timeIndices = apply[Seq[Long]]("timeIndices")
       val noiseMagnitude = apply[Double]("noiseMagnitude", 0.0)
     }
+
+    object validation extends KeyContainer("validation", reports) {
+      val predicate = apply[Any => Boolean]("predicate", (x: Any) => true)
+    }
   }
 
   object exec extends KeyContainer("exec", Keys.this) {
@@ -196,6 +204,7 @@ class Keys extends KeyContainer("", null) {
   gen
   reports
   reports.regression
+  reports.validation
   exec
   exec.reinstantiation
   exec.outliers

@@ -1,6 +1,9 @@
 package org.scalameter.picklers
 
+
+
 import java.nio.ByteBuffer
+
 
 
 abstract class PrimitivePickler[T] extends Pickler[T] {
@@ -18,6 +21,7 @@ abstract class PrimitivePickler[T] extends Pickler[T] {
   }
 }
 
+
 object UnitPickler extends PrimitivePickler[Unit] {
   protected def bits: Int = 0
 
@@ -25,6 +29,7 @@ object UnitPickler extends PrimitivePickler[Unit] {
 
   def pickle(x: Unit): Array[Byte] = Array.empty[Byte]
 }
+
 
 object BytePickler extends PrimitivePickler[Byte] {
   protected def bits: Int = java.lang.Byte.SIZE
@@ -34,16 +39,21 @@ object BytePickler extends PrimitivePickler[Byte] {
   def pickle(x: Byte): Array[Byte] = byteBuffer.put(x).array()
 }
 
+
 object BooleanPickler extends PrimitivePickler[Boolean] {
   protected def bits: Int = java.lang.Byte.SIZE
 
   protected def unwrap(from: ByteBuffer) = {
     val v = from.get
-    if (v == 1.toByte) true else if (v == 0.toByte) false else sys.error(s"Corrupted stream. Expected 0 or 1. Got $v")
+    if (v == 1.toByte) true
+    else if (v == 0.toByte) false
+    else sys.error(s"Corrupted stream. Expected 0 or 1. Got $v")
   }
 
-  def pickle(x: Boolean): Array[Byte] = byteBuffer.put(if (x) 1.toByte else 0.toByte).array()
+  def pickle(x: Boolean): Array[Byte] =
+    byteBuffer.put(if (x) 1.toByte else 0.toByte).array()
 }
+
 
 object CharPickler extends PrimitivePickler[Char] {
   protected def bits: Int = java.lang.Character.SIZE
@@ -53,6 +63,7 @@ object CharPickler extends PrimitivePickler[Char] {
   def pickle(x: Char): Array[Byte] = byteBuffer.putChar(x).array()
 }
 
+
 object ShortPickler extends PrimitivePickler[Short] {
   protected def bits: Int = java.lang.Short.SIZE
 
@@ -60,6 +71,7 @@ object ShortPickler extends PrimitivePickler[Short] {
 
   def pickle(x: Short): Array[Byte] = byteBuffer.putShort(x).array()
 }
+
 
 object IntPickler extends PrimitivePickler[Int] {
   protected def bits: Int = java.lang.Integer.SIZE
@@ -69,6 +81,7 @@ object IntPickler extends PrimitivePickler[Int] {
   def pickle(x: Int): Array[Byte] = byteBuffer.putInt(x).array()
 }
 
+
 object LongPickler extends PrimitivePickler[Long] {
   protected def bits: Int = java.lang.Long.SIZE
 
@@ -77,6 +90,7 @@ object LongPickler extends PrimitivePickler[Long] {
   def pickle(x: Long): Array[Byte] = byteBuffer.putLong(x).array()
 }
 
+
 object FloatPickler extends PrimitivePickler[Float] {
   protected def bits: Int = java.lang.Float.SIZE
 
@@ -84,6 +98,7 @@ object FloatPickler extends PrimitivePickler[Float] {
 
   def pickle(x: Float): Array[Byte] = byteBuffer.putFloat(x).array()
 }
+
 
 object DoublePickler extends PrimitivePickler[Double] {
   protected def bits: Int = java.lang.Double.SIZE

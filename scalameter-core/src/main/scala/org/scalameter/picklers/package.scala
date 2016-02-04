@@ -1,8 +1,11 @@
 package org.scalameter
 
 
-package object picklers {
 
+
+
+
+package object picklers {
 }
 
 
@@ -29,6 +32,9 @@ package picklers {
     implicit val stringListPickler = StringListPickler
     implicit val longSeqPickler = LongSeqPickler
     implicit val dateOptionPickler = DateOptionPickler
+
+    // functions
+    implicit def function1[T, S] = new Function1Pickler[T, S]
 
     /* More complex picklers */
 

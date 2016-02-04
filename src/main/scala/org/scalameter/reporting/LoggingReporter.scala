@@ -12,7 +12,9 @@ case class LoggingReporter[T]() extends Reporter[T] {
   def report(result: CurveData[T], persistor: Persistor) {
     // output context
     log(s"::Benchmark ${result.context.scope}::")
-    for ((key, value) <- result.context.properties.filterKeys(Context.machine.properties.keySet.contains).toSeq.sortBy(_._1)) {
+    val machineKeys = result.context.properties
+      .filterKeys(Context.machine.properties.keySet.contains).toSeq.sortBy(_._1)
+    for ((key, value) <- machineKeys) {
       log(s"$key: $value")
     }
 
@@ -31,8 +33,3 @@ case class LoggingReporter[T]() extends Reporter[T] {
 
 
 object LoggingReporter
-
-
-
-
-

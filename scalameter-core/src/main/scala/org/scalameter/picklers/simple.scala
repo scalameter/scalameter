@@ -1,7 +1,10 @@
 package org.scalameter.picklers
 
+
+
 import java.nio.ByteBuffer
 import java.util.Date
+
 
 
 object StringPickler extends Pickler[String] {
@@ -21,6 +24,7 @@ object StringPickler extends Pickler[String] {
   }
 }
 
+
 object DatePickler extends Pickler[Date] {
   def pickle(x: Date): Array[Byte] = LongPickler.pickle(x.getTime)
 
@@ -29,6 +33,7 @@ object DatePickler extends Pickler[Date] {
     (new Date(obj), pos)
   }
 }
+
 
 object EnumPickler extends Pickler[java.lang.Enum[_]] {
   def pickle(x: Enum[_]): Array[Byte] = {
