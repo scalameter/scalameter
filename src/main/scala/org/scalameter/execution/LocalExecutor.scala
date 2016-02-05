@@ -34,7 +34,9 @@ class LocalExecutor[V: Pickler](val warmer: Warmer, val aggregator: Aggregator[V
 
   import Key._
 
-  override def run[T](setups: Tree[Setup[T]], reporter: Reporter[V], persistor: Persistor) = {
+  override def run[T](
+    setups: Tree[Setup[T]], reporter: Reporter[V], persistor: Persistor
+  ) = {
     // run all warmups for classloading purposes
     for (bench <- setups) {
       import bench._
@@ -53,7 +55,8 @@ class LocalExecutor[V: Pickler](val warmer: Warmer, val aggregator: Aggregator[V
   def runSetup[T](bsetup: Setup[T]): CurveData[V] = {
     import bsetup._
 
-    log.verbose(s"Running test set for ${bsetup.context.scope}, curve ${bsetup.context(dsl.curve)}")
+    log.verbose(
+      s"Running test set for ${context.scope}, curve ${context(dsl.curve)}")
 
     // run warm up
     setupBeforeAll()
@@ -86,7 +89,8 @@ class LocalExecutor[V: Pickler](val warmer: Warmer, val aggregator: Aggregator[V
 
         val processedValues = aggregator(values)
         val data = aggregator.data(values)
-        measurements += Measurement(processedValues.value, params, data, processedValues.units)
+        measurements +=
+          Measurement(processedValues.value, params, data, processedValues.units)
       }
       CurveData(measurements, Map.empty, context)
     } finally {

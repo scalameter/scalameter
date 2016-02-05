@@ -11,9 +11,10 @@ import org.scalameter.utils.Statistics._
 
 
 
-case class RegressionReporter[T: Numeric](test: RegressionReporter.Tester,
-  historian: RegressionReporter.Historian) extends Reporter[T] {
-  import RegressionReporter.ansi
+case class RegressionReporter[T: Numeric](
+  test: RegressionReporter.Tester,
+  historian: RegressionReporter.Historian
+) extends Reporter[T] {
 
   private val historyCache = mutable.Map[Context, History[T]]()
 
@@ -45,11 +46,13 @@ case class RegressionReporter[T: Numeric](test: RegressionReporter.Tester,
 
       val testedcurves = for (curvedata <- curves) yield {
         val history = loadHistory(curvedata.context, persistor)
-        val corresponding = if (history.curves.nonEmpty) history.curves else Seq(curvedata)
+        val corresponding =
+          if (history.curves.nonEmpty) history.curves else Seq(curvedata)
 
         val testedcurve = test(context, curvedata, corresponding)
 
-        val newhistory = historian.bookkeep(curvedata.context, history, testedcurve, currentDate)
+        val newhistory =
+          historian.bookkeep(curvedata.context, history, testedcurve, currentDate)
         persistor.save(curvedata.context, newhistory)
 
         testedcurve
@@ -58,7 +61,8 @@ case class RegressionReporter[T: Numeric](test: RegressionReporter.Tester,
       log("")
 
       val allpassed = testedcurves.forall(_.success)
-      if (allpassed) events.emit(Event(context.scope, "Test succeeded", Events.Success, null))
+      if (allpassed)
+        events.emit(Event(context.scope, "Test succeeded", Events.Success, null))
       else events.emit(Event(context.scope, "Test failed", Events.Failure, null))
 
       allpassed
@@ -67,7 +71,7 @@ case class RegressionReporter[T: Numeric](test: RegressionReporter.Tester,
     val failure = oks.count(_ == false)
     val success = oks.count(_ == true)
     val color = if (failure == 0) ansi.green else ansi.red
-    log(s"${color} Summary: $success tests passed, $failure tests failed.${ansi.reset}")
+    log(s"${color}Summary: $success tests passed, $failure tests failed.${ansi.reset}")
 
     failure == 0
   }
@@ -79,23 +83,14 @@ object RegressionReporter {
 
   import Key._
 
-  object ansi {
-    val colors = currentContext(Key.reports.colors)
-    def ifcolor(s: String) = if (colors) s else ""
-
-    val red = ifcolor("\u001B[31m")
-    val green = ifcolor("\u001B[32m")
-    val yellow = ifcolor("\u001B[33m")
-    val reset = ifcolor("\u001B[0m")
-  }
-
   /** Represents a policy for adding the newest result to the history of results.
    */
   trait Historian {
     /** Given an old history and the latest curve and its date, returns a new history,
      *  possibly discarding some of the entries.
      */
-    def bookkeep[T](ctx: Context, h: History[T], newest: CurveData[T], d: Date): History[T]
+    def bookkeep[T](ctx: Context, h: History[T], newest: CurveData[T], d: Date):
+      History[T]
   }
 
   object Historian {
@@ -138,13 +133,17 @@ object RegressionReporter {
         }
         val (newentries, newindices) = pruned.unzip
 
-        History(newentries.toBuffer.reverse :+ newest, immutable.Map(reports.regression.timeIndices -> (1L +: newindices.toBuffer)))
+        History(
+          newentries.toBuffer.reverse :+ newest,
+          immutable.Map(reports.regression.timeIndices -> (1L +: newindices.toBuffer)))
       }
 
       def push[T](h: History[T], newest: History.Entry[T]): History[T] = {
         log.verbose("Pushing to history with info: " + h.infomap)
 
-        val indices = h.info[Seq[Long]](reports.regression.timeIndices, (0 until h.results.length) map { 1L << _ })
+        val indices = h.info[Seq[Long]](
+          reports.regression.timeIndices,
+          (0 until h.results.length) map { 1L << _ })
         val newhistory = push(h.results, indices, newest)
 
         log.verbose("New history info: " + newhistory.infomap)
@@ -161,12 +160,15 @@ object RegressionReporter {
   /** Performance regression testing mechanism.
    */
   trait Tester {
-    /** Given a test performed in a specific `context`, the latest curve (set of measurements) `curvedata`
-     *  and previous curves (sets of measurements) for this test `corresponding`, yields a new version
-     *  of the latest curve, such that if any of the tests fail, the new sequence of curves will have the
-     *  `success` field set to `false` for those measurements that are considered to fail the test.
+    /** Given a test performed in a specific `context`, the latest curve (set of
+     *  measurements) `curvedata` and previous curves (sets of measurements) for this
+     *  test `corresponding`, yields a new version of the latest curve, such that if any
+     *  of the tests fail, the new sequence of curves will have the `success` field set
+     *  to `false` for those measurements that are considered to fail the test.
      */
-    def apply[T: Numeric](context: Context, curvedata: CurveData[T], corresponding: Seq[CurveData[T]]): CurveData[T]
+    def apply[T: Numeric](
+      context: Context, curvedata: CurveData[T], corresponding: Seq[CurveData[T]]
+    ): CurveData[T]
 
     /** Returns a confidence interval for a given set of observations.
      */
@@ -179,7 +181,8 @@ object RegressionReporter {
     /** Accepts any test result.
      */
     case class Accepter() extends Tester {
-      def cistr(ci: (Double, Double), units: String) = f"<${ci._1}%.2f $units, ${ci._2}%.2f $units>"
+      def cistr(ci: (Double, Double), units: String) =
+        f"<${ci._1}%.2f $units, ${ci._2}%.2f $units>"
 
       def apply[T: Numeric](context: Context, curvedata: CurveData[T],
         corresponding: Seq[CurveData[T]]): CurveData[T] = {
@@ -393,7 +396,8 @@ object RegressionReporter {
         val significance = context(reports.regression.significance)
         val noisemag = context(Key.reports.regression.noiseMagnitude)
 
-        val test = OverlapTest(alt.map(_.toDouble()), alt.map(_.toDouble()), significance, noisemag)
+        val test = OverlapTest(
+          alt.map(_.toDouble()), alt.map(_.toDouble()), significance, noisemag)
         test.ci1
       }
     }
@@ -401,18 +405,3 @@ object RegressionReporter {
   }
 
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

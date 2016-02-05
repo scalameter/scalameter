@@ -1,10 +1,12 @@
 package org.scalameter
 
+
+
 import org.scalameter.Measurer._
 import org.scalameter.execution.invocation.InvocationCountMatcher
-import org.scalameter.execution.invocation.InvocationCountMatcher.{MethodMatcher, ClassMatcher}
+import org.scalameter.execution.invocation.InvocationCountMatcher.MethodMatcher
+import org.scalameter.execution.invocation.InvocationCountMatcher.ClassMatcher
 import org.scalameter.execution.invocation.instrumentation.MethodSignature
-
 import scala.util.Try
 
 

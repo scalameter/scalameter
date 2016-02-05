@@ -7,6 +7,8 @@ import org.scalameter.utils.Tree
 
 
 
+/** Simply logs the measurement data to the standard output.
+ */
 case class LoggingReporter[T]() extends Reporter[T] {
 
   def report(result: CurveData[T], persistor: Persistor) {
@@ -30,6 +32,3 @@ case class LoggingReporter[T]() extends Reporter[T] {
   def report(result: Tree[CurveData[T]], persistor: Persistor) = true
 
 }
-
-
-object LoggingReporter

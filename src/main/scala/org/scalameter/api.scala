@@ -68,6 +68,9 @@ object api extends Keys {
   type LoggingReporter[T] = reporting.LoggingReporter[T]
   val LoggingReporter = reporting.LoggingReporter
 
+  type ValidationReporter[T] = reporting.ValidationReporter[T]
+  val ValidationReporter = reporting.ValidationReporter
+
   type RegressionReporter[T] = reporting.RegressionReporter[T]
   val RegressionReporter = reporting.RegressionReporter
 
