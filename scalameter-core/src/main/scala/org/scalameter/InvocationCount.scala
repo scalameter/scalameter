@@ -1,12 +1,16 @@
 package org.scalameter
 
+
+
 import java.io.File
 import org.scalameter.Key._
 import org.scalameter.execution.invocation.InvocationCountMatcher
 import org.scalameter.execution.invocation.instrumentation.Instrumentation
 import org.scalameter.execution.invocation.instrumentation.MethodInvocationCounter
 import org.scalameter.execution.invocation.instrumentation.MethodSignature
-import scala.collection._
+import scala.collection.Seq
+import scala.collection.mutable
+
 
 
 /** Mixin for all [[org.scalameter.Measurer]] implementations that perform any kind of
