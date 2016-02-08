@@ -31,7 +31,7 @@ case class ValidationReporter[T]() extends Reporter[T] {
               totalSuccesses += 1
               events.emit(Event(context.scope, "Success", Events.Success, null))
             } else {
-              events.emit(Event(context.scope, "Failure", Events.Success, null))
+              events.emit(Event(context.scope, "Failure", Events.Failure, null))
             }
           }
       }
