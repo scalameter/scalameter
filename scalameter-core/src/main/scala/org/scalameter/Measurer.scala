@@ -536,6 +536,12 @@ object Measurer {
      */
     def all() = new BoxingCount(classOf[Boolean], classOf[Char], classOf[Byte],
       classOf[Short], classOf[Int], classOf[Long], classOf[Float], classOf[Double])
+
+    /** Creates BoxingCount measurer that counts boxing of all primitive values -
+     *  boolean, char, byte, short, int, long, float and double.
+     */
+    def allWithoutBoolean() = new BoxingCount(classOf[Char], classOf[Byte],
+      classOf[Short], classOf[Int], classOf[Long], classOf[Float], classOf[Double])
   }
 
   /** Counts invocations of arbitrary method(s) specified by
