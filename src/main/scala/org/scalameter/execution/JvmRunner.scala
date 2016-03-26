@@ -45,7 +45,9 @@ final class JvmRunner {
       classOf[Main].getName,
       tmpfile.getPath)
       //s"$jcmd $flags -cp $classpath ${classOf[Main].getName} ${tmpfile.getPath}"
-    log.verbose(s"Starting new JVM: ${command.mkString(" ")}")
+    dyn.currentContext.withValue(ctx) {
+      log.verbose(s"Starting new JVM: ${command.mkString(" ")}")
+    }
     command.!
   }
 
