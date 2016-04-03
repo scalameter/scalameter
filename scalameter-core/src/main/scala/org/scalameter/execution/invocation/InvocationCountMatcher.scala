@@ -1,10 +1,13 @@
 package org.scalameter.execution.invocation
 
+
+
 import java.lang.reflect.Method
 import java.util.regex.Pattern
 import org.objectweb.asm.Type
 import scala.annotation.tailrec
 import scala.util.matching.Regex
+
 
 
 /** Object that matches the methods whose invocations should be counted.
@@ -17,6 +20,7 @@ case class InvocationCountMatcher(classMatcher: InvocationCountMatcher.ClassMatc
 
   def methodMatches(methodName: String, methodDescriptor: String): Boolean = methodMatcher.matches(methodName, methodDescriptor)
 }
+
 
 object InvocationCountMatcher {
   /** Mixin used for selecting classes whose methods will be checked against [[MethodMatcher]] and if matched,
