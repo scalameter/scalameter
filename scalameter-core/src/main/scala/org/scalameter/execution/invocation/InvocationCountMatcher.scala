@@ -12,19 +12,25 @@ import scala.util.matching.Regex
 
 /** Object that matches the methods whose invocations should be counted.
  *
- *  @param classMatcher matches full class name given in internal format ('/' instead of a '.' as a separator)
- *  @param methodMatcher matches a specific method
+ *  @param classMatcher    matches full class name given in internal format
+ *                         ('/' instead of a '.' as a separator)
+ *  @param methodMatcher   matches a specific method
  */
-case class InvocationCountMatcher(classMatcher: InvocationCountMatcher.ClassMatcher, methodMatcher: InvocationCountMatcher.MethodMatcher) {
+case class InvocationCountMatcher(
+  classMatcher: InvocationCountMatcher.ClassMatcher,
+  methodMatcher: InvocationCountMatcher.MethodMatcher
+) {
   def classMatches(className: String): Boolean = classMatcher.matches(className)
 
-  def methodMatches(methodName: String, methodDescriptor: String): Boolean = methodMatcher.matches(methodName, methodDescriptor)
+  def methodMatches(methodName: String, methodDescriptor: String): Boolean =
+    methodMatcher.matches(methodName, methodDescriptor)
 }
 
 
 object InvocationCountMatcher {
-  /** Mixin used for selecting classes whose methods will be checked against [[MethodMatcher]] and if matched,
-   *  counted by a method invocation counting measurer.
+  /** Mixin used for selecting classes whose methods will be checked against 
+   *  [[MethodMatcher]] and if matched, counted by a method invocation counting
+   *  measurer.
    */
   sealed trait ClassMatcher {
     /** Matches class name given in a standard format ('.' as a package separator).
@@ -57,11 +63,14 @@ object InvocationCountMatcher {
 
     /** Matches class that is a descendant of the [[baseClazz]].
      *
-     *  @param baseClazz plain class or a mixin that the given class name should be a descendant.
-     *  @param direct when true checks only if class is a direct child of the [[baseClazz]].
-     *  @param withSelf when true class is also matched if it is the [[baseClazz]].
+     *  @param baseClazz   Plain class or a mixin that the given class name should be a 
+     *                     descendant
+     *  @param direct      when `true`, checks only if class is a direct child of the
+     *                     [[baseClazz]]
+     *  @param withSelf    when true class is also matched if it is the [[baseClazz]]
      */
-    case class Descendants(baseClazz: String, direct: Boolean, withSelf: Boolean) extends ClassMatcher {
+    case class Descendants(baseClazz: String, direct: Boolean, withSelf: Boolean)
+    extends ClassMatcher {
       def matches(className: String): Boolean = {
         /** Gets ancestors of a given class.
          *
@@ -91,7 +100,8 @@ object InvocationCountMatcher {
         }
 
         val parents: Map[String, Class[_]] = try {
-          getAncestors(Class.forName(className)).iterator.map(clazz => clazz.getName -> clazz).toMap
+          getAncestors(Class.forName(className)).iterator
+            .map(clazz => clazz.getName -> clazz).toMap
         } catch {
           case ex: Throwable => Map.empty
         }
@@ -105,54 +115,64 @@ object InvocationCountMatcher {
     }
 
     object Descendants {
-      def apply(clazz: Class[_], direct: Boolean, withSelf: Boolean) = new Descendants(clazz.getName, direct, withSelf)
+      def apply(clazz: Class[_], direct: Boolean, withSelf: Boolean) =
+        new Descendants(clazz.getName, direct, withSelf)
     }
   }
   
-  /** Mixin used for selecting methods whose invocations should be counted by a method invocation counting measurer.
+  /** Mixin used for selecting methods whose invocations should be counted by a method
+   *  invocation counting measurer.
    *
-   *  Note that selecting classes for which every method will be checked against `matches` method is done by [[ClassMatcher]].
+   *  Note that selecting classes, whose methods will be checked against
+   *  the `matches` method, is done by [[ClassMatcher]].
    */
   sealed trait MethodMatcher {
     /**  Matches method given in a internal jvm format.
-      *
-      *  Note that only [[MethodMatcher.Full]] matcher actually matches `methodDescriptor`.
-      *
-      *  @param methodName method name that is matched
-      *  @param methodDescriptor method descriptor in format specified by a JVM spec
-      *
-      *  @see https://docs.oracle.com/javase/specs/jvms/se7/html/jvms-4.html#jvms-4.3.3
-      */
+     *
+     *   Note that only [[MethodMatcher.Full]] matcher actually matches 
+     *   `methodDescriptor`.
+     *
+     *   @param methodName method name that is matched
+     *   @param methodDescriptor method descriptor in format specified by a JVM spec
+     *
+     *   @see https://docs.oracle.com/javase/specs/jvms/se7/html/jvms-4.html#jvms-4.3.3
+     */
     def matches(methodName: String, methodDescriptor: String): Boolean
   }
   
   object MethodMatcher {
     /** Matches method with a method name given as a string. */
     case class MethodName(method: String) extends MethodMatcher {
-      def matches(methodName: String, methodDescriptor: String): Boolean = methodName == method
+      def matches(methodName: String, methodDescriptor: String): Boolean =
+        methodName == method
     }
 
-    /** Matches class allocations, which are basically call to special `<init>` method. */
+    /** Matches class allocations, which are basically call to special `<init>` method.
+      */
     case object Allocation extends MethodMatcher {
-      def matches(methodName: String, methodDescriptor: String): Boolean = methodName == "<init>"
+      def matches(methodName: String, methodDescriptor: String): Boolean =
+        methodName == "<init>"
     }
 
     /** Matches method with a regex. */
     case class Regex(regex: Pattern) extends MethodMatcher {
-      def matches(methodName: String, methodDescriptor: String): Boolean = regex.matcher(methodName).matches()
+      def matches(methodName: String, methodDescriptor: String): Boolean =
+        regex.matcher(methodName).matches()
     }
 
-    /**  Matches method with a name and its descriptor.
-      *
-      *  That means that method name, method arguments and method return type are matched.
-      */
+    /** Matches method with a name and its descriptor.
+     *
+     *  That means that method name, method arguments and method return type are 
+     *  matched.
+     */
     case class Full(name: String, descriptor: String) extends MethodMatcher {
       def matches(methodName: String, methodDescriptor: String): Boolean =
         methodName == name && methodDescriptor == descriptor
     }
 
     object Full {
-      def apply(method: Method): Full = new Full(name = method.getName, descriptor = Type.getMethodDescriptor(method))
+      def apply(method: Method): Full =
+        new Full(name = method.getName, descriptor = Type.getMethodDescriptor(method))
     }
   }
 
@@ -162,13 +182,18 @@ object InvocationCountMatcher {
 
   /** Matches method name in a class. */
   def forName(className: String, methodName: String) =
-    new InvocationCountMatcher(ClassMatcher.ClassName(className), MethodMatcher.MethodName(methodName))
+    new InvocationCountMatcher(ClassMatcher.ClassName(className),
+      MethodMatcher.MethodName(methodName))
   
-  /** Matches method with a [[java.lang.reflect.Method]] in a class. */
+  /** Matches method with a [[java.lang.reflect.Method]] in a class.
+   */
   def forClass(clazz: Class[_], method: Method) =
-    new InvocationCountMatcher(ClassMatcher.ClassName(clazz), MethodMatcher.Full(method))
+    new InvocationCountMatcher(ClassMatcher.ClassName(clazz),
+      MethodMatcher.Full(method))
 
-  /** Matches method name with a regex in classes matched by a regex. */
+  /** Matches method name with a regex in classes matched by a regex.
+   */
   def forRegex(classRegex: Regex, methodRegex: Regex) =
-    new InvocationCountMatcher(ClassMatcher.Regex(classRegex.pattern), MethodMatcher.Regex(methodRegex.pattern))
+    new InvocationCountMatcher(ClassMatcher.Regex(classRegex.pattern),
+      MethodMatcher.Regex(methodRegex.pattern))
 }
