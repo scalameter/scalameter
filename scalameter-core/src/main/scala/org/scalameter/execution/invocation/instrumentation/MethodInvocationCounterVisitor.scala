@@ -48,7 +48,6 @@ private[instrumentation] class MethodInvocationCounterVisitor(
       pattern.methodMatches(name, desc) &&
       (access & Opcodes.ACC_ABSTRACT) == 0
     ) {
-      println("Instrumenting: " + className + ", method: " + name + ", desc" + desc)
       mv.visitLdcInsn(initialIndex + rawMethods.length)
       mv.visitMethodInsn(
         Opcodes.INVOKESTATIC, counterClass, counterMethod, "(I)V", false)
