@@ -77,7 +77,8 @@ object Measurer {
 
   import Key._
 
-  /** Measurer that measures nothing. */
+  /** Measurer that measures nothing.
+   */
   def None[V] = new Measurer[V] {
     def name = "None"
     def measure[T](context: Context, measurements: Int, setup: T => Any,
@@ -86,7 +87,8 @@ object Measurer {
 
   trait Timer extends Measurer[Double]
 
-  /** Mixin for measurers whose benchmarked value is based on the current iteration. */
+  /** Mixin for measurers whose benchmarked value is based on the current iteration.
+   */
   trait IterationBasedValue {
 
     /** Returns the value used for the benchmark at `iteration`.
