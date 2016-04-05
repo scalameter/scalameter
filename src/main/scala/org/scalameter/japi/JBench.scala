@@ -270,7 +270,8 @@ object JBench {
     def tester: RegressionReporter.Tester
   }
 
-  /** Annotation base equivalent of the [[org.scalameter.Bench.OnlineRegressionReport]] */
+  /** Annotation base equivalent of the [[org.scalameter.Bench.OnlineRegressionReport]]
+   */
   abstract class OnlineRegressionReport extends HTMLReport {
     def historian: RegressionReporter.Historian =
       RegressionReporter.Historian.ExponentialBackoff()
@@ -281,7 +282,8 @@ object JBench {
       RegressionReporter.Tester.OverlapIntervals()
   }
 
-  /** Annotation base equivalent of the [[org.scalameter.Bench.OfflineRegressionReport]] */
+  /** Annotation base equivalent of the [[org.scalameter.Bench.OfflineRegressionReport]]
+   */
   abstract class OfflineRegressionReport extends HTMLReport {
     def historian: RegressionReporter.Historian =
       RegressionReporter.Historian.ExponentialBackoff()
