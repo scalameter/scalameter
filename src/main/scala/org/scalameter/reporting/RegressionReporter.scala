@@ -27,7 +27,9 @@ case class RegressionReporter[T: Numeric](
   }
 
   // do nothing - data are persisted at the end
-  def report(curvedata: CurveData[T], persistor: Persistor): Unit = ()
+  def report(curvedata: CurveData[T], persistor: Persistor): Unit = {
+    log(s"Finished test set for ${curvedata.context.scope}, curve ${curvedata.context.curve}")
+  }
 
   def report(results: Tree[CurveData[T]], persistor: Persistor) = {
     log("")
