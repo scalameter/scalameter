@@ -22,7 +22,8 @@ case class HtmlReporter[T: Numeric](embedDsv: Boolean = true) extends Reporter[T
       new DsvReporter(dsvDelimiter).report(results, persistor)
     }
 
-    val resultdir = results.context(reports.resultDir)
+    // resultDir is global setting
+    val resultdir = currentContext(reports.resultDir)
     val root = new File(resultdir, "report")
     root.mkdirs()
 
