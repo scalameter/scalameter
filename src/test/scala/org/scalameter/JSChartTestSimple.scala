@@ -20,7 +20,8 @@ class JSChartTestSimple extends Bench.Regression with Collections {
       exec.benchRuns -> 36,
       exec.independentSamples -> 3,
       reports.regression.significance -> 1e-13,
-      reports.regression.noiseMagnitude -> 0.2
+      reports.regression.noiseMagnitude -> 0.2,
+      verbose -> false
     ) in {
       val from = 100000
       val to = 1000000

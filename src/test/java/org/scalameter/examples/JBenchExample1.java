@@ -16,6 +16,7 @@ public class JBenchExample1 extends JBench.LocalTime {
       .put("exec.benchRuns", 20)
       .put("exec.maxWarmupRuns", 10)
       .put("exec.independentSamples", 1)
+      .put("verbose", false)
       .build();
 
   public final JGen<int[]> arrays = JGen.range("size", 10000, 100000, 30000)
