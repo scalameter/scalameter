@@ -1,12 +1,17 @@
 package org.scalameter
 
+
+
+import org.scalameter.api._
 import org.scalameter.execution.JvmRunner
 import org.scalatest.{FunSuite, Matchers}
+
 
 
 abstract class MeasurerTest[V, M <: Measurer[V]] extends FunSuite with Matchers {
   def measureWith(measurer: M)(snippet: => Any)(f: V => Any): Any = {
     val ctx = measurer.prepareContext(Context.topLevel)
+
     val runner = new JvmRunner
     val dummy: Unit => Any = _ => ()
 

@@ -55,7 +55,8 @@ object Context {
     exec.maxWarmupRuns -> 50,
     exec.jvmflags -> List("-Xmx2048m", "-Xms2048m", "-XX:CompileThreshold=100"),
     classpath -> utils.ClassPath.default,
-    reports.regression.significance -> 1e-10
+    reports.regression.significance -> 1e-10,
+    verbose -> false
   )
 
   val inlineBenchmarking = machine ++ Context(
