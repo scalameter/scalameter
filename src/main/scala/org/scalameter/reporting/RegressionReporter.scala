@@ -26,11 +26,9 @@ case class RegressionReporter[T: Numeric](
       h
   }
 
-  def report(curvedata: CurveData[T], persistor: Persistor) {
-    val ctx = curvedata.context
-    val history = loadHistory(ctx, persistor)
-    val corresponding = if (history.curves.nonEmpty) history.curves else Seq(curvedata)
-    test(ctx, curvedata, corresponding)
+  // do nothing - data are persisted at the end
+  def report(curvedata: CurveData[T], persistor: Persistor): Unit = {
+    log(s"Finished test set for ${curvedata.context.scope}, curve ${curvedata.context.curve}")
   }
 
   def report(results: Tree[CurveData[T]], persistor: Persistor) = {
