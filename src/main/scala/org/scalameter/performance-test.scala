@@ -87,10 +87,13 @@ abstract class BasePerformanceTest[U] extends AbstractPerformanceTest {
     val rawsetuptree = BasePerformanceTest.setupzipper.value.result
     val setuptree = rawsetuptree.filter(setupFilter)
 
-    measurer.beforeExecution(setuptree.context)
-    val resulttree =
-      executor.run(setuptree.asInstanceOf[Tree[Setup[SameType]]], reporter, persistor)
-    measurer.afterExecution(setuptree.context)
+    val resulttree = dyn.currentContext.withValue(setuptree.context) {
+      measurer.beforeExecution(setuptree.context)
+      val resulttree =
+        executor.run(setuptree.asInstanceOf[Tree[Setup[SameType]]], reporter, persistor)
+      measurer.afterExecution(setuptree.context)
+      resulttree
+    }
 
     val dateend: Option[Date] = Some(new Date)
     val datedtree = resulttree.copy(context = resulttree.context +
