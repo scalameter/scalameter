@@ -113,7 +113,7 @@ object ScalaMeterBuild extends MechaRepoBuild {
       "com.fasterxml.jackson.module" % "jackson-module-scala_2.11" % "2.5.2"
     )
     case Some((2, 11)) => List(
-      "org.scalatest" %% "scalatest" % "2.1.3" % "test",
+      "org.scalatest" %% "scalatest" % "2.2.6" % "test",
       "com.github.wookietreiber" %% "scala-chart" % "0.5.0",
       "org.apache.commons" % "commons-math3" % "3.2",
       "org.scala-tools.testing" % "test-interface" % "0.5",
@@ -189,7 +189,7 @@ object ScalaMeterBuild extends MechaRepoBuild {
     )
     case Some((2, 11)) => List(
       "org.scalacheck" %% "scalacheck" % "1.12.4" % "test",
-      "org.scalatest" %% "scalatest" % "2.1.3" % "test",
+      "org.scalatest" %% "scalatest" % "2.2.6" % "test",
       "org.apache.commons" % "commons-math3" % "3.2",
       "org.apache.commons" % "commons-lang3" % "3.4",
       "org.scala-lang" % "scala-reflect" % "2.11.0",
