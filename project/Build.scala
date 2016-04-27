@@ -69,6 +69,7 @@ object ScalaMeterBuild extends MechaRepoBuild {
       "Sonatype OSS Snapshots" at "https://oss.sonatype.org/content/repositories/snapshots",
       "Sonatype OSS Releases" at "https://oss.sonatype.org/content/repositories/releases"
     ),
+    ivyLoggingLevel in ThisBuild := UpdateLogging.Quiet,
     publishMavenStyle := true,
     publishTo <<= version { (v: String) =>
       val nexus = "https://oss.sonatype.org/"
@@ -144,6 +145,7 @@ object ScalaMeterBuild extends MechaRepoBuild {
       "Sonatype OSS Snapshots" at "https://oss.sonatype.org/content/repositories/snapshots",
       "Sonatype OSS Releases" at "https://oss.sonatype.org/content/repositories/releases"
     ),
+    ivyLoggingLevel in ThisBuild := UpdateLogging.Quiet,
     publishMavenStyle := true,
     publishTo <<= version { (v: String) =>
       val nexus = "https://oss.sonatype.org/"
