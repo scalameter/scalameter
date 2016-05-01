@@ -1,0 +1,19 @@
+before_script:
+  - |
+    eval `ssh-agent -s`
+    echo "exec cat" > ap-cat.sh
+    chmod a+x ap-cat.sh
+    export DISPLAY=1
+    echo "$SSH_KEY_PASS" | SSH_ASKPASS=./ap-cat.sh ssh-add ~/.ssh/id_rsa
+    rm ap-cat.sh
+    export SSH_KEY_PASS=""
+    export DISPLAY=""
+  - |
+    mkdir -p ~/.sbt/0.13/
+    echo 'scalacOptions ++= Seq("-Xmax-classfile-name", "90")' > ~/.sbt/0.13/local.sbt
+  - git clone git@ci.storm-enroute.com:storm-enroute/super-storm-enroute.git ~/.super-storm-enroute
+
+
+gate:
+  script:
+    - ~/.super-storm-enroute/tools/ci scalameter $(pwd)
