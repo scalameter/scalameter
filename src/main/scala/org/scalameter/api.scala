@@ -3,8 +3,8 @@ package org.scalameter
 /** Import the contents of this singleton object to obtain access to most abstractions
  *  in the ScalaMeter API.
  *
- *  Note that some definitions might shadow others, so if you import the contents of this
- *  object, you should not import the contents of other packages directly.
+ *  Note that some definitions might shadow others, so if you import the contents of
+ *  this object, you should not import the contents of other packages directly.
  *
  *  This object contains:
  *  - basic datatypes and singleton objects for writing tests, such as `PerformanceTest`

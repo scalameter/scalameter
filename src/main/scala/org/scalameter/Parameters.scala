@@ -14,7 +14,8 @@ case class Parameters(axisData: immutable.Map[Parameter[_], Any]) {
     }(collection.breakOut): _*)
   }
 
-  override def toString = s"Parameters(${axisData.map(t => t._1 + " -> " + t._2).mkString(", ")})"
+  override def toString =
+    s"Parameters(${axisData.map(t => t._1 + " -> " + t._2).mkString(", ")})"
 }
 
 object Parameters {
