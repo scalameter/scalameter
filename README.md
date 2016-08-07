@@ -11,5 +11,14 @@ ScalaMeter
 ==========
 
 Microbenchmarking and performance regression testing framework for the JVM platform.
+ScalaMeter can automatically measure and collect various metrics of your program,
+and then produce nice reports, or store your data.
+For example, it measures:
 
-Website: [scalameter.github.io](http://scalameter.github.io)
+- memory footprint
+- running time
+- GC cycles
+- invocations of specific methods
+- boxing of primitive values
+
+Learn more at the website: [scalameter.github.io](http://scalameter.github.io)
