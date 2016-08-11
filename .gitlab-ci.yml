@@ -1,3 +1,5 @@
+image: stormenroute/storm-enroute-build:0.13
+
 before_script:
   - |
     eval `ssh-agent -s`
