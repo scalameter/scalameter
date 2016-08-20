@@ -55,13 +55,14 @@ case class MongoDbReporter[T: Numeric]() extends Reporter[T] {
 
     for (curve <- result; measurement <- curve.measurements) {
       val tuples = List(
-        "metric.value" -> measurement.value
+        "scope" -> curve.context.scope,
+        "curve" -> curve.context.curve,
+        "commit:rev" -> gitprops("sha"),
+        "commit:commit-ts" -> gitprops("commit-timestamp"),
+        "metric:value" -> measurement.value
       ) ++ measurement.params.axisData.map {
-        case (p, v) => ("metric.param." + p.fullName) -> v
-      } ++ List(
-        "commit.rev" -> gitprops("sha"),
-        "commit.commit-ts" -> gitprops("commit-timestamp")
-      )
+        case (p, v) => ("metric:param:" + p.fullName) -> v
+      }
       val doc = MongoDBObject(tuples)
       coll.insert(doc)
     }
