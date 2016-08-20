@@ -102,35 +102,46 @@ object ScalaMeterBuild extends MechaRepoBuild {
       </developers>
   )
 
-  def dependencies(scalaVersion: String) = CrossVersion.partialVersion(scalaVersion) match {
-    case Some((2, 12)) => List(
-      "org.scalatest" % "scalatest_2.12.0-M1" % "2.2.5-M1" % "test",
-      "com.github.wookietreiber" %% "scala-chart" % "0.5.0",
-      "org.apache.commons" % "commons-math3" % "3.2",
-      "org.scala-tools.testing" % "test-interface" % "0.5",
-      "org.scala-lang" % "scala-reflect" % "2.11.0",
-      "org.scala-lang.modules" % "scala-xml_2.12.0-M1" % "1.0.5",
-      "org.scala-lang.modules" % "scala-parser-combinators_2.12.0-M1" % "1.0.4",
-      "com.fasterxml.jackson.module" % "jackson-module-scala_2.11" % "2.5.2"
-    )
-    case Some((2, 11)) => List(
-      "org.scalatest" %% "scalatest" % "2.2.6" % "test",
-      "com.github.wookietreiber" %% "scala-chart" % "0.5.0",
-      "org.apache.commons" % "commons-math3" % "3.2",
-      "org.scala-tools.testing" % "test-interface" % "0.5",
-      "org.scala-lang" % "scala-reflect" % "2.11.0",
-      "org.scala-lang.modules" %% "scala-xml" % "1.0.1",
-      "org.scala-lang.modules" %% "scala-parser-combinators" % "1.0.1",
-      "com.fasterxml.jackson.module" %% "jackson-module-scala" % "2.5.2"
-    )
-    case Some((2, 10)) => List(
-      "org.scalatest" %% "scalatest" % "2.1.2" % "test",
-      "com.github.wookietreiber" %% "scala-chart" % "0.5.0",
-      "org.apache.commons" % "commons-math3" % "3.2",
-      "org.scala-tools.testing" % "test-interface" % "0.5",
-      "com.fasterxml.jackson.module" %% "jackson-module-scala" % "2.5.2"
-    )
-    case _ => Nil
+  def dependencies(scalaVersion: String) = {
+    CrossVersion.partialVersion(scalaVersion) match {
+      case Some((2, 12)) => List(
+        "org.scalatest" % "scalatest_2.12.0-M1" % "2.2.5-M1" % "test",
+        "com.github.wookietreiber" %% "scala-chart" % "0.5.0",
+        "org.apache.commons" % "commons-math3" % "3.2",
+        "org.scala-tools.testing" % "test-interface" % "0.5",
+        "org.scala-lang" % "scala-reflect" % "2.11.0",
+        "org.scala-lang.modules" % "scala-xml_2.12.0-M1" % "1.0.5",
+        "org.scala-lang.modules" % "scala-parser-combinators_2.12.0-M1" % "1.0.4",
+        "com.fasterxml.jackson.module" % "jackson-module-scala_2.11" % "2.5.2",
+        "org.mongodb" %% "casbah" % "3.1.1",
+        "commons-io" % "commons-io" % "2.4",
+        "io.spray" %%  "spray-json" % "1.3.2"
+      )
+      case Some((2, 11)) => List(
+        "org.scalatest" %% "scalatest" % "2.2.6" % "test",
+        "com.github.wookietreiber" %% "scala-chart" % "0.5.0",
+        "org.apache.commons" % "commons-math3" % "3.2",
+        "org.scala-tools.testing" % "test-interface" % "0.5",
+        "org.scala-lang" % "scala-reflect" % "2.11.0",
+        "org.scala-lang.modules" %% "scala-xml" % "1.0.1",
+        "org.scala-lang.modules" %% "scala-parser-combinators" % "1.0.1",
+        "com.fasterxml.jackson.module" %% "jackson-module-scala" % "2.5.2",
+        "org.mongodb" %% "casbah" % "3.1.1",
+        "commons-io" % "commons-io" % "2.4",
+        "io.spray" %%  "spray-json" % "1.3.2"
+      )
+      case Some((2, 10)) => List(
+        "org.scalatest" %% "scalatest" % "2.1.2" % "test",
+        "com.github.wookietreiber" %% "scala-chart" % "0.5.0",
+        "org.apache.commons" % "commons-math3" % "3.2",
+        "org.scala-tools.testing" % "test-interface" % "0.5",
+        "com.fasterxml.jackson.module" %% "jackson-module-scala" % "2.5.2",
+        "org.mongodb" %% "casbah" % "3.1.1",
+        "commons-io" % "commons-io" % "2.4",
+        "io.spray" %%  "spray-json" % "1.3.2"
+      )
+      case _ => Nil
+    }
   }
 
   val scalaMeterCoreSettings = Defaults.defaultSettings ++ publishCreds ++ Seq(
