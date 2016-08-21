@@ -7,6 +7,7 @@ import com.mongodb.casbah.Imports._
 import org.apache.commons.io._
 import org.scalameter.utils.Tree
 import scala.annotation.unchecked
+import scala.sys.process.Process
 import spray.json._
 import spray.json.DefaultJsonProtocol._
 
@@ -52,11 +53,13 @@ case class MongoDbReporter[T: Numeric]() extends Reporter[T] {
 
     val gitprops = IOUtils.toString(getClass.getResourceAsStream(gitPropsPath), "utf-8")
       .parseJson.convertTo[Map[String, Any]]
+    val hostname = Process("hostname").!!.trim
 
     for (curve <- result; measurement <- curve.measurements) {
       val tuples = List(
         "scope" -> curve.context.scope,
         "curve" -> curve.context.curve,
+        "machine:hostname" -> hostname,
         "commit:rev" -> gitprops("sha"),
         "commit:commit-ts" -> gitprops("commit-timestamp"),
         "metric:value" -> measurement.value
