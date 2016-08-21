@@ -115,7 +115,7 @@ object ScalaMeterBuild extends MechaRepoBuild {
         "com.fasterxml.jackson.module" % "jackson-module-scala_2.11" % "2.5.2",
         "org.mongodb" %% "casbah" % "3.1.1",
         "commons-io" % "commons-io" % "2.4",
-        "io.spray" %%  "spray-json" % "1.3.2"
+        "io.spray" %  "spray-json_2.12.0-M3" % "1.3.2"
       )
       case Some((2, 11)) => List(
         "org.scalatest" %% "scalatest" % "2.2.6" % "test",
