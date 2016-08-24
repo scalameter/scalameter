@@ -62,6 +62,7 @@ case class MongoDbReporter[T: Numeric]() extends Reporter[T] {
         "machine:hostname" -> hostname,
         "commit:rev" -> gitprops("sha"),
         "commit:commit-ts" -> gitprops("commit-timestamp"),
+        "commit:branch" -> gitprops("branch"),
         "metric:value" -> measurement.value
       ) ++ measurement.params.axisData.map {
         case (p, v) => ("metric:param:" + p.fullName) -> v
