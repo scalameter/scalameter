@@ -16,11 +16,11 @@ import spray.json.DefaultJsonProtocol._
 /** Logs numeric results as MongoDB documents.
  */
 case class MongoDbReporter[T: Numeric]() extends Reporter[T] {
-  val url = sys.env("MONGODB_REPORTER_URL")
-  val port = sys.env("MONGODB_REPORTER_PORT").toInt
-  val database = sys.env("MONGODB_REPORTER_DATABASE")
-  val collection = sys.env("MONGODB_REPORTER_COLLECTION")
-  val gitPropsPath = sys.env("MONGODB_REPORTER_GITPROPS_PATH")
+  val url = sys.env.getOrElse("MONGODB_REPORTER_URL", "")
+  val port = sys.env.getOrElse("MONGODB_REPORTER_PORT", "0").toInt
+  val database = sys.env.getOrElse("MONGODB_REPORTER_DATABASE", "")
+  val collection = sys.env.getOrElse("MONGODB_REPORTER_COLLECTION", "")
+  val gitPropsPath = sys.env.getOrElse("MONGODB_REPORTER_GITPROPS_PATH", "")
 
   implicit object AnyJsonFormat extends JsonFormat[Any] {
     def write(x: Any) = x match {
@@ -47,6 +47,8 @@ case class MongoDbReporter[T: Numeric]() extends Reporter[T] {
   }
 
   def report(result: Tree[CurveData[T]], persistor: Persistor): Boolean = {
+    if (url == "") return true
+
     val client = MongoClient(url, port)
     val db = client(database)
     val coll = db(collection)
