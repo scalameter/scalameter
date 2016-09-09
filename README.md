@@ -21,4 +21,5 @@ For example, it measures:
 - invocations of specific methods
 - boxing of primitive values
 
-Learn more at the website: [scalameter.github.io](http://scalameter.github.io)
+Learn more at the official ScalaMeter website:
+[scalameter.github.io](http://scalameter.github.io)
