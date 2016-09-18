@@ -16,3 +16,5 @@ branches:
 after_success:
   - chmod 755 ./tools/build_examples.sh
   - ./tools/build_examples.sh
+notifications:
+  slack: storm-enroute:GnbA8DEy3mL3Pyp3cbptr7F2
