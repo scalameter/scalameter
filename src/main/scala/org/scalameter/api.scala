@@ -59,9 +59,6 @@ object api extends Keys {
 
   /* reporting */
 
-  type ChartReporter[T] = reporting.ChartReporter[T]
-  val ChartReporter = reporting.ChartReporter
-
   type HtmlReporter[T] = reporting.HtmlReporter[T]
   val HtmlReporter = reporting.HtmlReporter
 
@@ -82,7 +79,6 @@ object api extends Keys {
 
   val Tester = reporting.RegressionReporter.Tester
   val Historian = reporting.RegressionReporter.Historian
-  val ChartFactory = reporting.ChartReporter.ChartFactory
 
   /* persistence */
 

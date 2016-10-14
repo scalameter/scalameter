@@ -15,7 +15,7 @@ extends Bench[Double] {
   lazy val measurer = new Measurer.Default
 
   lazy val executor = SeparateJvmsExecutor(Warmer.Default(), Aggregator.min[Double], measurer)
-  lazy val reporter = ChartReporter[Double](ChartFactory.XYLine())
+  lazy val reporter = LoggingReporter[Double]()
   lazy val persistor = Persistor.None
 
   /* inputs */
