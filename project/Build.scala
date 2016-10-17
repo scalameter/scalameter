@@ -112,7 +112,7 @@ object ScalaMeterBuild extends MechaRepoBuild {
         "org.scala-lang.modules" % "scala-xml_2.12.0-RC1" % "1.0.5",
         "org.scala-lang.modules" % "scala-parser-combinators_2.12.0-RC1" % "1.0.4",
         "com.fasterxml.jackson.module" % "jackson-module-scala_2.12.0-RC1" % "2.7.8",
-        "org.mongodb" % "casbah_2.11" % "3.1.1",
+        "org.mongodb" % "casbah_2.12.0-RC1" % "3.1.1",
         "commons-io" % "commons-io" % "2.4",
         "io.spray" %  "spray-json_2.12.0-RC1" % "1.3.2"
       )
