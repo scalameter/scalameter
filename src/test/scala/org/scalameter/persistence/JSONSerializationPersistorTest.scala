@@ -19,7 +19,7 @@ class JSONSerializationPersistorTest extends FunSuite with PersistorTest with Ma
     executeBenchmark() { persistor =>
       for ((ctx, _) <- persistor.intercepted) {
         val file = persistor.fileFor(ctx)
-        compareSpaceConsumption(file, 20.0)
+        compareSpaceConsumption(file, 40.0)
       }
     }
   }
