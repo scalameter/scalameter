@@ -57,7 +57,7 @@ object ScalaMeterBuild extends MechaRepoBuild {
     )
   )
 
-  val scalaMeterSettings = Defaults.defaultSettings ++ publishCreds ++ Seq(
+  val scalaMeterSettings = publishCreds ++ Seq(
     name := "scalameter",
     organization := "com.storm-enroute",
     scalaVersion := "2.11.4",
@@ -141,7 +141,7 @@ object ScalaMeterBuild extends MechaRepoBuild {
     }
   }
 
-  val scalaMeterCoreSettings = Defaults.defaultSettings ++ publishCreds ++ Seq(
+  val scalaMeterCoreSettings = publishCreds ++ Seq(
     name := "scalameter-core",
     organization := "com.storm-enroute",
     scalaVersion := "2.11.4",
