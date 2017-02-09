@@ -16,7 +16,7 @@ before_script:
   - git clone git@ci.storm-enroute.com:storm-enroute/super-storm-enroute.git ~/.super-storm-enroute
 
 after_script:
-  - rm ~/.super-storm-enroute
+  - rm -rf ~/.super-storm-enroute
 
 
 gate:
