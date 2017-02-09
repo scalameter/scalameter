@@ -15,7 +15,7 @@ before_script:
     echo 'scalacOptions ++= Seq("-Xmax-classfile-name", "90")' > ~/.sbt/0.13/local.sbt
   - git clone git@ci.storm-enroute.com:storm-enroute/super-storm-enroute.git ~/.super-storm-enroute
 
-after_script:
+finally_script:
   - rm ~/.super-storm-enroute
 
 
