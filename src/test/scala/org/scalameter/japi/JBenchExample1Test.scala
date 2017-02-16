@@ -1,5 +1,7 @@
 package org.scalameter.japi
 
+
+
 import org.scalameter.BasePerformanceTest._
 import org.scalameter.api._
 import org.scalameter.examples.JBenchExample1
