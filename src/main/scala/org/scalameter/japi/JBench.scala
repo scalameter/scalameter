@@ -139,7 +139,6 @@ abstract class JBench[U] extends BasePerformanceTest[U] with Serializable {
     setupzipper.value = setupzipper.value.addItem(benchmark)
   }
 
-
   /** Gets value from a field or no-arg method.
    */
   private def getFieldOrMethod(selfClass: Class[_],
@@ -153,8 +152,9 @@ abstract class JBench[U] extends BasePerformanceTest[U] with Serializable {
 
   /** Returns no-arg method pointed by given annotation.
    */
-  private def getNoArgMethod[A <: Annotation { def value(): String }](from: Method,
-    annotationClass: Class[A], selfClass: Class[_]): Option[() => Any] = {
+  private def getNoArgMethod[A <: Annotation { def value(): String }](
+    from: Method, annotationClass: Class[A], selfClass: Class[_]
+  ): Option[() => Any] = {
     Option(from.getAnnotation(annotationClass)).map { a =>
       val m = selfClass.getMethod(a.value())
       m.setAccessible(true)
@@ -164,9 +164,10 @@ abstract class JBench[U] extends BasePerformanceTest[U] with Serializable {
   }
 
   /** Returns one-arg method pointed by given annotation.
-    */
-  private def getOneArgMethod[A <: Annotation { def value(): String }](from: Method,
-    annotationClass: Class[A], selfClass: Class[_]): Option[AnyRef => Any] = {
+   */
+  private def getOneArgMethod[A <: Annotation { def value(): String }](
+    from: Method, annotationClass: Class[A], selfClass: Class[_]
+  ): Option[AnyRef => Any] = {
     Option(from.getAnnotation(annotationClass)).map { a =>
       val m = selfClass.getMethods.find(_.getName == a.value())
         .getOrElse(throw new NoSuchMethodException(a.value()))
