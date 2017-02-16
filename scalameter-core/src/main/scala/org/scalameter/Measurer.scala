@@ -115,8 +115,10 @@ object Measurer {
    *  sequence of measured times.
    */
   class Default extends Timer with IterationBasedValue {
-    def name = "Measurer.Default"
+    @volatile private var snippetResult: Any = null
 
+    def name = "Measurer.Default"
+    
     def measure[T](context: Context, measurements: Int, setup: T => Any,
       tear: T => Any, regen: () => T, snippet: T => Any): Seq[Quantity[Double]] = {
       var iteration = 0
@@ -128,7 +130,7 @@ object Measurer {
         setup(value)
 
         val start = System.nanoTime
-        snippet(value)
+        snippetResult = snippet(value)
         val end = System.nanoTime
         val time = Quantity((end - start) / 1000000.0, "ms")
 
@@ -137,6 +139,7 @@ object Measurer {
         times += time
         iteration += 1
       }
+      snippetResult = null
 
       log.verbose(s"measurements: ${times.mkString(", ")}")
 
