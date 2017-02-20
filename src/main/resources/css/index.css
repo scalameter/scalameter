@@ -4,7 +4,7 @@
   position: fixed;
   left: 0;
   top: 0;
-  width: 250px;
+  width: 400px;
   height: 100%;
   overflow-x: hidden;
   overflow-y: auto;
@@ -16,14 +16,14 @@
   border-right: solid 5px #ddd;
   position: absolute;
   top: 0;
-  left: 240px;
+  left: 390px;
   height: 100%;
 }
 
 .content {
   position: fixed;
   top: 0;
-  left: 250px;
+  left: 400px;
   right: 0;
   bottom: 0;
   padding-left: 35px;
