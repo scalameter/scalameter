@@ -1,4 +1,4 @@
-image: stormenroute/storm-enroute-build:0.14
+image: stormenroute/storm-enroute-build:0.15
 
 before_script:
   - |
