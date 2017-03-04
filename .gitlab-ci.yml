@@ -24,7 +24,7 @@ gate-ubuntu:
     - ubuntu
     - gate
   script:
-    - ~/.super-storm-enroute/tools/ci reactors $(pwd)
+    - ~/.super-storm-enroute/tools/ci scalameter $(pwd)
 
 
 gate-osx:
@@ -32,7 +32,7 @@ gate-osx:
     - osx
     - gate
   script:
-    - ~/.super-storm-enroute/tools/ci reactors $(pwd)
+    - ~/.super-storm-enroute/tools/ci scalameter $(pwd)
   cache:
     paths:
       - /root/.ivy2/
