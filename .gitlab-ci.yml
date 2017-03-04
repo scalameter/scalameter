@@ -19,6 +19,33 @@ after_script:
   - rm -rf ~/.super-storm-enroute
 
 
-gate:
+gate-ubuntu:
+  tags:
+    - ubuntu
+    - gate
   script:
-    - ~/.super-storm-enroute/tools/ci scalameter $(pwd)
+    - ~/.super-storm-enroute/tools/ci reactors $(pwd)
+
+
+gate-osx:
+  tags:
+    - osx
+    - gate
+  script:
+    - ~/.super-storm-enroute/tools/ci reactors $(pwd)
+  cache:
+    paths:
+      - /root/.ivy2/
+      - /root/.sbt/
+
+
+bench-ubuntu:
+  tags:
+    - ubuntu
+    - bench
+  script:
+    - ~/.super-storm-enroute/tools/ci --bench=True . $(pwd)
+  cache:
+    paths:
+      - /root/.ivy2/
+      - /root/.sbt/
