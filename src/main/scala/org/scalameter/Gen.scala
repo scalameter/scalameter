@@ -68,7 +68,7 @@ abstract class Gen[T] extends Serializable {
 
     def axes = cachedDataset.head._1.axisData.keys.toSet
     def warmupset = cachedWarmupset.iterator
-    def dataset = cachedDataset.keys.iterator
+    def dataset = self.dataset
     def generate(params: Parameters) = {
       val desiredParams = Parameters(params.axisData.filterKeys(k => axes.contains(k)).toSeq: _*)
       cachedDataset(desiredParams)

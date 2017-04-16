@@ -13,3 +13,4 @@ tmp*
 .gitattributes
 
 .metadata/
+.idea/
