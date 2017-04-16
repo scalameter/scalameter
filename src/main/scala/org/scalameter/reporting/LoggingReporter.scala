@@ -22,7 +22,7 @@ case class LoggingReporter[T]() extends Reporter[T] {
 
     // output measurements
     for (measurement <- result.measurements) {
-      log(s"${measurement.params}: ${measurement.value}")
+      log(s"${measurement.params}: ${measurement.value} ${measurement.units}")
     }
 
     // add a new line
