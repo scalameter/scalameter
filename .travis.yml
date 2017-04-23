@@ -2,7 +2,7 @@ language: scala
 scala:
   - "2.10.4"
   - "2.11.1"
-  - "2.12.0-RC1"
+  - "2.12.0"
 jdk:
   - oraclejdk8
 script: ./tools/validate-pr.sh ++${TRAVIS_SCALA_VERSION}
