@@ -472,7 +472,7 @@ var ScalaMeter = (function(parent) {
 	}
 
 	function updateChart() {
-		parent.chart.update(filter_.getData()); 
+		parent.chart.update(filter_.getData(), scopeTree_);
 		/*if (h.isDef(rawdata)) {
 			showdata(data);
 		}*/
@@ -484,7 +484,7 @@ var ScalaMeter = (function(parent) {
 
 		data.index.forEach(function(curve, id) {
 			curve.scope.push(curve.name);
-			addScope(scopeTree, curve.scope, id);
+			addScope(scopeTree, curve.scope, id, curve.unit);
 			if (h.isDef(data.tsvData)) {
 				tsvReady(d3.tsv.parse(data.tsvData[id]), id);
 			} else {
@@ -505,18 +505,19 @@ var ScalaMeter = (function(parent) {
 			}
 		}
 
-		function addScope(node, scope, leafId) {
+		function addScope(node, scope, leafId, curveUnit) {
 			var nodeName = scope[0];
 			var isLeaf = scope.length == 1;
 			if (!node.children.hasOwnProperty(nodeName)) {
 				node.children[nodeName] = {
 					"id": isLeaf ? leafId : -1,
-					"children": []
+					"children": [],
+					"unit": isLeaf ? curveUnit : ""
 				}
 			}
 			if (!isLeaf) {
 				scope.shift();
-				addScope(node.children[nodeName], scope, leafId);
+				addScope(node.children[nodeName], scope, leafId, curveUnit);
 			}
 		}
 

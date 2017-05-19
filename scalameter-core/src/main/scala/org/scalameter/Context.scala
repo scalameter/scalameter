@@ -33,6 +33,7 @@ case class Context(properties: immutable.Map[Key[_], Any]) {
   def scope = scopeList.mkString(".")
   def scopeList = apply(dsl.scope).reverse
   def curve = apply(dsl.curve)
+  def unit = goe(gen.unit, "")
   override def toString = {
     val proplines = properties.map {
       case (key, value) => s"$key -> $value"

@@ -81,6 +81,7 @@ case class HtmlReporter[T: Numeric](embedDsv: Boolean = true) extends Reporter[T
       immutable.Map(
         "scope" -> new JSONArray(curve.context.scopeList),
         "name" -> curve.context.curve,
+        "unit" -> curve.context.unit,
         "file" -> s"../${context.scope}.${curve.context.curve}.dsv"
       )
     )

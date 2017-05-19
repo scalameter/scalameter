@@ -86,7 +86,7 @@ var ScalaMeter = (function(parent) {
 		parent.filter.update();
 	};
 
-	my.update = function(data) {
+	my.update = function(data, scopeTree) {
 		var filterDimensions = parent.dimensions;
 		var keysCurveColor = h.unique(data, h.curveKey, d3.ascending);
 		var legendWidth = MIN_LEGEND_WIDTH + 20 * keysCurveColor.length;
@@ -182,6 +182,9 @@ var ScalaMeter = (function(parent) {
 			.domain([0, legendSize - 1])
 			.range([-1, 1]);
 
+        if (data.length > 0) {
+            Y_AXIS_CAPTION = data[0].units;
+        }
 		d3.transition().each(function() {
 			// axis and grid
 			if (showXGrid) {
@@ -201,12 +204,17 @@ var ScalaMeter = (function(parent) {
 				.attr("transform", "translate(0," + H + ")")
 				.transition()
 				.call(xAxis)
-				.select(".axis-caption")
+				.select(".x-axis-caption")
 				.attr("x", W)
 				.text(xAxisDim.caption());
 
 			var yAxis = d3.svg.axis().scale(y).orient("left");
-			svg_.select(".y.axis").transition().call(yAxis);
+			console.log(Y_AXIS_CAPTION);
+			svg_.select(".y.axis")
+			    .transition()
+			    .call(yAxis)
+			    .select(".y-axis-caption")
+			    .text(Y_AXIS_CAPTION);
 
 			var bars = svg_.selectAll("rect").data(barData, mapKey(dKey.index));
 
@@ -514,7 +522,7 @@ var ScalaMeter = (function(parent) {
 		svg_.append("g")
 			.attr("class", "x axis")
 			.append("text")
-			.attr("class", "axis-caption")
+			.attr("class", "x-axis-caption")
 			.attr("y", -6)
 			.style("text-anchor", "end");
 
@@ -522,6 +530,7 @@ var ScalaMeter = (function(parent) {
 		svg_.append("g")
 			.attr("class", "y axis")
 			.append("text")
+			.attr("class", "y-axis-caption")
 			.attr("transform", "rotate(-90)")
 			.attr("y", 6).attr("dy", ".71em")
 			.style("text-anchor", "end")
