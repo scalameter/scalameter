@@ -1,12 +1,11 @@
 package org.scalameter
 package reporting
 
-
-
 import java.io._
 import org.scalameter.Key._
 import org.scalameter.utils.Tree
 import scala.collection._
+import scala.collection.JavaConverters._
 import scala.util.parsing.json.{JSONObject, JSONArray}
 
 
@@ -149,7 +148,15 @@ object HtmlReporter {
   val dsvDelimiter = '\t'
 
   def copyResource(from: String, to: File) {
-    val res = getClass.getClassLoader.getResourceAsStream(from)
+    val resources = getClass.getClassLoader.getResources(from).asScala
+    val resource = resources.find { url =>
+      url.getPath.contains("scalameter")
+    }
+
+    val res = resource match {
+      case Some(url) => url.openStream()
+      case None => throw new IllegalStateException(s"Could not find any resource with name $from.")
+    }
     try {
       val buffer = new Array[Byte](1024)
       val fos = new FileOutputStream(to)
