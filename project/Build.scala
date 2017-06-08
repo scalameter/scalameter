@@ -126,7 +126,7 @@ object ScalaMeterBuild extends MechaRepoBuild {
         "org.scala-lang" % "scala-reflect" % "2.11.0",
         "org.scala-lang.modules" %% "scala-xml" % "1.0.1",
         "org.scala-lang.modules" %% "scala-parser-combinators" % "1.0.1",
-        "com.fasterxml.jackson.module" %% "jackson-module-scala" % "2.5.2",
+        "com.fasterxml.jackson.module" %% "jackson-module-scala" % "2.6.5",
         "org.mongodb" %% "casbah" % "3.1.1",
         "commons-io" % "commons-io" % "2.4",
         "io.spray" %%  "spray-json" % "1.3.2"
@@ -135,7 +135,7 @@ object ScalaMeterBuild extends MechaRepoBuild {
         "org.scalatest" %% "scalatest" % "3.0.0" % "test",
         "org.apache.commons" % "commons-math3" % "3.2",
         "org.scala-tools.testing" % "test-interface" % "0.5",
-        "com.fasterxml.jackson.module" %% "jackson-module-scala" % "2.5.2",
+        "com.fasterxml.jackson.module" %% "jackson-module-scala" % "2.6.5",
         "org.mongodb" %% "casbah" % "3.1.1",
         "commons-io" % "commons-io" % "2.4",
         "io.spray" %%  "spray-json" % "1.3.2"

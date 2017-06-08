@@ -139,7 +139,7 @@ trait GroupedPerformanceTest extends BasePerformanceTest[Nothing] {
 
   def include[T <: BasePerformanceTest[_]: ClassTag](newBenchmark: =>T) = {
     val cls = implicitly[ClassTag[T]].runtimeClass
-    if (cls.getSimpleName.endsWith("$") || !cls.isInterface) {
+    if (cls.getSimpleName.endsWith("$")) {
       log.error(
         s"Can only use `include` with anonymous classes instantiated from traits -- " +
         s"please make ${cls.getName} a trait and " +

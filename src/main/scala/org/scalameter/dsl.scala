@@ -27,7 +27,7 @@ abstract class DSL[U] extends BasePerformanceTest[U] {
   @deprecated(
     "This form of include is deprecated -- please extend Bench.Group " +
     "and use include(new MyBench {}), " +
-    "where MyBench is a *trait*, and not a class or an object.",
+    "where MyBench is a *trait*, and not an object.",
     "0.7")
   def include[T <: BasePerformanceTest[_]: ClassTag]: Unit = {
     val cls = implicitly[ClassTag[T]].runtimeClass
