@@ -15,12 +15,17 @@ import scala.util.Try
 
 /** Base class for all annotation-based benchmarks. */
 abstract class JBench[U] extends BasePerformanceTest[U] with Serializable {
+  private val attachedBenchmarks = mutable.Buffer[JBench[U]]()
 
   override final def rebuildSetupZipper() = constructSetupTree()
 
+  /** Attaches all the benchmarks from the specified benchmark class to this benchmark.
+   */
+  def attach(bench: JBench[U]) = attachedBenchmarks += bench
+
   /** Constructs setup tree.
    */
-  private def constructSetupTree() = {
+  private[japi] def constructSetupTree(): Unit = {
     object BenchmarkExtractor {
       def unapply(m: Method): Option[Seq[String]] = {
         Option(m.getAnnotation(classOf[benchmark])).map(_.value().split('.').toSeq)
@@ -40,19 +45,27 @@ abstract class JBench[U] extends BasePerformanceTest[U] with Serializable {
       }
       mapping.toList
     }
+    val defaultCtx: Context =
+      getFieldOrMethod(clazz, "defaultConfig", "Class").asInstanceOf[Context]
     val scopeCtxs = {
       Option(clazz.getAnnotation(classOf[scopes])).map { a =>
         a.value().map { sc =>
-          sc.scope().split('.').toSeq ->
+          sc.scope().split('.').toSeq -> {
             getFieldOrMethod(clazz, sc.context(),
               s"'scopeCtx' in the `scopes` annotation over ${clazz.getSimpleName}"
             ).asInstanceOf[Context]
+          }
         }.toMap
       }.getOrElse(Map.empty)
     }
     for ((scope, mapping) <- scopedSetups.groupBy(_._1.head)) {
-      setScope(clazz, scopeCtxs, scope, mapping.map(kv => (kv._1.tail, kv._2)))
+      setScope(
+        clazz, defaultCtx, scopeCtxs, scope, mapping.map(kv => (kv._1.tail, kv._2))
+      )
     }
+
+    // Include benchmarks from attached benchmark classes.
+    for (bench <- attachedBenchmarks) bench.constructSetupTree()
   }
 
   /** Extends the scope named `name` with the corresponding context specified in
@@ -61,12 +74,13 @@ abstract class JBench[U] extends BasePerformanceTest[U] with Serializable {
    *  After this method is invoked, the setup zipper is set to a setup tree
    *  that contains all the benchmark snippets.
    */
-  private def setScope(clazz: Class[_],
-    scopeCtxs: Map[Seq[String], Context], name: String,
-    scopedSetups: Seq[(Seq[String], Seq[Method])]): Unit = {
+  private def setScope(
+    clazz: Class[_], defaultCtx: Context, scopeCtxs: Map[Seq[String], Context],
+    name: String, scopedSetups: Seq[(Seq[String], Seq[Method])]
+  ): Unit = {
     val scope = Scope(name, setupzipper.value.current.context)
     scope config {
-      scopeCtxs.getOrElse(
+      defaultCtx ++ scopeCtxs.getOrElse(
         (scope.name :: scope.context(Key.dsl.scope)).reverse, Context.empty
       )
     } in {
@@ -77,7 +91,8 @@ abstract class JBench[U] extends BasePerformanceTest[U] with Serializable {
           }
         case (Some(newScope), newMapping) =>
           setScope(
-            clazz, scopeCtxs, newScope, newMapping.map(kv => (kv._1.tail, kv._2))
+            clazz, defaultCtx, scopeCtxs, newScope,
+            newMapping.map(kv => (kv._1.tail, kv._2))
           )
       }
     }
@@ -141,13 +156,14 @@ abstract class JBench[U] extends BasePerformanceTest[U] with Serializable {
 
   /** Gets value from a field or no-arg method.
    */
-  private def getFieldOrMethod(selfClass: Class[_],
-    name: String, errorPrfx: String): Any = {
+  private def getFieldOrMethod(
+    selfClass: Class[_], name: String, errorPrfx: String
+  ): Any = {
     Try(selfClass.getField(name).get(this)) orElse
-      Try(selfClass.getMethod(name).invoke(this)) getOrElse
-      sys.error(
-        s"$errorPrfx is referring to a non-existent field or 0-arg method $name"
-      )
+    Try(selfClass.getMethod(name).invoke(this)) getOrElse
+    sys.error(
+      s"$errorPrfx is referring to a non-existent field or 0-arg method $name"
+    )
   }
 
   /** Returns no-arg method pointed by given annotation.
