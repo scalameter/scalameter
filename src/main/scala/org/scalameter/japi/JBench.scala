@@ -1,5 +1,7 @@
 package org.scalameter.japi
 
+
+
 import java.lang.annotation.Annotation
 import java.lang.reflect.Method
 import org.scalameter.BasePerformanceTest._
@@ -11,6 +13,7 @@ import org.scalameter.reporting.{HtmlReporter, RegressionReporter}
 import scala.collection.mutable
 import scala.language.reflectiveCalls
 import scala.util.Try
+
 
 
 /** Base class for all annotation-based benchmarks. */

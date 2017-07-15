@@ -27,8 +27,10 @@ import scala.compat.Platform
  *  most triggered GC cycles are fast because they collect only
  *  the young generation.
  */
-class LocalExecutor[V: Pickler](val warmer: Warmer, val aggregator: Aggregator[V],
-    val measurer: Measurer[V]) extends Executor[V] {
+class LocalExecutor[V: Pickler](
+  val warmer: Warmer, val aggregator: Aggregator[V],
+  val measurer: Measurer[V]
+) extends Executor[V] {
   require(!measurer.usesInstrumentedClasspath,
     s"${measurer.getClass.getName} should be run using SeparateJvmsExecutor.")
 

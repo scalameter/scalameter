@@ -12,11 +12,14 @@ import org.scalameter.PrettyPrinter.Implicits._
 
 /** Runs multiple JVM instances per each setup and aggregates all the results together.
  *
- *  This produces more stable results, as the performance related effects of each JVM instantiation
- *  are averaged.
+ *  This produces more stable results, as the performance related effects of each JVM
+ *  instantiation are averaged.
  */
-class SeparateJvmsExecutor[V: Pickler: PrettyPrinter](val warmer: Warmer, val aggregator: Aggregator[V],
-  val measurer: Measurer[V]) extends Executor[V] {
+class SeparateJvmsExecutor[V: Pickler: PrettyPrinter](
+  val warmer: Warmer,
+  val aggregator: Aggregator[V],
+  val measurer: Measurer[V]
+) extends Executor[V] {
 
   import Key._
 
@@ -24,7 +27,9 @@ class SeparateJvmsExecutor[V: Pickler: PrettyPrinter](val warmer: Warmer, val ag
 
   def createJvmContext(ctx: Context) = {
     val existingFlags = ctx(exec.jvmflags)
-    val flags = if (currentContext(Key.verbose)) "-verbose:gc" :: existingFlags else existingFlags
+    val flags =
+      if (currentContext(Key.verbose)) "-verbose:gc" :: existingFlags
+      else existingFlags
     ctx + (exec.jvmflags -> flags)
   }
 
@@ -43,10 +48,14 @@ class SeparateJvmsExecutor[V: Pickler: PrettyPrinter](val warmer: Warmer, val ag
     val w = warmer
     val jvmContext = createJvmContext(context)
 
-    def sample(idx: Int, reps: Int): Try[Seq[(Parameters, Seq[(V, String)])]] = runner.run(jvmContext) {
+    def sample(idx: Int, reps: Int): Try[Seq[(Parameters, Seq[(V, String)])]] =
+      runner.run(jvmContext) {
       dyn.currentContext.value = context
       
-      log.verbose(s"Sampling $reps measurements in separate JVM invocation $idx - ${context.scope}, ${context(dsl.curve)}.")
+      log.verbose(
+        s"Sampling $reps measurements in separate JVM invocation $idx - " +
+        s"${context.scope}, ${context(dsl.curve)}."
+      )
 
       // warmup
       setupBeforeAll()
@@ -70,7 +79,8 @@ class SeparateJvmsExecutor[V: Pickler: PrettyPrinter](val warmer: Warmer, val ag
           val tear = teardownFor()
           val regen = regenerateFor(params)
           val results = m.measure(context, reps, set, tear, regen, snippet)
-          observations += ((params, results.map(q => q.value -> q.units))) // FIXME: workaround to `java.lang.ClassNotFoundException: org.scalameter.Quantity`
+          observations += ((params, results.map(q => q.value -> q.units)))
+          // FIXME: `java.lang.ClassNotFoundException: org.scalameter.Quantity`
         }
         observations
       } finally {
@@ -88,7 +98,10 @@ class SeparateJvmsExecutor[V: Pickler: PrettyPrinter](val warmer: Warmer, val ag
     }
 
     log.verbose(s"Running test set for ${context.scope}, curve ${context(dsl.curve)}")
-    log.verbose(s"Starting $totalreps measurements across $independentSamples independent JVM runs.")
+    log.verbose(
+      s"Starting $totalreps measurements across " +
+      s"$independentSamples independent JVM runs."
+    )
 
     val valueseqs = for {
       idx <- 0 until independentSamples
@@ -102,7 +115,8 @@ class SeparateJvmsExecutor[V: Pickler: PrettyPrinter](val warmer: Warmer, val ag
     }
 
     def nice(vs: Seq[(Parameters, Seq[Quantity[V]])]) = vs map { case (params, seq) =>
-      params.axisData.mkString(", ") + ": " + seq.map(t => s"${t.value.prettyPrint}").mkString(", ")
+      params.axisData.mkString(", ") + ": " +
+      seq.map(t => s"${t.value.prettyPrint}").mkString(", ")
     } mkString("\n")
 
     log.verbose(s"Obtained measurements:\n${nice(valueseq)}")
@@ -121,7 +135,8 @@ class SeparateJvmsExecutor[V: Pickler: PrettyPrinter](val warmer: Warmer, val ag
     CurveData(measurements.toSeq, Map.empty, context)
   }
 
-  override def toString = s"MultipleJvmPerSetupExecutor(${aggregator.name}, ${measurer.name})"
+  override def toString =
+    s"MultipleJvmPerSetupExecutor(${aggregator.name}, ${measurer.name})"
 
 }
 
