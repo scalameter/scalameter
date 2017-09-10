@@ -27,18 +27,6 @@ gate-ubuntu:
     - ~/.super-storm-enroute/tools/ci scalameter $(pwd)
 
 
-gate-osx:
-  tags:
-    - osx
-    - gate
-  script:
-    - ~/.super-storm-enroute/tools/ci scalameter $(pwd)
-  cache:
-    paths:
-      - /root/.ivy2/
-      - /root/.sbt/
-
-
 bench-ubuntu:
   tags:
     - ubuntu
