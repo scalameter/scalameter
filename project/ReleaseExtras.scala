@@ -3,7 +3,7 @@ import sbt.Keys._
 import sbt.Package._
 
 import sbtrelease._
-import sbtrelease.ReleasePlugin.ReleaseKeys._
+import sbtrelease.ReleasePlugin.autoImport._
 import sbtrelease.ReleaseStateTransformations._
 import sbtrelease.Utilities._
 
@@ -36,7 +36,7 @@ object ReleaseExtras {
   }
 
   private def git(st: State): Git = {
-    st.extract.get(versionControlSystem).collect {
+    st.extract.get(releaseVcs).collect {
       case git: Git => git
     }.getOrElse(sys.error("Aborting release. Working directory is not a repository of a Git."))
   }
@@ -86,7 +86,7 @@ object ReleaseExtras {
     */
   lazy val bumpUpVersionInExamples: ReleaseStep = { st: State =>
     val repo = st.extract.get(examples.repo)
-    val (releaseV, nextV) = st.get(versions).getOrElse(
+    val (releaseV, nextV) = st.get(ReleaseKeys.versions).getOrElse(
       sys.error("No versions are set! Was this release part executed before inquireVersions?")
     )
     val tag = st.extract.get(examples.tag).format(releaseV)
@@ -131,13 +131,13 @@ object ReleaseExtras {
       st.log.info(s"Setting release version '$releaseV'")
       val filesWithReleaseV = setVersions(tmpDir, releaseV)
       examplesGit.add(filesWithReleaseV: _*) !! st.log
-      examplesGit.commit(commitMsg.format(releaseV)) !! st.log
-      examplesGit.tag(name = tag, comment = comment, force = true) !! st.log
+      examplesGit.commit(commitMsg.format(releaseV), sign = false) !! st.log
+      examplesGit.tag(name = tag, comment = comment, sign = false) !! st.log
 
       st.log.info(s"Setting snapshot version '$nextV'")
       val filesWithNextV = setVersions(tmpDir, nextV)
       examplesGit.add(filesWithNextV: _*) !! st.log
-      examplesGit.commit(commitMsg.format(nextV)) !! st.log
+      examplesGit.commit(commitMsg.format(nextV), sign = false) !! st.log
 
       st.log.info(s"Starting pushing changes to $repo")
       pushChanges(examplesGit)

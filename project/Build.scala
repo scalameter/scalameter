@@ -7,9 +7,8 @@ import org.stormenroute.mecha._
 import sbt._
 import sbt.Keys._
 import sbt.Process._
-import sbtrelease._
-import sbtrelease.ReleasePlugin._
-import sbtrelease.ReleasePlugin.ReleaseKeys._
+import sbtrelease.ReleasePlugin
+import sbtrelease.ReleasePlugin.autoImport._
 import sbtrelease.ReleaseStateTransformations._
 import ReleaseExtras._
 import ReleaseExtras.ReleaseExtrasKeys._
@@ -36,7 +35,7 @@ object ScalaMeterBuild extends MechaRepoBuild {
       publish <<= streams.map(_.log.info("Publishing to Sonatype is disabled since the \"" + publishUser + "\" and/or \"" + publishPass + "\" environment variables are not set."))
   })
 
-  val releasePluginSettings = releaseSettings ++ Seq(
+  val releasePluginSettings = Seq(
     releaseBranchName := s"version/${(version in ThisBuild).value}",
     examples.repo := "git@github.com:scalameter/scalameter-examples.git",
     examples.tag := "v%s",
@@ -44,8 +43,8 @@ object ScalaMeterBuild extends MechaRepoBuild {
     examples.commitMessage := "Set ScalaMeter version to %s",
     examples.scalaMeterVersionFile := "version.sbt",
     examples.scalaMeterVersionFileContent := globalVersionString,
-    commitMessage := s"Set version to ${(version in ThisBuild).value}",
-    publishArtifactsAction <<= publishSigned.map(identity),
+    releaseCommitMessage := s"Set version to ${(version in ThisBuild).value}",
+    releasePublishArtifactsAction <<= publishSigned.map(identity),
     releaseProcess := Seq[ReleaseStep](
       checkSnapshotDependencies,
       inquireVersions,
@@ -262,7 +261,7 @@ object ScalaMeterBuild extends MechaRepoBuild {
     "scalameter-core",
     file("scalameter-core"),
     settings = scalaMeterCoreSettings ++ releasePluginSettings
-  )
+  ).enablePlugins(ReleasePlugin)
 
   lazy val scalaMeter = Project(
     "scalameter",
@@ -272,6 +271,8 @@ object ScalaMeterBuild extends MechaRepoBuild {
     scalaMeterCore
   ) aggregate(
     scalaMeterCore
+  ) enablePlugins(
+    ReleasePlugin
   )
 
 }
