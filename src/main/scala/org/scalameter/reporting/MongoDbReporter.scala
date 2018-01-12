@@ -2,21 +2,23 @@ package org.scalameter
 package reporting
 
 
-
-import com.mongodb.casbah.Imports._
 import org.apache.commons.io._
 import org.scalameter.utils.Tree
-import scala.annotation.unchecked
+
 import scala.sys.process.Process
 import spray.json._
 import spray.json.DefaultJsonProtocol._
+import org.mongodb.scala._
+import org.mongodb.scala.bson.BsonDocument
 
+import scala.concurrent.Await
+import scala.concurrent.duration.Duration
 
 
 /** Logs numeric results as MongoDB documents.
  */
 case class MongoDbReporter[T: Numeric]() extends Reporter[T] {
-  val url = sys.env.getOrElse("MONGODB_REPORTER_URL", "")
+  val host = sys.env.getOrElse("MONGODB_REPORTER_URL", "")
   val port = sys.env.getOrElse("MONGODB_REPORTER_PORT", "0").toInt
   val database = sys.env.getOrElse("MONGODB_REPORTER_DATABASE", "")
   val collection = sys.env.getOrElse("MONGODB_REPORTER_COLLECTION", "")
@@ -47,30 +49,34 @@ case class MongoDbReporter[T: Numeric]() extends Reporter[T] {
   }
 
   def report(result: Tree[CurveData[T]], persistor: Persistor): Boolean = {
-    if (url == "") return true
+    if (host == "") return true
 
-    val client = MongoClient(url, port)
-    val db = client(database)
-    val coll = db(collection)
+    val client = MongoClient(s"mongodb://$host:$port")
+    val db = client.getDatabase(database)
+    val coll = db.getCollection(collection)
 
     val gitprops = IOUtils.toString(getClass.getResourceAsStream(gitPropsPath), "utf-8")
       .parseJson.convertTo[Map[String, Any]]
     val hostname = Process("hostname").!!.trim
 
     for (curve <- result; measurement <- curve.measurements) {
-      val tuples = List(
+      val tuples = Seq(
         "scope" -> curve.context.scope,
         "curve" -> curve.context.curve,
         "machine:hostname" -> hostname,
-        "commit:rev" -> gitprops("sha"),
-        "commit:commit-ts" -> gitprops("commit-timestamp"),
-        "commit:branch" -> gitprops("branch"),
-        "metric:value" -> measurement.value
+        "commit:rev" -> gitprops("sha").toString,
+        "commit:commit-ts" -> gitprops("commit-timestamp").toString,
+        "commit:branch" -> gitprops("branch").toString,
+        "metric:value" -> measurement.value.toString
       ) ++ measurement.params.axisData.map {
         case (p, v) => ("metric:param:" + p.fullName) -> v
       }
-      val doc = MongoDBObject(tuples)
-      coll.insert(doc)
+
+      val underlying = new BsonDocument()
+      tuples.foreach(elem => underlying.put(elem._1, elem._2))
+      val doc = Document(underlying)
+      val observable: Observable[Completed] = coll.insertOne(doc)
+      Await.result(observable.toFuture(), atMost = Duration.Inf)
     }
 
     true

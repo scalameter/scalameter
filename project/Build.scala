@@ -62,8 +62,8 @@ object ScalaMeterBuild extends MechaRepoBuild {
   val scalaMeterSettings = MechaRepoPlugin.defaultSettings ++ publishCreds ++ Seq(
     name := "scalameter",
     organization := "com.storm-enroute",
-    scalaVersion := "2.11.4",
-    crossScalaVersions := Seq("2.10.4", "2.11.4", "2.12.0"),
+    scalaVersion := "2.11.11",
+    crossScalaVersions := Seq("2.11.11", "2.12.4"),
     scalacOptions ++= Seq("-deprecation", "-unchecked", "-feature", "-Xlint"),
     libraryDependencies <++= (scalaVersion)(sv => dependencies(sv)),
     parallelExecution in Test := false,
@@ -113,7 +113,7 @@ object ScalaMeterBuild extends MechaRepoBuild {
         "org.scala-lang.modules" % "scala-xml_2.12" % "1.0.5",
         "org.scala-lang.modules" % "scala-parser-combinators_2.12" % "1.0.4",
         "com.fasterxml.jackson.module" % "jackson-module-scala_2.12" % "2.8.5",
-        "org.mongodb" % "casbah_2.12.0-RC1" % "3.1.1",
+        "org.mongodb.scala" %% "mongo-scala-driver" % "2.2.0",
         "commons-io" % "commons-io" % "2.4",
         "io.spray" %  "spray-json_2.12" % "1.3.2"
       )
@@ -124,16 +124,7 @@ object ScalaMeterBuild extends MechaRepoBuild {
         "org.scala-lang.modules" %% "scala-xml" % "1.0.1",
         "org.scala-lang.modules" %% "scala-parser-combinators" % "1.0.1",
         "com.fasterxml.jackson.module" %% "jackson-module-scala" % "2.8.5",
-        "org.mongodb" %% "casbah" % "3.1.1",
-        "commons-io" % "commons-io" % "2.4",
-        "io.spray" %%  "spray-json" % "1.3.2"
-      )
-      case Some((2, 10)) => List(
-        "org.scalatest" %% "scalatest" % "3.0.0" % "test",
-        "org.apache.commons" % "commons-math3" % "3.2",
-        "org.scala-tools.testing" % "test-interface" % "0.5",
-        "com.fasterxml.jackson.module" %% "jackson-module-scala" % "2.8.5",
-        "org.mongodb" %% "casbah" % "3.1.1",
+        "org.mongodb.scala" %% "mongo-scala-driver" % "2.2.0",
         "commons-io" % "commons-io" % "2.4",
         "io.spray" %%  "spray-json" % "1.3.2"
       )
@@ -144,8 +135,8 @@ object ScalaMeterBuild extends MechaRepoBuild {
   val scalaMeterCoreSettings = MechaRepoPlugin.defaultSettings ++ publishCreds ++ Seq(
     name := "scalameter-core",
     organization := "com.storm-enroute",
-    scalaVersion := "2.11.4",
-    crossScalaVersions := Seq("2.10.4", "2.11.4", "2.12.0"),
+    scalaVersion := "2.11.11",
+    crossScalaVersions := Seq("2.11.11", "2.12.4"),
     scalacOptions ++= Seq("-deprecation", "-unchecked", "-feature", "-Xlint"),
     libraryDependencies <++= (scalaVersion)(sv => coreDependencies(sv)),
     parallelExecution in Test := false,
@@ -203,13 +194,6 @@ object ScalaMeterBuild extends MechaRepoBuild {
       "org.apache.commons" % "commons-lang3" % "3.4",
       "org.scala-lang.modules" %% "scala-xml" % "1.0.1",
       "org.scala-lang.modules" %% "scala-parser-combinators" % "1.0.1",
-      "org.ow2.asm" % "asm" % "5.0.4"
-    )
-    case Some((2, 10)) => List(
-      "org.scalacheck" %% "scalacheck" % "1.12.4" % "test",
-      "org.scalatest" %% "scalatest" % "2.1.3" % "test",
-      "org.apache.commons" % "commons-math3" % "3.2",
-      "org.apache.commons" % "commons-lang3" % "3.4",
       "org.ow2.asm" % "asm" % "5.0.4"
     )
     case _ => Nil
