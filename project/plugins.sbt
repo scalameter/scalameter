@@ -1,5 +1,5 @@
 
-addSbtPlugin("com.jsuereth" % "sbt-pgp" % "1.1.0")
+addSbtPlugin("com.typesafe.sbt" % "sbt-pgp" % "0.8.1")
 
 addSbtPlugin("com.github.gseitz" % "sbt-release" % "1.0.5")
 
