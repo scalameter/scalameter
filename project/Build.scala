@@ -109,7 +109,6 @@ object ScalaMeterBuild extends MechaRepoBuild {
       case Some((2, 12)) => List(
         "org.scalatest" % "scalatest_2.12" % "3.0.0" % "test",
         "junit" % "junit" % "4.12" % "test",
-        "junit" % "junit" % "4.12" % "test",
         "org.apache.commons" % "commons-math3" % "3.2",
         "org.scala-tools.testing" % "test-interface" % "0.5",
         "org.scala-lang.modules" % "scala-xml_2.12" % "1.0.5",
@@ -121,7 +120,6 @@ object ScalaMeterBuild extends MechaRepoBuild {
       )
       case Some((2, 11)) => List(
         "org.scalatest" %% "scalatest" % "3.0.0" % "test",
-        "junit" % "junit" % "4.12" % "test",
         "junit" % "junit" % "4.12" % "test",
         "org.apache.commons" % "commons-math3" % "3.2",
         "org.scala-tools.testing" % "test-interface" % "0.5",
