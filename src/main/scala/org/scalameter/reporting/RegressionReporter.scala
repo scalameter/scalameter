@@ -316,8 +316,10 @@ object RegressionReporter {
         curvedata.copy(measurements = newmeasurements)
       }
 
-      override def confidenceInterval[T: Numeric](context: Context,
-        alt: Seq[T]): (Double, Double) = {
+      override def confidenceInterval[T: Numeric](
+        context: Context,
+        alt: Seq[T]
+      ): (Double, Double) = {
         val significance = context(reports.regression.significance)
 
         val citest = ConfidenceIntervalTest(strict, alt.map(_.toDouble()),
@@ -331,8 +333,11 @@ object RegressionReporter {
 
       def cistr(ci: (Double, Double), units: String) = f"<${ci._1}%.2f $units, ${ci._2}%.2f $units>"
 
-      def single[T: Numeric](previous: Measurement[T], latest: Measurement[T],
-        sig: Double, noiseMagnitude: Double): Measurement[T] = {
+      def single[T: Numeric](
+        previous: Measurement[T],
+        latest: Measurement[T],
+        sig: Double, noiseMagnitude: Double
+      ): Measurement[T] = {
         try {
           val citest = OverlapTest(previous.complete.map(_.toDouble()),
             latest.complete.map(_.toDouble()), sig, noiseMagnitude)

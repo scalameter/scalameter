@@ -11,13 +11,16 @@ import org.scalameter.picklers.Pickler
  */
 abstract class Bench[U] extends DSL[U] with Serializable {
 
-  def main(args: Array[String]) {
+  def runBench(args: Array[String] = Array.empty): Boolean = {
     val ctx = dyn.currentContext.value ++
       Main.Configuration.fromCommandLineArgs(args).context
-    val ok = withTestContext(ctx, Log.Console, Events.None) {
+    withTestContext(ctx, Log.Console, Events.None) {
       executeTests()
     }
+  }
 
+  def main(args: Array[String]) {
+    val ok = runBench(args)
     if (!ok) sys.exit(1)
   }
 
