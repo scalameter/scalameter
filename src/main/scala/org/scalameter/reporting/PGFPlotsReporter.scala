@@ -16,7 +16,28 @@ import scala.Fractional.Implicits._
 
 /** Produces a pgfplots-based tex file that can be embedded into a Latex document.
  */
-case class PGFPlotsReporter[T: Fractional]() extends Reporter[T] {
+case class PGFPlotsReporter[T: Fractional](
+  errorBars: Boolean = true,
+  plotColors: Seq[String] = Seq(
+    "fill={rgb:red,1;green,4;blue,5},",
+    """fill={rgb:red,1;green,3;blue,1},
+    postaction={
+      pattern color=white,
+      pattern=north east lines
+    },""",
+    """fill={rgb:red,5;green,1;blue,1},
+    postaction={
+      pattern color=white,
+      pattern=north west lines
+    },""",
+    """fill=white,
+    postaction={
+      pattern color={rgb:red,1;green,4;blue,5},
+      pattern=crosshatch
+    },""",
+    "fill=white",
+  )
+) extends Reporter[T] {
 
   val sep = File.separator
 
@@ -48,9 +69,6 @@ case class PGFPlotsReporter[T: Fractional]() extends Reporter[T] {
     true
   }
 
-}
-
-object PGFPlotsReporter {
   def writeContext[T: Fractional](
     ctx: Context, curves: Seq[CurveData[T]], pw: PrintWriter
   ): Unit = {
@@ -78,8 +96,7 @@ object PGFPlotsReporter {
     val xCoords = paramvalues.mkString(", ")
     val yTicks = (1 to 8).map(n => round((ymaxUp - 0.0) * n / 8)).mkString(", ")
     val yMaxValue = s"${ymaxUp}"
-    val header = s"""
-\\begin{tikzpicture}[scale=0.80]
+    val header = s"""\\begin{tikzpicture}[scale=0.80]
 \\begin{axis}[
   height=5.0cm,
   every axis plot post/.style={/pgf/number format/fixed},
@@ -139,25 +156,22 @@ object PGFPlotsReporter {
     """
     p(header)
 
-    for (curve <- curves) {
-
+    for ((curve, i) <- curves.zipWithIndex) {
+      val addplot = s"""
+\\addplot[
+  fill=${plotColors(i)},
+  ${if (errorBars) "error bars/.cd," else ""}
+  error bar style=red,
+  y dir=both,
+  y explicit,
+]
+      """
+      p(addplot)
     }
 
     val footer = s"""
 \\end{axis}
-\\end{tikzpicture}
-    """
+\\end{tikzpicture}"""
     p(footer)
-
   }
 }
-
-
-
-
-
-
-
-
-
-
