@@ -65,6 +65,17 @@ package scalameter {
       sum = num.div(sum, num.fromInt(complete.length))
       sum
     }
+
+    def stdev(implicit num: Fractional[T]): Double = {
+      val mean = avg
+      var sum = num.zero
+      for (x <- complete) {
+        val diff = num.minus(x, mean)
+        sum = num.plus(sum, num.times(diff, diff))
+      }
+      sum = num.div(sum, num.fromInt(complete.length))
+      math.sqrt(num.toDouble(sum))
+    }
   }
   
 }
