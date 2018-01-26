@@ -21,7 +21,7 @@ case class PGFPlotsReporter[T: Fractional](
   xLabelShift: (String, String) = ("15", "-10"),
   yLabelShift: (String, String) = ("-8", "-12"),
   ybar: String = "0.1pt",
-  barWidth: String = "4.4pt",
+  barWidth: String = "5pt",
   enlargeXLimits: String = "0.06",
   errorBars: Boolean = true,
   plotColors: Seq[String] = Seq(
@@ -212,7 +212,7 @@ case class PGFPlotsReporter[T: Fractional](
       for ((x, (y, stdev)) <- values) {
         val xcoord = formatCoord(x)
         val ypos = math.ceil(y).toInt
-        val xshift = round1(0.5 + -plots.size / 2 + i)
+        val xshift = round1(0.5 + -plots.size / 2.0 + i)
         val referenceY = plots(referenceCurve)._2(x)._1
         val multiplier = round1(y / referenceY)
         p(s"\\node[above] at ($$(axis cs:$xcoord, $ypos)$$) ")
