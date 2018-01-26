@@ -136,8 +136,8 @@ object PGFPlotsReporter {
     """
     p(header)
     val footer = s"""
-\end{axis}
-\end{tikzpicture}
+\\end{axis}
+\\end{tikzpicture}
     """
     p(footer)
 
