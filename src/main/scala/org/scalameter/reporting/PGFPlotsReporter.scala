@@ -17,6 +17,7 @@ import scala.Fractional.Implicits._
 /** Produces a pgfplots-based tex file that can be embedded into a Latex document.
  */
 case class PGFPlotsReporter[T: Fractional](
+  scale: Double = 0.78,
   height: String = "5.0cm",
   xLabelShift: (String, String) = ("12", "-10"),
   yLabelShift: (String, String) = ("-8", "-12"),
@@ -40,7 +41,7 @@ case class PGFPlotsReporter[T: Fractional](
       pattern color=white,
       pattern=crosshatch,
     },""",
-    "fill=white,",
+    "fill=lightgray,",
     """fill=white,
     postaction={
       pattern color={rgb:red,1;green,4;blue,5},
@@ -118,7 +119,7 @@ def writeScope(
   val xCoords = paramvalues.toSeq.map(formatCoord).mkString(", ")
   val yTicks = (1 to 8).map(n => formatRound((ymaxUp - 0.0) * n / 8)).mkString(", ")
   val yMaxValue = s"${if (legend) ymaxUp * 1.5 else ymaxUp * 1.2}"
-  val header = s"""\\begin{tikzpicture}[scale=0.80]
+  val header = s"""\\begin{tikzpicture}[scale=$scale]
   \\begin{axis}[
   height=$height,
   every axis plot post/.style={/pgf/number format/fixed},
@@ -148,7 +149,7 @@ def writeScope(
   ytick={$yTicks},
   ybar=$ybar,
   bar width=${barWidthPt}pt,
-  x=${0.21 * curves.size / 2}cm,
+  x=${0.11 * curves.size + paramvalues.size * 0.11}cm,
   ymin=0,
   ymax=$yMaxValue,
   x,
@@ -159,15 +160,12 @@ def writeScope(
   },
   % restrict y to domain*=0:75,
   visualization depends on=rawy\\as\\rawy,
-  after end axis/.code={
-    \\draw[line width=3pt, white, decoration={snake, amplitude=1pt}, decorate] (rel axis cs:0,1.05) -- (rel axis cs:1,1.05);
-  },
   axis lines*=left,
   clip=false,
   legend style={
     legend columns=3,
-    at={(0.04, 0.98)},
-    anchor=north west
+    at={(0.90, 0.98)},
+    anchor=north east,
   },
   draw opacity=0.4,
   major grid style={
@@ -230,14 +228,19 @@ def writeScope(
         p(s"{\\rotatebox{-90}{\\scriptsize{$$$multiplier\\times$$}}};\n")
         if (cut) {
           p(s"\\node[above] at ($$(axis cs:$xcoord, $ymaxUp)$$) ")
-          p(s"[draw=none,fill=white,minimum width=${barWidthPt + 1}pt,")
-          p(s"tape,inner sep=0.1pt]\n")
+          p(s"[\n")
+          p(s"xshift=$xshift*\\pgfkeysvalueof{/pgf/bar width},\n")
+          p(s"draw=none,fill=white,minimum width=${barWidthPt + 1}pt,\n")
+          p(s"tape,inner sep=0.1pt,\n")
+          p(s"]\n")
           p(s"{};\n")
         }
       }
     }
 
     val footer = s"""
+\\node[anchor=south west] at (rel axis cs:0,0) [xshift=-3mm,yshift=-6mm]
+{${ctx.goe(Key.machine.osArch, "")}};
 ${if (!legend) "\\legend{}" else ""}
 \\end{axis}
 \\end{tikzpicture}"""
