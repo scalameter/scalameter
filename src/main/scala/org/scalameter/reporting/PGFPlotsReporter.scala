@@ -18,38 +18,38 @@ import scala.Fractional.Implicits._
  */
 case class PGFPlotsReporter[T: Fractional](
   height: String = "5.0cm",
-  xLabelShift: (String, String) = ("15", "-10"),
+  xLabelShift: (String, String) = ("12", "-10"),
   yLabelShift: (String, String) = ("-8", "-12"),
   ybar: String = "0.1pt",
-  barWidth: String = "5pt",
-  enlargeXLimits: String = "0.06",
+  barWidthPt: Int = 6,
   errorBars: Boolean = true,
   plotColors: Seq[String] = Seq(
     "fill={rgb:red,1;green,4;blue,5},",
     """fill={rgb:red,1;green,3;blue,1},
     postaction={
       pattern color=white,
-      pattern=north east lines
+      pattern=north east lines,
     },""",
     """fill={rgb:red,5;green,1;blue,1},
     postaction={
       pattern color=white,
-      pattern=north west lines
-    },""",
-    """fill=white,
-    postaction={
-      pattern color={rgb:red,1;green,4;blue,5},
-      pattern=crosshatch
+      pattern=north west lines,
     },""",
     """fill={rgb:red,5;green,1;blue,3},
     postaction={
       pattern color=white,
-      pattern=crosshatch
-    },
-    """,
-    "fill=white"
+      pattern=crosshatch,
+    },""",
+    "fill=white,",
+    """fill=white,
+    postaction={
+      pattern color={rgb:red,1;green,4;blue,5},
+      pattern=north west lines,
+    },"""
   ),
-  referenceCurve: String = "default"
+  referenceCurve: String = "default",
+  legend: Boolean = true,
+  cutoffs: Set[String] = Set()
 ) extends Reporter[T] {
 
   val sep = File.separator
@@ -75,49 +75,51 @@ case class PGFPlotsReporter[T: Fractional](
       } finally {
         if (writer != null) writer.close()
       }
-    }
-
-    result.scopes.foreach(reportScope)
-
-    true
   }
 
-  def writeScope(
-    ctx: Context, curves: Seq[CurveData[T]], pw: PrintWriter
-  ): Unit = {
-    import pw._
-    import pw.{print => p}
+  result.scopes.foreach(reportScope)
 
-    val formatter = new DecimalFormat
-    formatter.setMaximumFractionDigits(3)
-    def formatRound(x: Double): String = formatter.format(x)
-    def round1(x: Double): Double = (x * 10).toInt / 10.0
-    def round2(x: Double): Double = (x * 100).toInt / 100.0
-    def formatCoord(x: Integer): String = {
-      if (x > 1000) x / 1000 + "k"
-      else x.toString
-    }
+  true
+}
 
-    val keys = curves.head.measurements.head.params.axisData.keys
-    assert(keys.size == 1)
-    val xlabel = keys.head.fullName
-    val unit = curves.head.measurements.head.units
-    val fract = implicitly[Fractional[T]]
-    var ymin: Double = Double.MaxValue
-    var ymax: Double = Double.MinValue
-    val paramvalues = mutable.TreeSet[Integer]()
-    for (cd <- curves; m <- cd.measurements) {
-      val y = fract.toDouble(m.data.avg)
+def writeScope(
+  ctx: Context, curves: Seq[CurveData[T]], pw: PrintWriter
+): Unit = {
+  import pw._
+  import pw.{print => p}
+
+  val formatter = new DecimalFormat
+  formatter.setMaximumFractionDigits(3)
+  def formatRound(x: Double): String = formatter.format(x)
+  def round1(x: Double): Double = (x * 10).toInt / 10.0
+  def round2(x: Double): Double = (x * 100).toInt / 100.0
+  def formatCoord(x: Integer): String = {
+    if (x > 1000) x / 1000 + "k"
+    else x.toString
+  }
+
+  val keys = curves.head.measurements.head.params.axisData.keys
+  assert(keys.size == 1)
+  val xlabel = keys.head.fullName
+  val unit = curves.head.measurements.head.units
+  val fract = implicitly[Fractional[T]]
+  var ymin: Double = Double.MaxValue
+  var ymax: Double = Double.MinValue
+  val paramvalues = mutable.TreeSet[Integer]()
+  for (curve <- curves; m <- curve.measurements) {
+    val y = fract.toDouble(m.data.avg)
+    if (!cutoffs.contains(curve.context.curve)) {
       ymin = math.min(y, ymin)
       ymax = math.max(y, ymax)
-      paramvalues += m.params(xlabel)
     }
-    val ymaxUp = math.pow(2, math.ceil(math.log(ymax * 1.2) / math.log(2)))
-    val xCoords = paramvalues.toSeq.map(formatCoord).mkString(", ")
-    val yTicks = (1 to 8).map(n => formatRound((ymaxUp - 0.0) * n / 8)).mkString(", ")
-    val yMaxValue = s"${ymaxUp * 1.4}"
-    val header = s"""\\begin{tikzpicture}[scale=0.80]
-\\begin{axis}[
+    paramvalues += m.params(xlabel)
+  }
+  val ymaxUp = math.pow(2, math.ceil(math.log(ymax * 1.05) / math.log(2)))
+  val xCoords = paramvalues.toSeq.map(formatCoord).mkString(", ")
+  val yTicks = (1 to 8).map(n => formatRound((ymaxUp - 0.0) * n / 8)).mkString(", ")
+  val yMaxValue = s"${if (legend) ymaxUp * 1.5 else ymaxUp * 1.2}"
+  val header = s"""\\begin{tikzpicture}[scale=0.80]
+  \\begin{axis}[
   height=$height,
   every axis plot post/.style={/pgf/number format/fixed},
   ylabel=$$$unit$$,
@@ -145,14 +147,13 @@ case class PGFPlotsReporter[T: Fractional](
   },
   ytick={$yTicks},
   ybar=$ybar,
-  bar width=$barWidth,
-  x=0.485cm,
+  bar width=${barWidthPt}pt,
+  x=${0.21 * curves.size / 2}cm,
   ymin=0,
   ymax=$yMaxValue,
   x,
   axis on top,
   xtick=data,
-  enlarge x limits=$enlargeXLimits,
   symbolic x coords={
     $xCoords
   },
@@ -201,27 +202,43 @@ case class PGFPlotsReporter[T: Fractional](
       plots(curve.context.curve) = (addplot, values)
     }
 
+    def cutoff(y: Double): Double = {
+      if (y <= ymax) y
+      else ymaxUp * 1.15
+    }
     for (((name, (addplot, values)), i) <- plots.zipWithIndex) {
       p(addplot)
       p("plot coordinates {\n")
       for ((x, (y, stdev)) <- values) {
-        p(s"(${formatCoord(x)}, $y) += (0,$stdev) -= (0,$stdev)\n")
+        p(s"(${formatCoord(x)}, ${cutoff(y)}) += (0,$stdev) -= (0,$stdev)\n")
       }
       p("};\n")
       p(s"\\addlegendentry{$name}\n")
       for ((x, (y, stdev)) <- values) {
         val xcoord = formatCoord(x)
-        val ypos = math.ceil(y).toInt
+        var ypos = round2(cutoff(y))
+        var cut = false
+        if (ypos > ymaxUp) {
+          ypos = ymaxUp * 0.7
+          cut = true
+        }
         val xshift = round1(0.5 + -plots.size / 2.0 + i)
         val referenceY = plots(referenceCurve)._2(x)._1
         val multiplier = round1(y / referenceY)
         p(s"\\node[above] at ($$(axis cs:$xcoord, $ypos)$$) ")
         p(s"[xshift=$xshift*\\pgfkeysvalueof{/pgf/bar width}]\n")
         p(s"{\\rotatebox{-90}{\\scriptsize{$$$multiplier\\times$$}}};\n")
+        if (cut) {
+          p(s"\\node[above] at ($$(axis cs:$xcoord, $ymaxUp)$$) ")
+          p(s"[draw=none,fill=white,minimum width=${barWidthPt + 1}pt,")
+          p(s"tape,inner sep=0.1pt]\n")
+          p(s"{};\n")
+        }
       }
     }
 
     val footer = s"""
+${if (!legend) "\\legend{}" else ""}
 \\end{axis}
 \\end{tikzpicture}"""
     p(footer)
