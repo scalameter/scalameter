@@ -8,6 +8,7 @@ import java.text.DecimalFormat
 import java.text.SimpleDateFormat
 import java.util.{Date, TimeZone}
 import org.scalameter.utils.Tree
+import scala.collection._
 import scala.Numeric.Implicits._
 import scala.Fractional.Implicits._
 
@@ -28,15 +29,15 @@ case class PGFPlotsReporter[T: Fractional]() extends Reporter[T] {
     new File(s"$resultdir").mkdirs()
 
     def reportScope(scope: (Context, Seq[CurveData[T]])): Unit = {
-      val (ctx, items) = scope
+      val (ctx, curves) = scope
       val filename = s"$resultdir$sep${ctx.scope}.tex"
       var writer: PrintWriter = null
 
-      if (items.isEmpty) return
+      if (curves.isEmpty) return
 
       try {
         writer = new PrintWriter(new FileWriter(filename, false))
-        PGFPlotsReporter.writeContext(ctx, items, writer)
+        PGFPlotsReporter.writeContext(ctx, curves, writer)
       } finally {
         if (writer != null) writer.close()
       }
@@ -51,28 +52,30 @@ case class PGFPlotsReporter[T: Fractional]() extends Reporter[T] {
 
 object PGFPlotsReporter {
   def writeContext[T: Fractional](
-    ctx: Context, items: Seq[CurveData[T]], pw: PrintWriter
+    ctx: Context, curves: Seq[CurveData[T]], pw: PrintWriter
   ): Unit = {
     import pw._
     import pw.{print => p}
 
-    val format = new DecimalFormat
-    format.setMaximumFractionDigits(3)
-    def round(x: Double): String = format.format(x)
+    val formatter = new DecimalFormat
+    formatter.setMaximumFractionDigits(3)
+    def round(x: Double): String = formatter.format(x)
 
-    val keys = items.head.measurements.head.params.axisData.keys
+    val keys = curves.head.measurements.head.params.axisData.keys
     assert(keys.size == 1)
     val xlabel = keys.head.fullName
     val fract = implicitly[Fractional[T]]
     var ymin: Double = Double.MaxValue
     var ymax: Double = Double.MinValue
-    for (cd <- items; m <- cd.measurements) {
+    val paramvalues = mutable.TreeSet[Double]()
+    for (cd <- curves; m <- cd.measurements) {
       val y = fract.toDouble(m.data.avg)
       ymin = math.min(y, ymin)
       ymax = math.max(y, ymax)
+      paramvalues += m.parameters(xlabel)
     }
     val ymaxUp = math.pow(10, math.floor(math.log10(ymax)))
-    val xCoords = ""
+    val xCoords = paramvalues.mkString(", ")
     val yTicks = (1 to 8).map(n => round((ymaxUp - 0.0) * n / 8)).mkString(", ")
     val yMaxValue = s"${ymaxUp}"
     val header = s"""
@@ -135,6 +138,11 @@ object PGFPlotsReporter {
 ]
     """
     p(header)
+
+    for (curve <- curves) {
+
+    }
+
     val footer = s"""
 \\end{axis}
 \\end{tikzpicture}
