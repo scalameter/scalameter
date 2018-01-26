@@ -58,6 +58,13 @@ package object scalameter extends MeasureBuilder[Unit, Double](
 
 package scalameter {
 
-  case class MeasurementData[T](complete: Seq[T], success: Boolean)
+  case class MeasurementData[T](complete: Seq[T], success: Boolean) {
+    def avg(implicit num: Fractional[T]): T = {
+      var sum = num.zero
+      for (x <- complete) sum = num.plus(sum, x)
+      sum = num.div(sum, num.fromInt(complete.length))
+      sum
+    }
+  }
   
 }
