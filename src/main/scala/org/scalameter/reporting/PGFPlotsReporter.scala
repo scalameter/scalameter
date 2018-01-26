@@ -18,6 +18,8 @@ import scala.Fractional.Implicits._
  */
 case class PGFPlotsReporter[T: Fractional](
   height: String = "5.0cm",
+  xLabelShift: (String, String) = ("15", "-10"),
+  yLabelShift: (String, String) = ("-8", "-12"),
   ybar: String = "0.1pt",
   barWidth: String = "4.4pt",
   enlargeXLimits: String = "0.06",
@@ -39,6 +41,12 @@ case class PGFPlotsReporter[T: Fractional](
       pattern color={rgb:red,1;green,4;blue,5},
       pattern=crosshatch
     },""",
+    """fill={rgb:red,5;green,1;blue,3},
+    postaction={
+      pattern color=white,
+      pattern=crosshatch
+    },
+    """,
     "fill=white"
   ),
   referenceCurve: String = "default"
@@ -104,10 +112,10 @@ case class PGFPlotsReporter[T: Fractional](
       ymax = math.max(y, ymax)
       paramvalues += m.params(xlabel)
     }
-    val ymaxUp = math.pow(2, math.ceil(math.log(ymax) / math.log(2)))
-    val xCoords = paramvalues.map(formatCoord).mkString(", ")
+    val ymaxUp = math.pow(2, math.ceil(math.log(ymax * 1.2) / math.log(2)))
+    val xCoords = paramvalues.toSeq.map(formatCoord).mkString(", ")
     val yTicks = (1 to 8).map(n => formatRound((ymaxUp - 0.0) * n / 8)).mkString(", ")
-    val yMaxValue = s"${ymaxUp * 1.2}"
+    val yMaxValue = s"${ymaxUp * 1.4}"
     val header = s"""\\begin{tikzpicture}[scale=0.80]
 \\begin{axis}[
   height=$height,
@@ -117,14 +125,14 @@ case class PGFPlotsReporter[T: Fractional](
   grid=both,
   every axis y label/.style={
     at={(ticklabel* cs:1.05)},
-    % xshift=35,
-    yshift=-8,
+    xshift=${yLabelShift._1},
+    yshift=${yLabelShift._2},
     anchor=south,
   },
   every axis x label/.style={
     at={(ticklabel* cs:1.05)},
-    xshift=7,
-    % yshift=-15,
+    xshift=${xLabelShift._1},
+    yshift=${xLabelShift._2},
     anchor=north,
     rotate=-90,
   },
@@ -157,7 +165,7 @@ case class PGFPlotsReporter[T: Fractional](
   clip=false,
   legend style={
     legend columns=3,
-    at={(0.025, 0.90)},
+    at={(0.04, 0.98)},
     anchor=north west
   },
   draw opacity=0.4,
