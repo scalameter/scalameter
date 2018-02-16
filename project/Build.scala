@@ -32,7 +32,7 @@ object ScalaMeterBuild extends MechaRepoBuild {
       credentials += Credentials("Sonatype Nexus Repository Manager", "oss.sonatype.org", user, pass)
     case None =>
       // prevent publishing
-      publish <<= streams.map(_.log.info("Publishing to Sonatype is disabled since the \"" + publishUser + "\" and/or \"" + publishPass + "\" environment variables are not set."))
+      publish := streams.value.log.info("Publishing to Sonatype is disabled since the \"" + publishUser + "\" and/or \"" + publishPass + "\" environment variables are not set.")
   })
 
   val releasePluginSettings = Seq(
@@ -44,7 +44,7 @@ object ScalaMeterBuild extends MechaRepoBuild {
     examples.scalaMeterVersionFile := "version.sbt",
     examples.scalaMeterVersionFileContent := globalVersionString,
     releaseCommitMessage := s"Set version to ${(version in ThisBuild).value}",
-    releasePublishArtifactsAction <<= publishSigned.map(identity),
+    releasePublishArtifactsAction := publishSigned.value,
     releaseProcess := Seq[ReleaseStep](
       checkSnapshotDependencies,
       inquireVersions,
@@ -65,7 +65,7 @@ object ScalaMeterBuild extends MechaRepoBuild {
     scalaVersion := "2.11.11",
     crossScalaVersions := Seq("2.11.11", "2.12.4"),
     scalacOptions ++= Seq("-deprecation", "-unchecked", "-feature", "-Xlint"),
-    libraryDependencies <++= (scalaVersion)(sv => dependencies(sv)),
+    libraryDependencies ++= dependencies(scalaVersion.value),
     parallelExecution in Test := false,
     resolvers ++= Seq(
       "Sonatype OSS Snapshots" at "https://oss.sonatype.org/content/repositories/snapshots",
@@ -73,9 +73,9 @@ object ScalaMeterBuild extends MechaRepoBuild {
     ),
     ivyLoggingLevel in ThisBuild := UpdateLogging.Quiet,
     publishMavenStyle := true,
-    publishTo <<= version { (v: String) =>
+    publishTo := {
       val nexus = "https://oss.sonatype.org/"
-      if (v.trim.endsWith("SNAPSHOT"))
+      if (version.value.trim.endsWith("SNAPSHOT"))
         Some("snapshots" at nexus + "content/repositories/snapshots")
       else
         Some("releases"  at nexus + "service/local/staging/deploy/maven2")
@@ -140,7 +140,7 @@ object ScalaMeterBuild extends MechaRepoBuild {
     scalaVersion := "2.11.11",
     crossScalaVersions := Seq("2.11.11", "2.12.4"),
     scalacOptions ++= Seq("-deprecation", "-unchecked", "-feature", "-Xlint"),
-    libraryDependencies <++= (scalaVersion)(sv => coreDependencies(sv)),
+    libraryDependencies ++= coreDependencies(scalaVersion.value),
     parallelExecution in Test := false,
     resolvers ++= Seq(
       "Sonatype OSS Snapshots" at "https://oss.sonatype.org/content/repositories/snapshots",
@@ -148,9 +148,9 @@ object ScalaMeterBuild extends MechaRepoBuild {
     ),
     ivyLoggingLevel in ThisBuild := UpdateLogging.Quiet,
     publishMavenStyle := true,
-    publishTo <<= version { (v: String) =>
+    publishTo := {
       val nexus = "https://oss.sonatype.org/"
-      if (v.trim.endsWith("SNAPSHOT"))
+      if (version.value.trim.endsWith("SNAPSHOT"))
         Some("snapshots" at nexus + "content/repositories/snapshots")
       else
         Some("releases"  at nexus + "service/local/staging/deploy/maven2")
@@ -210,15 +210,12 @@ object ScalaMeterBuild extends MechaRepoBuild {
     "Creates a java vm command for launching a process."
   )
 
-  val javaCommandSetting = javaCommand <<= (
-    dependencyClasspath in Compile,
-    artifactPath in (Compile, packageBin),
-    artifactPath in (Test, packageBin),
-    packageBin in Compile,
-    packageBin in Test
-  ) map {
-    (dp, jar, testjar, pbc, pbt) => // -XX:+UseConcMarkSweepGC  -XX:-DoEscapeAnalysis -XX:MaxTenuringThreshold=12 -XX:+PrintGCDetails 
-    //val cp = dp.map("\"" + _.data + "\"") :+ ("\"" + jar +"\"") :+ ("\"" + testjar + "\"")
+  val javaCommandSetting = javaCommand := {
+    val dp = (dependencyClasspath in Compile).value
+    val jar = (artifactPath in (Compile, packageBin)).value
+    val testjar = (artifactPath in (Test, packageBin)).value
+    val pbc = (packageBin in Compile).value
+    val pbt = (packageBin in Test).value
     val cp = dp.map(_.data) :+ jar :+ testjar
     val javacommand = "java -Xmx2048m -Xms2048m -XX:+UseCondCardMark -verbose:gc -server -cp %s".format(
       cp.mkString(File.pathSeparator)
@@ -229,16 +226,14 @@ object ScalaMeterBuild extends MechaRepoBuild {
   val runsuiteTask = InputKey[Unit](
     "runsuite",
     "Runs the benchmarking suite."
-  ) <<= inputTask {
-    (argTask: TaskKey[Seq[String]]) =>
-    (argTask, javaCommand) map {
-      (args, jc) =>
-      val javacommand = jc
-      val comm = javacommand + " " + "org.scalameter.Main" + " " + args.mkString(" ")
-      streams.map(_.log.info("Executing: " + comm))
-      import sys.process._
-      comm !
-    }
+  ) := Def.inputTask{
+    val args = complete.DefaultParsers.spaceDelimited("<arg>").parsed
+    val jc = javaCommand.value
+    val javacommand = jc
+    val comm = javacommand + " " + "org.scalameter.Main" + " " + args.mkString(" ")
+    streams.map(_.log.info("Executing: " + comm))
+    import sys.process._
+    comm !
   }
 
   /* projects */
