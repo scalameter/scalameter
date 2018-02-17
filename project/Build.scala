@@ -63,7 +63,7 @@ object ScalaMeterBuild extends MechaRepoBuild {
     name := "scalameter",
     organization := "com.storm-enroute",
     scalaVersion := "2.11.11",
-    crossScalaVersions := Seq("2.11.11", "2.12.4"),
+    crossScalaVersions := Seq("2.11.11", "2.12.4", "2.13.0-M3"),
     scalacOptions ++= Seq("-deprecation", "-unchecked", "-feature", "-Xlint"),
     libraryDependencies ++= dependencies(scalaVersion.value),
     parallelExecution in Test := false,
