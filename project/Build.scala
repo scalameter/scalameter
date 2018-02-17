@@ -107,12 +107,12 @@ object ScalaMeterBuild extends MechaRepoBuild {
   def dependencies(scalaVersion: String) = {
     CrossVersion.partialVersion(scalaVersion) match {
       case Some((2, 13)) => List(
-        "org.scalatest" % "scalatest_2.13" % "3.0.4" % "test",
+        "org.scalatest" % "scalatest_2.13.0-M2" % "3.0.4" % "test",
         "junit" % "junit" % "4.12" % "test",
         "org.apache.commons" % "commons-math3" % "3.2",
         "org.scala-tools.testing" % "test-interface" % "0.5",
-        "org.scala-lang.modules" % "scala-xml_2.13" % "1.0.6",
-        "org.scala-lang.modules" % "scala-parser-combinators_2.13" % "1.1.0",
+        "org.scala-lang.modules" % "scala-xml_2.13.0-M3" % "1.0.6",
+        "org.scala-lang.modules" % "scala-parser-combinators_2.13.0-M3" % "1.1.0",
         "com.fasterxml.jackson.module" % "jackson-module-scala_2.12" % "2.8.5",
         "org.mongodb.scala" % "mongo-scala-driver_2.12" % "2.2.0",
         "commons-io" % "commons-io" % "2.4",
@@ -193,14 +193,14 @@ object ScalaMeterBuild extends MechaRepoBuild {
 
   def coreDependencies(scalaVersion: String) = CrossVersion.partialVersion(scalaVersion) match {
     case Some((2, 13)) => List(
-      "org.scalacheck" % "scalacheck_2.13" % "1.13.5" % "test",
-      "org.scalatest" % "scalatest_2.13" % "3.0.4" % "test",
+      "org.scalacheck" % "scalacheck_2.13.0-M2" % "1.13.5" % "test",
+      "org.scalatest" % "scalatest_2.13.0-M2" % "3.0.4" % "test",
       "junit" % "junit" % "4.12" % "test",
       "com.novocode" % "junit-interface" % "0.11" % "test",
       "org.apache.commons" % "commons-math3" % "3.2",
       "org.apache.commons" % "commons-lang3" % "3.4",
-      "org.scala-lang.modules" % "scala-xml_2.13" % "1.0.6",
-      "org.scala-lang.modules" % "scala-parser-combinators_2.13" % "1.1.0",
+      "org.scala-lang.modules" % "scala-xml_2.13.0-M3" % "1.0.6",
+      "org.scala-lang.modules" % "scala-parser-combinators_2.13.0-M3" % "1.1.0",
       "org.ow2.asm" % "asm" % "5.0.4"
     )
     case Some((2, 12)) => List(
