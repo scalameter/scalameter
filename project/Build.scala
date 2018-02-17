@@ -106,6 +106,18 @@ object ScalaMeterBuild extends MechaRepoBuild {
 
   def dependencies(scalaVersion: String) = {
     CrossVersion.partialVersion(scalaVersion) match {
+      case Some((2, 13)) => List(
+        "org.scalatest" % "scalatest_2.13" % "3.0.4" % "test",
+        "junit" % "junit" % "4.12" % "test",
+        "org.apache.commons" % "commons-math3" % "3.2",
+        "org.scala-tools.testing" % "test-interface" % "0.5",
+        "org.scala-lang.modules" % "scala-xml_2.13" % "1.0.6",
+        "org.scala-lang.modules" % "scala-parser-combinators_2.13" % "1.1.0",
+        "com.fasterxml.jackson.module" % "jackson-module-scala_2.12" % "2.8.5",
+        "org.mongodb.scala" % "mongo-scala-driver_2.12" % "2.2.0",
+        "commons-io" % "commons-io" % "2.4",
+        "io.spray" %  "spray-json_2.13" % "1.3.4"
+      )
       case Some((2, 12)) => List(
         "org.scalatest" % "scalatest_2.12" % "3.0.0" % "test",
         "junit" % "junit" % "4.12" % "test",
@@ -138,7 +150,7 @@ object ScalaMeterBuild extends MechaRepoBuild {
     name := "scalameter-core",
     organization := "com.storm-enroute",
     scalaVersion := "2.11.11",
-    crossScalaVersions := Seq("2.11.11", "2.12.4"),
+    crossScalaVersions := Seq("2.11.11", "2.12.4", "2.13.0-M3"),
     scalacOptions ++= Seq("-deprecation", "-unchecked", "-feature", "-Xlint"),
     libraryDependencies ++= coreDependencies(scalaVersion.value),
     parallelExecution in Test := false,
@@ -180,6 +192,17 @@ object ScalaMeterBuild extends MechaRepoBuild {
   )
 
   def coreDependencies(scalaVersion: String) = CrossVersion.partialVersion(scalaVersion) match {
+    case Some((2, 13)) => List(
+      "org.scalacheck" % "scalacheck_2.13" % "1.13.5" % "test",
+      "org.scalatest" % "scalatest_2.13" % "3.0.4" % "test",
+      "junit" % "junit" % "4.12" % "test",
+      "com.novocode" % "junit-interface" % "0.11" % "test",
+      "org.apache.commons" % "commons-math3" % "3.2",
+      "org.apache.commons" % "commons-lang3" % "3.4",
+      "org.scala-lang.modules" % "scala-xml_2.13" % "1.0.6",
+      "org.scala-lang.modules" % "scala-parser-combinators_2.13" % "1.1.0",
+      "org.ow2.asm" % "asm" % "5.0.4"
+    )
     case Some((2, 12)) => List(
       "org.scalacheck" % "scalacheck_2.12" % "1.13.4" % "test",
       "org.scalatest" % "scalatest_2.12" % "3.0.0" % "test",
