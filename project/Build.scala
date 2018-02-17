@@ -112,7 +112,7 @@ object ScalaMeterBuild extends MechaRepoBuild {
         "org.apache.commons" % "commons-math3" % "3.2",
         "org.scala-tools.testing" % "test-interface" % "0.5",
         "org.scala-lang.modules" % "scala-xml_2.13.0-M2" % "1.0.6",
-        "org.scala-lang.modules" % "scala-parser-combinators_2.13.0-M2" % "1.1.0",
+        "org.scala-lang.modules" % "scala-parser-combinators_2.13.0-M2" % "1.0.7",
         "com.fasterxml.jackson.module" % "jackson-module-scala_2.12" % "2.8.5",
         "org.mongodb.scala" % "mongo-scala-driver_2.12" % "2.2.0",
         "commons-io" % "commons-io" % "2.4",
@@ -200,7 +200,7 @@ object ScalaMeterBuild extends MechaRepoBuild {
       "org.apache.commons" % "commons-math3" % "3.2",
       "org.apache.commons" % "commons-lang3" % "3.4",
       "org.scala-lang.modules" % "scala-xml_2.13.0-M2" % "1.0.6",
-      "org.scala-lang.modules" % "scala-parser-combinators_2.13.0-M2" % "1.1.0",
+      "org.scala-lang.modules" % "scala-parser-combinators_2.13.0-M2" % "1.0.7",
       "org.ow2.asm" % "asm" % "5.0.4"
     )
     case Some((2, 12)) => List(
