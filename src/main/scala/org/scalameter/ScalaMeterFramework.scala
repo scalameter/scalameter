@@ -50,7 +50,7 @@ class ScalaMeterFramework extends Framework {
     }
 
     def run(testClassName: String, fingerprint: Fingerprint, eventHandler: EventHandler,
-      args: Array[String]) {
+      args: Array[String]): Unit = {
       val complog = Log.Composite(loggers.map(TestInterfaceLog): _*)
       val tievents = TestInterfaceEvents(eventHandler)
       val testcp = computeClasspath

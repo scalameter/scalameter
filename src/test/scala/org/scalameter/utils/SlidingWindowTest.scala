@@ -14,17 +14,17 @@ class SlidingWindowTest extends FunSuite {
     sw
   }
 
-  def testSize(capacity: Int, size: Int) {
+  def testSize(capacity: Int, size: Int): Unit = {
     val sw = newSlidingWindow(capacity, size)
     assert(sw.size == math.min(size, capacity), (size, capacity, sw, sw.size))
   }
 
-  def testSum(capacity: Int, size: Int) {
+  def testSum(capacity: Int, size: Int): Unit = {
     val sw = newSlidingWindow(capacity, size)
     assert(sw.sum == size * (size - 1) / 2, (size * (size - 1) / 2, sw, sw.sum))
   }
 
-  def testSumOverflow(capacity: Int, size: Int) {
+  def testSumOverflow(capacity: Int, size: Int): Unit = {
     val sw = newSlidingWindow(capacity, size)
     val expected = 
       if (size > capacity) ((size - capacity) until size).sum
@@ -32,7 +32,7 @@ class SlidingWindowTest extends FunSuite {
     assert(sw.sum == expected, (capacity, size, expected, sw, sw.sum))
   }
 
-  def testIterator(capacity: Int, size: Int) {
+  def testIterator(capacity: Int, size: Int): Unit = {
     val sw = newSlidingWindow(capacity, size)
     if (size > capacity) assert(((size - capacity) until size) sameElements sw.iterator.toList, (capacity, size, sw, sw.iterator.toList))
     else assert((0 until size) sameElements sw.iterator.toList, (capacity, size, sw, sw.iterator.toList, sw.iterator))

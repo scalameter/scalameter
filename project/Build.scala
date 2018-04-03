@@ -64,7 +64,7 @@ object ScalaMeterBuild extends MechaRepoBuild {
     organization := "com.storm-enroute",
     scalaVersion := "2.11.11",
     crossScalaVersions := Seq("2.11.11", "2.12.4", "2.13.0-M3"),
-    scalacOptions ++= Seq("-deprecation", "-unchecked", "-feature", "-Xlint"),
+    scalacOptions ++= Seq("-deprecation", "-unchecked", "-feature", "-Xlint", "-Xfuture"),
     libraryDependencies ++= dependencies(scalaVersion.value),
     parallelExecution in Test := false,
     resolvers ++= Seq(
@@ -151,7 +151,7 @@ object ScalaMeterBuild extends MechaRepoBuild {
     organization := "com.storm-enroute",
     scalaVersion := "2.11.11",
     crossScalaVersions := Seq("2.11.11", "2.12.4", "2.13.0-M3"),
-    scalacOptions ++= Seq("-deprecation", "-unchecked", "-feature", "-Xlint"),
+    scalacOptions ++= Seq("-deprecation", "-unchecked", "-feature", "-Xlint", "-Xfuture"),
     libraryDependencies ++= coreDependencies(scalaVersion.value),
     parallelExecution in Test := false,
     resolvers ++= Seq(

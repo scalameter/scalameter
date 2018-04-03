@@ -8,7 +8,7 @@ import collection._
 
 
 case class Tree[T](context: Context, items: Seq[T], children: Seq[Tree[T]]) {
-  def foreach[U](f: T => U) {
+  def foreach[U](f: T => U): Unit = {
     for (x <- items) f(x)
     for (child <- children; x <- child) f(x)
   }
@@ -26,11 +26,11 @@ case class Tree[T](context: Context, items: Seq[T], children: Seq[Tree[T]]) {
   }
 
   def scopes = new Traversable[(Context, Seq[T])] {
-    private def recurse[U](f: ((Context, Seq[T])) => U, tree: Tree[T]) {
+    private def recurse[U](f: ((Context, Seq[T])) => U, tree: Tree[T]): Unit = {
       f(tree.context -> tree.items)
       for (n <- tree.children) recurse(f, n)
     }
-    def foreach[U](f: ((Context, Seq[T])) => U) {
+    def foreach[U](f: ((Context, Seq[T])) => U): Unit = {
       recurse(f, Tree.this)
     }
   }

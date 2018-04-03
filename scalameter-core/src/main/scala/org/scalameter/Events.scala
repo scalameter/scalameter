@@ -15,6 +15,6 @@ object Events {
   case object Skipped extends Result
 
   case object None extends Events {
-    def emit(e: Event) {}
+    def emit(e: Event): Unit = {}
   }
 }

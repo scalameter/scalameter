@@ -14,7 +14,7 @@ object IO {
     val output = new ByteArrayOutputStream(chunkSize)
 
     @tailrec
-    def readBytes() {
+    def readBytes(): Unit = {
       val bytes = from.read(buffer)
       if (bytes > -1) {
         output.write(buffer, 0, bytes)

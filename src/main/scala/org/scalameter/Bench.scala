@@ -19,7 +19,7 @@ abstract class Bench[U] extends DSL[U] with Serializable {
     }
   }
 
-  def main(args: Array[String]) {
+  def main(args: Array[String]): Unit = {
     val ok = runBench(args)
     if (!ok) sys.exit(1)
   }

@@ -41,7 +41,7 @@ trait IOStreamPersistor[I <: InputStream, O <: OutputStream] extends Persistor {
     }
   }
 
-  final def save[T](context: Context, h: History[T]) {
+  final def save[T](context: Context, h: History[T]): Unit = {
     path.mkdirs()
     val file = fileFor(context)
     val os = outputStream(file)

@@ -9,13 +9,13 @@ import util.parsing.combinator._
 
 object Main {
 
-  def main(args: Array[String]) {
+  def main(args: Array[String]): Unit = {
     // initialize
     val configuration = Configuration.fromCommandLineArgs(args)
     run(configuration)
   }
 
-  def run(configuration: Configuration) {
+  def run(configuration: Configuration): Unit = {
     // prepare initial context
     // identify test objects
     dyn.currentContext.withValue(Context.topLevel ++ configuration.context) {

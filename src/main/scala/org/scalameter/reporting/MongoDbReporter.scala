@@ -45,7 +45,7 @@ case class MongoDbReporter[T: Numeric]() extends Reporter[T] {
     }
   }
 
-  def report(result: CurveData[T], persistor: Persistor) {
+  def report(result: CurveData[T], persistor: Persistor): Unit = {
   }
 
   def report(result: Tree[CurveData[T]], persistor: Persistor): Boolean = {

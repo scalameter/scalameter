@@ -5,12 +5,12 @@ import java.io._
 class Main
 
 object Main {
-  def main(args: Array[String]) {
+  def main(args: Array[String]): Unit = {
     val tmpfile = new File(args(0))
     mainMethod(tmpfile)
   }
 
-  def mainMethod(tmpfile: File) {
+  def mainMethod(tmpfile: File): Unit = {
     try {
       val body = loadBody(tmpfile)
       val result = body()
@@ -32,7 +32,7 @@ object Main {
     }
   }
 
-  private def saveResult[R](file: File, result: R) {
+  private def saveResult[R](file: File, result: R): Unit = {
     val fos = new FileOutputStream(file)
     val oos = new ObjectOutputStream(fos)
     try {
@@ -43,7 +43,7 @@ object Main {
     }
   }
 
-  private def saveFailure(file: File, t: Throwable) {
+  private def saveFailure(file: File, t: Throwable): Unit = {
     val fos = new FileOutputStream(file)
     val oos = new ObjectOutputStream(fos)
     try {
