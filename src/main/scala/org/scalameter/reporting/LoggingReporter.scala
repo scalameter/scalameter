@@ -11,7 +11,7 @@ import org.scalameter.utils.Tree
  */
 case class LoggingReporter[T]() extends Reporter[T] {
 
-  def report(result: CurveData[T], persistor: Persistor) {
+  def report(result: CurveData[T], persistor: Persistor): Unit = {
     // output context
     log(s"::Benchmark ${result.context.scope}::")
     val machineKeys = result.context.properties

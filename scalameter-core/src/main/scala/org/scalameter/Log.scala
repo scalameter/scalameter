@@ -15,11 +15,11 @@ trait Log {
 object Log {
 
   case object None extends Log {
-    def error(msg: String) {}
-    def warn(msg: String) {}
-    def info(msg: String) {}
-    def debug(msg: String) {}
-    def trace(t: Throwable) {}
+    def error(msg: String): Unit = {}
+    def warn(msg: String): Unit = {}
+    def info(msg: String): Unit = {}
+    def debug(msg: String): Unit = {}
+    def trace(t: Throwable): Unit = {}
   }
 
   case object Console extends Log {
@@ -29,7 +29,7 @@ object Log {
     def info(msg: String) = log synchronized {
       println(msg)
     }
-    def debug(msg: String) {
+    def debug(msg: String): Unit = {
       if (currentContext(Key.verbose)) log synchronized {
         println(msg)
       }

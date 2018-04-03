@@ -19,7 +19,7 @@ trait Reporter[T] extends Serializable {
 
 object Reporter {
   def None[T] = new Reporter[T] {
-    def report(result: CurveData[T], persistor: Persistor) {}
+    def report(result: CurveData[T], persistor: Persistor): Unit = {}
     def report(results: Tree[CurveData[T]], persistor: Persistor) = true
   }
 

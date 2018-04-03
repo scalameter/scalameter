@@ -54,7 +54,7 @@ abstract class BasePerformanceTest[U] extends AbstractPerformanceTest {
       config(Context(kvs: _*))
     def config(ctx: Context): Using[T] =
       Using(benchmark.copy(context = benchmark.context ++ ctx))
-    def in(block: T => Any) {
+    def in(block: T => Any): Unit = {
       setupzipper.value = setupzipper.value.addItem(benchmark.copy(snippet = block))
     }
   }
@@ -118,7 +118,7 @@ object BasePerformanceTest {
   private[scalameter] val setupzipper =
     new DynamicVariable(Tree.Zipper.root[Setup[_]](currentContext))
 
-  private[scalameter] def descendInScope(name: String, context: Context)(body: =>Unit) {
+  private[scalameter] def descendInScope(name: String, context: Context)(body: =>Unit): Unit = {
     setupzipper.value = setupzipper.value.descend.setContext(context)
     body
     setupzipper.value = setupzipper.value.ascend

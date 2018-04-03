@@ -13,7 +13,7 @@ import org.scalameter.utils.Tree
  */
 case class ValidationReporter[T]() extends Reporter[T] {
 
-  def report(result: CurveData[T], persistor: Persistor) {}
+  def report(result: CurveData[T], persistor: Persistor): Unit = {}
 
   def report(results: Tree[CurveData[T]], persistor: Persistor) = {
     var totalValidations = 0

@@ -14,7 +14,7 @@ final class SlidingWindow(_cap: Int) {
   private var first = 0
   private var next = 0
 
-  def add(t: Double) {
+  def add(t: Double): Unit = {
     store(next) = t
     val inc = (next + 1) % capacity
     next = inc

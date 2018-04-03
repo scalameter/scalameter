@@ -17,7 +17,7 @@ case class DsvReporter[T: Numeric](delimiter: Char) extends Reporter[T] {
 
   val sep = File.separator
 
-  def report(result: CurveData[T], persistor: Persistor) {
+  def report(result: CurveData[T], persistor: Persistor): Unit = {
   }
 
   def report(result: Tree[CurveData[T]], persistor: Persistor) = {
@@ -25,7 +25,7 @@ case class DsvReporter[T: Numeric](delimiter: Char) extends Reporter[T] {
 
     new File(s"$resultdir").mkdirs()
 
-    def reportCurve(cd: CurveData[T]) {
+    def reportCurve(cd: CurveData[T]): Unit = {
       val filename = s"$resultdir$sep${cd.context.scope}.${cd.context.curve}.dsv"
       var writer: PrintWriter = null
 
@@ -52,12 +52,12 @@ object DsvReporter {
   }
 
   def writeCurveData[T: Numeric](cd: CurveData[T], persistor: Persistor,
-    pw: PrintWriter, delimiter: Char, newline: String = "\n") {
+    pw: PrintWriter, delimiter: Char, newline: String = "\n"): Unit = {
     val history = persistor.load[T](cd.context)
     import pw._
     import pw.{print => p}
 
-    def header(cd: CurveData[T]) {
+    def header(cd: CurveData[T]): Unit = {
       p("date")
       p(delimiter)
       for (paramname <- cd.measurements.head.params.axisData.keys) {
@@ -78,7 +78,7 @@ object DsvReporter {
       print(newline)
     }
 
-    def output(cd: CurveData[T], date: Date) {
+    def output(cd: CurveData[T], date: Date): Unit = {
       for (m <- cd.measurements) {
         p(dateISO(date))
         p(delimiter)

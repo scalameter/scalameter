@@ -21,7 +21,7 @@ final class JvmRunner {
     readOutput[R](ctx)
   }
 
-  private def serializeInput[T](config: T) {
+  private def serializeInput[T](config: T): Unit = {
     val fos = new FileOutputStream(tmpfile)
     val oos = new ObjectOutputStream(fos)
     try {
@@ -32,7 +32,7 @@ final class JvmRunner {
     }
   }
 
-  private def runJvm(ctx: Context) {
+  private def runJvm(ctx: Context): Unit = {
     val classpath = ctx(Key.finalClasspath)
     val flags = ctx(Key.exec.jvmflags)
     val jcmd = ctx(Key.exec.jvmcmd)

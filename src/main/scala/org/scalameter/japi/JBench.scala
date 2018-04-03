@@ -103,7 +103,7 @@ abstract class JBench[U] extends BasePerformanceTest[U] with Serializable {
 
   /** Sets setup for a benchmark snippet.
    */
-  private def setSetup(cl: Class[_], m: Method) {
+  private def setSetup(cl: Class[_], m: Method): Unit = {
     val additionalContext = Option(m.getAnnotation(classOf[ctx])).map(a =>
       getFieldOrMethod(cl, a.value(),
         s"'ctx' annotation over '${m.getName}' method").asInstanceOf[Context]

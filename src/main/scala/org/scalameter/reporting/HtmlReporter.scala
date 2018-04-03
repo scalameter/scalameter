@@ -12,7 +12,7 @@ import scala.util.parsing.json.{JSONObject, JSONArray}
 case class HtmlReporter[T: Numeric](embedDsv: Boolean = true) extends Reporter[T] {
   import HtmlReporter._
 
-  def report(result: CurveData[T], persistor: Persistor) {
+  def report(result: CurveData[T], persistor: Persistor): Unit = {
     // nothing - the charts are generated only at the end
   }
 
@@ -94,7 +94,7 @@ case class HtmlReporter[T: Numeric](embedDsv: Boolean = true) extends Reporter[T
     new JSONArray(JSONCurves.toList)
   }
 
-  def printTsv(results: Tree[CurveData[T]], persistor: Persistor, pw: PrintWriter) {
+  def printTsv(results: Tree[CurveData[T]], persistor: Persistor, pw: PrintWriter): Unit = {
     val allCurves = for {
       (ctx, curves) <- results.scopes if curves.nonEmpty
       curve <- curves
@@ -147,7 +147,7 @@ object HtmlReporter {
 
   val dsvDelimiter = '\t'
 
-  def copyResource(from: String, to: File) {
+  def copyResource(from: String, to: File): Unit = {
     val resources = getClass.getClassLoader.getResources(from).asScala
     val resource = resources.find { url =>
       url.getPath.contains("scalameter")
@@ -176,7 +176,7 @@ object HtmlReporter {
     }
   }
 
-  def printToFile(f: File)(op: PrintWriter => Unit) {
+  def printToFile(f: File)(op: PrintWriter => Unit): Unit = {
     val p = new PrintWriter(f)
     try { op(p) } finally { p.close() }
   }

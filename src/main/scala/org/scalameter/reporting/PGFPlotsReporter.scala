@@ -55,7 +55,7 @@ case class PGFPlotsReporter[T: Fractional](
 
   val sep = File.separator
 
-  def report(result: CurveData[T], persistor: Persistor) {
+  def report(result: CurveData[T], persistor: Persistor): Unit = {
   }
 
   def report(result: Tree[CurveData[T]], persistor: Persistor) = {

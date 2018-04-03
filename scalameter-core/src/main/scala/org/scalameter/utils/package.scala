@@ -15,7 +15,7 @@ package object utils {
       val gcbeans = java.lang.management.ManagementFactory.getGarbageCollectorMXBeans
       val listeners = for (gcbean <- gcbeans) yield {
         val listener = new NotificationListener {
-          def handleNotification(n: Notification, handback: Object) {
+          def handleNotification(n: Notification, handback: Object): Unit = {
             eventhandler(n)
           }
         }
