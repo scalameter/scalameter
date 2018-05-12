@@ -42,7 +42,7 @@ object Main {
           case (acc, x) => Configuration(acc.benches ++ x.benches, acc.context ++ x.context)
         }
       }
-      def arg: Parser[Configuration] = benches | intsetting | resdir | scopefilt | flag
+      def arg: Parser[Configuration] = benches | intsetting | resdir | scopefilter | shortscopefilter | flag
       def listOf(flagname: String, shorthand: String): Parser[Seq[String]] = "-" ~ (flagname | shorthand) ~ classnames ^^ {
         case _ ~ _ ~ classnames => classnames
       }
@@ -66,8 +66,11 @@ object Main {
       def stringLit = "['\"]".r ~ rep("[^'']".r) ~ "['\"]".r ^^ {
         case _ ~ cs ~ _ => cs.mkString
       }
-      def scopefilt: Parser[Configuration] = "-" ~ "CscopeFilter" ~ (stringLit | failure("scopeFilter must be followed by a single or double quoted string.")) ^^ {
+      def scopefilter: Parser[Configuration] = "-" ~ "CscopeFilter" ~ (stringLit | failure("scopeFilter must be followed by a single or double quoted string.")) ^^ {
         case _ ~ _ ~ s => Configuration(Nil, Context(scopeFilter -> s))
+      }
+      def shortscopefilter: Parser[Configuration] = "-z" ~ ("""[a-zA-Z\.]+""".r) ^^ {
+        case _ ~ s => Configuration(Nil, Context(scopeFilter -> s))
       }
       def flag: Parser[Configuration] = "-" ~ ("silent" | "verbose" | "preJDK7") ^^ {
         case _ ~ "verbose" => Configuration(Nil, Context(Key.verbose -> true))
@@ -77,7 +80,7 @@ object Main {
 
       parseAll(arguments, args.mkString(" ")) match {
         case Success(result, _) => result
-        case Failure(msg, _) => sys.error("failed to parse args: " + msg)
+        case Failure(msg, _) => sys.error("failed to parse args " + args.mkString(", ") + ": " + msg)
         case Error(msg, _) => sys.error("error while parsing args: " + msg)
       }
     }
