@@ -113,7 +113,7 @@ object ScalaMeterBuild extends MechaRepoBuild {
         "org.scala-tools.testing" % "test-interface" % "0.5",
         "org.scala-lang.modules" % "scala-xml_2.13.0-M2" % "1.0.6",
         "org.scala-lang.modules" % "scala-parser-combinators_2.13.0-M2" % "1.0.7",
-        "com.fasterxml.jackson.module" % "jackson-module-scala_2.12" % "2.8.5",
+        "com.fasterxml.jackson.module" % "jackson-module-scala" % "2.9.6",
         "org.mongodb.scala" % "mongo-scala-driver_2.12" % "2.2.0",
         "commons-io" % "commons-io" % "2.4",
         "io.spray" %  "spray-json_2.13.0-M2" % "1.3.4"
@@ -125,7 +125,7 @@ object ScalaMeterBuild extends MechaRepoBuild {
         "org.scala-tools.testing" % "test-interface" % "0.5",
         "org.scala-lang.modules" % "scala-xml_2.12" % "1.0.5",
         "org.scala-lang.modules" % "scala-parser-combinators_2.12" % "1.0.4",
-        "com.fasterxml.jackson.module" % "jackson-module-scala_2.12" % "2.8.5",
+        "com.fasterxml.jackson.module" % "jackson-module-scala" % "2.9.6",
         "org.mongodb.scala" %% "mongo-scala-driver" % "2.2.0",
         "commons-io" % "commons-io" % "2.4",
         "io.spray" %  "spray-json_2.12" % "1.3.2"
@@ -137,7 +137,7 @@ object ScalaMeterBuild extends MechaRepoBuild {
         "org.scala-tools.testing" % "test-interface" % "0.5",
         "org.scala-lang.modules" %% "scala-xml" % "1.0.1",
         "org.scala-lang.modules" %% "scala-parser-combinators" % "1.0.1",
-        "com.fasterxml.jackson.module" %% "jackson-module-scala" % "2.8.5",
+        "com.fasterxml.jackson.module" %% "jackson-module-scala" % "2.9.6",
         "org.mongodb.scala" %% "mongo-scala-driver" % "2.2.0",
         "commons-io" % "commons-io" % "2.4",
         "io.spray" %%  "spray-json" % "1.3.2"

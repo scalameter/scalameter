@@ -9,9 +9,9 @@ import org.scalameter.Key.reports._
 
 
 /** Serializes [[org.scalameter.History]] to binary format using Java serialization.
-  */
+ */
 case class SerializationPersistor(path: File)
-  extends IOStreamPersistor[ObjectInputStream, ObjectOutputStream] {
+extends IOStreamPersistor[ObjectInputStream, ObjectOutputStream] {
 
   def this(path: String) = this(new File(path))
 

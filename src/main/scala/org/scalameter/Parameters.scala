@@ -19,7 +19,7 @@ case class Parameters(axisData: immutable.Map[Parameter[_], Any]) {
 }
 
 object Parameters {
-  def apply(xs: (Parameter[_], Any)*) = new Parameters(immutable.ListMap(xs: _*))
+  def apply(xs: (Parameter[_], Any)*) = new Parameters(immutable.Map(xs: _*))
 
   implicit val ordering = Ordering.by[Parameters, Iterable[String]] {
     _.axisData.toSeq.map(_._1.fullName).sorted.toIterable

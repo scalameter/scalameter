@@ -1,6 +1,8 @@
 package org.scalameter
 package persistence.json
 
+
+
 import com.fasterxml.jackson.core.{JsonToken, JsonParser, JsonGenerator}
 import com.fasterxml.jackson.databind._
 import com.fasterxml.jackson.databind.deser.Deserializers
@@ -15,8 +17,12 @@ import org.scalameter.picklers.Pickler
 import scala.collection.immutable
 
 
-object MeasurementSerializer extends StdSerializer[Measurement[_]](classOf[Measurement[_]]) {
-  def serialize(value: Measurement[_], jgen: JsonGenerator, provider: SerializerProvider): Unit = {
+
+object MeasurementSerializer
+extends StdSerializer[Measurement[_]](classOf[Measurement[_]]) {
+  def serialize(
+    value: Measurement[_], jgen: JsonGenerator, provider: SerializerProvider
+  ): Unit = {
     val pickler = value.pickler.asInstanceOf[Pickler[Any]]
 
     jgen.writeStartObject()
@@ -26,7 +32,8 @@ object MeasurementSerializer extends StdSerializer[Measurement[_]](classOf[Measu
     jgen.writeBinaryField("value", pickler.pickle(value.value))
 
     jgen.writeFieldName("params")
-    provider.findValueSerializer(classOf[Parameters]).serialize(value.params, jgen, provider)
+    provider.findValueSerializer(classOf[Parameters])
+      .serialize(value.params, jgen, provider)
 
     jgen.writeObjectFieldStart("data")
     jgen.writeArrayFieldStart("complete")
@@ -41,11 +48,13 @@ object MeasurementSerializer extends StdSerializer[Measurement[_]](classOf[Measu
   }
 }
 
+
 object MeasurementDeserializer extends StdDeserializer[Measurement[_]](
   classOf[Measurement[_]]) {
   def deserialize(p: JsonParser, ctx: DeserializationContext): Measurement[_] = {
     def getField(name: String): Option[JsonToken] = {
-      Option(p.nextToken()).filter(_ == JsonToken.FIELD_NAME && p.getCurrentName == name)
+      Option(p.nextToken())
+        .filter(_ == JsonToken.FIELD_NAME && p.getCurrentName == name)
     }
 
     val clazz = classOf[Measurement[_]]
@@ -100,22 +109,29 @@ object MeasurementDeserializer extends StdDeserializer[Measurement[_]](
       }
 
       e <- Option(p.nextToken()) if e == JsonToken.END_OBJECT
-    } yield Measurement(value, params, MeasurementData(complete, success), units)(pickler)
+    } yield {
+      Measurement(value, params, MeasurementData(complete, success), units)(pickler)
+    }
 
     measurement.getOrElse(throw ctx.mappingException(clazz))
   }
 }
 
-/** Serializer for maps with keys whose are subtype of [[org.scalameter.PicklerBasedKey]].
+/** Serializer for maps with keys whose are subtype of
+ *  [[org.scalameter.PicklerBasedKey]].
  *
  *  It serializes map values as Base64 encoded byte arrays.
  *
  * @tparam MapKey subtype of [[org.scalameter.PicklerBasedKey]]
  * @param clazz handled type
  */
-class PicklerBasedMapSerializer[MapKey <: PicklerBasedKey[_]](clazz: Class[immutable.Map[MapKey, Any]])
-  extends StdSerializer[immutable.Map[MapKey, Any]](clazz) {
-  def serialize(value: immutable.Map[MapKey, Any], jgen: JsonGenerator, provider: SerializerProvider): Unit = {
+class PicklerBasedMapSerializer[MapKey <: PicklerBasedKey[_]](
+  clazz: Class[immutable.Map[MapKey, Any]]
+) extends StdSerializer[immutable.Map[MapKey, Any]](clazz) {
+  def serialize(
+    value: immutable.Map[MapKey, Any], jgen: JsonGenerator,
+    provider: SerializerProvider
+  ): Unit = {
     jgen.writeStartObject()
     value.foreach { case (k, v) =>
       if (!k.isTransient) {
@@ -127,7 +143,8 @@ class PicklerBasedMapSerializer[MapKey <: PicklerBasedKey[_]](clazz: Class[immut
   }
 }
 
-/** Deserializer for maps with keys whose are subtype of [[org.scalameter.PicklerBasedKey]].
+/** Deserializer for maps with keys whose are subtype of
+ *  [[org.scalameter.PicklerBasedKey]].
  *
  * @tparam MapKey subtype of a [[org.scalameter.PicklerBasedKey]]
  * @param clazz handled type
@@ -137,7 +154,9 @@ class PicklerBasedMapSerializer[MapKey <: PicklerBasedKey[_]](clazz: Class[immut
 class PicklerBasedMapDeserializer[MapKey <: PicklerBasedKey[_]](
   clazz: Class[immutable.Map[MapKey, Any]], keyCreator: (String, Pickler[_]) => MapKey)
   extends StdDeserializer[immutable.Map[MapKey, Any]](clazz) {
-  def deserialize(p: JsonParser, ctx: DeserializationContext): immutable.Map[MapKey, Any] = {
+  def deserialize(
+    p: JsonParser, ctx: DeserializationContext
+  ): immutable.Map[MapKey, Any] = {
     if (p.getCurrentToken != JsonToken.START_OBJECT) throw ctx.mappingException(clazz)
 
     val builder = immutable.Map.newBuilder[MapKey, Any]
@@ -166,12 +185,14 @@ object PicklerBasedMapSerializerResolver extends Serializers.Base {
       classOf[immutable.Map[Parameter[_], Any]]).asInstanceOf[JsonSerializer[_]]
   )
 
-  override def findMapLikeSerializer(config: SerializationConfig,
-                                     tpe: MapLikeType,
-                                     beanDesc: BeanDescription,
-                                     keySerializer: JsonSerializer[AnyRef],
-                                     elementTypeSerializer: TypeSerializer,
-                                     elementValueSerializer: JsonSerializer[AnyRef]): JsonSerializer[_] = {
+  override def findMapLikeSerializer(
+    config: SerializationConfig,
+    tpe: MapLikeType,
+    beanDesc: BeanDescription,
+    keySerializer: JsonSerializer[AnyRef],
+    elementTypeSerializer: TypeSerializer,
+    elementValueSerializer: JsonSerializer[AnyRef]
+  ): JsonSerializer[_] = {
     val keyClazz = tpe.getKeyType.getRawClass
     if (classOf[immutable.Map[_, _]].isAssignableFrom(tpe.getRawClass) &&
       allowedTypes.contains(keyClazz)) allowedTypes(keyClazz)
@@ -185,17 +206,23 @@ object PicklerBasedMapDeserializerResolver extends Deserializers.Base {
   private val allowedTypes: Map[Class[_], JsonDeserializer[_]] = Map(
     classOf[Key[_]] -> new PicklerBasedMapDeserializer[Key[_]](
       // we ignore pickler for Key since it's reconstructed using key registry
-      classOf[immutable.Map[Key[_], Any]], (name, _) => Key.parseKey(name)).asInstanceOf[JsonDeserializer[_]],
+      classOf[immutable.Map[Key[_], Any]],
+      (name, _) => Key.parseKey(name)
+    ).asInstanceOf[JsonDeserializer[_]],
     classOf[Parameter[_]] -> new PicklerBasedMapDeserializer[Parameter[_]](
-      classOf[immutable.Map[Parameter[_], Any]], (name, pickler) => Parameter(name)(pickler)).asInstanceOf[JsonDeserializer[_]]
+      classOf[immutable.Map[Parameter[_], Any]],
+      (name, pickler) => Parameter(name)(pickler)
+    ).asInstanceOf[JsonDeserializer[_]]
   )
 
-  override def findMapLikeDeserializer(tpe: MapLikeType,
-                                       config: DeserializationConfig,
-                                       beanDesc: BeanDescription,
-                                       keyDeserializer: KeyDeserializer,
-                                       elementTypeDeserializer: TypeDeserializer,
-                                       elementDeserializer: JsonDeserializer[_]): JsonDeserializer[_] = {
+  override def findMapLikeDeserializer(
+    tpe: MapLikeType,
+    config: DeserializationConfig,
+    beanDesc: BeanDescription,
+    keyDeserializer: KeyDeserializer,
+    elementTypeDeserializer: TypeDeserializer,
+    elementDeserializer: JsonDeserializer[_]
+  ): JsonDeserializer[_] = {
     val keyClazz = tpe.getKeyType.getRawClass
     if (classOf[immutable.Map[_, _]].isAssignableFrom(tpe.getRawClass) &&
       allowedTypes.contains(keyClazz)) allowedTypes(keyClazz)

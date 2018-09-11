@@ -9,8 +9,8 @@ import java.io._
 
 /** Base for persistors that actually write and read [[org.scalameter.History]].
  *
- * @tparam I input stream to which [[org.scalameter.History]] is serialized
- * @tparam O output stream from which [[org.scalameter.History]] is deserialized
+ *  @tparam I input stream to which [[org.scalameter.History]] is serialized
+ *  @tparam O output stream from which [[org.scalameter.History]] is deserialized
  */
 trait IOStreamPersistor[I <: InputStream, O <: OutputStream] extends Persistor {
   def path: File
