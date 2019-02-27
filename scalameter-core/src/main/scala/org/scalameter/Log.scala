@@ -88,6 +88,38 @@ object Log {
     }
   }
 
+  class Proxy(log: Log) extends Log {
+    override def error(msg: String): Unit = log.error(msg)
+
+    override def warn(msg: String): Unit = log.warn(msg)
+
+    override def info(msg: String): Unit = log.info(msg)
+
+    override def debug(msg: String): Unit = log.debug(msg)
+
+    override def overallBegin(millis: Long): Unit = log.overallBegin(millis)
+
+    override def overallProgress(percent: Double): Unit = log.overallProgress(percent)
+
+    override def overallScope(benchmark: String): Unit = log.overallScope(benchmark)
+
+    override def currentBegin(): Unit = log.currentBegin()
+
+    override def currentProgress(percent: Double): Unit = log.currentProgress(percent)
+
+    override def currentForkIndex(n: Int): Unit = log.currentForkIndex(n)
+
+    override def currentTotalForks(n: Int): Unit = log.currentTotalForks(n)
+
+    override def currentForkCommand(cmd: String): Unit = log.currentForkCommand(cmd)
+
+    override def currentInput(input: String): Unit = log.currentInput(input)
+
+    override def timer(enable: Boolean): Unit = log.timer(enable)
+
+    override def clear(): Unit = log.clear()
+  }
+
   class JLine extends Log {
     private val terminal = TerminalBuilder.builder()
       .system(true)

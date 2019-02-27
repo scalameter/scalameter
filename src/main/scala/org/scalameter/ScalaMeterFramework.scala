@@ -31,15 +31,19 @@ class ScalaMeterFramework extends Framework {
       })
     }
 
-    case class TestInterfaceLog(l: Logger) extends Log {
+    class TestInterfaceLog(l: Logger) extends Log {
       def error(msg: String) = l.error(msg)
       def warn(msg: String) = l.warn(msg)
-      def trace(t: Throwable) = l.trace(t)
       def info(msg: String) = l.info(msg)
       def debug(msg: String) = if (currentContext(Key.verbose)) {
         // if verbose is on, treat this as a normal message
         info(msg)
       } else l.debug(msg)
+    }
+
+    case class JLineTestInterfaceLog(jline: Log.JLine, l: Logger)
+    extends Log.Proxy(jline) {
+      override def report(msg: String): Unit = l.info(msg)
     }
 
     def computeClasspath = {
@@ -53,7 +57,15 @@ class ScalaMeterFramework extends Framework {
       testClassName: String, fingerprint: Fingerprint, eventHandler: EventHandler,
       args: Array[String]
     ): Unit = {
-      val complog = Log.Composite(loggers.map(TestInterfaceLog): _*)
+      // Special case when there is only one logger, and it belongs to SBT.
+      val isSbt =
+        loggers.size == 1 && loggers(0).getClass.getName.startsWith("sbt.")
+      val complog = Log.default match {
+        case log: Log.JLine if isSbt =>
+          new JLineTestInterfaceLog(log, loggers(0))
+        case _ =>
+          Log.Composite(loggers.map(new TestInterfaceLog(_)): _*)
+      }
       val tievents = TestInterfaceEvents(eventHandler)
       val testcp = computeClasspath
       val ctx = currentContext ++
