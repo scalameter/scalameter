@@ -143,8 +143,25 @@ object Log {
         if (timerEnabled) redraw()
       }
     }
+    private val indicatorIcons = Seq(
+      "\u2804",
+			"\u2806",
+			"\u2807",
+			"\u280B",
+			"\u2819",
+			"\u2838",
+			"\u2830",
+			"\u2820",
+			"\u2830",
+			"\u2838",
+			"\u2819",
+			"\u280B",
+			"\u2807",
+			"\u2806"
+    )
+    private val speed = 150
 
-    timer.schedule(timerTask, 0, 1000)
+    timer.schedule(timerTask, 0, speed)
     display.resize(terminal.getBufferSize.getRows, terminal.getBufferSize.getColumns)
 
     Runtime.getRuntime.addShutdownHook(new Thread {
@@ -175,6 +192,8 @@ object Log {
       val scope = join(
         fromAnsi(""),
         new AttributedString("Scope:   ", titleStyle),
+        fromAnsi(indicatorIcons(((now - overallStart) / speed).toInt % indicatorIcons.length)),
+        fromAnsi(" "),
         overallScope
       )
       val overallProgress = join(
