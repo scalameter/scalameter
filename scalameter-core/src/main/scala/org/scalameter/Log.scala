@@ -81,7 +81,7 @@ object Log {
         if (timerEnabled) redraw()
       }
     }, 0, 1000)
-    display.resize(terminal.getBufferSize.getColumns, terminal.getBufferSize.getRows)
+    display.resize(terminal.getBufferSize.getRows, terminal.getBufferSize.getColumns)
 
     Runtime.getRuntime.addShutdownHook(new Thread {
       override def run(): Unit = JLine.this.synchronized {
@@ -131,26 +131,32 @@ object Log {
         fromAnsi(" Input "),
         currentInput
       )
+      def pad(s: AttributedString): AttributedString = {
+        val width = terminal.getBufferSize.getColumns
+        val short = new AttributedString(s, 0, math.min(s.length(), width))
+        val padded = join(fromAnsi(""), short, fromAnsi(" " * (width - short.length())))
+        padded
+      }
       val message = lastMessage
-      lines.add(scope)
-      lines.add(overallProgress)
-      lines.add(currentProgress)
-      lines.add(message)
+      lines.add(pad(scope))
+      lines.add(pad(overallProgress))
+      lines.add(pad(currentProgress))
+      lines.add(pad(message))
       lines
     }
 
     private def redraw(): Unit = {
-      clear()
       val lines = outputLines
       display.update(lines, terminal.getSize.cursorPos(0, 0), true)
     }
 
     override def clear(): Unit = {
       val lines = new ArrayList[AttributedString]
-      lines.add(AttributedString.fromAnsi(""))
-      lines.add(AttributedString.fromAnsi(""))
-      lines.add(AttributedString.fromAnsi(""))
-      lines.add(AttributedString.fromAnsi(""))
+      val emptyLine = AttributedString.fromAnsi(" " * terminal.getBufferSize.getColumns)
+      lines.add(emptyLine)
+      lines.add(emptyLine)
+      lines.add(emptyLine)
+      lines.add(emptyLine)
       display.update(lines, terminal.getSize.cursorPos(0, 0), true)
     }
 
