@@ -207,7 +207,7 @@ abstract class JBench[U] extends BasePerformanceTest[U] with Serializable {
 
 object JBench {
   /** Annotation based equivalent of the [[org.scalameter.Bench.Local]] */
-  abstract class Local[U: Pickler] extends JBench[U] {
+  abstract class Local[U: Numeric: Pickler] extends JBench[U] {
     def warmer: Warmer = new Warmer.Default
 
     def aggregator: Aggregator[U]
@@ -220,11 +220,17 @@ object JBench {
 
     def persistor: Persistor = Persistor.None
 
-    def reporter: Reporter[U] = new reporting.LoggingReporter
+    def reporter: Reporter[U] = new RegressionReporter(tester, historian)
+
+    def historian: RegressionReporter.Historian =
+      RegressionReporter.Historian.ExponentialBackoff()
+
+    def tester: RegressionReporter.Tester =
+      RegressionReporter.Tester.Accepter()
   }
 
   /** Annotation based equivalent of the [[org.scalameter.Bench.Forked]] */
-  abstract class Forked[U: Pickler: PrettyPrinter] extends JBench[U] {
+  abstract class Forked[U: Numeric: Pickler: PrettyPrinter] extends JBench[U] {
     def warmer: Warmer = new Warmer.Default
 
     def aggregator: Aggregator[U]
@@ -237,7 +243,13 @@ object JBench {
 
     def persistor: Persistor = Persistor.None
 
-    def reporter: Reporter[U] = new reporting.LoggingReporter
+    def reporter: Reporter[U] = new RegressionReporter(tester, historian)
+
+    def historian: RegressionReporter.Historian =
+      RegressionReporter.Historian.ExponentialBackoff()
+
+    def tester: RegressionReporter.Tester =
+      RegressionReporter.Tester.Accepter()
   }
 
   /** Annotation based equivalent of the [[org.scalameter.Bench.Persisted]] */

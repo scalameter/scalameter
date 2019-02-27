@@ -9,6 +9,7 @@ import org.scalameter.utils.Tree
 
 /** Simply logs the measurement data to the standard output.
  */
+@deprecated("Please use RegressionReporter instead.", "0.16")
 case class LoggingReporter[T]() extends Reporter[T] {
 
   def report(result: CurveData[T], persistor: Persistor): Unit = {
