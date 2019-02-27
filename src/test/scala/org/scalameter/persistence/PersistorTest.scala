@@ -12,7 +12,7 @@ trait PersistorTest { this: Matchers =>
     val p = new InterceptingPersistor(persistor)
     val benchmark = new RangeBenchmark(p)
     try {
-      withTestContext(currentContext, Log.Console, Events.None) {
+      withTestContext(currentContext, Log.default, Events.None) {
         benchmark.executeTests()
       }
       fun(p)

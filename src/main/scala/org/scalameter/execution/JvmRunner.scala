@@ -3,9 +3,10 @@ package org.scalameter.execution
 
 
 import java.io._
+import java.lang.ProcessBuilder.Redirect
 import org.scalameter._
 import org.scalameter.utils.ClassPath
-import scala.util.{Success, Failure, Try}
+import scala.util.{Failure, Success, Try}
 import scala.sys.process._
 
 
@@ -43,12 +44,19 @@ final class JvmRunner {
       "-cp",
       classpath.mkString,
       classOf[Main].getName,
-      tmpfile.getPath)
-      //s"$jcmd $flags -cp $classpath ${classOf[Main].getName} ${tmpfile.getPath}"
+      tmpfile.getPath
+    )
+    // s"$jcmd $flags -cp $classpath ${classOf[Main].getName} ${tmpfile.getPath}"
     dyn.currentContext.withValue(ctx) {
       log.verbose(s"Starting new JVM: ${command.mkString(" ")}")
     }
-    command.!
+    val pb = new java.lang.ProcessBuilder(command.toArray: _*)
+    pb.redirectInput(Redirect.INHERIT)
+    pb.redirectOutput(Redirect.INHERIT)
+    pb.redirectError(Redirect.INHERIT)
+    pb.start().waitFor()
+    // Process(pb).run(connectInput = false).exitValue()
+    // command.run().exitValue()
   }
 
   private def readOutput[R](ctx: Context): Try[R] = {

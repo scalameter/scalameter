@@ -68,6 +68,11 @@ object ScalaMeterBuild extends MechaRepoBuild {
     libraryDependencies ++= dependencies(scalaVersion.value),
     parallelExecution in Test := false,
     fork := true,
+    fork in run := true,
+    fork in Test := true,
+    outputStrategy := Some(StdoutOutput),
+    connectInput in run := true,
+    connectInput in Test := true,
     resolvers ++= Seq(
       "Sonatype OSS Snapshots" at "https://oss.sonatype.org/content/repositories/snapshots",
       "Sonatype OSS Releases" at "https://oss.sonatype.org/content/repositories/releases"
@@ -160,8 +165,10 @@ object ScalaMeterBuild extends MechaRepoBuild {
     parallelExecution in Test := false,
     fork := true,
     fork in run := true,
+    fork in Test := true,
     outputStrategy := Some(StdoutOutput),
     connectInput in run := true,
+    connectInput in Test := true,
     resolvers ++= Seq(
       "Sonatype OSS Snapshots" at "https://oss.sonatype.org/content/repositories/snapshots",
       "Sonatype OSS Releases" at "https://oss.sonatype.org/content/repositories/releases"

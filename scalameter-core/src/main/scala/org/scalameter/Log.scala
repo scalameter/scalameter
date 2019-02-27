@@ -237,9 +237,12 @@ object Log {
 
   val default = {
     try {
-      new JLine
+      val legacyConsoleSetting = sys.props("org.scalameter.console.legacy")
+      if (legacyConsoleSetting != null) Console
+      else new JLine
     } catch {
       case t: Throwable =>
+        println(t.getMessage)
         Console
     }
   }

@@ -1,6 +1,7 @@
 package org.scalameter
 
 
+
 import org.scalameter.picklers.Pickler
 import org.scalameter.utils.Tree
 import scala.language.higherKinds
@@ -52,13 +53,13 @@ object Executor {
 
   /** Creates an executor from a warmer, printer, aggregator and measurer.
    *
-   *  Implemented by companion objects of `Executor` implementations.
+   * Implemented by companion objects of `Executor` implementations.
    */
   trait Factory[E[_] <: Executor[_]] {
-    def apply[T: Pickler: PrettyPrinter](warmer: Warmer, aggregator: Aggregator[T],
+    def apply[T: Pickler : PrettyPrinter](warmer: Warmer, aggregator: Aggregator[T],
       m: Measurer[T]): E[T]
   }
-  
+
 }
 
 
