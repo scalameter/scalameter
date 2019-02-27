@@ -52,14 +52,10 @@ class SeparateJvmsExecutor[V: Pickler : PrettyPrinter](
     result
   }
 
-  private def computeOverallProgress(forkIndex: Int, totalForks: Int): Double = {
-    val setupIndex = currentContext(exec.setupIndex)
-    val setupCount = currentContext(exec.setupCount)
-    (setupIndex + forkIndex.toDouble / totalForks) / setupCount * 100
-  }
-
   def runSetup[T](setup: Setup[T]): CurveData[V] = {
     import setup._
+    import SeparateJvmsExecutor.computeOverallProgress
+
     val warmups = context(exec.maxWarmupRuns)
     val totalreps = context(exec.benchRuns)
     val independentSamples = context(exec.independentSamples)
@@ -77,9 +73,12 @@ class SeparateJvmsExecutor[V: Pickler : PrettyPrinter](
 
     def sample(idx: Int, reps: Int): Try[Seq[(Parameters, Seq[(V, String)])]] = {
       val forkCommand = runner.commandFor(jvmContext).mkString(" ")
-      val progress = computeOverallProgress(idx, independentSamples)
+      val setupIndex = currentContext(exec.setupIndex)
+      val setupCount = currentContext(exec.setupCount)
       runner.run(jvmContext) {
         dyn.currentContext.value = jvmContext
+        val progress = computeOverallProgress(
+          idx, independentSamples, setupIndex, setupCount, 0.0)
         log.overallBegin(jvmContext(exec.overallBegin))
         log.overallScope(jvmContext.scope + " \ud83e\udc7a " + jvmContext(dsl.curve))
         log.overallProgress(progress)
@@ -120,8 +119,12 @@ class SeparateJvmsExecutor[V: Pickler : PrettyPrinter](
             val set = setupFor()
             val tear = teardownFor()
             val regen = regenerateFor(params)
+            val currentProgress = 10.0 + 80.0 * datasetIndex / totalDatasets
+            val overallProgress = computeOverallProgress(
+              idx, independentSamples, setupIndex, setupCount, currentProgress)
             log.currentInput(params.toString)
-            log.currentProgress(10.0 + 80.0 * datasetIndex / totalDatasets)
+            log.currentProgress(currentProgress)
+            log.overallProgress(overallProgress)
             val results = m.measure(context, reps, set, tear, regen, snippet)
             observations += ((params, results.map(q => q.value -> q.units)))
             // FIXME: `java.lang.ClassNotFoundException: org.scalameter.Quantity`
@@ -154,8 +157,11 @@ class SeparateJvmsExecutor[V: Pickler : PrettyPrinter](
       idx <- 0 until independentSamples
       reps = repetitions(idx)
     } yield {
+      val setupIndex = currentContext(exec.setupIndex)
+      val setupCount = currentContext(exec.setupCount)
       log.currentForkIndex(idx)
-      log.overallProgress(computeOverallProgress(idx, independentSamples))
+      log.overallProgress(
+        computeOverallProgress(idx, independentSamples, setupIndex, setupCount, 0.0))
       sampleReport(idx, reps)
     }
 
@@ -201,32 +207,10 @@ object SeparateJvmsExecutor extends Executor.Factory[SeparateJvmsExecutor] {
   def apply[T: Pickler : PrettyPrinter](w: Warmer, agg: Aggregator[T], m: Measurer[T]) =
     new SeparateJvmsExecutor(w, agg, m)
 
+  private[execution] def computeOverallProgress(
+    forkIndex: Int, totalForks: Int, setupIndex: Int, setupCount: Int, currentProgress: Double
+  ): Double = {
+    val fraction = math.max(0.0, math.min(1.0, currentProgress / 100.0))
+    (setupIndex + (forkIndex + fraction).toDouble / totalForks) / setupCount * 100
+  }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
