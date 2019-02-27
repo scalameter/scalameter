@@ -41,9 +41,12 @@ class ScalaMeterFramework extends Framework {
       } else l.debug(msg)
     }
 
-    case class JLineTestInterfaceLog(jline: Log.JLine, l: Logger)
+    case class JLineTestInterfaceLog(jline: Log.JLine, logger: Logger)
     extends Log.Proxy(jline) {
-      override def report(msg: String): Unit = l.info(msg)
+      override def report(msg: String): Unit = {
+        jline.clear()
+        logger.info(msg)
+      }
     }
 
     def computeClasspath = {

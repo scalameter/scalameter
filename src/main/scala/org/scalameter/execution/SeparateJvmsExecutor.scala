@@ -48,6 +48,7 @@ class SeparateJvmsExecutor[V: Pickler : PrettyPrinter](
     for (_ <- dyn.currentContext.using(newContext)) {
       result = super.run(setuptree, reporter, persistor)
     }
+    log.clear()
     result
   }
 

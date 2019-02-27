@@ -274,28 +274,32 @@ object Log {
       timerEnabled = enable
     }
 
+    private def attributed(msg: String, style: AttributedStyle): AttributedString = {
+      new AttributedString(msg.replace("\n", "   "), style)
+    }
+
     def error(msg: String) = this.synchronized {
       val style = new AttributedStyle().foreground(AttributedStyle.RED)
-      lastMessage = new AttributedString(msg, style)
+      lastMessage = attributed(msg,style)
       redraw()
     }
 
     def warn(msg: String) = this.synchronized {
       val style = new AttributedStyle().foreground(AttributedStyle.YELLOW)
-      lastMessage = new AttributedString(msg, style)
+      lastMessage = attributed(msg, style)
       redraw()
     }
 
     def info(msg: String) = this.synchronized {
       val style = new AttributedStyle().foreground(AttributedStyle.BLUE)
-      lastMessage = new AttributedString(msg, style)
+      lastMessage = attributed(msg, style)
       redraw()
     }
 
     def debug(msg: String): Unit = if (currentContext(Key.verbose)) {
       this.synchronized {
         val style = new AttributedStyle().foreground(AttributedStyle.WHITE)
-        lastMessage = new AttributedString(msg, style)
+        lastMessage = attributed(msg, style)
         redraw()
       }
     }
