@@ -23,7 +23,7 @@ package object scalameter extends MeasureBuilder[Unit, Double](
 
   private[scalameter] object dyn {
     val currentContext = new MonadicDynVar(Context.topLevel)
-    val log = new MonadicDynVar[Log](Log.Console)
+    val log = new MonadicDynVar[Log](Log.default)
     val events = new MonadicDynVar[Events](Events.None)
   }
 

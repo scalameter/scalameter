@@ -54,7 +54,7 @@ object Context {
     exec.benchRuns -> 36,
     exec.minWarmupRuns -> 10,
     exec.maxWarmupRuns -> 50,
-    exec.jvmflags -> List("-Xmx2048m", "-Xms2048m", "-XX:CompileThreshold=100"),
+    exec.jvmflags -> List("-Xmx2048m", "-Xms2048m"),
     classpath -> utils.ClassPath.default,
     reports.regression.significance -> 1e-10,
     verbose -> false

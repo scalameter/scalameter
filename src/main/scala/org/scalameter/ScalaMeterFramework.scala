@@ -49,8 +49,10 @@ class ScalaMeterFramework extends Framework {
           s"Cannot recognize classloader (not URLClassLoader): $testClassLoader"))
     }
 
-    def run(testClassName: String, fingerprint: Fingerprint, eventHandler: EventHandler,
-      args: Array[String]): Unit = {
+    def run(
+      testClassName: String, fingerprint: Fingerprint, eventHandler: EventHandler,
+      args: Array[String]
+    ): Unit = {
       val complog = Log.Composite(loggers.map(TestInterfaceLog): _*)
       val tievents = TestInterfaceEvents(eventHandler)
       val testcp = computeClasspath

@@ -14,7 +14,7 @@ abstract class Bench[U] extends DSL[U] with Serializable {
   def runBench(args: Array[String] = Array.empty): Boolean = {
     val ctx = dyn.currentContext.value ++
       Main.Configuration.fromCommandLineArgs(args).context
-    withTestContext(ctx, Log.Console, Events.None) {
+    withTestContext(ctx, Log.default, Events.None) {
       executeTests()
     }
   }
