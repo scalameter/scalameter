@@ -120,6 +120,7 @@ object Bench {
   /** A base for benchmarks generating a more detailed (regression) report,
    *  potentially online.
    */
+  @deprecated
   abstract class HTMLReport extends Persisted[Double] {
     import reporting._
     def aggregator: Aggregator[Double] = Aggregator.average

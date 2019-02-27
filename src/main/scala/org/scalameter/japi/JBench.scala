@@ -263,6 +263,7 @@ object JBench {
   }
 
   /** Annotation based equivalent of the [[org.scalameter.Bench.ForkedTime]] */
+  @deprecated("Please use ForkedStableTime instead.", "0.16")
   abstract class ForkedTime extends Forked[Double] {
     def aggregator: Aggregator[Double] = Aggregator.min
 
@@ -271,6 +272,22 @@ object JBench {
         override val defaultFrequency = 12
         override val defaultFullGC = true
       }
+  }
+
+  abstract class ForkedStableTime extends Forked[Double] {
+    def aggregator: Aggregator[Double] = Aggregator.min
+
+    def measurer: Measurer[Double] =
+      new Measurer.IgnoringGC with Measurer.PeriodicReinstantiation[Double] {
+        override val defaultFrequency = 12
+        override val defaultFullGC = true
+      }
+  }
+
+  abstract class ForkedPreciseTime extends Forked[Double] {
+    def aggregator: Aggregator[Double] = Aggregator.min
+
+    def measurer: Measurer[Double] = new Measurer.Default
   }
 
   /** Annotation base equivalent of the [[org.scalameter.Bench.HTMLReport]] */
