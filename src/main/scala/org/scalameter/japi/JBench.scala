@@ -285,7 +285,7 @@ object JBench {
   }
 
   abstract class ForkedPreciseTime extends Forked[Double] {
-    def aggregator: Aggregator[Double] = Aggregator.min
+    def aggregator: Aggregator[Double] = Aggregator.average
 
     def measurer: Measurer[Double] = new Measurer.Default
   }
