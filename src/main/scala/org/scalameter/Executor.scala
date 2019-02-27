@@ -26,12 +26,13 @@ trait Executor[V] {
   ): Tree[CurveData[V]] = {
     val time = System.currentTimeMillis()
     var result: Tree[CurveData[V]] = null
-    log.overallBegin(time)
     val runContext = currentContext ++ Seq(
       Key.exec.overallBegin -> time
     )
     for (_ <- dyn.currentContext.using(runContext)) {
       result = for (setup <- setuptree) yield {
+        log.clear()
+        log.overallBegin(time)
         log.overallScope(setup.context.scope + " \ud83e\udc7a " + setup.context(Key.dsl.curve))
         val cd = runSetup(setup)
         reporter.report(cd, persistor)
