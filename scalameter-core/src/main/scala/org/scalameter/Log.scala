@@ -14,25 +14,56 @@ import org.jline.utils.Display
 
 
 abstract class Log {
+  /** Errors that occurred during the execution.
+   */
   def error(msg: String): Unit
+
+  /** Warnings about unusual events that occurred during the execution.
+   */
   def warn(msg: String): Unit
+
+  /** General information about the execution.
+   */
   def info(msg: String): Unit
+
+  /** Very detailed information about the execution.
+   */
   def debug(msg: String): Unit
 
-  def overallBegin(): Unit = {}
+  /** Any output that has to do with reporting the final results.
+   */
+  def report(msg: String): Unit = info(msg)
+
+  /** Same as `debug`.
+   */
+  def verbose(msg: =>Any) = debug(msg.toString)
+
+  /** Same as `info`.
+   */
+  def apply(msg: =>Any) = info(msg.toString)
+
+  def overallBegin(millis: Long): Unit = {}
+
   def overallProgress(percent: Double): Unit = {}
-  def overallBenchmark(benchmark: String): Unit = {}
+
+  def overallScope(benchmark: String): Unit = {}
+
   def currentBegin(): Unit = {}
+
   def currentProgress(percent: Double): Unit = {}
+
   def currentForkIndex(n: Int): Unit = {}
+
   def currentTotalForks(n: Int): Unit = {}
+
   def currentForkCommand(cmd: String): Unit = {}
+
   def currentInput(input: String): Unit = {}
+
   def timer(enable: Boolean): Unit = {}
+
   def clear(): Unit = {}
 
-  def verbose(msg: =>Any) = debug(msg.toString)
-  def apply(msg: =>Any) = info(msg.toString)
 }
 
 
@@ -65,7 +96,7 @@ object Log {
     private val display = new Display(terminal, true)
     private var overallStart = System.currentTimeMillis()
     private var overallPercent = 0.0
-    private var overallBenchmark = new AttributedString(" ")
+    private var overallScope = new AttributedString(" ")
     private var currentStart = System.currentTimeMillis()
     private var currentPercent = 0.0
     private var currentInput = new AttributedString(" ")
@@ -75,17 +106,19 @@ object Log {
     private var forkCommand = " "
     private var timerEnabled = false
     private val timer = new Timer("scalameter-jline-refresher", true)
-
-    timer.schedule(new TimerTask {
+    private val timerTask = new TimerTask {
       override def run(): Unit = JLine.this.synchronized {
         if (timerEnabled) redraw()
       }
-    }, 0, 1000)
+    }
+
+    timer.schedule(timerTask, 0, 1000)
     display.resize(terminal.getBufferSize.getRows, terminal.getBufferSize.getColumns)
 
     Runtime.getRuntime.addShutdownHook(new Thread {
       override def run(): Unit = JLine.this.synchronized {
         timerEnabled = false
+        timerTask.cancel()
         clear()
       }
     })
@@ -110,7 +143,7 @@ object Log {
       val scope = join(
         fromAnsi(""),
         new AttributedString("Scope:   ", titleStyle),
-        overallBenchmark
+        overallScope
       )
       val overallProgress = join(
         fromAnsi(""),
@@ -119,7 +152,7 @@ object Log {
         fromAnsi(" "),
         progressLine(overallPercent),
         fromAnsi(" "),
-        fromAnsi(s"Fork $forkIndex/$forkTotal "),
+        fromAnsi(s"Fork ${forkIndex + 1}/$forkTotal "),
         fromAnsi("\ud83e\udc7a " + forkCommand)
       )
       val currentProgress = join(
@@ -128,7 +161,7 @@ object Log {
         fromAnsi(DurationFormatUtils.formatDuration(now - currentStart, "HH:mm:ss")),
         fromAnsi(" "),
         progressLine(currentPercent),
-        fromAnsi(" Input "),
+        fromAnsi(" "),
         currentInput
       )
       def pad(s: AttributedString): AttributedString = {
@@ -160,8 +193,8 @@ object Log {
       display.update(lines, terminal.getSize.cursorPos(0, 0), true)
     }
 
-    override def overallBegin() = this.synchronized {
-      overallStart = System.currentTimeMillis()
+    override def overallBegin(millis: Long) = this.synchronized {
+      overallStart = millis
       redraw()
     }
 
@@ -170,8 +203,8 @@ object Log {
       redraw()
     }
 
-    override def overallBenchmark(benchmark: String): Unit = this.synchronized {
-      overallBenchmark = AttributedString.fromAnsi(benchmark)
+    override def overallScope(benchmark: String): Unit = this.synchronized {
+      overallScope = AttributedString.fromAnsi(benchmark)
       redraw()
     }
 
@@ -222,15 +255,22 @@ object Log {
     }
 
     def info(msg: String) = this.synchronized {
-      val style = new AttributedStyle().foreground(AttributedStyle.GREEN)
+      val style = new AttributedStyle().foreground(AttributedStyle.BLUE)
       lastMessage = new AttributedString(msg, style)
       redraw()
     }
 
-    def debug(msg: String): Unit = this.synchronized {
-      val style = new AttributedStyle().foreground(AttributedStyle.WHITE)
-      lastMessage = new AttributedString(msg, style)
-      redraw()
+    def debug(msg: String): Unit = if (currentContext(Key.verbose)) {
+      this.synchronized {
+        val style = new AttributedStyle().foreground(AttributedStyle.WHITE)
+        lastMessage = new AttributedString(msg, style)
+        redraw()
+      }
+    }
+
+    override def report(msg: String) = this.synchronized {
+      clear()
+      terminal.writer().println(msg)
     }
   }
 
@@ -257,7 +297,7 @@ object Log {
     log.info("Hi.")
     log.timer(true)
     Thread.sleep(2000)
-    log.overallBenchmark("DefaultBenchmark")
+    log.overallScope("DefaultBenchmark")
     log.overallProgress(10)
     log.error("Hm, getting suspicious.")
     Thread.sleep(1000)
@@ -269,7 +309,7 @@ object Log {
     Thread.sleep(1000)
     log.overallProgress(40)
     log.debug("Still info...")
-    log.overallBenchmark("NumericBenchmark")
+    log.overallScope("NumericBenchmark")
     log.currentBegin()
     log.currentForkIndex(0)
     log.currentTotalForks(2)
@@ -285,7 +325,7 @@ object Log {
     log.currentForkIndex(1)
     Thread.sleep(1000)
     log.overallProgress(60)
-    log.overallBenchmark("ArithmeticBenchmark")
+    log.overallScope("ArithmeticBenchmark")
     log.currentBegin()
     log.currentInput("10")
     Thread.sleep(500)

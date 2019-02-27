@@ -33,7 +33,7 @@ final class JvmRunner {
     }
   }
 
-  private def runJvm(ctx: Context): Unit = {
+  def commandFor(ctx: Context): Seq[String] = {
     val classpath = ctx(Key.finalClasspath)
     val flags = ctx(Key.exec.jvmflags)
     val jcmd = ctx(Key.exec.jvmcmd)
@@ -46,15 +46,22 @@ final class JvmRunner {
       classOf[Main].getName,
       tmpfile.getPath
     )
+    command
+  }
+
+  private def runJvm(ctx: Context): Unit = {
+    val command = commandFor(ctx)
     // s"$jcmd $flags -cp $classpath ${classOf[Main].getName} ${tmpfile.getPath}"
     dyn.currentContext.withValue(ctx) {
-      log.verbose(s"Starting new JVM: ${command.mkString(" ")}")
+      log.currentBegin()
+      log.info(s"Starting new JVM: ${command.mkString(" ")}")
     }
     val pb = new java.lang.ProcessBuilder(command.toArray: _*)
     pb.redirectInput(Redirect.INHERIT)
     pb.redirectOutput(Redirect.INHERIT)
     pb.redirectError(Redirect.INHERIT)
     pb.start().waitFor()
+    log.clear()
     // Process(pb).run(connectInput = false).exitValue()
     // command.run().exitValue()
   }

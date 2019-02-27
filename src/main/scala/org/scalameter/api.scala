@@ -100,6 +100,7 @@ object api extends Keys {
   type ctx = japi.annotation.ctx
   type curve = japi.annotation.curve
   type gen = japi.annotation.gen
+  type disabled = japi.annotation.disabled
   type scopeCtx = japi.annotation.scopeCtx
   type scopes = japi.annotation.scopes
   type setup = japi.annotation.setup

@@ -39,7 +39,7 @@ case class ValidationReporter[T]() extends Reporter[T] {
 
     val isSuccess = totalValidations == totalSuccesses
     val color = if (isSuccess) ansi.green else ansi.red
-    log(s"${color}Summary: $totalSuccesses/$totalValidations passed.${ansi.reset}")
+    log.report(s"${color}Summary: $totalSuccesses/$totalValidations passed.${ansi.reset}")
 
     isSuccess
   }

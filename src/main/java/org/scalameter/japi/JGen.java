@@ -34,7 +34,7 @@ public class JGen<T> implements Serializable {
   }
 
   public <S> JGen<Tuple2<T, S>> zip(JGen<S> that) {
-    return new JGen<Tuple2<T, S>>(this.gen.zip(that.gen));
+    return new JGen<Tuple2<T, S>>(this.gen.cross(that.gen));
   }
 
   public <S> JGen<S> map(final Fun1<T, S> f) {

@@ -13,20 +13,20 @@ case class LoggingReporter[T]() extends Reporter[T] {
 
   def report(result: CurveData[T], persistor: Persistor): Unit = {
     // output context
-    log(s"::Benchmark ${result.context.scope}::")
+    log.report(s"::Benchmark ${result.context.scope}::")
     val machineKeys = result.context.properties
       .filterKeys(Context.machine.properties.keySet.contains).toSeq.sortBy(_._1)
     for ((key, value) <- machineKeys) {
-      log(s"$key: $value")
+      log.report(s"$key: $value")
     }
 
     // output measurements
     for (measurement <- result.measurements) {
-      log(s"${measurement.params}: ${measurement.value} ${measurement.units}")
+      log.report(s"${measurement.params}: ${measurement.value} ${measurement.units}")
     }
 
     // add a new line
-    log("")
+    log.report("")
   }
 
   def report(result: Tree[CurveData[T]], persistor: Persistor) = true

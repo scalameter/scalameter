@@ -109,6 +109,11 @@ abstract class JBench[U] extends BasePerformanceTest[U] with Serializable {
         s"'ctx' annotation over '${m.getName}' method").asInstanceOf[Context]
     ).getOrElse(Context.empty)
 
+    if (Option(m.getAnnotation(classOf[disabled])) != None) {
+      // Benchmark is disabled.
+      return
+    }
+
     val gen = Option(m.getAnnotation(classOf[gen])).map(a =>
       getFieldOrMethod(cl, a.value(),
         s"'gen' annotation over '${m.getName}' method") match {

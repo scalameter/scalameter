@@ -36,7 +36,7 @@ class JGenTest extends FunSuite with Matchers {
   test("JGen should correctly produce cross product") {
     validateJGen(
       JGen.range("x", 100, 1000, 100).zip(JGen.booleanValues("y", true, false)),
-      Gen.range("x")(100, 1000, 100).zip(Gen.enumeration("y")(true, false))
+      Gen.range("x")(100, 1000, 100).cross(Gen.enumeration("y")(true, false))
         .asInstanceOf[Gen[(java.lang.Integer, java.lang.Boolean)]]
     )
 

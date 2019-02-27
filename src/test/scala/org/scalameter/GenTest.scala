@@ -22,7 +22,7 @@ class GenTest extends FunSuite {
       assert(renamed.generate(p) == v)
     }
 
-    val zipped = gen zip renamed
+    val zipped = gen cross renamed
     val crossProduct = for {
       x <- 100 to 500 by 100
       y <- 100 to 500 by 100

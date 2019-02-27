@@ -21,6 +21,7 @@ abstract class Gen[T] extends Serializable {
     def warmupset = for (x <- self.warmupset) yield f(x)
     def dataset = for (params <- self.dataset) yield params
     def generate(params: Parameters) = f(self.generate(params))
+    def cardinality: Int = self.cardinality
   }
 
   def flatMap[S](f: T => Gen[S]): Gen[S] = new Gen[S] {
@@ -38,9 +39,14 @@ abstract class Gen[T] extends Serializable {
       val mapped = f(x)
       mapped.generate(params)
     }
+    def cardinality: Int = {
+      val c1 = self.cardinality
+      val c2 = f(self.generate(self.dataset.next())).cardinality
+      c1 * c2
+    }
   }
 
-  def zip[S](that: Gen[S]): Gen[(T, S)] = for {
+  def cross[S](that: Gen[S]): Gen[(T, S)] = for {
     x <- self
     y <- that
   } yield (x, y)
@@ -54,6 +60,8 @@ abstract class Gen[T] extends Serializable {
     def generate(params: Parameters) = self.generate(params map {
       case (k, v) => (reverseMapping.toMap.applyOrElse(k, (k: String) => k), v)
     })
+
+    override def cardinality: Int = self.cardinality
   }
 
   def warmupset: Iterator[T]
@@ -61,6 +69,8 @@ abstract class Gen[T] extends Serializable {
   def dataset: Iterator[Parameters]
 
   def generate(params: Parameters): T
+
+  def cardinality: Int
 
   def cached: Gen[T] = new Gen[T] {
     @transient lazy val cachedWarmupset = self.warmupset.toSeq
@@ -73,6 +83,7 @@ abstract class Gen[T] extends Serializable {
       val desiredParams = Parameters(params.axisData.filterKeys(k => axes.contains(k)).toSeq: _*)
       cachedDataset(desiredParams)
     }
+    def cardinality: Int = Gen.this.cardinality
   }
 
 }
@@ -84,6 +95,7 @@ object Gen {
     def warmupset = Iterator.single(())
     def dataset = Iterator.single(Parameters((Parameter[Unit](axisName), ())))
     def generate(params: Parameters) = params[Unit](axisName)
+    def cardinality: Int = 1
   }
 
   def single[T: Pickler](axisName: String)(v: T): Gen[T] = enumeration(axisName)(v)
@@ -92,18 +104,21 @@ object Gen {
     def warmupset = Iterator.single(upto)
     def dataset = (from to upto by hop).iterator.map(x => Parameters(Parameter[Int](axisName) -> x))
     def generate(params: Parameters) = params[Int](axisName)
+    def cardinality: Int = math.max(1, (upto - from) / hop)
   }
 
   def enumeration[T: Pickler](axisName: String)(xs: T*): Gen[T] = new Gen[T] {
     def warmupset = Iterator.single(xs.last)
     def dataset = xs.iterator.map(x => Parameters(Parameter[T](axisName) -> x))
     def generate(params: Parameters) = params[T](axisName)
+    def cardinality: Int = xs.size
   }
 
   def exponential(axisName: String)(from: Int, until: Int, factor: Int): Gen[Int] = new Gen[Int] {
     def warmupset = Iterator.single((until - from) / 2)
     def dataset = Iterator.iterate(from)(_ * factor).takeWhile(_ <= until).map(x => Parameters(Parameter[Int](axisName) -> x))
     def generate(params: Parameters) = params[Int](axisName)
+    def cardinality: Int = math.max(1, math.log(until / from) / math.log(factor)).toInt
   }
 
   /* combinators */
@@ -123,7 +138,9 @@ object Gen {
     } yield (pv, qv, rv)
   }
 
-  def crossProduct[P, Q, R, S](p: Gen[P], q: Gen[Q], r: Gen[R], s: Gen[S]): Gen[(P, Q, R, S)] = {
+  def crossProduct[P, Q, R, S](
+    p: Gen[P], q: Gen[Q], r: Gen[R], s: Gen[S]
+  ): Gen[(P, Q, R, S)] = {
     for {
       pv <- p
       qv <- q

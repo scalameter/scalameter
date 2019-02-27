@@ -28,19 +28,20 @@ case class RegressionReporter[T: Numeric](
 
   // do nothing - data are persisted at the end
   def report(curvedata: CurveData[T], persistor: Persistor): Unit = {
-    log(s"Finished test set for ${curvedata.context.scope}, curve ${curvedata.context.curve}")
+    log(
+      s"Finished test set for ${curvedata.context.scope}, curve ${curvedata.context.curve}")
   }
 
   def report(results: Tree[CurveData[T]], persistor: Persistor) = {
-    log("")
-    log(s"${ansi.green}:::Summary of regression test results - $test:::${ansi.reset}")
+    log.report("")
+    log.report(s"${ansi.green}:::Summary of regression test results - $test:::${ansi.reset}")
 
     val currentDate = new Date
     val oks = for {
       (context, curves) <- results.scopes
       if curves.nonEmpty
     } yield {
-      log(s"${ansi.green}Test group: ${context.scope}${ansi.reset}")
+      log.report(s"${ansi.green}Test group: ${context.scope}${ansi.reset}")
 
       val testedcurves = for (curvedata <- curves) yield {
         val history = loadHistory(curvedata.context, persistor)
@@ -56,7 +57,7 @@ case class RegressionReporter[T: Numeric](
         testedcurve
       }
 
-      log("")
+      log.report("")
 
       val allpassed = testedcurves.forall(_.success)
       if (allpassed)
@@ -69,7 +70,7 @@ case class RegressionReporter[T: Numeric](
     val failure = oks.count(_ == false)
     val success = oks.count(_ == true)
     val color = if (failure == 0) ansi.green else ansi.red
-    log(s"${color}Summary: $success tests passed, $failure tests failed.${ansi.reset}")
+    log.report(s"${color}Summary: $success tests passed, $failure tests failed.${ansi.reset}")
 
     failure == 0
   }
@@ -184,7 +185,8 @@ object RegressionReporter {
 
       def apply[T: Numeric](context: Context, curvedata: CurveData[T],
         corresponding: Seq[CurveData[T]]): CurveData[T] = {
-        log(s"${ansi.green}- ${context.scope}.${curvedata.context.curve} measurements:${ansi.reset}")
+        log.report(
+          s"${ansi.green}- ${context.scope}.${curvedata.context.curve} measurements:${ansi.reset}")
 
         for (measurement <- curvedata.measurements) {
           val color = ansi.green
@@ -194,8 +196,10 @@ object RegressionReporter {
           val ci = confidenceInterval(context, measurement.complete)
           val cis = cistr(ci, measurement.units)
           val sig = context(reports.regression.significance)
-          log(s"$color  - at ${measurement.params.axisData.mkString(", ")}: $passed${ansi.reset}")
-          log(s"$color    (mean = $means, ci = $cis, significance = $sig)${ansi.reset}")
+          log.report(
+            s"$color  - at ${measurement.params.axisData.mkString(", ")}: $passed${ansi.reset}")
+          log.report(
+            s"$color    (mean = $means, ci = $cis, significance = $sig)${ansi.reset}")
         }
 
         curvedata
@@ -231,21 +235,24 @@ object RegressionReporter {
             val color = if (ftest) ansi.green else ansi.red
             val passed = if (ftest) "passed" else "failed"
 
-            log(s"$color  - at ${measurement.params.axisData.mkString(", ")}, ${alternatives.size} alternatives: $passed${ansi.reset}")
-            log(f"$color    (SSA: ${ftest.ssa}%.2f, SSE: ${ftest.sse}%.2f, F: ${ftest.F}%.2f, qf: ${ftest.quantile}%.2f, significance: $significance)${ansi.reset}")
+            log.report(
+              s"$color  - at ${measurement.params.axisData.mkString(", ")}, ${alternatives.size} alternatives: $passed${ansi.reset}")
+            log.report(
+              f"$color    (SSA: ${ftest.ssa}%.2f, SSE: ${ftest.sse}%.2f, F: ${ftest.F}%.2f, qf: ${ftest.quantile}%.2f, significance: $significance)${ansi.reset}")
             if (!ftest) {
               def logalt(a: Seq[T], units: String) =
-                log(s"$color      ${a.map(_.toString + units).mkString(", ")}${ansi.reset}")
-              log(s"$color    History:")
+                log.report(
+                  s"$color      ${a.map(_.toString + units).mkString(", ")}${ansi.reset}")
+              log.report(s"$color    History:")
               for (a <- alternatives.init) logalt(a, units)
-              log(s"$color    Latest:")
+              log.report(s"$color    Latest:")
               logalt(alternatives.last, units)
             }
 
             if (ftest.passed) measurement else measurement.failed
           } catch {
             case e: Exception =>
-              log(s"${ansi.red}    Error in ANOVA F-test: ${e.getMessage}${ansi.reset}")
+              log.report(s"${ansi.red}    Error in ANOVA F-test: ${e.getMessage}${ansi.reset}")
               measurement.failed
           }
         }
@@ -296,14 +303,17 @@ object RegressionReporter {
         val passed = if (allpass) "passed" else "failed"
         val ci = confidenceInterval(context, latest.complete.map(_.toDouble()))
         val cis = cistr(ci, latest.units)
-        log(s"$color  - at ${latest.params.axisData.mkString(", ")}, ${previouss.size} alternatives: $passed${ansi.reset}")
-        log(s"$color    (ci = $cis, significance = $sig)${ansi.reset}")
+        log.report(
+          s"$color  - at ${latest.params.axisData.mkString(", ")}, ${previouss.size} alternatives: $passed${ansi.reset}")
+        log.report(
+          s"$color    (ci = $cis, significance = $sig)${ansi.reset}")
         tests.find(!_.success).getOrElse(latest)
       }
 
       def apply[T: Numeric](context: Context, curvedata: CurveData[T],
         corresponding: Seq[CurveData[T]]): CurveData[T] = {
-        log(s"${ansi.green}- ${context.scope}.${curvedata.context.curve} measurements:${ansi.reset}")
+        log.report(
+          s"${ansi.green}- ${context.scope}.${curvedata.context.curve} measurements:${ansi.reset}")
 
         val previousmeasurements = corresponding map (_.measurements)
         val measurementtable = previousmeasurements.flatten.groupBy(_.params)
@@ -374,14 +384,17 @@ object RegressionReporter {
         val passed = if (allpass) "passed" else "failed"
         val ci = confidenceInterval(context, latest.complete.map(_.toDouble()))
         val cis = cistr(ci, latest.units)
-        log(s"$color  - at ${latest.params.axisData.mkString(", ")}, ${previouss.size} alternatives: $passed${ansi.reset}")
-        log(s"$color    (ci = $cis, significance = $sig)${ansi.reset}")
+        log.report(
+          s"$color  - at ${latest.params.axisData.mkString(", ")}, ${previouss.size} alternatives: $passed${ansi.reset}")
+        log.report(
+          s"$color    (ci = $cis, significance = $sig)${ansi.reset}")
         tests.find(!_.success).getOrElse(latest)
       }
 
       def apply[T: Numeric](context: Context, curvedata: CurveData[T],
         corresponding: Seq[CurveData[T]]): CurveData[T] = {
-        log(s"${ansi.green}- ${context.scope}.${curvedata.context.curve} measurements:${ansi.reset}")
+        log.report(
+          s"${ansi.green}- ${context.scope}.${curvedata.context.curve} measurements:${ansi.reset}")
 
         val previousmeasurements = corresponding map (_.measurements)
         val measurementtable = previousmeasurements.flatten.groupBy(_.params)

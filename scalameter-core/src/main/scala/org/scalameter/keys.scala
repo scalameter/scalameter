@@ -168,6 +168,9 @@ class Keys extends KeyContainer("", null) {
     val jvmcmd = apply[String]("jvmcmd", "java")
     val requireGC = apply[Boolean]("requireGC", false)
     val assumeDeterministicRun = apply[Boolean]("assumeDeterministicRun", true)
+    val overallBegin = apply[Long]("overallBegin", System.currentTimeMillis())
+    val setupCount = apply[Int]("setupCount", 1)
+    val setupIndex = apply[Int]("setupIndex", 1)
 
     object reinstantiation extends KeyContainer("reinstantiation", exec) {
       val frequency = apply[Int]("frequency")

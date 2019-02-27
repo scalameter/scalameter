@@ -10,7 +10,7 @@ import scala.Tuple2;
 
 
 public class JBenchExample2 extends JBench.OfflineReport {
-  public final JGen<Integer> sizes = JGen.range("size", 1000, 25000, 4000);
+  public final JGen<Integer> sizes = JGen.range("size", 1000, 55000, 10000);
 
   public final JGen<Tuple2<Integer, ArrayList<Integer>>> arrayLists = sizes.zip(
       sizes.map(new Fun1<Integer, ArrayList<Integer>>() {
@@ -117,6 +117,7 @@ public class JBenchExample2 extends JBench.OfflineReport {
     return list;
   }
 
+  @disabled
   @gen("arrayLists")
   @setup("arrayListSetup")
   @benchmark("lists.ops.remove")
@@ -133,6 +134,7 @@ public class JBenchExample2 extends JBench.OfflineReport {
     return list;
   }
 
+  @disabled
   @gen("linkedLists")
   @setup("linkedListSetup")
   @benchmark("lists.ops.remove")
