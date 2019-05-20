@@ -1,19 +1,14 @@
-
-
-
 import java.io.File
+
+import ReleaseExtras.ReleaseExtrasKeys._
+import ReleaseExtras._
 import com.typesafe.sbt.pgp.PgpKeys._
 import org.stormenroute.mecha._
-import sbt._
 import sbt.Keys._
-import sbt.Process._
+import sbt._
 import sbtrelease.ReleasePlugin
 import sbtrelease.ReleasePlugin.autoImport._
 import sbtrelease.ReleaseStateTransformations._
-import ReleaseExtras._
-import ReleaseExtras.ReleaseExtrasKeys._
-
-
 
 object ScalaMeterBuild extends MechaRepoBuild {
 
@@ -119,7 +114,7 @@ object ScalaMeterBuild extends MechaRepoBuild {
         "org.scala-tools.testing" % "test-interface" % "0.5",
         "org.scala-lang.modules" % "scala-xml_2.13.0-M2" % "1.0.6",
         "org.scala-lang.modules" % "scala-parser-combinators_2.13.0-M2" % "1.0.7",
-        "com.fasterxml.jackson.module" % "jackson-module-scala_2.12" % "2.9.8",
+        "com.fasterxml.jackson.module" % "jackson-module-scala_2.12" % "2.9.9",
         "org.mongodb.scala" % "mongo-scala-driver_2.12" % "2.2.0",
         "commons-io" % "commons-io" % "2.4",
         "io.spray" %  "spray-json_2.13.0-M2" % "1.3.4",
@@ -132,7 +127,7 @@ object ScalaMeterBuild extends MechaRepoBuild {
         "org.scala-tools.testing" % "test-interface" % "0.5",
         "org.scala-lang.modules" % "scala-xml_2.12" % "1.0.5",
         "org.scala-lang.modules" % "scala-parser-combinators_2.12" % "1.0.4",
-        "com.fasterxml.jackson.module" %% "jackson-module-scala" % "2.9.8",
+        "com.fasterxml.jackson.module" %% "jackson-module-scala" % "2.9.9",
         "org.mongodb.scala" %% "mongo-scala-driver" % "2.2.0",
         "commons-io" % "commons-io" % "2.4",
         "io.spray" %  "spray-json_2.12" % "1.3.2",
@@ -145,7 +140,7 @@ object ScalaMeterBuild extends MechaRepoBuild {
         "org.scala-tools.testing" % "test-interface" % "0.5",
         "org.scala-lang.modules" %% "scala-xml" % "1.0.1",
         "org.scala-lang.modules" %% "scala-parser-combinators" % "1.0.1",
-        "com.fasterxml.jackson.module" %% "jackson-module-scala" % "2.9.8",
+        "com.fasterxml.jackson.module" %% "jackson-module-scala" % "2.9.9",
         "org.mongodb.scala" %% "mongo-scala-driver" % "2.2.0",
         "commons-io" % "commons-io" % "2.4",
         "io.spray" %%  "spray-json" % "1.3.2",
@@ -263,7 +258,7 @@ object ScalaMeterBuild extends MechaRepoBuild {
     )
     javacommand
   }
-  
+
   val runsuiteTask = InputKey[Unit](
     "runsuite",
     "Runs the benchmarking suite."
