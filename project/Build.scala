@@ -1,19 +1,14 @@
-
-
-
 import java.io.File
+
+import ReleaseExtras.ReleaseExtrasKeys._
+import ReleaseExtras._
 import com.typesafe.sbt.pgp.PgpKeys._
 import org.stormenroute.mecha._
-import sbt._
 import sbt.Keys._
-import sbt.Process._
+import sbt._
 import sbtrelease.ReleasePlugin
 import sbtrelease.ReleasePlugin.autoImport._
 import sbtrelease.ReleaseStateTransformations._
-import ReleaseExtras._
-import ReleaseExtras.ReleaseExtrasKeys._
-
-
 
 object ScalaMeterBuild extends MechaRepoBuild {
 
@@ -84,7 +79,7 @@ object ScalaMeterBuild extends MechaRepoBuild {
       if (version.value.trim.endsWith("SNAPSHOT"))
         Some("snapshots" at nexus + "content/repositories/snapshots")
       else
-        Some("releases"  at nexus + "service/local/staging/deploy/maven2")
+        Some("releases" at nexus + "service/local/staging/deploy/maven2")
     },
     publishArtifact in Test := false,
     pomIncludeRepository := { _ => false },
@@ -119,10 +114,10 @@ object ScalaMeterBuild extends MechaRepoBuild {
         "org.scala-tools.testing" % "test-interface" % "0.5",
         "org.scala-lang.modules" % "scala-xml_2.13.0-M2" % "1.0.6",
         "org.scala-lang.modules" % "scala-parser-combinators_2.13.0-M2" % "1.0.7",
-        "com.fasterxml.jackson.module" % "jackson-module-scala_2.12" % "2.9.8",
+        "com.fasterxml.jackson.module" % "jackson-module-scala_2.12" % "2.9.9",
         "org.mongodb.scala" % "mongo-scala-driver_2.12" % "2.2.0",
         "commons-io" % "commons-io" % "2.4",
-        "io.spray" %  "spray-json_2.13.0-M2" % "1.3.4",
+        "io.spray" % "spray-json_2.13.0-M2" % "1.3.4",
         "org.jline" % "jline" % "3.10.0"
       )
       case Some((2, 12)) => List(
@@ -132,10 +127,10 @@ object ScalaMeterBuild extends MechaRepoBuild {
         "org.scala-tools.testing" % "test-interface" % "0.5",
         "org.scala-lang.modules" % "scala-xml_2.12" % "1.0.5",
         "org.scala-lang.modules" % "scala-parser-combinators_2.12" % "1.0.4",
-        "com.fasterxml.jackson.module" %% "jackson-module-scala" % "2.9.8",
+        "com.fasterxml.jackson.module" %% "jackson-module-scala" % "2.9.9",
         "org.mongodb.scala" %% "mongo-scala-driver" % "2.2.0",
         "commons-io" % "commons-io" % "2.4",
-        "io.spray" %  "spray-json_2.12" % "1.3.2",
+        "io.spray" % "spray-json_2.12" % "1.3.2",
         "org.jline" % "jline" % "3.10.0"
       )
       case Some((2, 11)) => List(
@@ -145,10 +140,10 @@ object ScalaMeterBuild extends MechaRepoBuild {
         "org.scala-tools.testing" % "test-interface" % "0.5",
         "org.scala-lang.modules" %% "scala-xml" % "1.0.1",
         "org.scala-lang.modules" %% "scala-parser-combinators" % "1.0.1",
-        "com.fasterxml.jackson.module" %% "jackson-module-scala" % "2.9.8",
+        "com.fasterxml.jackson.module" %% "jackson-module-scala" % "2.9.9",
         "org.mongodb.scala" %% "mongo-scala-driver" % "2.2.0",
         "commons-io" % "commons-io" % "2.4",
-        "io.spray" %%  "spray-json" % "1.3.2",
+        "io.spray" %% "spray-json" % "1.3.2",
         "org.jline" % "jline" % "3.10.0"
       )
       case _ => Nil
@@ -180,7 +175,7 @@ object ScalaMeterBuild extends MechaRepoBuild {
       if (version.value.trim.endsWith("SNAPSHOT"))
         Some("snapshots" at nexus + "content/repositories/snapshots")
       else
-        Some("releases"  at nexus + "service/local/staging/deploy/maven2")
+        Some("releases" at nexus + "service/local/staging/deploy/maven2")
     },
     publishArtifact in Test := false,
     pomIncludeRepository := { _ => false },
@@ -253,8 +248,8 @@ object ScalaMeterBuild extends MechaRepoBuild {
 
   val javaCommandSetting = javaCommand := {
     val dp = (dependencyClasspath in Compile).value
-    val jar = (artifactPath in (Compile, packageBin)).value
-    val testjar = (artifactPath in (Test, packageBin)).value
+    val jar = (artifactPath in(Compile, packageBin)).value
+    val testjar = (artifactPath in(Test, packageBin)).value
     val pbc = (packageBin in Compile).value
     val pbt = (packageBin in Test).value
     val cp = dp.map(_.data) :+ jar :+ testjar
@@ -263,11 +258,11 @@ object ScalaMeterBuild extends MechaRepoBuild {
     )
     javacommand
   }
-  
+
   val runsuiteTask = InputKey[Unit](
     "runsuite",
     "Runs the benchmarking suite."
-  ) := Def.inputTask{
+  ) := Def.inputTask {
     val args = complete.DefaultParsers.spaceDelimited("<arg>").parsed
     val jc = javaCommand.value
     val javacommand = jc
@@ -291,10 +286,10 @@ object ScalaMeterBuild extends MechaRepoBuild {
     settings = scalaMeterSettings ++ Seq(javaCommandSetting, runsuiteTask) ++ releasePluginSettings
   ) dependsOn (
     scalaMeterCore
-  ) aggregate(
+    ) aggregate (
     scalaMeterCore
-  ) enablePlugins(
+    ) enablePlugins (
     ReleasePlugin
-  )
+    )
 
 }
