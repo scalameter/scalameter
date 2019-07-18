@@ -1,5 +1,7 @@
 package org.scalameter
 
+import scala.collection.Seq
+
 object Aggregator {
 
   object Implicits {

@@ -23,13 +23,13 @@ class JGenTest extends FunSuite with Matchers {
 
   test("JGen should allow correctly define map combinator") {
     validateJGen(
-      JGen.longValues("x", 100l, 1000l, 10000l).map(
+      JGen.longValues("x", 100L, 1000L, 10000L).map(
         new Fun1[java.lang.Long, List[Long]] {
           def apply(v: java.lang.Long): List[Long] =
             List.fill(100)(v)
         }
       ),
-      Gen.enumeration("x")(100l, 1000l, 10000l).map(List.fill(100)(_))
+      Gen.enumeration("x")(100L, 1000L, 10000L).map(List.fill(100)(_))
     )
   }
 

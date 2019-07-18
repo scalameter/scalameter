@@ -4,7 +4,7 @@ package execution
 
 
 import org.scalameter.picklers.Pickler
-import scala.collection._
+import scala.collection.{mutable, Seq}
 import scala.util.Try
 import org.scalameter.PrettyPrinter.Implicits._
 import org.scalameter.utils.Tree

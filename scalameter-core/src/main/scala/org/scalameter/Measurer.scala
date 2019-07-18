@@ -304,10 +304,10 @@ object Measurer {
       }
 
       var best = results
-      while (outlierExists(results.map(_.value.toDouble())) && retleft > 0) {
-        val prefixlen = suffixLength(results.reverse.map(_.value.toDouble()))
-        val suffixlen = suffixLength(results.map(_.value.toDouble()))
-        val formatted = results.map(t => f"${t.value.toDouble()}%.3f")
+      while (outlierExists(results.map(_.value.toDouble)) && retleft > 0) {
+        val prefixlen = suffixLength(results.reverse.map(_.value.toDouble))
+        val suffixlen = suffixLength(results.map(_.value.toDouble))
+        val formatted = results.map(t => f"${t.value.toDouble}%.3f")
         log.verbose(s"Detected $suffixlen outlier(s): ${formatted.mkString(", ")}")
         results = {
           if (eliminateLow) (
@@ -317,7 +317,7 @@ object Measurer {
           ).sorted else (results.dropRight(suffixlen) ++
             super.measure(context, suffixlen, setup, tear, regen, snippet)).sorted
         }
-        if (CoV(results.map(_.value.toDouble())) < CoV(best.map(_.value.toDouble())))
+        if (CoV(results.map(_.value.toDouble)) < CoV(best.map(_.value.toDouble)))
           best = results
         retleft -= 1
       }

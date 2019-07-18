@@ -92,7 +92,7 @@ class PicklerSpecification extends FunSuite with PropertyChecks with Matchers {
   }
 
   test("Seq[Long] pickling") {
-    forAll { o: Seq[Long] =>
+    forAll { o: scala.collection.Seq[Long] =>
       validatePickler(o)
     }
   }

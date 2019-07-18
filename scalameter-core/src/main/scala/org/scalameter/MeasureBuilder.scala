@@ -1,7 +1,7 @@
 package org.scalameter
 
 
-
+import scala.collection.Seq
 
 
 

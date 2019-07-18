@@ -57,8 +57,8 @@ object ScalaMeterBuild extends MechaRepoBuild {
   val scalaMeterSettings = MechaRepoPlugin.defaultSettings ++ publishCreds ++ Seq(
     name := "scalameter",
     organization := "com.storm-enroute",
-    scalaVersion := "2.11.12",
-    crossScalaVersions := Seq("2.11.12", "2.12.8", "2.13.0-M3"),
+    scalaVersion := "2.13.0",
+    crossScalaVersions := Seq("2.11.12", "2.12.8", "2.13.0"),
     scalacOptions ++= Seq("-deprecation", "-unchecked", "-feature", "-Xlint", "-Xfuture"),
     libraryDependencies ++= dependencies(scalaVersion.value),
     parallelExecution in Test := false,
@@ -108,16 +108,15 @@ object ScalaMeterBuild extends MechaRepoBuild {
   def dependencies(scalaVersion: String) = {
     CrossVersion.partialVersion(scalaVersion) match {
       case Some((2, 13)) => List(
-        "org.scalatest" % "scalatest_2.13.0-M2" % "3.0.4" % "test",
+        "org.scalatest" %% "scalatest" % "3.0.8" % "test",
         "junit" % "junit" % "4.12" % "test",
         "org.apache.commons" % "commons-math3" % "3.2",
         "org.scala-sbt" % "test-interface" % "1.0",
-        "org.scala-lang.modules" % "scala-xml_2.13.0-M2" % "1.0.6",
-        "org.scala-lang.modules" % "scala-parser-combinators_2.13.0-M2" % "1.0.7",
-        "com.fasterxml.jackson.module" % "jackson-module-scala_2.12" % "2.9.9",
-        "org.mongodb.scala" % "mongo-scala-driver_2.12" % "2.2.0",
+        "org.scala-lang.modules" %% "scala-xml" % "1.2.0",
+        "org.scala-lang.modules" %% "scala-parser-combinators" % "1.1.2",
+        "com.fasterxml.jackson.module" %% "jackson-module-scala" % "2.9.9",
         "commons-io" % "commons-io" % "2.4",
-        "io.spray" % "spray-json_2.13.0-M2" % "1.3.4",
+        "io.spray" %% "spray-json" % "1.3.5",
         "org.jline" % "jline" % "3.10.0"
       )
       case Some((2, 12)) => List(
@@ -203,18 +202,20 @@ object ScalaMeterBuild extends MechaRepoBuild {
 
   def coreDependencies(scalaVersion: String) = CrossVersion.partialVersion(scalaVersion) match {
     case Some((2, 13)) => List(
-      "org.scalacheck" % "scalacheck_2.13.0-M2" % "1.13.5" % "test",
-      "org.scalatest" % "scalatest_2.13.0-M2" % "3.0.4" % "test",
+      "org.scala-lang.modules" %% "scala-collection-compat" % "2.1.1",
+      "org.scalacheck" %% "scalacheck" % "1.14.0" % "test",
+      "org.scalatest" %% "scalatest" % "3.0.8" % "test",
       "junit" % "junit" % "4.12" % "test",
       "com.novocode" % "junit-interface" % "0.11" % "test",
       "org.apache.commons" % "commons-math3" % "3.2",
       "org.apache.commons" % "commons-lang3" % "3.4",
-      "org.scala-lang.modules" % "scala-xml_2.13.0-M2" % "1.0.6",
-      "org.scala-lang.modules" % "scala-parser-combinators_2.13.0-M2" % "1.0.7",
+      "org.scala-lang.modules" %% "scala-xml" % "1.2.0",
+      "org.scala-lang.modules" %% "scala-parser-combinators" % "1.1.2",
       "org.ow2.asm" % "asm" % "5.0.4",
       "org.jline" % "jline" % "3.10.0"
     )
     case Some((2, 12)) => List(
+      "org.scala-lang.modules" %% "scala-collection-compat" % "2.1.1",
       "org.scalacheck" % "scalacheck_2.12" % "1.13.4" % "test",
       "org.scalatest" % "scalatest_2.12" % "3.0.0" % "test",
       "junit" % "junit" % "4.12" % "test",
@@ -227,6 +228,7 @@ object ScalaMeterBuild extends MechaRepoBuild {
       "org.jline" % "jline" % "3.10.0"
     )
     case Some((2, 11)) => List(
+      "org.scala-lang.modules" %% "scala-collection-compat" % "2.1.1",
       "org.scalacheck" %% "scalacheck" % "1.12.4" % "test",
       "org.scalatest" %% "scalatest" % "2.2.6" % "test",
       "junit" % "junit" % "4.12" % "test",

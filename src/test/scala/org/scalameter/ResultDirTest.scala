@@ -9,7 +9,7 @@ class ResultDirTest extends FunSuite {
   // java.io.File doesn't support recursive delete
   def removeAll(path: String) = {
     def getRecursively(f: File): Seq[File] =
-      f.listFiles.filter(_.isDirectory).flatMap(getRecursively) ++ f.listFiles
+      f.listFiles.filter(_.isDirectory).flatMap(getRecursively).toSeq ++ f.listFiles
 
     getRecursively(new File(path)).foreach { f => f.delete() }
 

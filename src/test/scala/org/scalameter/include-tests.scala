@@ -6,7 +6,7 @@ import org.scalatest.FunSuite
 class IncludeTest extends FunSuite {
   test("include benchmark template") {
     try {
-      new TestSuite executeTests()
+      (new TestSuite).executeTests()
     } catch { case t: Throwable =>
       t.printStackTrace()
       throw t

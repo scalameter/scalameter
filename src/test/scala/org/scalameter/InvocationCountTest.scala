@@ -6,7 +6,6 @@ import org.scalameter.Measurer._
 import org.scalameter.execution.invocation.InvocationCountMatcher
 import org.scalameter.execution.invocation.InvocationCountMatcher.MethodMatcher
 import org.scalameter.execution.invocation.InvocationCountMatcher.ClassMatcher
-import org.scalameter.execution.invocation.instrumentation.MethodSignature
 import scala.util.Try
 
 
@@ -23,11 +22,11 @@ class InvocationCountTest extends MeasurerTest[Map[String, Long], InvocationCoun
 
   test("BoxingCount.all() should count autoboxing of all primitive types") {
     measureWith(BoxingCount.all()) {
-      List(1.0d, 2f, true, 5: Byte, -125: Short, 5754, 432523l, 'a', "aaaa", Nil)
+      List(1.0d, 2f, true, 5: Byte, -125: Short, 5754, 432523L, 'a', "aaaa", Nil)
     } (_.valuesIterator.sum should === (8))
 
     measureWith(BoxingCount.all()) {
-      List(1.0d, 2f, true, 5: Byte, -125: Short, 5754, 432523l, 'a', "aaaa", Nil, 'b')
+      List(1.0d, 2f, true, 5: Byte, -125: Short, 5754, 432523L, 'a', "aaaa", Nil, 'b')
     } (_.valuesIterator.sum should === (9))
   }
 
@@ -36,8 +35,8 @@ class InvocationCountTest extends MeasurerTest[Map[String, Long], InvocationCoun
       val r = 0 until 10
       r.map(_ + 1)
       1 to 10
-      new Range(0, 9, 1)
-      new Range(-1, 1, 1) ++ List(1, 2, 3)
+      Range(0, 9, 1)
+      Range(-1, 1, 1) ++ List(1, 2, 3)
       List(5, 6, 7, 8, 9)
     } (_.valuesIterator.sum should === (4))
 
@@ -45,8 +44,8 @@ class InvocationCountTest extends MeasurerTest[Map[String, Long], InvocationCoun
       val r = 0 until 10
       r.map(_ + 1)
       1 to 10
-      new Range(0, 9, 1)
-      new Range(-1, 1, 1) ++ List(1, 2, 3)
+      Range(0, 9, 1)
+      Range(-1, 1, 1) ++ List(1, 2, 3)
       List(5, 6, 7, 8, 9)
       11 to 20
     } (_.valuesIterator.sum should === (5))

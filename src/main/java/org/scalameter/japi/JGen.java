@@ -7,7 +7,6 @@ import scala.Tuple2;
 import scala.Tuple3;
 import scala.Tuple4;
 import scala.collection.immutable.List;
-import scala.collection.mutable.ArrayOps;
 import scala.runtime.BoxedUnit;
 
 
@@ -99,7 +98,7 @@ public class JGen<T> implements Serializable {
   /* Factory methods that return enumerations. */
 
   private static <T> List<T> toList(T[] array) {
-    return new ArrayOps.ofRef(array).toList();
+    return ArrayToList.apply(array);
   }
 
   public static JGen<Boolean> booleanValues(

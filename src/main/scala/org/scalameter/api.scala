@@ -77,9 +77,6 @@ object api extends Keys {
   type PGFPlotsReporter[T >: Null] = reporting.PGFPlotsReporter[T]
   val PGFPlotsReporter = reporting.PGFPlotsReporter
 
-  type MongoDbReporter[T] = reporting.MongoDbReporter[T]
-  val MongoDbReporter = reporting.MongoDbReporter
-
   val Tester = reporting.RegressionReporter.Tester
   val Historian = reporting.RegressionReporter.Historian
 

@@ -1,6 +1,7 @@
 package org.scalameter
 
 import java.util.Date
+import scala.collection.Seq
 
 @SerialVersionUID(-2666789428423525667L)
 case class History[V](
