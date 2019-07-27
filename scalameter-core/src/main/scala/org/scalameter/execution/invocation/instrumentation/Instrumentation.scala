@@ -4,7 +4,7 @@ import java.io._
 import java.util.jar.{Attributes, JarEntry, JarOutputStream}
 import java.util.zip.ZipFile
 import org.objectweb.asm.{ClassReader, ClassWriter}
-import scala.collection.convert.decorateAsScala._
+import scala.jdk.CollectionConverters._
 import scala.collection.mutable
 import org.scalameter._
 import org.scalameter.execution.invocation._

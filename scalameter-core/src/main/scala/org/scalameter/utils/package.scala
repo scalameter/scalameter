@@ -3,9 +3,7 @@ package org.scalameter
 
 
 import javax.management._
-import collection._
-import JavaConversions._
-
+import scala.jdk.CollectionConverters._
 
 
 package object utils {
@@ -13,7 +11,7 @@ package object utils {
   def withGCNotification[T](eventhandler: Notification => Any)(body: => T) = {
     if (!currentContext(Key.preJDK7)) {
       val gcbeans = java.lang.management.ManagementFactory.getGarbageCollectorMXBeans
-      val listeners = for (gcbean <- gcbeans) yield {
+      val listeners = for (gcbean <- gcbeans.asScala) yield {
         val listener = new NotificationListener {
           def handleNotification(n: Notification, handback: Object): Unit = {
             eventhandler(n)

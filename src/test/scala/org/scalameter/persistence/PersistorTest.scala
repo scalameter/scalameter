@@ -10,7 +10,7 @@ trait PersistorTest { this: Matchers =>
 
   def executeBenchmark()(fun: InterceptingPersistor => Any) = {
     val p = new InterceptingPersistor(persistor)
-    val benchmark = new RangeBenchmark(p)
+    val benchmark = new org.scalameter.persistence.RangeBenchmark(p)
     try {
       withTestContext(currentContext, Log.default, Events.None) {
         benchmark.executeTests()

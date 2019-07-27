@@ -191,7 +191,7 @@ object RegressionReporter {
         for (measurement <- curvedata.measurements) {
           val color = ansi.green
           val passed = "passed"
-          val mean = measurement.complete.sum.toDouble() / measurement.complete.size
+          val mean = measurement.complete.sum.toDouble / measurement.complete.size
           val means = f"$mean%.2f ${measurement.units}"
           val ci = confidenceInterval(context, measurement.complete)
           val cis = cistr(ci, measurement.units)
@@ -209,8 +209,8 @@ object RegressionReporter {
         alt: Seq[T]): (Double, Double) = {
         val significance = context(reports.regression.significance)
 
-        val citest = ConfidenceIntervalTest(true, alt.map(_.toDouble()),
-          alt.map(_.toDouble()), significance)
+        val citest = ConfidenceIntervalTest(true, alt.map(_.toDouble),
+          alt.map(_.toDouble), significance)
         citest.ci1
       }
     }
@@ -231,7 +231,7 @@ object RegressionReporter {
           val units = measurement.units
           val alternatives = measurementtable(measurement.params).filter(_.success).map(_.complete)
           try {
-            val ftest = ANOVAFTest(alternatives.map(_.map(_.toDouble())), significance)
+            val ftest = ANOVAFTest(alternatives.map(_.map(_.toDouble)), significance)
             val color = if (ftest) ansi.green else ansi.red
             val passed = if (ftest) "passed" else "failed"
 
@@ -270,16 +270,16 @@ object RegressionReporter {
       def single[T: Numeric](previous: Measurement[T],
         latest: Measurement[T], sig: Double): Measurement[T] = {
         try {
-          val citest = ConfidenceIntervalTest(strict, previous.complete.map(_.toDouble()),
-            latest.complete.map(_.toDouble()), sig)
+          val citest = ConfidenceIntervalTest(strict, previous.complete.map(_.toDouble),
+            latest.complete.map(_.toDouble), sig)
           val units = latest.units
           
           if (!citest) {
             val color = ansi.red
             val ciprev = cistr(citest.ci1, units)
             val cilate = cistr(citest.ci2, units)
-            val prevform = previous.complete.map(v => f"${v.toDouble()}%.2f")
-            val lateform = latest.complete.map(v => f"${v.toDouble()}%.2f")
+            val prevform = previous.complete.map(v => f"${v.toDouble}%.2f")
+            val lateform = latest.complete.map(v => f"${v.toDouble}%.2f")
             log.error(
               f"$color      Failed confidence interval test: <${citest.ci._1}%.2f $units, ${citest.ci._2}%.2f $units> ${ansi.reset}\n" +
               f"$color      Previous (mean = ${citest.m1}%.2f $units, stdev = ${citest.s1}%.2f $units, ci = $ciprev): ${prevform.mkString(", ")}${ansi.reset}\n" +
@@ -301,7 +301,7 @@ object RegressionReporter {
         val allpass = tests.forall(_.success)
         val color = if (allpass) ansi.green else ansi.red
         val passed = if (allpass) "passed" else "failed"
-        val ci = confidenceInterval(context, latest.complete.map(_.toDouble()))
+        val ci = confidenceInterval(context, latest.complete.map(_.toDouble))
         val cis = cistr(ci, latest.units)
         log.report(
           s"$color  - at ${latest.params.axisData.mkString(", ")}, ${previouss.size} alternatives: $passed${ansi.reset}")
@@ -332,8 +332,8 @@ object RegressionReporter {
       ): (Double, Double) = {
         val significance = context(reports.regression.significance)
 
-        val citest = ConfidenceIntervalTest(strict, alt.map(_.toDouble()),
-          alt.map(_.toDouble()), significance)
+        val citest = ConfidenceIntervalTest(strict, alt.map(_.toDouble),
+          alt.map(_.toDouble), significance)
         citest.ci1
       }
     }
@@ -349,16 +349,16 @@ object RegressionReporter {
         sig: Double, noiseMagnitude: Double
       ): Measurement[T] = {
         try {
-          val citest = OverlapTest(previous.complete.map(_.toDouble()),
-            latest.complete.map(_.toDouble()), sig, noiseMagnitude)
+          val citest = OverlapTest(previous.complete.map(_.toDouble),
+            latest.complete.map(_.toDouble), sig, noiseMagnitude)
           val units = latest.units
           
           if (!citest) {
             val color = ansi.red
             val ciprev = cistr(citest.ci1, units)
             val cilate = cistr(citest.ci2, units)
-            val prevform = previous.complete.map(v => f"${v.toDouble()}%.2f")
-            val lateform = latest.complete.map(v => f"${v.toDouble()}%.2f")
+            val prevform = previous.complete.map(v => f"${v.toDouble}%.2f")
+            val lateform = latest.complete.map(v => f"${v.toDouble}%.2f")
             val msg = {
               f"$color      Failed overlap interval test. ${ansi.reset}\n" +
               f"$color      Previous (mean = ${citest.m1}%.2f $units, stdev = ${citest.s1}%.2f $units, ci = $ciprev): ${prevform.mkString(", ")}${ansi.reset}\n" +
@@ -382,7 +382,7 @@ object RegressionReporter {
         val allpass = tests.forall(_.success)
         val color = if (allpass) ansi.green else ansi.red
         val passed = if (allpass) "passed" else "failed"
-        val ci = confidenceInterval(context, latest.complete.map(_.toDouble()))
+        val ci = confidenceInterval(context, latest.complete.map(_.toDouble))
         val cis = cistr(ci, latest.units)
         log.report(
           s"$color  - at ${latest.params.axisData.mkString(", ")}, ${previouss.size} alternatives: $passed${ansi.reset}")
@@ -413,7 +413,7 @@ object RegressionReporter {
         val noisemag = context(Key.reports.regression.noiseMagnitude)
 
         val test = OverlapTest(
-          alt.map(_.toDouble()), alt.map(_.toDouble()), significance, noisemag)
+          alt.map(_.toDouble), alt.map(_.toDouble), significance, noisemag)
         test.ci1
       }
     }

@@ -3,7 +3,7 @@ package org.scalameter.execution.invocation.instrumentation
 import java.io.File
 import java.util.zip.ZipFile
 import org.scalatest.{Matchers, FunSuite}
-import scala.collection.convert.decorateAsScala._
+import scala.jdk.CollectionConverters._
 import scala.collection.mutable
 import org.scalameter.Context
 import org.scalameter.execution.invocation.InvocationCountMatcher

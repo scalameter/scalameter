@@ -86,12 +86,12 @@ object DsvReporter {
           p(v)
           p(delimiter)
         }
-        p(m.value.toDouble())
+        p(m.value.toDouble)
         p(delimiter)
         p(m.success)
         p(delimiter)
         val ci = utils.Statistics.confidenceInterval(
-          m.complete.map(_.toDouble()), cd.context(Key.reports.regression.significance)
+          m.complete.map(_.toDouble), cd.context(Key.reports.regression.significance)
         )
         p(f"${ci._1}%.3f")
         p(delimiter)
@@ -99,7 +99,7 @@ object DsvReporter {
         p(delimiter)
         p(m.units)
         p(delimiter)
-        p("\"" + m.complete.map(_.toDouble()).mkString(" ") + "\"")
+        p("\"" + m.complete.map(_.toDouble).mkString(" ") + "\"")
         print(newline)
       }
     }

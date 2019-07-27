@@ -9,7 +9,7 @@ import org.scalameter.picklers.Implicits._
 import org.scalameter.picklers.Pickler
 import org.scalameter.utils.ClassPath
 import scala.annotation.tailrec
-import scala.collection._
+import scala.collection.{mutable, Seq}
 
 
 

@@ -25,14 +25,10 @@ case class Tree[T](context: Context, items: Seq[T], children: Seq[Tree[T]]) {
     Tree(context, filtereditems, filteredchildren)
   }
 
-  def scopes = new Traversable[(Context, Seq[T])] {
-    private def recurse[U](f: ((Context, Seq[T])) => U, tree: Tree[T]): Unit = {
-      f(tree.context -> tree.items)
-      for (n <- tree.children) recurse(f, n)
-    }
-    def foreach[U](f: ((Context, Seq[T])) => U): Unit = {
-      recurse(f, Tree.this)
-    }
+  def scopes: Iterable[(Context, Seq[T])] = {
+    def recurse(tree: Tree[T]): Iterator[(Context, Seq[T])] =
+      Iterator.single(tree.context -> tree.items) ++ tree.children.iterator.flatMap(recurse)
+    recurse(this).toIterable
   }
 
   override def toString =

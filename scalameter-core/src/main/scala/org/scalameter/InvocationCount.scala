@@ -12,7 +12,6 @@ import scala.collection.Seq
 import scala.collection.mutable
 
 
-
 /** Mixin for all [[org.scalameter.Measurer]] implementations that perform any kind of
  *  method invocation counting.
  */
@@ -40,9 +39,9 @@ trait InvocationCount extends Measurer[Map[String, Long]] {
 
       invocations += Quantity(
         methodTable.map(_.toString).zip(MethodInvocationCounter.counts())
-          .groupBy(_._1).map { case (k, v) =>
+          .groupBy(_._1).iterator.map { case (k, v) =>
           k -> v.iterator.map(_._2).sum
-        }(collection.breakOut), "#"
+        }.toMap, "#"
       )
       obj
     }

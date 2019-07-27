@@ -1,12 +1,7 @@
 package org.scalameter
 package examples
 
-
-
-import reporting._
 import Key._
-
-
 
 class MemoryTest extends Bench.OfflineReport {
   override def measurer = new Measurer.MemoryFootprint

@@ -1,12 +1,7 @@
 package sctest
 
-
-
 import org.scalameter.api._
 import org.scalameter.picklers.Implicits._
-import org.scalameter.picklers.Pickler
-
-
 
 object RangeBenchmark
 extends Bench[Double] {

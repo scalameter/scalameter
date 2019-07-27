@@ -5,6 +5,7 @@ package org.scalameter.utils
 import java.io.File
 import java.net._
 import org.apache.commons.lang3.SystemUtils
+import scala.collection.Seq
 
 
 
@@ -43,7 +44,7 @@ object ClassPath {
   }
 
   private def fromString(classPath: String): ClassPath = {
-    ClassPath(classPath.split(File.pathSeparator).map(new File(_))(collection.breakOut))
+    ClassPath(classPath.split(File.pathSeparator).map(new File(_)))
   }
 
   /** Constructs [[ClassPath]] from given list of strings validating them first.

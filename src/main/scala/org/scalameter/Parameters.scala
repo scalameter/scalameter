@@ -8,10 +8,10 @@ case class Parameters(axisData: immutable.Map[Parameter[_], Any]) {
   def ++(that: Parameters) = Parameters(this.axisData ++ that.axisData)
   def apply[T](key: String) = axisData.apply(Parameter[T](key)).asInstanceOf[T]
   def map(f: ((String, Any)) => (String, Any)) = {
-    Parameters(axisData.map { case (k, v) =>
+    Parameters(axisData.iterator.map { case (k, v) =>
       val n = f((k.fullName, v))
       (Parameter(n._1)(k.pickler).asInstanceOf[Parameter[_]], n._2)
-    }(collection.breakOut): _*)
+    }.toSeq: _*)
   }
 
   override def toString =

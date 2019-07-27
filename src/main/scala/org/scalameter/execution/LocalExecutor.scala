@@ -5,7 +5,7 @@ package execution
 
 import org.scalameter.picklers.Pickler
 import org.scalameter.utils.Tree
-import scala.collection._
+import scala.collection.mutable
 import scala.compat.Platform
 
 

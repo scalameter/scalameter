@@ -67,7 +67,7 @@ class ScalaMeterFramework extends Framework {
         case log: Log.JLine if isSbt =>
           new JLineTestInterfaceLog(log, loggers(0))
         case _ =>
-          Log.Composite(loggers.map(new TestInterfaceLog(_)): _*)
+          Log.Composite(loggers.map(new TestInterfaceLog(_)).toSeq: _*)
       }
       val tievents = TestInterfaceEvents(eventHandler)
       val testcp = computeClasspath

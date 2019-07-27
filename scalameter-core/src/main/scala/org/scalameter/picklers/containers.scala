@@ -7,19 +7,18 @@ import language.higherKinds
 import java.util.Date
 import org.scalameter.picklers.Implicits._
 import scala.annotation.tailrec
-import scala.collection.generic.CanBuildFrom
+import scala.collection.compat._
 
 
-
-abstract class TraversablePickler[C[_] <: Traversable[_], T: Pickler]
+abstract class IterablePickler[C[_] <: Iterable[_], T: Pickler]
 extends Pickler[C[T]] {
-  protected def canBuildFrom: CanBuildFrom[Nothing, T, C[T]]
+  protected def factory: Factory[T, C[T]]
 
   def pickle(x: C[T]): Array[Byte] = {
     val pickler = implicitly[Pickler[T]].asInstanceOf[Pickler[Any]]
     val builder = Array.newBuilder[Byte]
     builder ++= IntPickler.pickle(x.size)
-    x.foreach { e: Any =>
+    x.iterator.foreach { e: Any =>
       builder ++= pickler.pickle(e)
     }
     builder.result()
@@ -27,7 +26,7 @@ extends Pickler[C[T]] {
 
   def unpickle(a: Array[Byte], from: Int): (C[T], Int) = {
     val pickler = implicitly[Pickler[T]]
-    val builder = canBuildFrom()
+    val builder = factory.newBuilder
 
     @tailrec
     def unpickle(times: Int, from: Int): (C[T], Int) = {
@@ -62,13 +61,13 @@ abstract class OptionPickler[T: Pickler] extends Pickler[Option[T]] {
 }
 
 
-object StringListPickler extends TraversablePickler[List, String] {
-  protected def canBuildFrom = implicitly[CanBuildFrom[Nothing, String, List[String]]]
+object StringListPickler extends IterablePickler[List, String] {
+  protected def factory = implicitly[Factory[String, List[String]]]
 }
 
 
-object LongSeqPickler extends TraversablePickler[Seq, Long]  {
-  protected def canBuildFrom = implicitly[CanBuildFrom[Nothing, Long, Seq[Long]]]
+object LongSeqPickler extends IterablePickler[scala.collection.Seq, Long]  {
+  protected def factory = implicitly[Factory[Long, scala.collection.Seq[Long]]]
 }
 
 
