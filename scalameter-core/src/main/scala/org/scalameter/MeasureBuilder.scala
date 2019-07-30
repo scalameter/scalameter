@@ -32,12 +32,15 @@ class MeasureBuilder[T, U](
   def tearDown(b: T => Unit) =
     new MeasureBuilder(ctx, warmer, measurer, regen, setup, b, resultFunction)
 
-  def measureWith[S](b: T => S): Quantity[U] = {
+  def measureWith[S](b: T => S): Quantity[U] = measuredWith[S](b)._2
+
+  def measuredWith[S](b: T => S): (S, Quantity[U]) = {
     val oldctx = dyn.currentContext.value
     try {
       dyn.currentContext.value = ctx
 
       val x = regen()
+      var result = null.asInstanceOf[S]
       warmer match {
         case Warmer.Zero => // do nothing
         case _ =>
@@ -48,17 +51,19 @@ class MeasureBuilder[T, U](
   
       val measurements = measurer.measure[T](
         ctx, ctx(Key.exec.benchRuns),
-        setup, teardown, regen, b
+        setup, teardown, regen, { t => result = b(t); result }
       )
   
-      resultFunction(measurements)
+      (result, resultFunction(measurements))
     } finally {
       dyn.currentContext.value = oldctx
     }
   }
 
-  def measure[S](b: =>S): Quantity[U] = {
-    measureWith(_ => b)
+  def measure[S](b: =>S): Quantity[U] = measured(b)._2
+
+  def measured[S](b: =>S): (S, Quantity[U]) = {
+    measuredWith(_ => b)
   }
 }
 
