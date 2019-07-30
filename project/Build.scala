@@ -152,8 +152,8 @@ object ScalaMeterBuild extends MechaRepoBuild {
   val scalaMeterCoreSettings = MechaRepoPlugin.defaultSettings ++ publishCreds ++ Seq(
     name := "scalameter-core",
     organization := "com.storm-enroute",
-    scalaVersion := "2.11.12",
-    crossScalaVersions := Seq("2.11.12", "2.12.8", "2.13.0-M3"),
+    scalaVersion := "2.13.0",
+    crossScalaVersions := Seq("2.11.12", "2.12.8", "2.13.0"),
     scalacOptions ++= Seq("-deprecation", "-unchecked", "-feature", "-Xlint", "-Xfuture"),
     libraryDependencies ++= coreDependencies(scalaVersion.value),
     parallelExecution in Test := false,
