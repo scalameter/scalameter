@@ -4,7 +4,6 @@ package org.scalameter.picklers
 
 import language.higherKinds
 
-import java.util.Date
 import org.scalameter.picklers.Implicits._
 import scala.annotation.tailrec
 import scala.collection.compat._
@@ -43,7 +42,7 @@ extends Pickler[C[T]] {
 }
 
 
-abstract class OptionPickler[T: Pickler] extends Pickler[Option[T]] {
+class OptionPickler[T: Pickler] extends Pickler[Option[T]] {
   def pickle(x: Option[T]): Array[Byte] = {
     x match {
       case Some(e) => implicitly[Pickler[T]].pickle(e)
@@ -60,15 +59,15 @@ abstract class OptionPickler[T: Pickler] extends Pickler[Option[T]] {
   }
 }
 
-
-object StringListPickler extends IterablePickler[List, String] {
-  protected def factory = implicitly[Factory[String, List[String]]]
+class ListPickler[T: Pickler] extends IterablePickler[List, T] {
+  protected def factory = implicitly[Factory[T, List[T]]]
+}
+class VectorPickler[T: Pickler] extends IterablePickler[Vector, T] {
+  protected def factory = implicitly[Factory[T, Vector[T]]]
 }
 
-
-object LongSeqPickler extends IterablePickler[scala.collection.Seq, Long]  {
-  protected def factory = implicitly[Factory[Long, scala.collection.Seq[Long]]]
+class SeqPickler[T: Pickler] extends IterablePickler[scala.collection.Seq, T] {
+  protected def factory = implicitly[Factory[T, scala.collection.Seq[T]]]
 }
 
-
-object DateOptionPickler extends OptionPickler[Date]
+object StringListPickler extends ListPickler[String]

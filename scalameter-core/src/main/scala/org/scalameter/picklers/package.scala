@@ -29,9 +29,10 @@ package picklers {
       EnumPickler.asInstanceOf[Pickler[T]]
 
     // containers
-    implicit val stringListPickler = StringListPickler
-    implicit val longSeqPickler = LongSeqPickler
-    implicit val dateOptionPickler = DateOptionPickler
+    implicit def listPickler[T: Pickler]: Pickler[List[T]] = new ListPickler[T]
+    implicit def vectorPickler[T: Pickler]: Pickler[Vector[T]] = new VectorPickler[T]
+    implicit def optionPickler[T: Pickler]: Pickler[Option[T]] = new OptionPickler[T]
+    implicit def seqPickler[T: Pickler]: Pickler[scala.collection.Seq[T]] = new SeqPickler[T]
 
     // functions
     implicit def function1[T, S] = new Function1Pickler[T, S]

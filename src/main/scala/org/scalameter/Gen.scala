@@ -123,6 +123,13 @@ object Gen {
 
   /* combinators */
 
+  def listOfN[A: Pickler](axisName: String)(size: Int, gen: Gen[A]): Gen[List[A]] = {
+    val initial = single(axisName)(List.empty[A])
+    List.fill(size)(gen).foldRight(initial) { (gen, list) =>
+      list.cross(gen).map { case (xs, x) => x :: xs }
+    }
+  }
+
   def crossProduct[P, Q](p: Gen[P], q: Gen[Q]): Gen[(P, Q)] = {
     for {
       pv <- p
