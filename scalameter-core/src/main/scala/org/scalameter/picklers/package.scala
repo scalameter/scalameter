@@ -34,6 +34,10 @@ package picklers {
     implicit def optionPickler[T: Pickler]: Pickler[Option[T]] = new OptionPickler[T]
     implicit def seqPickler[T: Pickler]: Pickler[scala.collection.Seq[T]] = new SeqPickler[T]
 
+    // tuples
+    implicit def tuplePickler[A: Pickler, B: Pickler]: Pickler[(A, B)] =
+      new TuplePickler[A, B](implicitly[Pickler[A]], implicitly[Pickler[B]])
+
     // functions
     implicit def function1[T, S] = new Function1Pickler[T, S]
 
