@@ -4,10 +4,10 @@ package org.scalameter.utils
 
 import java.io.File
 import java.net._
+import io.github.classgraph.ClassGraph
 import org.apache.commons.lang3.SystemUtils
+import scala.collection.JavaConverters._
 import scala.collection.Seq
-
-
 
 class ClassPath private (val paths: Seq[File]) extends Serializable {
   /** Returns platform dependent classpath string.
@@ -60,22 +60,15 @@ object ClassPath {
     extract(this.getClass.getClassLoader, sys.props("java.class.path"))
   }
 
-  /** Extracts the classpath from the given `classLoader` if it is a `URLClassLoader` or
-   *  from the first parent that is a `URLClassLoader`.
-   *  If no `URLClassLoader` can be found, returns the `default` classpath.
+  /** Extracts the classpath from the classLoader, using the classgraph library.
    */
-  def extract(classLoader: ClassLoader, default: =>String): ClassPath =
+  def extract(classLoader: ClassLoader, default: => String): ClassPath =
     classLoader match {
-      case urlclassloader: URLClassLoader =>
-        ClassPath(extractFileClasspaths(urlclassloader.getURLs))
       case null =>
         fromString(sys.props("sun.boot.class.path"))
-      case _ =>
-        val parent = classLoader.getParent
-        if (parent != null)
-          extract(parent, default)
-        else
-          fromString(default)
+      case classloader =>
+        ClassPath(
+          extractFileClasspaths(new ClassGraph().addClassLoader(classloader).getClasspathURIs().asScala.map(_.toURL)))
     }
 
   private[scalameter] def extractFileClasspaths(urls: Seq[URL]): Seq[File] = {

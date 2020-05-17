@@ -57,8 +57,8 @@ object ScalaMeterBuild extends MechaRepoBuild {
   val scalaMeterSettings = MechaRepoPlugin.defaultSettings ++ publishCreds ++ Seq(
     name := "scalameter",
     organization := "com.storm-enroute",
-    scalaVersion := "2.13.0",
-    crossScalaVersions := Seq("2.11.12", "2.12.8", "2.13.0"),
+    scalaVersion := "2.13.2",
+    crossScalaVersions := Seq("2.11.12", "2.12.8", "2.13.2"),
     scalacOptions ++= Seq("-deprecation", "-unchecked", "-feature", "-Xlint", "-Xfuture"),
     libraryDependencies ++= dependencies(scalaVersion.value),
     parallelExecution in Test := false,
@@ -202,6 +202,7 @@ object ScalaMeterBuild extends MechaRepoBuild {
 
   def coreDependencies(scalaVersion: String) = CrossVersion.partialVersion(scalaVersion) match {
     case Some((2, 13)) => List(
+      "io.github.classgraph" % "classgraph" % "4.8.78",
       "org.scala-lang.modules" %% "scala-collection-compat" % "2.1.1",
       "org.scalacheck" %% "scalacheck" % "1.14.0" % "test",
       "org.scalatest" %% "scalatest" % "3.0.8" % "test",
@@ -215,6 +216,7 @@ object ScalaMeterBuild extends MechaRepoBuild {
       "org.jline" % "jline" % "3.10.0"
     )
     case Some((2, 12)) => List(
+      "io.github.classgraph" % "classgraph" % "4.8.78",
       "org.scala-lang.modules" %% "scala-collection-compat" % "2.1.1",
       "org.scalacheck" % "scalacheck_2.12" % "1.13.4" % "test",
       "org.scalatest" % "scalatest_2.12" % "3.0.0" % "test",
@@ -228,6 +230,7 @@ object ScalaMeterBuild extends MechaRepoBuild {
       "org.jline" % "jline" % "3.10.0"
     )
     case Some((2, 11)) => List(
+      "io.github.classgraph" % "classgraph" % "4.8.78",
       "org.scala-lang.modules" %% "scala-collection-compat" % "2.1.1",
       "org.scalacheck" %% "scalacheck" % "1.12.4" % "test",
       "org.scalatest" %% "scalatest" % "2.2.6" % "test",
