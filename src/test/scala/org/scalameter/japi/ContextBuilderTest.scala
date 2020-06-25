@@ -7,15 +7,16 @@ import org.scalatest.{FunSuite, Matchers}
 
 class ContextBuilderTest extends FunSuite with Matchers {
   test("ContextBuilder should create the same context as direct context creation") {
+    val default = ClassPath.default
     val expected = Context(
       exec.benchRuns -> 30,
       verbose -> false,
-      classpath -> ClassPath.default
+      classpath -> default
     )
     val actual = new ContextBuilder()
       .put("exec.benchRuns", 30)
       .put("verbose", false)
-      .put("classpath", ClassPath.default)
+      .put("classpath", default)
       .build()
 
     actual should === (expected)
