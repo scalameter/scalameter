@@ -2,15 +2,14 @@ import java.io.File
 
 import ReleaseExtras.ReleaseExtrasKeys._
 import ReleaseExtras._
-import com.typesafe.sbt.pgp.PgpKeys._
-import org.stormenroute.mecha._
+import com.jsuereth.sbtpgp.PgpKeys._
 import sbt.Keys._
 import sbt._
 import sbtrelease.ReleasePlugin
 import sbtrelease.ReleasePlugin.autoImport._
 import sbtrelease.ReleaseStateTransformations._
 
-object ScalaMeterBuild extends MechaRepoBuild {
+object ScalaMeterBuild {
 
   def repoName = "scalameter"
 
@@ -54,7 +53,7 @@ object ScalaMeterBuild extends MechaRepoBuild {
     )
   )
 
-  val scalaMeterSettings = MechaRepoPlugin.defaultSettings ++ publishCreds ++ Seq(
+  val scalaMeterSettings = publishCreds ++ Seq(
     name := "scalameter",
     organization := "com.storm-enroute",
     scalaVersion := "2.13.2",
@@ -149,7 +148,7 @@ object ScalaMeterBuild extends MechaRepoBuild {
     }
   }
 
-  val scalaMeterCoreSettings = MechaRepoPlugin.defaultSettings ++ publishCreds ++ Seq(
+  val scalaMeterCoreSettings = publishCreds ++ Seq(
     name := "scalameter-core",
     organization := "com.storm-enroute",
     scalaVersion := "2.13.0",
@@ -278,23 +277,5 @@ object ScalaMeterBuild extends MechaRepoBuild {
   }
 
   /* projects */
-
-  lazy val scalaMeterCore = Project(
-    "scalameter-core",
-    file("scalameter-core"),
-    settings = scalaMeterCoreSettings ++ releasePluginSettings
-  ).enablePlugins(ReleasePlugin)
-
-  lazy val scalaMeter = Project(
-    "scalameter",
-    file("."),
-    settings = scalaMeterSettings ++ Seq(javaCommandSetting, runsuiteTask) ++ releasePluginSettings
-  ) dependsOn (
-    scalaMeterCore
-    ) aggregate (
-    scalaMeterCore
-    ) enablePlugins (
-    ReleasePlugin
-    )
 
 }
