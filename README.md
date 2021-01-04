@@ -2,7 +2,6 @@
 CI service | Status | Description
 -----------|--------|------------
 Travis | [![Build Status](https://travis-ci.org/scalameter/scalameter.png?branch=master)](https://travis-ci.org/scalameter/scalameter) | Linux container tests
-Drone | [![Build Status](http://ci.storm-enroute.com:443/api/badges/scalameter/scalameter/status.svg)](http://ci.storm-enroute.com:443/scalameter/scalameter) | Linux container tests
 [scalameter-examples](https://github.com/scalameter/scalameter-examples) | [![Build Status](https://travis-ci.org/scalameter/scalameter-examples.svg?branch=master)](https://travis-ci.org/scalameter/scalameter-examples) | ScalaMeter benchmark example projects
 Maven | [![Maven Artifact](https://img.shields.io/maven-central/v/com.storm-enroute/scalameter_2.11.svg)](http://mvnrepository.com/artifact/com.storm-enroute/scalameter_2.11) | ScalaMeter artifact on Maven
 
