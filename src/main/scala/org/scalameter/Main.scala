@@ -52,30 +52,30 @@ object Main {
         case names => Configuration(names, Context.empty)
       }
       def intsetting: Parser[Configuration] = "-" ~ ident ~ (decimalNumber | "true" | "false") ^^ {
-        case _ ~ "Cminwarmups" ~ num => Configuration(Nil, Context(exec.minWarmupRuns -> num.toInt))
-        case _ ~ "Cmaxwarmups" ~ num => Configuration(Nil, Context(exec.maxWarmupRuns -> num.toInt))
-        case _ ~ "Cruns" ~ num => Configuration(Nil, Context(exec.benchRuns -> num.toInt))
-        case _ ~ "Ccolors" ~ flag => Configuration(Nil, Context(reports.colors -> flag.toBoolean))
+        case _ ~ "Cminwarmups" ~ num => Configuration(Nil, Context(exec.minWarmupRuns := num.toInt))
+        case _ ~ "Cmaxwarmups" ~ num => Configuration(Nil, Context(exec.maxWarmupRuns := num.toInt))
+        case _ ~ "Cruns" ~ num => Configuration(Nil, Context(exec.benchRuns := num.toInt))
+        case _ ~ "Ccolors" ~ flag => Configuration(Nil, Context(reports.colors := flag.toBoolean))
       }
       def path: Parser[String] = opt("/") ~ repsep("""[\w\d-\.]+""".r, "/") ~ opt("/") ^^ {
         case lead ~ ps ~ trail => lead.getOrElse("") + ps.mkString("/") + trail.getOrElse("")
       }
       def resdir: Parser[Configuration] = "-" ~ "CresultDir" ~ path ^^ {
-        case _ ~ _ ~ s => Configuration(Nil, Context(reports.resultDir -> s))
+        case _ ~ _ ~ s => Configuration(Nil, Context(reports.resultDir := s))
       }
       def stringLit = "['\"]".r ~ rep("[^'']".r) ~ "['\"]".r ^^ {
         case _ ~ cs ~ _ => cs.mkString
       }
       def scopefilter: Parser[Configuration] = "-" ~ "CscopeFilter" ~ (stringLit | failure("scopeFilter must be followed by a single or double quoted string.")) ^^ {
-        case _ ~ _ ~ s => Configuration(Nil, Context(scopeFilter -> s))
+        case _ ~ _ ~ s => Configuration(Nil, Context(scopeFilter := s))
       }
       def shortscopefilter: Parser[Configuration] = "-z" ~ ("""[a-zA-Z\.]+""".r) ^^ {
-        case _ ~ s => Configuration(Nil, Context(scopeFilter -> s))
+        case _ ~ s => Configuration(Nil, Context(scopeFilter := s))
       }
       def flag: Parser[Configuration] = "-" ~ ("silent" | "verbose" | "preJDK7") ^^ {
-        case _ ~ "verbose" => Configuration(Nil, Context(Key.verbose -> true))
-        case _ ~ "silent" => Configuration(Nil, Context(Key.verbose -> false))
-        case _ ~ "preJDK7" => Configuration(Nil, Context(Key.preJDK7 -> true))
+        case _ ~ "verbose" => Configuration(Nil, Context(Key.verbose := true))
+        case _ ~ "silent" => Configuration(Nil, Context(Key.verbose := false))
+        case _ ~ "preJDK7" => Configuration(Nil, Context(Key.preJDK7 := true))
       }
 
       parseAll(arguments, args.mkString(" ")) match {

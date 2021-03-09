@@ -78,10 +78,10 @@ trait InvocationCount extends Measurer[Map[String, Long]] {
     jar.deleteOnExit()
 
     context ++ Context(
-      exec.measurers.methodInvocationLookupTable ->
+      exec.measurers.methodInvocationLookupTable :=
         mutable.ArrayBuffer.empty[MethodSignature],
-      exec.measurers.instrumentedJarPath -> jar,
-      finalClasspath -> (jar +: cl)
+      exec.measurers.instrumentedJarPath := jar,
+      finalClasspath := (jar +: cl)
     )
   }
 

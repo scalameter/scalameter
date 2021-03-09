@@ -37,8 +37,27 @@ extends PicklerBasedKey[T] {
   }
 
   val pickler: Pickler[T] = implicitly[Pickler[T]]
+
+  def := (value: T): KeyValue.OfType[T] =
+    KeyValue(this -> value)
+
 }
 
+trait KeyValue {
+  type T
+  def get: (Key[T], T)
+}
+
+object KeyValue {
+
+  type OfType[T0] = KeyValue { type T = T0 }
+
+  def apply[T0](pair: (Key[T0], T0)): KeyValue.OfType[T0] =
+    new KeyValue {
+      type T = T0
+      def get = pair
+    }
+}
 
 /** Base for keys that have some kind of default value. */
 class KeyWithDefault[T: Pickler](name: String)(implicit container: KeyContainer)

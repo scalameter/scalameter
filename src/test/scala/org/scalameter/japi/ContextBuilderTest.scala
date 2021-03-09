@@ -9,9 +9,9 @@ class ContextBuilderTest extends FunSuite with Matchers {
   test("ContextBuilder should create the same context as direct context creation") {
     val default = ClassPath.default
     val expected = Context(
-      exec.benchRuns -> 30,
-      verbose -> false,
-      classpath -> default
+      exec.benchRuns := 30,
+      verbose := false,
+      classpath := default
     )
     val actual = new ContextBuilder()
       .put("exec.benchRuns", 30)

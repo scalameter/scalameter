@@ -27,7 +27,7 @@ class SeparateJvmsExecutor[V: Pickler : PrettyPrinter](
 
   def createJvmContext(ctx: Context) = {
     ctx ++ Seq(
-      exec.overallBegin -> currentContext(exec.overallBegin)
+      exec.overallBegin := currentContext(exec.overallBegin)
     )
   }
 
@@ -42,8 +42,8 @@ class SeparateJvmsExecutor[V: Pickler : PrettyPrinter](
     }
     var result: Tree[CurveData[V]] = null
     val newContext = currentContext ++ Seq(
-      exec.setupCount -> count,
-      exec.setupIndex -> 0
+      exec.setupCount := count,
+      exec.setupIndex := 0
     )
     for (_ <- dyn.currentContext.using(newContext)) {
       result = super.run(setuptree, reporter, persistor)
@@ -190,7 +190,7 @@ class SeparateJvmsExecutor[V: Pickler : PrettyPrinter](
     }
 
     dyn.currentContext.value = currentContext ++ Seq(
-      exec.setupIndex -> (currentContext(exec.setupIndex) + 1)
+      exec.setupIndex := (currentContext(exec.setupIndex) + 1)
     )
 
     CurveData(measurements.toSeq, Map.empty, context)

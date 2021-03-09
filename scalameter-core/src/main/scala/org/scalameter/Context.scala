@@ -12,7 +12,7 @@ case class Context(properties: immutable.Map[Key[_], Any]) {
   def -[T](t: Key[T]) = Context(properties - t)
   def +[T](t: (Key[T], T)) = Context(properties + t)
   def ++(that: Context) = Context(this.properties ++ that.properties)
-  def ++(that: Seq[KeyValue]) = Context(this.properties ++ that)
+  def ++(that: Seq[KeyValue]) = Context(this.properties ++ that.map(_.get))
   def get[T](key: Key[T]): Option[T] =
     properties.get(key).asInstanceOf[Option[T]].orElse {
       key match {
@@ -44,28 +44,28 @@ case class Context(properties: immutable.Map[Key[_], Any]) {
 
 
 object Context {
-  def apply(xs: KeyValue*) = new Context(xs.asInstanceOf[Seq[(Key[_], Any)]].toMap)
+  def apply(xs: KeyValue*) = new Context(xs.map(_.get).asInstanceOf[Seq[(Key[_], Any)]].toMap)
 
   val empty = new Context(immutable.Map.empty)
 
   val topLevel = machine ++ Context(
-    preJDK7 -> false,
-    dsl.scope -> Nil,
-    exec.benchRuns -> 36,
-    exec.minWarmupRuns -> 10,
-    exec.maxWarmupRuns -> 50,
-    exec.jvmflags -> List("-Xmx2048m", "-Xms2048m"),
-    classpath -> utils.ClassPath.default,
-    reports.regression.significance -> 1e-10,
-    verbose -> false
+    preJDK7 := false,
+    dsl.scope := Nil,
+    exec.benchRuns := 36,
+    exec.minWarmupRuns := 10,
+    exec.maxWarmupRuns := 50,
+    exec.jvmflags := List("-Xmx2048m", "-Xms2048m"),
+    classpath := utils.ClassPath.default,
+    reports.regression.significance := 1e-10,
+    verbose := false
   )
 
   val inlineBenchmarking = machine ++ Context(
-    exec.benchRuns -> 1,
-    exec.minWarmupRuns -> 10,
-    exec.maxWarmupRuns -> 50,
-    exec.requireGC -> false,
-    verbose -> false
+    exec.benchRuns := 1,
+    exec.minWarmupRuns := 10,
+    exec.maxWarmupRuns := 50,
+    exec.requireGC := false,
+    verbose := false
   )
 
   def machine = {
@@ -80,13 +80,13 @@ object Context {
     }
 
     Context(
-      Key.machine.jvm.version -> sys.props("java.vm.version"),
-      Key.machine.jvm.vendor -> sys.props("java.vm.vendor"),
-      Key.machine.jvm.name -> sys.props("java.vm.name"),
-      Key.machine.osName -> sys.props("os.name"),
-      Key.machine.osArch -> sys.props("os.arch"),
-      Key.machine.cores -> Runtime.getRuntime.availableProcessors,
-      Key.machine.hostname -> hostname
+      Key.machine.jvm.version := sys.props("java.vm.version"),
+      Key.machine.jvm.vendor := sys.props("java.vm.vendor"),
+      Key.machine.jvm.name := sys.props("java.vm.name"),
+      Key.machine.osName := sys.props("os.name"),
+      Key.machine.osArch := sys.props("os.arch"),
+      Key.machine.cores := Runtime.getRuntime.availableProcessors,
+      Key.machine.hostname := hostname
     )
   }
 

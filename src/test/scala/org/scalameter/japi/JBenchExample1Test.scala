@@ -21,10 +21,10 @@ class JBenchExample1Test extends FunSuite with Matchers {
     setupTree.context should === (Context.topLevel + (verbose -> false))
     setupTree.foreach { setup =>
       (setup.context - dsl.curve) should === (Context.topLevel ++ Context(
-        verbose -> false,
-        exec.benchRuns -> benchs,
-        exec.maxWarmupRuns -> warmups,
-        dsl.scope -> List("forloops", "arrays")
+        verbose := false,
+        exec.benchRuns := benchs,
+        exec.maxWarmupRuns := warmups,
+        dsl.scope := List("forloops", "arrays")
       ))
       expectedCurves.contains(setup.context(dsl.curve)) should === (true)
       expectedCurves -= setup.context(dsl.curve)
