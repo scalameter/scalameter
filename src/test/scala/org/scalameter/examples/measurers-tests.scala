@@ -13,7 +13,7 @@ trait Snippet[U] extends Bench[U] {
   val sizes = Gen.single("size")(300000)
 
   override def defaultConfig = Context(
-    verbose -> false
+    verbose := false
   )
 
   val ranges = for {
@@ -21,9 +21,9 @@ trait Snippet[U] extends Bench[U] {
   } yield 0 until size
   
   performance of "Range" config(
-    exec.benchRuns -> 10,
-    exec.independentSamples -> 2,
-    verbose -> false
+    exec.benchRuns := 10,
+    exec.independentSamples := 2,
+    verbose := false
   ) in {
     measure method "map" in {
       using(ranges) in {
@@ -96,7 +96,7 @@ class BoxingCountBench extends InvocationCountMeasurerBench {
   )
 
   override def defaultConfig = Context(
-    exec.independentSamples -> 1
+    exec.independentSamples := 1
   )
 
   performance of "List" in {
@@ -115,8 +115,8 @@ class MethodInvocationCountBench extends InvocationCountMeasurerBench {
   ).map(v => v.copy(value = v.value.valuesIterator.sum.toDouble))
 
   override def defaultConfig = Context(
-    exec.independentSamples -> 1,
-    verbose -> false
+    exec.independentSamples := 1,
+    verbose := false
   )
 
   performance of "List" in {

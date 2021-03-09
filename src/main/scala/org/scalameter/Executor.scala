@@ -27,7 +27,7 @@ trait Executor[V] {
     val time = System.currentTimeMillis()
     var result: Tree[CurveData[V]] = null
     val runContext = currentContext ++ Seq(
-      Key.exec.overallBegin -> time
+      Key.exec.overallBegin := time
     )
     for (_ <- dyn.currentContext.using(runContext)) {
       result = for (setup <- setuptree) yield {

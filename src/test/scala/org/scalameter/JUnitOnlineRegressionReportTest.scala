@@ -14,8 +14,8 @@ class JUnitOnlineRegressionReportTest
 extends OnlineRegressionReport  {
 
   override def defaultConfig = super.defaultConfig ++ Context(
-    reports.resultDir -> dir.getAbsolutePath,
-    reports.regression.noiseMagnitude -> 0.1
+    reports.resultDir := dir.getAbsolutePath,
+    reports.regression.noiseMagnitude := 0.1
   )
 
   @Test
@@ -34,8 +34,8 @@ extends OnlineRegressionReport  {
     performance of "Array" in {
       measure method "foreach" in {
         using(arrays) config (
-          exec.independentSamples -> 1
-          ) in { xs =>
+          exec.independentSamples := 1
+        ) in { xs =>
           var sum = 0
           xs.foreach(x => sum += x)
         }

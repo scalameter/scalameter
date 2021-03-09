@@ -5,7 +5,6 @@ package org
 import scala.collection._
 import scala.language.implicitConversions
 import scala.language.postfixOps
-import scala.language.existentials
 
 
 
@@ -18,8 +17,6 @@ package object scalameter extends MeasureBuilder[Unit, Double](
   MeasureBuilder.doNothing,
   MeasureBuilder.average
 ) {
-
-  type KeyValue = (Key[T], T) forSome { type T }
 
   private[scalameter] object dyn {
     val currentContext = new MonadicDynVar(Context.topLevel)

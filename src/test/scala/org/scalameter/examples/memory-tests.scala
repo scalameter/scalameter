@@ -11,10 +11,10 @@ class MemoryTest extends Bench.OfflineReport {
   performance of "MemoryFootprint" in {
     performance of "Array" in {
       using(sizes) config (
-        exec.minWarmupRuns -> 2,
-        exec.maxWarmupRuns -> 5,
-        exec.benchRuns -> 5,
-        exec.independentSamples -> 1
+        exec.minWarmupRuns := 2,
+        exec.maxWarmupRuns := 5,
+        exec.benchRuns := 5,
+        exec.independentSamples := 1
       ) in { sz =>
         (0 until sz).toArray
       }
@@ -32,10 +32,10 @@ trait MemoryTest2 extends Bench.OfflineReport {
   performance of "MemoryFootprint" in {
     performance of "Array" in {
       using(sizes) config (
-        exec.minWarmupRuns -> 2,
-        exec.maxWarmupRuns -> 5,
-        exec.benchRuns -> 30,
-        exec.independentSamples -> 1
+        exec.minWarmupRuns := 2,
+        exec.maxWarmupRuns := 5,
+        exec.benchRuns := 30,
+        exec.independentSamples := 1
       ) in { sz =>
         (0 until sz).toArray
       }
