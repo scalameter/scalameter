@@ -11,8 +11,8 @@ before_script:
     export SSH_KEY_PASS=""
     export DISPLAY=""
   - |
-    mkdir -p ~/.sbt/0.13/
-    echo 'scalacOptions ++= Seq("-Xmax-classfile-name", "90")' > ~/.sbt/0.13/local.sbt
+    mkdir -p ~/.sbt/1.3/
+    echo 'scalacOptions ++= Seq("-Xmax-classfile-name", "90")' > ~/.sbt/1.3/local.sbt
   - git clone git@ci.storm-enroute.com:storm-enroute/super-storm-enroute.git ~/.super-storm-enroute
 
 after_script:
