@@ -1,11 +1,11 @@
 package org.scalameter
 
 import org.scalameter.examples._
-import org.scalatest.FunSuite
+import org.scalatest.funsuite.AnyFunSuite
 import java.io._
 
 
-class ResultDirTest extends FunSuite {
+class ResultDirTest extends AnyFunSuite {
   // java.io.File doesn't support recursive delete
   def removeAll(path: String) = {
     def getRecursively(f: File): Seq[File] =

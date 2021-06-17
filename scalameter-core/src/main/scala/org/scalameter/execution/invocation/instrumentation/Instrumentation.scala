@@ -3,9 +3,12 @@ package org.scalameter.execution.invocation.instrumentation
 import java.io._
 import java.util.jar.{Attributes, JarEntry, JarOutputStream}
 import java.util.zip.ZipFile
+
 import org.objectweb.asm.{ClassReader, ClassWriter}
 import scala.jdk.CollectionConverters._
 import scala.collection.mutable
+import scala.util.Try
+
 import org.scalameter._
 import org.scalameter.execution.invocation._
 
@@ -94,9 +97,11 @@ private[scalameter] object Instrumentation {
             classStream.close()
           }
 
-          jos.putNextEntry(new JarEntry(className))
-          jos.write(writer.toByteArray)
-          jos.closeEntry()
+          val nxt = Try(jos.putNextEntry(new JarEntry(className)))
+          if (nxt.isSuccess) {
+            jos.write(writer.toByteArray)
+            jos.closeEntry()
+          }
         }
       }
       finally {

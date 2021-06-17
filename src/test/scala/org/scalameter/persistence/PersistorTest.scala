@@ -1,8 +1,10 @@
 package org.scalameter.persistence
 
 import java.io.File
+
 import org.scalameter._
 import org.scalatest._
+import org.scalatest.matchers.should.Matchers
 
 
 trait PersistorTest { this: Matchers =>

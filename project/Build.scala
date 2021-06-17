@@ -108,6 +108,7 @@ object ScalaMeterBuild {
     CrossVersion.partialVersion(scalaVersion) match {
       case Some((3, _)) => List(
         "org.scalatest" %% "scalatest" % "3.2.9" % "test",
+        "org.scalatestplus" %% "scalacheck-1-15" % "3.2.9.0" % "test",
         "junit" % "junit" % "4.12" % "test",
         "org.apache.commons" % "commons-math3" % "3.2",
         "org.scala-sbt" % "test-interface" % "1.0",
@@ -115,11 +116,11 @@ object ScalaMeterBuild {
         "org.scala-lang.modules" %% "scala-parser-combinators" % "2.0.0",
         "com.fasterxml.jackson.module" %% "jackson-module-scala" % "2.13.0-SNAPSHOT",
         "commons-io" % "commons-io" % "2.4",
-//        "io.spray" %% "spray-json" % "1.3.5",
         "org.jline" % "jline" % "3.10.0"
       )
       case Some((2, 13)) => List(
-        "org.scalatest" %% "scalatest" % "3.0.8" % "test",
+        "org.scalatest" %% "scalatest" % "3.2.9" % "test",
+        "org.scalatestplus" %% "scalacheck-1-15" % "3.2.9.0" % "test",
         "junit" % "junit" % "4.12" % "test",
         "org.apache.commons" % "commons-math3" % "3.2",
         "org.scala-sbt" % "test-interface" % "1.0",
@@ -131,7 +132,8 @@ object ScalaMeterBuild {
         "org.jline" % "jline" % "3.10.0"
       )
       case Some((2, 12)) => List(
-        "org.scalatest" % "scalatest_2.12" % "3.0.0" % "test",
+        "org.scalatest" % "scalatest_2.12" % "3.2.9" % "test",
+        "org.scalatestplus" %% "scalacheck-1-15" % "3.2.9.0" % "test",
         "junit" % "junit" % "4.12" % "test",
         "org.apache.commons" % "commons-math3" % "3.2",
         "org.scala-sbt" % "test-interface" % "1.0",
@@ -143,7 +145,8 @@ object ScalaMeterBuild {
         "org.jline" % "jline" % "3.10.0"
       )
       case Some((2, 11)) => List(
-        "org.scalatest" %% "scalatest" % "3.0.0" % "test",
+        "org.scalatest" %% "scalatest" % "3.2.9" % "test",
+        "org.scalatestplus" %% "scalacheck-1-15" % "3.2.3.0" % "test",
         "junit" % "junit" % "4.12" % "test",
         "org.apache.commons" % "commons-math3" % "3.2",
         "org.scala-sbt" % "test-interface" % "1.0",
@@ -215,6 +218,7 @@ object ScalaMeterBuild {
       "org.scala-lang.modules" %% "scala-collection-compat" % "2.1.1",
       "org.scalacheck" %% "scalacheck" % "1.14.0" % "test",
       "org.scalatest" %% "scalatest" % "3.2.9" % "test",
+      "org.scalatestplus" %% "scalacheck-1-15" % "3.2.9.0" % "test",
       "junit" % "junit" % "4.12" % "test",
       "com.novocode" % "junit-interface" % "0.11" % "test",
       "org.apache.commons" % "commons-math3" % "3.2",
@@ -228,7 +232,8 @@ object ScalaMeterBuild {
       "io.github.classgraph" % "classgraph" % "4.8.78",
       "org.scala-lang.modules" %% "scala-collection-compat" % "2.1.1",
       "org.scalacheck" %% "scalacheck" % "1.14.0" % "test",
-      "org.scalatest" %% "scalatest" % "3.0.8" % "test",
+      "org.scalatest" %% "scalatest" % "3.2.9" % "test",
+      "org.scalatestplus" %% "scalacheck-1-15" % "3.2.9.0" % "test",
       "junit" % "junit" % "4.12" % "test",
       "com.novocode" % "junit-interface" % "0.11" % "test",
       "org.apache.commons" % "commons-math3" % "3.2",
@@ -242,7 +247,8 @@ object ScalaMeterBuild {
       "io.github.classgraph" % "classgraph" % "4.8.78",
       "org.scala-lang.modules" %% "scala-collection-compat" % "2.1.1",
       "org.scalacheck" % "scalacheck_2.12" % "1.13.4" % "test",
-      "org.scalatest" % "scalatest_2.12" % "3.0.0" % "test",
+      "org.scalatest" % "scalatest_2.12" % "3.2.9" % "test",
+      "org.scalatestplus" %% "scalacheck-1-15" % "3.2.9.0" % "test",
       "junit" % "junit" % "4.12" % "test",
       "com.novocode" % "junit-interface" % "0.11" % "test",
       "org.apache.commons" % "commons-math3" % "3.2",
@@ -256,7 +262,8 @@ object ScalaMeterBuild {
       "io.github.classgraph" % "classgraph" % "4.8.78",
       "org.scala-lang.modules" %% "scala-collection-compat" % "2.1.1",
       "org.scalacheck" %% "scalacheck" % "1.12.4" % "test",
-      "org.scalatest" %% "scalatest" % "2.2.6" % "test",
+      "org.scalatest" %% "scalatest" % "3.2.9" % "test",
+      "org.scalatestplus" %% "scalacheck-1-15" % "3.2.3.0" % "test",
       "junit" % "junit" % "4.12" % "test",
       "com.novocode" % "junit-interface" % "0.11" % "test",
       "org.apache.commons" % "commons-math3" % "3.2",

@@ -7,11 +7,12 @@ import org.scalameter.api._
 import org.scalameter.examples.JBenchExample1
 import org.scalameter.utils.Tree
 import org.scalameter.{Context, Gen, MethodCounter, Setup}
-import org.scalatest.{FunSuite, Matchers}
+import org.scalatest.funsuite.AnyFunSuite
+import org.scalatest.matchers.should.Matchers
 
 
 
-class JBenchExample1Test extends FunSuite with Matchers {
+class JBenchExample1Test extends AnyFunSuite with Matchers {
   private val benchs = 20
   private val warmups = 10
   private val gen = Gen.range("size")(10000, 100000, 30000).map(new Array[Int](_))

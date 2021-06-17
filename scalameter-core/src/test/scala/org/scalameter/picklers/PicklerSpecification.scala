@@ -4,14 +4,15 @@ package org.scalameter.picklers
 
 import java.io.File
 import java.util.Date
-import org.scalatest.prop.PropertyChecks
-import org.scalatest.{FunSuite, Matchers}
+import org.scalatest.funsuite.AnyFunSuite
+import org.scalatest.matchers.should.Matchers
+import org.scalatestplus.scalacheck.ScalaCheckDrivenPropertyChecks
 import org.scalameter.picklers.Implicits._
 import org.scalameter.utils.ClassPath
 
 
 
-class PicklerSpecification extends FunSuite with PropertyChecks with Matchers {
+class PicklerSpecification extends AnyFunSuite with ScalaCheckDrivenPropertyChecks with Matchers {
   def validatePickler[T: Pickler](o: T) = {
     val pickler = implicitly[Pickler[T]]
     val p = pickler.pickle(o)

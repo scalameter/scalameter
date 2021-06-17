@@ -2,12 +2,12 @@ package org.scalameter.inlinebenches
 
 
 
-import org.scalatest.FunSuite
+import org.scalatest.funsuite.AnyFunSuite
 import org.scalameter._
 
 
 
-class InlineBenchmarkTest extends FunSuite {
+class InlineBenchmarkTest extends AnyFunSuite {
 
   test("Should correctly execute an inline benchmark") {
     val time = measure {

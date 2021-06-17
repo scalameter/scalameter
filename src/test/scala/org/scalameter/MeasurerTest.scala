@@ -4,11 +4,12 @@ package org.scalameter
 
 import org.scalameter.api._
 import org.scalameter.execution.JvmRunner
-import org.scalatest.{FunSuite, Matchers}
+import org.scalatest.funsuite.AnyFunSuite
+import org.scalatest.matchers.should.Matchers
 
 
 
-abstract class MeasurerTest[V, M <: Measurer[V]] extends FunSuite with Matchers {
+abstract class MeasurerTest[V, M <: Measurer[V]] extends AnyFunSuite with Matchers {
   def measureWith(measurer: M)(snippet: => Any)(f: V => Any): Any = {
     val ctx = measurer.prepareContext(Context.topLevel)
 

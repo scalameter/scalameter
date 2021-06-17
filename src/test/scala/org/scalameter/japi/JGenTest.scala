@@ -2,10 +2,11 @@ package org.scalameter.japi
 
 import org.scalameter.Gen
 import org.scalameter.picklers.Implicits._
-import org.scalatest.{FunSuite, Matchers}
+import org.scalatest.funsuite.AnyFunSuite
+import org.scalatest.matchers.should.Matchers
 
 
-class JGenTest extends FunSuite with Matchers {
+class JGenTest extends AnyFunSuite with Matchers {
   private def validateJGen[T](jgen: JGen[T], gen:Gen[T]): Unit = {
     jgen.asScala().dataset.toList should
       contain theSameElementsInOrderAs gen.dataset.toList

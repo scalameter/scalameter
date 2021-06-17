@@ -1,11 +1,12 @@
 package org.scalameter.execution.invocation
 
 import org.objectweb.asm.Type
-import org.scalatest.{FunSuite, Matchers}
+import org.scalatest.funsuite.AnyFunSuite
+import org.scalatest.matchers.should.Matchers
 import org.scalameter.execution.invocation.InvocationCountMatcher._
 
 
-class InvocationCountMatcherTest extends FunSuite with Matchers {
+class InvocationCountMatcherTest extends AnyFunSuite with Matchers {
   test("ClassMatcher.ClassName should match classes") {
     val matcher = ClassMatcher.ClassName(classOf[java.lang.Integer])
     matcher.matches("java.lang.Integer") should === (true)
