@@ -6,7 +6,6 @@ import org.scalameter.Key._
 import org.scalameter.utils.Tree
 import scala.collection._
 import scala.collection.JavaConverters._
-import scala.util.parsing.json.{JSONObject, JSONArray}
 
 
 case class HtmlReporter[T: Numeric](embedDsv: Boolean = true) extends Reporter[T] {
@@ -26,7 +25,7 @@ case class HtmlReporter[T: Numeric](embedDsv: Boolean = true) extends Reporter[T
     val root = new File(resultdir, "report")
     root.mkdirs()
 
-    val curvesJSONIndex = JSONIndex(results)
+    val curvesJSONIndex: String = "???" //JSONIndex(results)
 
     resourceDirs.foreach {
       new File(root, _).mkdirs()
@@ -76,14 +75,26 @@ case class HtmlReporter[T: Numeric](embedDsv: Boolean = true) extends Reporter[T
   }
 
   def JSONIndex(results: Tree[CurveData[T]]) = {
-    def JSONCurve(context: Context, curve: CurveData[T]) = JSONObject(
-      immutable.Map(
-        "scope" -> new JSONArray(curve.context.scopeList),
-        "name" -> curve.context.curve,
-        "unit" -> curve.context.unit,
-        "file" -> s"../${context.scope}.${curve.context.curve}.dsv"
-      )
-    )
+    def quoteString (s : String) : String =
+      '"' +: s.map{
+        case '"'  => "\\\""
+        case '\\' => "\\\\"
+        case '/'  => "\\/"
+        case '\b' => "\\b"
+        case '\f' => "\\f"
+        case '\n' => "\\n"
+        case '\r' => "\\r"
+        case '\t' => "\\t"
+        case c if ((c >= '\u0000' && c <= '\u001f') || (c >= '\u007f' && c <= '\u009f')) => "\\u%04x".format(c.toInt)
+        case c => c
+      }.mkString :+ '"'
+    def JSONCurve(context: Context, curve: CurveData[T]): String =
+      s"""{
+         | "scope": ${curve.context.scopeList.map(quoteString).mkString("[", ",", "]")},
+         | "name": ${quoteString(curve.context.curve)},
+         | "unit": ${quoteString(curve.context.unit)},
+         | "file": ${quoteString(s"../${context.scope}.${curve.context.curve}.dsv")}
+         |}""".stripMargin
 
     val JSONCurves = for {
       (ctx, curves) <- results.scopes if curves.nonEmpty
@@ -91,7 +102,7 @@ case class HtmlReporter[T: Numeric](embedDsv: Boolean = true) extends Reporter[T
     } yield {
       JSONCurve(ctx, curve)
     }
-    new JSONArray(JSONCurves.toList)
+    JSONCurves.mkString("[", ",", "]")
   }
 
   def printTsv(results: Tree[CurveData[T]], persistor: Persistor, pw: PrintWriter): Unit = {

@@ -9,7 +9,7 @@ import org.scalatestplus.scalacheck.ScalaCheckDrivenPropertyChecks
 
 class IOTest extends AnyFunSuite with ScalaCheckDrivenPropertyChecks with Matchers {
   test("IO.readFromFile should slurp all bytes") {
-    forAll { o: Array[Byte] =>
+    forAll { (o: Array[Byte]) =>
       val file = File.createTempFile("scalameter-io-readAllBytes-", ".dat")
       file.deleteOnExit()
 

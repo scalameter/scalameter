@@ -165,7 +165,7 @@ object ScalaMeterBuild {
     name := "scalameter-core",
     organization := "com.storm-enroute",
     scalaVersion := "2.13.0",
-    crossScalaVersions := Seq("2.11.12", "2.12.8", "2.13.0"),
+    crossScalaVersions := Seq("2.11.12", "2.12.8", "2.13.0", "3.0.0"),
     scalacOptions ++= Seq("-deprecation", "-unchecked", "-feature", "-Xlint", "-Xfuture", "-language:implicitConversions"),
     libraryDependencies ++= coreDependencies(scalaVersion.value),
     parallelExecution in Test := false,
@@ -215,8 +215,8 @@ object ScalaMeterBuild {
   def coreDependencies(scalaVersion: String) = CrossVersion.partialVersion(scalaVersion) match {
     case Some((3, _)) => List(
       "io.github.classgraph" % "classgraph" % "4.8.78",
-      "org.scala-lang.modules" %% "scala-collection-compat" % "2.1.1",
-      "org.scalacheck" %% "scalacheck" % "1.14.0" % "test",
+      "org.scala-lang.modules" %% "scala-collection-compat" % "2.4.4",
+      "org.scalacheck" %% "scalacheck" % "1.15.4" % "test",
       "org.scalatest" %% "scalatest" % "3.2.9" % "test",
       "org.scalatestplus" %% "scalacheck-1-15" % "3.2.9.0" % "test",
       "junit" % "junit" % "4.12" % "test",
