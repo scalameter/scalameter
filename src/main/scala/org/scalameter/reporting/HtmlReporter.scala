@@ -57,7 +57,7 @@ case class HtmlReporter[T: Numeric](embedDsv: Boolean = true) extends Reporter[T
       <ul>
       {
         for ((k, v) <- Context.machine.properties.toList.sortBy(_._1)) yield <li>
-        {k + ": " + v}
+        {s"$k: $v"}
         </li>
       }
       </ul>

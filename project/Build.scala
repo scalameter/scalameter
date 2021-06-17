@@ -56,8 +56,8 @@ object ScalaMeterBuild {
   val scalaMeterSettings = publishCreds ++ Seq(
     name := "scalameter",
     organization := "com.storm-enroute",
-    scalaVersion := "2.13.2",
-    crossScalaVersions := Seq("2.11.12", "2.12.8", "2.13.2"),
+    scalaVersion := "2.13.6",
+    crossScalaVersions := Seq("2.11.12", "2.12.8", "2.13.6", "3.0.0"),
     scalacOptions ++= Seq("-deprecation", "-unchecked", "-feature", "-Xlint", "-Xfuture"),
     libraryDependencies ++= dependencies(scalaVersion.value),
     parallelExecution in Test := false,
@@ -106,6 +106,18 @@ object ScalaMeterBuild {
 
   def dependencies(scalaVersion: String) = {
     CrossVersion.partialVersion(scalaVersion) match {
+      case Some((3, _)) => List(
+        "org.scalatest" %% "scalatest" % "3.2.9" % "test",
+        "junit" % "junit" % "4.12" % "test",
+        "org.apache.commons" % "commons-math3" % "3.2",
+        "org.scala-sbt" % "test-interface" % "1.0",
+        "org.scala-lang.modules" %% "scala-xml" % "2.0.0",
+        "org.scala-lang.modules" %% "scala-parser-combinators" % "2.0.0",
+        "com.fasterxml.jackson.module" %% "jackson-module-scala" % "2.13.0-SNAPSHOT",
+        "commons-io" % "commons-io" % "2.4",
+//        "io.spray" %% "spray-json" % "1.3.5",
+        "org.jline" % "jline" % "3.10.0"
+      )
       case Some((2, 13)) => List(
         "org.scalatest" %% "scalatest" % "3.0.8" % "test",
         "junit" % "junit" % "4.12" % "test",
@@ -151,7 +163,7 @@ object ScalaMeterBuild {
     organization := "com.storm-enroute",
     scalaVersion := "2.13.0",
     crossScalaVersions := Seq("2.11.12", "2.12.8", "2.13.0"),
-    scalacOptions ++= Seq("-deprecation", "-unchecked", "-feature", "-Xlint", "-Xfuture"),
+    scalacOptions ++= Seq("-deprecation", "-unchecked", "-feature", "-Xlint", "-Xfuture", "-language:implicitConversions"),
     libraryDependencies ++= coreDependencies(scalaVersion.value),
     parallelExecution in Test := false,
     fork := true,
@@ -198,6 +210,20 @@ object ScalaMeterBuild {
   )
 
   def coreDependencies(scalaVersion: String) = CrossVersion.partialVersion(scalaVersion) match {
+    case Some((3, _)) => List(
+      "io.github.classgraph" % "classgraph" % "4.8.78",
+      "org.scala-lang.modules" %% "scala-collection-compat" % "2.1.1",
+      "org.scalacheck" %% "scalacheck" % "1.14.0" % "test",
+      "org.scalatest" %% "scalatest" % "3.2.9" % "test",
+      "junit" % "junit" % "4.12" % "test",
+      "com.novocode" % "junit-interface" % "0.11" % "test",
+      "org.apache.commons" % "commons-math3" % "3.2",
+      "org.apache.commons" % "commons-lang3" % "3.4",
+      "org.scala-lang.modules" %% "scala-xml" % "2.0.0",
+      "org.scala-lang.modules" %% "scala-parser-combinators" % "2.0.0",
+      "org.ow2.asm" % "asm" % "5.0.4",
+      "org.jline" % "jline" % "3.10.0"
+    )
     case Some((2, 13)) => List(
       "io.github.classgraph" % "classgraph" % "4.8.78",
       "org.scala-lang.modules" %% "scala-collection-compat" % "2.1.1",

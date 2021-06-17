@@ -15,13 +15,13 @@ case class Parameters(axisData: immutable.Map[Parameter[_], Any]) {
   }
 
   override def toString =
-    s"Parameters(${axisData.map(t => t._1 + " -> " + t._2).mkString(", ")})"
+    s"Parameters(${axisData.map{ case (p, v) => s"$p -> $v"}.mkString(", ")})"
 }
 
 object Parameters {
   def apply(xs: (Parameter[_], Any)*) = new Parameters(immutable.Map(xs: _*))
 
-  implicit val ordering = Ordering.by[Parameters, Iterable[String]] {
+  implicit val ordering: Ordering[Parameters] = Ordering.by[Parameters, Iterable[String]] {
     _.axisData.toSeq.map(_._1.fullName).sorted.toIterable
   }
 }

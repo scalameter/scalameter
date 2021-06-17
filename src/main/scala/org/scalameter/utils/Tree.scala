@@ -54,7 +54,7 @@ object Tree {
         Node(current.context, current.items, current.children, path))
     def ascend = path match {
       case Node(ctx, its: Seq[T], left: Seq[Tree[T]], up: Path[T]) =>
-        Zipper(Tree(ctx, its, left :+ current), up)
+        Zipper[T](Tree(ctx, its, left :+ current), up)
     }
     def result = current
   }

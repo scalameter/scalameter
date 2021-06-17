@@ -27,7 +27,7 @@ abstract class BasePerformanceTest[U] extends AbstractPerformanceTest {
     Tree.Zipper.root[Setup[_]](measurer.prepareContext(currentContext ++ defaultConfig))
 
   protected case class Scope(name: String, context: Context) {
-    def config(kvs: KeyValue*): Scope = config(context ++ Context(kvs: _*))
+    def config(kvs: KeyValue[_]*): Scope = config(context ++ Context(kvs: _*))
     def config(ctx: Context): Scope = Scope(name, context ++ ctx)
     def in(block: =>Unit): Unit = {
       val oldscope = context(Key.dsl.scope)
@@ -50,7 +50,7 @@ abstract class BasePerformanceTest[U] extends AbstractPerformanceTest {
       Using(benchmark.copy(customwarmup = Some(() => block)))
     def curve(name: String) =
       Using(benchmark.copy(context = benchmark.context + (Key.dsl.curve -> name)))
-    def config(kvs: KeyValue*): Using[T] =
+    def config(kvs: KeyValue[_]*): Using[T] =
       config(Context(kvs: _*))
     def config(ctx: Context): Using[T] =
       Using(benchmark.copy(context = benchmark.context ++ ctx))

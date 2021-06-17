@@ -14,7 +14,7 @@ class MeasureBuilder[T, U](
   val teardown: T => Unit,
   val resultFunction: Seq[Quantity[U]] => Quantity[U]
 ) {
-  def config(kvs: KeyValue*) = new MeasureBuilder(ctx ++ Context(kvs: _*), warmer,
+  def config(kvs: KeyValue[_]*) = new MeasureBuilder(ctx ++ Context(kvs: _*), warmer,
     measurer, regen, setup, teardown, resultFunction)
 
   def withWarmer(w: Warmer) =
