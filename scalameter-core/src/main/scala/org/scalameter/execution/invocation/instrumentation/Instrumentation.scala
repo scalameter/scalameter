@@ -97,11 +97,9 @@ private[scalameter] object Instrumentation {
             classStream.close()
           }
 
-          val nxt = Try(jos.putNextEntry(new JarEntry(className)))
-          if (nxt.isSuccess) {
-            jos.write(writer.toByteArray)
-            jos.closeEntry()
-          }
+          jos.putNextEntry(new JarEntry(className))
+          jos.write(writer.toByteArray)
+          jos.closeEntry()
         }
       }
       finally {
