@@ -1,8 +1,12 @@
 package org.scalameter.persistence
 
+import java.io.InputStream
+
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.scala.DefaultScalaModule
 import com.fasterxml.jackson.module.scala.experimental.ScalaObjectMapper
+
+import org.scalameter.History
 
 
 package object json {
@@ -33,7 +37,9 @@ package object json {
    *  }}}
    */
   private[persistence] lazy val jsonMapper = {
-    val mapper = new ObjectMapper with ScalaObjectMapper
+    val mapper = new ObjectMapper with ScalaObjectMapper with HistoryReader {
+      def readHistory[T](is: InputStream): History[T] = readValue[History[_]](is).asInstanceOf[History[T]]
+    }
     mapper.registerModules(DefaultScalaModule, ScalaMeterModule)
     mapper
   }

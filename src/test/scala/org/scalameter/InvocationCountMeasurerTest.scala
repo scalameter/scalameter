@@ -3,11 +3,12 @@ package org.scalameter
 
 
 import org.scalameter.examples.InvocationCountMeasurerBench
-import org.scalatest.{Matchers, FunSuite}
+import org.scalatest.funsuite.AnyFunSuite
+import org.scalatest.matchers.should.Matchers
 
 
 
-abstract class InvocationCountMeasurerTest extends FunSuite with Matchers {
+abstract class InvocationCountMeasurerTest extends AnyFunSuite with Matchers {
   def checkInvocationCountMeasurerTest(test: InvocationCountMeasurerBench): Any = {
     try {
       test.executeTests()

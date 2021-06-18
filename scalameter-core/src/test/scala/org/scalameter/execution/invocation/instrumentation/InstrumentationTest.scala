@@ -2,14 +2,15 @@ package org.scalameter.execution.invocation.instrumentation
 
 import java.io.File
 import java.util.zip.ZipFile
-import org.scalatest.{Matchers, FunSuite}
+import org.scalatest.funsuite.AnyFunSuite
+import org.scalatest.matchers.should.Matchers
 import scala.jdk.CollectionConverters._
 import scala.collection.mutable
 import org.scalameter.Context
 import org.scalameter.execution.invocation.InvocationCountMatcher
 
 
-class InstrumentationTest extends FunSuite with Matchers {
+class InstrumentationTest extends AnyFunSuite with Matchers {
   class Test {
     def test1() = "test1"
     def test2(i: Int, b: String) = ()

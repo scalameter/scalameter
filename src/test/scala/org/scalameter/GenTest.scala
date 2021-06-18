@@ -1,9 +1,9 @@
 package org.scalameter
 
 import org.scalameter.picklers.Implicits._
-import org.scalatest.FunSuite
+import org.scalatest.funsuite.AnyFunSuite
 
-class GenTest extends FunSuite {
+class GenTest extends AnyFunSuite {
 
   test("A generator should be renamed") {
     val gen = Gen.range("size")(100, 500, 100)

@@ -20,5 +20,5 @@ case class Measurement[T: Pickler](
 
 
 object Measurement {
-  implicit def ordering[T] = Ordering.by[Measurement[T], Parameters](_.params)
+  implicit def ordering[T]: Ordering[Measurement[T]] = Ordering.by[Measurement[T], Parameters](_.params)
 }

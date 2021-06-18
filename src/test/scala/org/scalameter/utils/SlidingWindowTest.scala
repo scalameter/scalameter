@@ -2,11 +2,11 @@ package org.scalameter.utils
 
 
 
-import org.scalatest.FunSuite
+import org.scalatest.funsuite.AnyFunSuite
 
 
 
-class SlidingWindowTest extends FunSuite {
+class SlidingWindowTest extends AnyFunSuite {
 
   def newSlidingWindow(capacity: Int, size: Int) = {
     val sw = new SlidingWindow(capacity)

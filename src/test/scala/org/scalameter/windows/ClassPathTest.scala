@@ -4,12 +4,12 @@ package windows
 
 
 import java.io.File
-import org.scalatest.FunSuite
+import org.scalatest.funsuite.AnyFunSuite
 import org.apache.commons.lang3.SystemUtils
 
 
 
-class ClassPathTest extends FunSuite {
+class ClassPathTest extends AnyFunSuite {
 
   test("A classpath should not contain double quotes") {
     if (SystemUtils.IS_OS_WINDOWS) {

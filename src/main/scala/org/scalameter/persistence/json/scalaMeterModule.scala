@@ -3,11 +3,13 @@ package persistence.json
 
 
 
-import com.fasterxml.jackson.core.{JsonToken, JsonParser, JsonGenerator}
+import java.io.InputStream
+
+import com.fasterxml.jackson.core.{JsonGenerator, JsonParser, JsonToken}
 import com.fasterxml.jackson.databind._
 import com.fasterxml.jackson.databind.deser.Deserializers
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer
-import com.fasterxml.jackson.databind.jsontype.{TypeSerializer, TypeDeserializer}
+import com.fasterxml.jackson.databind.jsontype.{TypeDeserializer, TypeSerializer}
 import com.fasterxml.jackson.databind.Module.SetupContext
 import com.fasterxml.jackson.databind.module.SimpleModule
 import com.fasterxml.jackson.databind.ser.Serializers
@@ -239,4 +241,8 @@ object ScalaMeterModule extends SimpleModule {
     context.addDeserializers(PicklerBasedMapDeserializerResolver)
     super.setupModule(context)
   }
+}
+
+trait HistoryReader {
+  def readHistory[T](src: InputStream): History[T]
 }

@@ -18,7 +18,7 @@ extends Pickler[C[T]] {
     val pickler = implicitly[Pickler[T]].asInstanceOf[Pickler[Any]]
     val builder = Array.newBuilder[Byte]
     builder ++= IntPickler.pickle(x.size)
-    x.iterator.foreach { e: Any =>
+    x.iterator.foreach { (e: Any) =>
       builder ++= pickler.pickle(e)
     }
     builder.result()

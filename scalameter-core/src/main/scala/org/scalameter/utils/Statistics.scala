@@ -25,7 +25,7 @@ object Statistics {
 		def passed: Boolean
 	}
 
-	implicit def test2boolean(t: Test) = t.passed
+	implicit def test2boolean(t: Test): Boolean = t.passed
 
 	/** Let Y = (Y_1, ..., Y_n) data resulting from a parametric law F of
 	 *  scalar parameter θ. A confidence interval (B_i, B_s) is a statistic
@@ -119,7 +119,7 @@ object Statistics {
 			val yi = p._1
 			val ni = p._2
 			sum + ni * (yi - overallMean) * (yi - overallMean)
-	  }
+		}
 	}
 
 	/** Computes sum-of-squares due to errors in measurements. */

@@ -1,9 +1,10 @@
 package org.scalameter.persistence
 
-import org.scalatest.{FunSuite, Matchers}
+import org.scalatest.funsuite.AnyFunSuite
+import org.scalatest.matchers.should.Matchers
 
 
-class JSONSerializationPersistorTest extends FunSuite with PersistorTest with Matchers {
+class JSONSerializationPersistorTest extends AnyFunSuite with PersistorTest with Matchers {
   val persistor = new JSONSerializationPersistor
 
   test("Should correctly serialize and deserialize history") {

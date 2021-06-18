@@ -4,12 +4,12 @@ package issues
 
 
 import java.io._
-import org.scalatest.FunSuite
+import org.scalatest.funsuite.AnyFunSuite
 import org.scalameter.api._
 
 
 
-class WarmerZeroTest extends FunSuite {
+class WarmerZeroTest extends AnyFunSuite {
 
   test("Warmer.Zero should be serializable") {
     val baos = new ByteArrayOutputStream()
