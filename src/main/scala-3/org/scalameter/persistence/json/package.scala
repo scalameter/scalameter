@@ -1,8 +1,14 @@
 package org.scalameter.persistence
 
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.module.scala.DefaultScalaModule
-import com.fasterxml.jackson.module.scala.ClassTagExtensions
+import java.io.InputStream
+
+import scala.reflect.ClassTag
+
+import com.fasterxml.jackson.core.JsonParser
+import com.fasterxml.jackson.databind.`type`.TypeFactory
+import com.fasterxml.jackson.databind.{JavaType, ObjectMapper}
+import com.fasterxml.jackson.module.scala.{ClassTagExtensions, DefaultScalaModule, JavaTypeable}
+import org.scalameter.History
 
 
 package object json {
@@ -33,7 +39,16 @@ package object json {
    *  }}}
    */
   private[persistence] lazy val jsonMapper = {
-    val mapper = new ObjectMapper with ClassTagExtensions
+    val mapper = new ObjectMapper with ClassTagExtensions with HistoryReader {
+      def readHistory[T](src: InputStream): History[T] = {
+        val javaTypeable: JavaTypeable[History[T]] = new JavaTypeable[History[T]] {
+          override def asJavaType(typeFactory: TypeFactory): JavaType = {
+            typeFactory.constructParametricType(classOf[History[_]], JavaTypeable.anyJavaTypeable.asJavaType(typeFactory))
+          }
+        }
+        readValue(src, javaTypeable.asJavaType(getTypeFactory))
+      }
+    }
     mapper.registerModules(DefaultScalaModule, ScalaMeterModule)
     mapper
   }

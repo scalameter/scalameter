@@ -24,7 +24,7 @@ case class JSONSerializationPersistor(path: File)
   protected def outputStream(file: File): FileOutputStream = new FileOutputStream(file)
 
   protected def loadFrom[T](is: FileInputStream): History[T] = {
-    jsonMapper.readValue[History[_]](is).asInstanceOf[History[T]]
+    jsonMapper.readHistory[T](is)
   }
 
   protected def saveTo[T](history: History[T], os: FileOutputStream): Unit = {

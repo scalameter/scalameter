@@ -27,7 +27,7 @@ case class GZIPJSONSerializationPersistor(path: File)
     new GZIPOutputStream(new FileOutputStream(file))
 
   protected def loadFrom[T](is: GZIPInputStream): History[T] = {
-    jsonMapper.readValue[History[_]](is).asInstanceOf[History[T]]
+    jsonMapper.readHistory[T](is)
   }
 
   protected def saveTo[T](history: History[T], os: GZIPOutputStream): Unit = {
