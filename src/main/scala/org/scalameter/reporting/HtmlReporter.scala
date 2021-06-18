@@ -25,7 +25,7 @@ case class HtmlReporter[T: Numeric](embedDsv: Boolean = true) extends Reporter[T
     val root = new File(resultdir, "report")
     root.mkdirs()
 
-    val curvesJSONIndex: String = "???" //JSONIndex(results)
+    val curvesJSONIndex: String = JSONIndex(results)
 
     resourceDirs.foreach {
       new File(root, _).mkdirs()
