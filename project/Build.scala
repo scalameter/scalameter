@@ -114,7 +114,7 @@ object ScalaMeterBuild {
         "org.scala-sbt" % "test-interface" % "1.0",
         "org.scala-lang.modules" %% "scala-xml" % "2.0.0",
         "org.scala-lang.modules" %% "scala-parser-combinators" % "2.0.0",
-        "com.fasterxml.jackson.module" %% "jackson-module-scala" % "2.13.0-SNAPSHOT",
+        "com.fasterxml.jackson.module" %% "jackson-module-scala" % "2.13.0-rc1",
         "commons-io" % "commons-io" % "2.4",
         "org.jline" % "jline" % "3.10.0"
       )
@@ -126,7 +126,7 @@ object ScalaMeterBuild {
         "org.scala-sbt" % "test-interface" % "1.0",
         "org.scala-lang.modules" %% "scala-xml" % "1.2.0",
         "org.scala-lang.modules" %% "scala-parser-combinators" % "1.1.2",
-        "com.fasterxml.jackson.module" %% "jackson-module-scala" % "2.13.0-SNAPSHOT",
+        "com.fasterxml.jackson.module" %% "jackson-module-scala" % "2.13.0-rc1",
         "commons-io" % "commons-io" % "2.4",
         "io.spray" %% "spray-json" % "1.3.5",
         "org.jline" % "jline" % "3.10.0"
@@ -139,7 +139,7 @@ object ScalaMeterBuild {
         "org.scala-sbt" % "test-interface" % "1.0",
         "org.scala-lang.modules" % "scala-xml_2.12" % "1.0.5",
         "org.scala-lang.modules" % "scala-parser-combinators_2.12" % "1.0.4",
-        "com.fasterxml.jackson.module" %% "jackson-module-scala" % "2.13.0-SNAPSHOT",
+        "com.fasterxml.jackson.module" %% "jackson-module-scala" % "2.13.0-rc1",
         "commons-io" % "commons-io" % "2.4",
         "io.spray" % "spray-json_2.12" % "1.3.2",
         "org.jline" % "jline" % "3.10.0"
@@ -152,7 +152,7 @@ object ScalaMeterBuild {
         "org.scala-sbt" % "test-interface" % "1.0",
         "org.scala-lang.modules" %% "scala-xml" % "1.0.1",
         "org.scala-lang.modules" %% "scala-parser-combinators" % "1.0.1",
-        "com.fasterxml.jackson.module" %% "jackson-module-scala" % "2.13.0-SNAPSHOT",
+        "com.fasterxml.jackson.module" %% "jackson-module-scala" % "2.13.0-rc1",
         "commons-io" % "commons-io" % "2.4",
         "io.spray" %% "spray-json" % "1.3.2",
         "org.jline" % "jline" % "3.10.0"
