@@ -112,7 +112,7 @@ object ScalaMeterBuild extends MechaRepoBuild {
         "junit" % "junit" % "4.12" % "test",
         "org.apache.commons" % "commons-math3" % "3.2",
         "org.scala-sbt" % "test-interface" % "1.0",
-        "org.scala-lang.modules" %% "scala-xml" % "1.2.0",
+        "org.scala-lang.modules" %% "scala-xml" % "2.0.1",
         "org.scala-lang.modules" %% "scala-parser-combinators" % "1.1.2",
         "com.fasterxml.jackson.module" %% "jackson-module-scala" % "2.11.3",
         "commons-io" % "commons-io" % "2.4",
