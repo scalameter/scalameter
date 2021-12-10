@@ -15,16 +15,10 @@ jobs:
         with:
           java-version: '11'
           distribution: 'adopt'
-      # disable for testing
-#      - name: Test
-#        run: sbt +test
-      - name: Get tag
-        id: tag
-        uses: dawidd6/action-get-tag@v1
-        with:
-          # Optionally strip `v` prefix
-          strip_v: true
-      - name: Publish release
+      - uses: olafurpg/setup-scala@v13
+      - run: sbt ci-release
         env:
-          SONATYPE_PASS: ${{ secrets.SONATYPE_PASS }}
-        run: SONATYPE_USER=com.github.hughsimpson sbt -Dversion="${{steps.tag.outputs.tag}}" +publish
+          PGP_PASSPHRASE: ${{ secrets.PGP_PASSPHRASE }}
+          PGP_SECRET: ${{ secrets.PGP_SECRET }}
+          SONATYPE_PASSWORD: ${{ secrets.SONATYPE_PASSWORD }}
+          SONATYPE_USERNAME: ${{ secrets.SONATYPE_USERNAME }}
