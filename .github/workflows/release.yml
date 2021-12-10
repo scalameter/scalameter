@@ -25,4 +25,6 @@ jobs:
           # Optionally strip `v` prefix
           strip_v: true
       - name: Publish release
+        env:
+          SONATYPE_PASS: ${{ secrets.SONATYPE_PASS }}
         run: SONATYPE_USER=com.github.hughsimpson sbt -Dversion="${{steps.tag.outputs.tag}}" +publish
