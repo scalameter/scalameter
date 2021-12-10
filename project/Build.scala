@@ -5,25 +5,7 @@ import sbt._
 
 object ScalaMeterBuild {
 
-  def repoName = "scalameter"
-
-  val publishUser = "SONATYPE_USER"
-  val publishPass = "SONATYPE_PASS"
-
-  val userPass = for {
-    user <- sys.env.get(publishUser)
-    pass <- sys.env.get(publishPass)
-  } yield (user, pass)
-
-  val publishCreds: Seq[Setting[_]] = Seq(userPass match {
-    case Some((user, pass)) =>
-      credentials += Credentials("Sonatype Nexus Repository Manager", "s01.oss.sonatype.org", user, pass)
-    case None =>
-      // prevent publishing
-      publish := streams.value.log.info("Publishing to Sonatype is disabled since the \"" + publishUser + "\" and/or \"" + publishPass + "\" environment variables are not set.")
-  })
-
-  val scalaMeterSettings = publishCreds ++ Seq(
+  val scalaMeterSettings = Seq(
     name := "scalameter",
     organization := "io.github.hughsimpson",
     scalaVersion := "2.13.6",
@@ -42,14 +24,6 @@ object ScalaMeterBuild {
       "Sonatype OSS Releases" at "https://oss.sonatype.org/content/repositories/releases"
     ),
     ivyLoggingLevel in ThisBuild := UpdateLogging.Quiet,
-    publishMavenStyle := true,
-    publishTo := {
-      val nexus = "https://s01.oss.sonatype.org/"
-      if (version.value.trim.endsWith("SNAPSHOT"))
-        Some("snapshots" at nexus + "content/repositories/snapshots")
-      else
-        Some("releases" at nexus + "service/local/staging/deploy/maven2")
-    },
     publishArtifact in Test := false,
     pomIncludeRepository := { _ => false },
     pomExtra :=
@@ -131,7 +105,7 @@ object ScalaMeterBuild {
     }
   }
 
-  val scalaMeterCoreSettings = publishCreds ++ Seq(
+  val scalaMeterCoreSettings = Seq(
     name := "scalameter-core",
     organization := "io.github.hughsimpson",
     scalaVersion := "2.13.0",
@@ -150,14 +124,6 @@ object ScalaMeterBuild {
       "Sonatype OSS Releases" at "https://oss.sonatype.org/content/repositories/releases"
     ),
     ivyLoggingLevel in ThisBuild := UpdateLogging.Quiet,
-    publishMavenStyle := true,
-    publishTo := {
-      val nexus = "https://s01.oss.sonatype.org/"
-      if (version.value.trim.endsWith("SNAPSHOT"))
-        Some("snapshots" at nexus + "content/repositories/snapshots")
-      else
-        Some("releases" at nexus + "service/local/staging/deploy/maven2")
-    },
     publishArtifact in Test := false,
     pomIncludeRepository := { _ => false },
     pomExtra :=
