@@ -1,13 +1,7 @@
 import java.io.File
 
-import ReleaseExtras.ReleaseExtrasKeys._
-import ReleaseExtras._
-import com.jsuereth.sbtpgp.PgpKeys._
 import sbt.Keys._
 import sbt._
-import sbtrelease.ReleasePlugin
-import sbtrelease.ReleasePlugin.autoImport._
-import sbtrelease.ReleaseStateTransformations._
 
 object ScalaMeterBuild {
 
@@ -23,39 +17,15 @@ object ScalaMeterBuild {
 
   val publishCreds: Seq[Setting[_]] = Seq(userPass match {
     case Some((user, pass)) =>
-      credentials += Credentials("Sonatype Nexus Repository Manager", "oss.sonatype.org", user, pass)
+      credentials += Credentials("Sonatype Nexus Repository Manager", "s01.oss.sonatype.org", user, pass)
     case None =>
       // prevent publishing
       publish := streams.value.log.info("Publishing to Sonatype is disabled since the \"" + publishUser + "\" and/or \"" + publishPass + "\" environment variables are not set.")
   })
 
-  val releasePluginSettings = Seq(
-    releaseBranchName := s"version/${(version in ThisBuild).value}",
-    examples.repo := "git@github.com:scalameter/scalameter-examples.git",
-    examples.tag := "v%s",
-    examples.tagComment := "Release %s",
-    examples.commitMessage := "Set ScalaMeter version to %s",
-    examples.scalaMeterVersionFile := "version.sbt",
-    examples.scalaMeterVersionFileContent := globalVersionString,
-    releaseCommitMessage := s"Set version to ${(version in ThisBuild).value}",
-    releasePublishArtifactsAction := publishSigned.value,
-    releaseProcess := Seq[ReleaseStep](
-      checkSnapshotDependencies,
-      inquireVersions,
-      runTest,
-      setReleaseVersion,
-      commitReleaseVersion,
-      branchRelease,
-      setNextVersion,
-      commitNextVersion,
-      pushChanges,
-      bumpUpVersionInExamples
-    )
-  )
-
   val scalaMeterSettings = publishCreds ++ Seq(
     name := "scalameter",
-    organization := "com.storm-enroute",
+    organization := "io.github.hughsimpson",
     scalaVersion := "2.13.6",
     crossScalaVersions := Seq("2.11.12", "2.12.8", "2.13.6", "3.0.0"),
     scalacOptions ++= Seq("-deprecation", "-unchecked", "-feature", "-Xlint", "-Xfuture"),
@@ -74,7 +44,7 @@ object ScalaMeterBuild {
     ivyLoggingLevel in ThisBuild := UpdateLogging.Quiet,
     publishMavenStyle := true,
     publishTo := {
-      val nexus = "https://oss.sonatype.org/"
+      val nexus = "https://s01.oss.sonatype.org/"
       if (version.value.trim.endsWith("SNAPSHOT"))
         Some("snapshots" at nexus + "content/repositories/snapshots")
       else
@@ -83,7 +53,6 @@ object ScalaMeterBuild {
     publishArtifact in Test := false,
     pomIncludeRepository := { _ => false },
     pomExtra :=
-      <url>http://scalameter.github.io/</url>
       <licenses>
         <license>
           <name>BSD-style</name>
@@ -92,14 +61,14 @@ object ScalaMeterBuild {
         </license>
       </licenses>
       <scm>
-        <url>git@github.com:scalameter/scalameter.git</url>
-        <connection>scm:git:git@github.com:scalameter/scalameter.git</connection>
+        <url>git@github.com:hughsimpson/scalameter.git</url>
+        <connection>scm:git:git@github.com:hughsimpson/scalameter.git</connection>
       </scm>
       <developers>
         <developer>
-          <id>axel22</id>
-          <name>Aleksandar Prokopec</name>
-          <url>http://axel22.github.com/</url>
+          <id>hughsimpson</id>
+          <name>Hugh Simpson</name>
+          <url>http://github.com/hughsimpson</url>
         </developer>
       </developers>
   )
@@ -163,7 +132,7 @@ object ScalaMeterBuild {
 
   val scalaMeterCoreSettings = publishCreds ++ Seq(
     name := "scalameter-core",
-    organization := "com.storm-enroute",
+    organization := "io.github.hughsimpson",
     scalaVersion := "2.13.0",
     crossScalaVersions := Seq("2.11.12", "2.12.8", "2.13.0", "3.0.0"),
     scalacOptions ++= Seq("-deprecation", "-unchecked", "-feature", "-Xlint", "-Xfuture", "-language:implicitConversions"),
@@ -182,7 +151,7 @@ object ScalaMeterBuild {
     ivyLoggingLevel in ThisBuild := UpdateLogging.Quiet,
     publishMavenStyle := true,
     publishTo := {
-      val nexus = "https://oss.sonatype.org/"
+      val nexus = "https://s01.oss.sonatype.org/"
       if (version.value.trim.endsWith("SNAPSHOT"))
         Some("snapshots" at nexus + "content/repositories/snapshots")
       else
@@ -191,7 +160,6 @@ object ScalaMeterBuild {
     publishArtifact in Test := false,
     pomIncludeRepository := { _ => false },
     pomExtra :=
-      <url>http://scalameter.github.io/</url>
       <licenses>
         <license>
           <name>BSD-style</name>
@@ -200,14 +168,14 @@ object ScalaMeterBuild {
         </license>
       </licenses>
       <scm>
-        <url>git@github.com:scalameter/scalameter.git</url>
-        <connection>scm:git:git@github.com:scalameter/scalameter.git</connection>
+        <url>git@github.com:hughsimpson/scalameter.git</url>
+        <connection>scm:git:git@github.com:hughsimpson/scalameter.git</connection>
       </scm>
       <developers>
         <developer>
-          <id>axel22</id>
-          <name>Aleksandar Prokopec</name>
-          <url>http://axel22.github.com/</url>
+          <id>hughsimpson</id>
+          <name>Hugh Simpson</name>
+          <url>http://github.com/hughsimpson</url>
         </developer>
       </developers>
   )

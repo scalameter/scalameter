@@ -15,3 +15,5 @@ tmp*
 .metadata/
 .idea/
 *.iml
+
+.bsp

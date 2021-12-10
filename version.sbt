@@ -1,1 +1,1 @@
-version in ThisBuild := "0.22"
+version in ThisBuild := sys.props.get("version") getOrElse "local"
