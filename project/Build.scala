@@ -53,6 +53,7 @@ object ScalaMeterBuild {
     publishArtifact in Test := false,
     pomIncludeRepository := { _ => false },
     pomExtra :=
+      <url>https://github.com/hughsimpson/scalameter/</url>
       <licenses>
         <license>
           <name>BSD-style</name>
@@ -160,6 +161,7 @@ object ScalaMeterBuild {
     publishArtifact in Test := false,
     pomIncludeRepository := { _ => false },
     pomExtra :=
+      <url>https://github.com/hughsimpson/scalameter/</url>
       <licenses>
         <license>
           <name>BSD-style</name>
