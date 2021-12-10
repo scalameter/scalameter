@@ -16,8 +16,8 @@ jobs:
           java-version: '11'
           distribution: 'adopt'
       # disable for testing
-      - name: Test
-        run: sbt +test
+#      - name: Test
+#        run: sbt +test
       - name: Get tag
         id: tag
         uses: dawidd6/action-get-tag@v1
