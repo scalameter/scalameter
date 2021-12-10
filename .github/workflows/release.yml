@@ -15,6 +15,7 @@ jobs:
         with:
           java-version: '11'
           distribution: 'adopt'
+      # disable for testing
       - name: Test
         run: sbt +test
       - name: Get tag
@@ -24,4 +25,4 @@ jobs:
           # Optionally strip `v` prefix
           strip_v: true
       - name: Publish release
-        run: SONATYPE_USER=com.github.hughsimpson SONATYPE_PASS="${SOME_STORED_SECRET}" sbt -Dversion="${{steps.tag.outputs.tag}}" +publish
+        run: SONATYPE_USER=com.github.hughsimpson sbt -Dversion="${{steps.tag.outputs.tag}}" +publish
