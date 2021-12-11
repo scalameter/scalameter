@@ -19,6 +19,7 @@ object ScalaMeterBuild {
     outputStrategy := Some(StdoutOutput),
     connectInput in run := true,
     connectInput in Test := true,
+    sonatypeCredentialHost := "s01.oss.sonatype.org",
     resolvers ++= Seq(
       "Sonatype OSS Snapshots" at "https://oss.sonatype.org/content/repositories/snapshots",
       "Sonatype OSS Releases" at "https://oss.sonatype.org/content/repositories/releases"
@@ -119,6 +120,7 @@ object ScalaMeterBuild {
     outputStrategy := Some(StdoutOutput),
     connectInput in run := true,
     connectInput in Test := true,
+    sonatypeCredentialHost := "s01.oss.sonatype.org",
     resolvers ++= Seq(
       "Sonatype OSS Snapshots" at "https://oss.sonatype.org/content/repositories/snapshots",
       "Sonatype OSS Releases" at "https://oss.sonatype.org/content/repositories/releases"
