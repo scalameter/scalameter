@@ -2,6 +2,7 @@ import java.io.File
 
 import sbt.Keys._
 import sbt._
+import xerial.sbt.Sonatype.SonatypeKeys._
 
 object ScalaMeterBuild {
 
@@ -20,6 +21,7 @@ object ScalaMeterBuild {
     connectInput in run := true,
     connectInput in Test := true,
     sonatypeCredentialHost := "s01.oss.sonatype.org",
+    sonatypeRepository := "https://s01.oss.sonatype.org/service/local",
     resolvers ++= Seq(
       "Sonatype OSS Snapshots" at "https://oss.sonatype.org/content/repositories/snapshots",
       "Sonatype OSS Releases" at "https://oss.sonatype.org/content/repositories/releases"
@@ -121,6 +123,7 @@ object ScalaMeterBuild {
     connectInput in run := true,
     connectInput in Test := true,
     sonatypeCredentialHost := "s01.oss.sonatype.org",
+    sonatypeRepository := "https://s01.oss.sonatype.org/service/local",
     resolvers ++= Seq(
       "Sonatype OSS Snapshots" at "https://oss.sonatype.org/content/repositories/snapshots",
       "Sonatype OSS Releases" at "https://oss.sonatype.org/content/repositories/releases"
