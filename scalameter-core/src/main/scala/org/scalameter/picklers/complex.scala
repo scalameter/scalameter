@@ -16,3 +16,18 @@ object ClassPathPickler extends Pickler[ClassPath] {
     (ClassPath(cl.map(new File(_))), pos)
   }
 }
+
+class TuplePickler[A, B](picklerA: Pickler[A], picklerB: Pickler[B]) extends Pickler[(A, B)] {
+  override def pickle(x: (A, B)): Array[Byte] = {
+    val builder = Array.newBuilder[Byte]
+    builder ++= picklerA.pickle(x._1)
+    builder ++= picklerB.pickle(x._2)
+    builder.result()
+  }
+
+  override def unpickle(data: Array[Byte], from: Int): ((A, B), Int) = {
+    val (a, fromA) = picklerA.unpickle(data, from)
+    val (b, fromB) = picklerB.unpickle(data, fromA)
+    ((a, b), fromB)
+  }
+}
