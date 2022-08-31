@@ -273,7 +273,7 @@ object Measurer {
       import utils.Statistics._
       import Numeric.Implicits._
 
-      implicit val ord = Ordering.by((q: Quantity[V]) => q.value)
+      implicit val ord: Ordering[Quantity[V]] = Ordering.by((q: Quantity[V]) => q.value)
       var results =
         super.measure(context, measurements, setup, tear, regen, snippet).sorted
       val suspectp = context(suspectPercent)

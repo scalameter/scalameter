@@ -3,12 +3,12 @@ package utils
 
 
 
-import org.scalatest.FunSuite
+import org.scalatest.funsuite.AnyFunSuite
 import org.scalameter.picklers.Implicits._
 
 
 
-class ZipperTest extends FunSuite {
+class ZipperTest extends AnyFunSuite {
 
   test("Zipper.descend,ascend") {
     implicit val c = new KeyContainer("", null) {}

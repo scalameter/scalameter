@@ -2,10 +2,11 @@ package org.scalameter.japi
 
 import org.scalameter.api._
 import org.scalameter.utils.ClassPath
-import org.scalatest.{FunSuite, Matchers}
+import org.scalatest.funsuite.AnyFunSuite
+import org.scalatest.matchers.should.Matchers
 
 
-class ContextBuilderTest extends FunSuite with Matchers {
+class ContextBuilderTest extends AnyFunSuite with Matchers {
   test("ContextBuilder should create the same context as direct context creation") {
     val default = ClassPath.default
     val expected = Context(

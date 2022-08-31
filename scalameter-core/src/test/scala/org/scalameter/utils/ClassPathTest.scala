@@ -6,11 +6,12 @@ package utils
 import java.io.File
 import java.net._
 import org.apache.commons.lang3.SystemUtils
-import org.scalatest.{FunSuite, Matchers}
+import org.scalatest.funsuite.AnyFunSuite
+import org.scalatest.matchers.should.Matchers
 
 
 
-class ClassPathTest extends FunSuite with Matchers {
+class ClassPathTest extends AnyFunSuite with Matchers {
 
   test("File paths with spaces should be correctly extracted") {
     val urls = Array[URL](

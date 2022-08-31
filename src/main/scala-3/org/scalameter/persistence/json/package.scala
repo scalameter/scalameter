@@ -1,0 +1,55 @@
+package org.scalameter.persistence
+
+import java.io.InputStream
+
+import scala.reflect.ClassTag
+
+import com.fasterxml.jackson.core.JsonParser
+import com.fasterxml.jackson.databind.`type`.TypeFactory
+import com.fasterxml.jackson.databind.{JavaType, ObjectMapper}
+import com.fasterxml.jackson.module.scala.{ClassTagExtensions, DefaultScalaModule, JavaTypeable}
+import org.scalameter.History
+
+
+package object json {
+  /** Jackson ObjectMapper that maps concrete class instances to JSON, and vice versa.
+   *
+   *  It supports out of a box primitives, classes and Scala-specific datatypes thanks
+   *  to `jackson-module-scala`.
+   *
+   *  Note that [[scala.collection.immutable.Map]] with [[org.scalameter.Key]] or 
+   *  [org.scalameter.Parameter]] as a key
+   *  and [[scala.Any]] as a value is serialized using
+   *  [[org.scalameter.picklers.Pickler]].
+   *  It means that every map value is serialized as Base64 encoded byte array.
+   *
+   *  Note that supporting inheritance needs annotating supertype with
+   *  [[com.fasterxml.jackson.annotation.JsonTypeInfo]] and
+   *  [[com.fasterxml.jackson.annotation.JsonSubTypes]].
+   *  If it is not achievable, Jackson Mix-in Annotation can be used.
+   *  {{{
+   *    import com.fasterxml.jackson.annotation.{JsonTypeInfo, JsonSubTypes}
+   *    import org.scalameter.persistence.json._
+   *
+   *    @JsonTypeInfo(use=Id.CLASS)
+   *    @JsonSubTypes(Array(classOf[Apple], classOf[Orange])
+   *    abstract class FruitMixin
+   *
+   *    jsonMapper.addMixin[Fruit, FruitMixin]
+   *  }}}
+   */
+  private[persistence] lazy val jsonMapper = {
+    val mapper = new ObjectMapper with ClassTagExtensions with HistoryReader {
+      def readHistory[T](src: InputStream): History[T] = {
+        val javaTypeable: JavaTypeable[History[T]] = new JavaTypeable[History[T]] {
+          override def asJavaType(typeFactory: TypeFactory): JavaType = {
+            typeFactory.constructParametricType(classOf[History[_]], JavaTypeable.anyJavaTypeable.asJavaType(typeFactory))
+          }
+        }
+        readValue(src, javaTypeable.asJavaType(getTypeFactory))
+      }
+    }
+    mapper.registerModules(DefaultScalaModule, ScalaMeterModule)
+    mapper
+  }
+}

@@ -1,9 +1,9 @@
 package org.scalameter
 
 import org.scalameter.examples._
-import org.scalatest.FunSuite
+import org.scalatest.funsuite.AnyFunSuite
 
-class IncludeTest extends FunSuite {
+class IncludeTest extends AnyFunSuite {
   test("include benchmark template") {
     try {
       (new TestSuite).executeTests()

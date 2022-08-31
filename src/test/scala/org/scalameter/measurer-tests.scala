@@ -1,9 +1,9 @@
 package org.scalameter
 
 import org.scalameter.examples._
-import org.scalatest.FunSuite
+import org.scalatest.funsuite.AnyFunSuite
 
-class DefaultQuickBenchTest extends FunSuite {
+class DefaultQuickBenchTest extends AnyFunSuite {
   test("Measurer.Default on LocalExecutor should execute correctly") {
     try {
       (new DefaultQuickBench).executeTests()
@@ -14,7 +14,7 @@ class DefaultQuickBenchTest extends FunSuite {
   }
 }
 
-class DefaultMicroBenchTest extends FunSuite {
+class DefaultMicroBenchTest extends AnyFunSuite {
   test("Measurer.Default on LocalExecutor should execute correctly") {
     try {
       (new DefaultMicroBench).executeTests()
@@ -25,7 +25,7 @@ class DefaultMicroBenchTest extends FunSuite {
   }
 }
 
-class IgnoringGCQuickBenchTest extends FunSuite {
+class IgnoringGCQuickBenchTest extends AnyFunSuite {
   test("Measurer.Default on LocalExecutor should execute correctly") {
     try {
       (new IgnoringGCQuickBench).executeTests()
@@ -36,7 +36,7 @@ class IgnoringGCQuickBenchTest extends FunSuite {
   }
 }
 
-class IgnoringGCMicroBenchTest extends FunSuite {
+class IgnoringGCMicroBenchTest extends AnyFunSuite {
   test("Measurer.Default on LocalExecutor should execute correctly") {
     try {
       (new IgnoringGCMicroBench).executeTests()
@@ -47,7 +47,7 @@ class IgnoringGCMicroBenchTest extends FunSuite {
   }
 }
 
-class MemoryQuickBenchTest extends FunSuite {
+class MemoryQuickBenchTest extends AnyFunSuite {
   test("Measurer.Default on LocalExecutor should execute correctly") {
     try {
       (new MemoryQuickBench).executeTests()
@@ -58,7 +58,7 @@ class MemoryQuickBenchTest extends FunSuite {
   }
 }
 
-class MemoryMicroBenchTest extends FunSuite {
+class MemoryMicroBenchTest extends AnyFunSuite {
   test("Measurer.Default on LocalExecutor should execute correctly") {
     try {
       (new MemoryMicroBench).executeTests()
@@ -69,7 +69,7 @@ class MemoryMicroBenchTest extends FunSuite {
   }
 }
 
-class GCCountQuickBenchTest extends FunSuite {
+class GCCountQuickBenchTest extends AnyFunSuite {
   test("Measurer.Default on LocalExecutor should execute correctly") {
     try {
       (new GCCountQuickBench).executeTests()
@@ -80,7 +80,7 @@ class GCCountQuickBenchTest extends FunSuite {
   }
 }
 
-class GCCountMicroBenchTest extends FunSuite {
+class GCCountMicroBenchTest extends AnyFunSuite {
   test("Measurer.Default on LocalExecutor should execute correctly") {
     try {
       (new GCCountMicroBench).executeTests()

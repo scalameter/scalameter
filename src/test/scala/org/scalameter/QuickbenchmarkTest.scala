@@ -2,14 +2,14 @@ package org.scalameter
 
 
 
-import org.scalatest.FunSuite
+import org.scalatest.funsuite.AnyFunSuite
 import org.scalameter.api._
 import util.Properties.javaVersion
 import org.scalameter.picklers.Implicits._
 
 
 
-class QuickbenchmarkTest extends FunSuite {
+class QuickbenchmarkTest extends AnyFunSuite {
 
   object SomeBenchmark extends Bench.LocalTime {
     performance of "single" in {

@@ -51,8 +51,8 @@ object EnumPickler extends Pickler[java.lang.Enum[_]] {
     val (className, newFrom) = StringPickler.unpickle(a, from)
     val (enumName, pos) = StringPickler.unpickle(a, newFrom)
     val enumClass = Class.forName(className).asInstanceOf[Class[Enum[_]]]
-    val enum = enumClass.getEnumConstants.find(_.toString == enumName)
+    val `enum` = enumClass.getEnumConstants.find(_.toString == enumName)
       .getOrElse(sys.error("Corrupted stream. Expected java enum."))
-    (enum, pos)
+    (`enum`, pos)
   }
 }

@@ -4,11 +4,11 @@ package reporting
 
 
 import java.util.Date
-import org.scalatest.FunSuite
+import org.scalatest.funsuite.AnyFunSuite
 
 
 
-class RegressionReporterTest extends FunSuite {
+class RegressionReporterTest extends AnyFunSuite {
 
   import Key.reports.regression.timeIndices
 
